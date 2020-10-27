@@ -102,3 +102,7 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# Dask Client Info
+dask_ca.crt
+dask_client_cert.pem
