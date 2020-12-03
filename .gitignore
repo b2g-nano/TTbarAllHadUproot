@@ -106,3 +106,6 @@ venv.bak/
 # Dask Client Info
 dask_ca.crt
 dask_client_cert.pem
+
+# png's
+*.png
