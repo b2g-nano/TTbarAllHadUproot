@@ -39,34 +39,22 @@
 # 
 # /JetHT/Run2018D-Nano25Oct2019_ver2-v1/NANOAOD
 
-# In[ ]:
-
-
 xrootdstr1 = 'root://cmseos.fnal.gov//'
 xrootdstr2 = 'root://cmsxrootd.fnal.gov//'
 xrootdstr3 = 'root://cmsxrootd-site.fnal.gov/'
 
-
-# In[ ]:
-
-
-qcdfilename = 'QCD.txt'
+qcdfilename = 'TTbarAllHadUproot/QCD.txt'
+#qcdfilename = 'QCD.txt'
 with open(qcdfilename) as f:
     qcdfiles = [xrootdstr2 + s.strip() for s in f.readlines()]
 
-
-# In[ ]:
-
-
-ttbarfilename = 'TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8.txt'
+ttbarfilename = 'TTbarAllHadUproot/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8.txt'
+#ttbarfilename = 'TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8.txt'
 with open(ttbarfilename) as f:
     ttbarfiles = [xrootdstr2 + s.strip() for s in f.readlines()]
 
-
-# In[ ]:
-
-
-ZprimeDMfilename = 'ZprimeDMToTTbar.txt'
+ZprimeDMfilename = 'TTbarAllHadUproot/ZprimeDMToTTbar.txt'
+#ZprimeDMfilename = 'ZprimeDMToTTbar.txt'
 with open(ZprimeDMfilename) as f:
     DM1000files = [xrootdstr2 + s.strip() for s in f.readlines() if "ResoIncl_MZp1000" in s]
 with open(ZprimeDMfilename) as f:
@@ -86,11 +74,7 @@ with open(ZprimeDMfilename) as f:
 with open(ZprimeDMfilename) as f:
     DM5000files = [xrootdstr2 + s.strip() for s in f.readlines() if "ResoIncl_MZp5000" in s]
 
-
-# In[ ]:
-
-
-jetdatafilename = 'JetHT_Data.txt'
+jetdatafilename = 'TTbarAllHadUproot/JetHT_Data.txt'
 with open(jetdatafilename) as f:
     jetdatafiles = [xrootdstr2 + s.strip() for s in f.readlines()[::3]] # Every third datafile
 with open(jetdatafilename) as g:
@@ -100,61 +84,47 @@ with open(jetdatafilename) as h:
 with open(jetdatafilename) as i:
     jetdatafiles2018 = [xrootdstr2 + s.strip() for s in i.readlines() if "/store/data/Run2018" in s]
 
-
-# In[ ]:
-
+""" Comment out whichever files you wish to not be included """
 
 filesets = {
-    'DM1000':DM1000files,
-    'DM1500':DM1500files,
-    'DM2000':DM2000files,
-    'DM2500':DM2500files,
-    'DM3000':DM3000files,
-    'DM3500':DM3500files,
-    'DM4000':DM4000files,
-    'DM4500':DM4500files,
+    'QCD':qcdfiles,
+    #'DM1000':DM1000files,
+    #'DM1500':DM1500files,
+    #'DM2000':DM2000files,
+    #'DM2500':DM2500files,
+    #'DM3000':DM3000files,
+    #'DM3500':DM3500files,
+    #'DM4000':DM4000files,
+    #'DM4500':DM4500files,
     'DM5000':DM5000files,
     'TTbar':ttbarfiles,
-    'QCD':qcdfiles,
-    'JetHT':jetdatafiles,
+    #'JetHT':jetdatafiles,
     'JetHT2016_Data':jetdatafiles2016,
-    'JetHT2017_Data':jetdatafiles2017,
-    'JetHT2018_Data':jetdatafiles2018
+    #'JetHT2017_Data':jetdatafiles2017,
+    #'JetHT2018_Data':jetdatafiles2018
 }
-
-
-# In[ ]:
-
 
 filesets_forweights = {
-    'DM1000':DM1000files,
-    'DM1500':DM1500files,
-    'DM2000':DM2000files,
-    'DM2500':DM2500files,
-    'DM3000':DM3000files,
-    'DM3500':DM3500files,
-    'DM4000':DM4000files,
-    'DM4500':DM4500files,
-    'DM5000':DM5000files,
-    'TTbar':ttbarfiles,
-    'TTbar_2016':ttbarfiles, # ttbarfiles to be subtracted from JetHT2016 data
-    'TTbar_2017':ttbarfiles, # ttbarfiles to be subtracted from JetHT2016 data
-    'TTbar_2018':ttbarfiles, # ttbarfiles to be subtracted from JetHT2016 data
     'QCD':qcdfiles,
-    'JetHT':jetdatafiles,
+    #'DM1000':DM1000files,
+    #'DM1500':DM1500files,
+    #'DM2000':DM2000files,
+    #'DM2500':DM2500files,
+    #'DM3000':DM3000files,
+    #'DM3500':DM3500files,
+    #'DM4000':DM4000files,
+    #'DM4500':DM4500files,
+    'DM5000':DM5000files,
+    #'TTbar':ttbarfiles,
+    'TTbar_2016':ttbarfiles, # ttbarfiles to be subtracted from JetHT2016 data
+    #'TTbar_2017':ttbarfiles, # ttbarfiles to be subtracted from JetHT2016 data
+    #'TTbar_2018':ttbarfiles, # ttbarfiles to be subtracted from JetHT2016 data
+    #'JetHT':jetdatafiles,
     'JetHT2016_Data':jetdatafiles2016,
-    'JetHT2017_Data':jetdatafiles2017,
-    'JetHT2018_Data':jetdatafiles2018
+    #'JetHT2017_Data':jetdatafiles2017,
+    #'JetHT2018_Data':jetdatafiles2018
 }
 
-
-# In[ ]:
-
-
-#!jupyter nbconvert --to script Filesets.ipynb
-
-
-# In[ ]:
 
 
 

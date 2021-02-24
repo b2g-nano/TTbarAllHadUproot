@@ -1,37 +1,32 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[ ]:
-
-
 import copy
 import scipy.stats as ss
-from coffea import hist
-from coffea.analysis_objects import JaggedCandidateArray
-import coffea.processor as processor
+from coffea import hist, processor, nanoevents
 from coffea import util
-from awkward import JaggedArray
 import numpy as np
 import itertools
 import pandas as pd
 from numpy.random import RandomState
 
+import awkward as ak
+#from coffea.nanoevents.methods import nanoaod
+from coffea.nanoevents.methods import candidate
+from coffea.nanoevents.methods import vector
 
-# In[ ]:
-
-
+#ak.behavior.update(nanoaod.behavior)
+ak.behavior.update(candidate.behavior)
+ak.behavior.update(vector.behavior)
 manual_bins = [400, 500, 600, 800, 1000, 1500, 2000, 3000, 7000, 10000]
-
-
-# In[ ]:
-
 
 """@TTbarResAnaHadronic Package to perform the data-driven mistag-rate-based ttbar hadronic analysis. 
 """
 class TTbarResProcessor(processor.ProcessorABC):
-    def __init__(self, prng=RandomState(1234567890), htCut=950., minMSD=105., maxMSD=210., tau32Cut=0.65, ak8PtMin=400., bdisc=0.8484,
-                writePredDist=True,isData=True,year=2019, UseLookUpTables=False, lu=None, 
-                ModMass=False, RandomDebugMode=False):
+    def __init__(self, prng=RandomState(1234567890), htCut=950., minMSD=105., maxMSD=210.,
+                 tau32Cut=0.65, ak8PtMin=400., bdisc=0.8484,
+                 writePredDist=True,isData=True,year=2019, UseLookUpTables=False, lu=None, 
+                 ModMass=False, RandomDebugMode=False):
         
         self.prng = prng
         self.htCut = htCut
@@ -49,12 +44,12 @@ class TTbarResProcessor(processor.ProcessorABC):
         self.RandomDebugMode = RandomDebugMode
         self.lu = lu # Look Up Tables
         
-        self.ttagcats = ["Pt", "at", "pret", "0t", "1t", "1t+2t", "2t", "0t+1t+2t"] #anti-tag+probe, anti-tag, pre-tag, 0, 1, >=1, 2 ttags, any t-tag
+        self.ttagcats = ["Probet", "at", "pret", "0t", "1t", "1t+2t", "2t", "0t+1t+2t"] #anti-tag+probe, anti-tag, pre-tag, 0, 1, >=1, 2 ttags, any t-tag
         self.btagcats = ["0b", "1b", "2b"]   # 0, 1, >=2 btags
         self.ycats = ['cen', 'fwd']          # Central and forward
         # Combine categories like "0bcen", "0bfwd", etc:
         self.anacats = [ t+b+y for t,b,y in itertools.product( self.ttagcats, self.btagcats, self.ycats) ]
-        print(self.anacats)
+        #print(self.anacats)
         
         dataset_axis = hist.Cat("dataset", "Primary dataset")
         cats_axis = hist.Cat("anacat", "Analysis Category")
@@ -116,13 +111,12 @@ class TTbarResProcessor(processor.ProcessorABC):
     def accumulator(self):
         return self._accumulator
 
-    def process(self, df):
+    def process(self, events):
         
         output = self.accumulator.identity()
         
         # ---- Define dataset ---- #
-        dataset = df['dataset'] #coffea.processor.LazyDataFrame
-        Dataset_info = df.available #list of available columns in LazyDataFrame object (Similar to 'Events->Show()' command in ROOT)
+        dataset = events.metadata['dataset']
         
         # ---- Get triggers from Dataset_info ---- #
         #triggers = [itrig for itrig in Dataset_info if 'HLT_PFHT' in itrig]
@@ -164,58 +158,76 @@ class TTbarResProcessor(processor.ProcessorABC):
        
         
         # ---- Define AK8 Jets as FatJets ---- #
-        FatJets = JaggedCandidateArray.candidatesfromcounts(
-            df['nFatJet'],
-            pt=df['FatJet_pt'],
-            eta=df['FatJet_eta'],
-            phi=df['FatJet_phi'],
-            mass=df['FatJet_mass'],
-            area=df['FatJet_area'],
-            msoftdrop=df['FatJet_msoftdrop'],
-            jetId=df['FatJet_jetId'],
-            tau1=df['FatJet_tau1'],
-            tau2=df['FatJet_tau2'],
-            tau3=df['FatJet_tau3'],
-            tau4=df['FatJet_tau4'],
-            n3b1=df['FatJet_n3b1'],
-            btagDeepB=df['FatJet_btagDeepB'],
-            btagCSVV2=df['FatJet_btagCSVV2'],
-            deepTag_TvsQCD=df['FatJet_deepTag_TvsQCD'],
-            deepTagMD_TvsQCD=df['FatJet_deepTagMD_TvsQCD'],
-            subJetIdx1=df['FatJet_subJetIdx1'],
-            subJetIdx2=df['FatJet_subJetIdx2']
-            )
-        
+        #FatJets = events.FatJet # Everything should already be defined in here.  example) df['FatJet_pt] -> events.FatJet.pt
+        FatJets = ak.zip({
+            "nFatJet": events.nFatJet,
+            "pt": events.FatJet_pt,
+            "eta": events.FatJet_eta,
+            "phi": events.FatJet_phi,
+            "mass": events.FatJet_mass,
+            "area": events.FatJet_area,
+            "msoftdrop": events.FatJet_msoftdrop,
+            "jetId": events.FatJet_jetId,
+            "tau1": events.FatJet_tau1,
+            "tau2": events.FatJet_tau2,
+            "tau3": events.FatJet_tau3,
+            "tau4": events.FatJet_tau4,
+            "n3b1": events.FatJet_n3b1,
+            "btagDeepB": events.FatJet_btagDeepB,
+            "btagCSVV2": events.FatJet_btagCSVV2,
+            "deepTag_TvsQCD": events.FatJet_deepTag_TvsQCD,
+            "deepTagMD_TvsQCD": events.FatJet_deepTagMD_TvsQCD,
+            "subJetIdx1": events.FatJet_subJetIdx1,
+            "subJetIdx2": events.FatJet_subJetIdx2,
+            "p4": ak.zip({
+                "pt": events.FatJet_pt,
+                "eta": events.FatJet_eta,
+                "phi": events.FatJet_phi,
+                "mass": events.FatJet_mass,
+                }, with_name="PtEtaPhiMLorentzVector"),
+            })
+
         # ---- Define AK4 jets as Jets ---- #
-        Jets = JaggedCandidateArray.candidatesfromcounts(
-            df['nJet'],
-            pt=df['Jet_pt'],
-            eta=df['Jet_eta'],
-            phi=df['Jet_phi'],
-            mass=df['Jet_mass'],
-            area=df['Jet_area']
-            )
+        #Jets = events.Jet
+        Jets = ak.zip({
+            "pt": events.Jet_pt,
+            "eta": events.Jet_eta,
+            "phi": events.Jet_phi,
+            "mass": events.Jet_mass,
+            "area": events.Jet_area,
+            "p4": ak.zip({
+                "pt": events.Jet_pt,
+                "eta": events.Jet_eta,
+                "phi": events.Jet_phi,
+                "mass": events.Jet_mass,
+                }, with_name="PtEtaPhiMLorentzVector"),
+            })
+
         # ---- Define SubJets ---- #
-        SubJets = JaggedCandidateArray.candidatesfromcounts(
-            df['nSubJet'],
-            pt=df['SubJet_pt'],
-            eta=df['SubJet_eta'],
-            phi=df['SubJet_phi'],
-            mass=df['SubJet_mass'],
-            btagDeepB=df['SubJet_btagDeepB'],
-            btagCSVV2=df['SubJet_btagCSVV2']
-            )
-        
+        #SubJets = events.SubJet
+        SubJets = ak.zip({
+            "pt": events.SubJet_pt,
+            "eta": events.SubJet_eta,
+            "phi": events.SubJet_phi,
+            "mass": events.SubJet_mass,
+            "btagDeepB": events.SubJet_btagDeepB,
+            "btagCSVV2": events.SubJet_btagCSVV2,
+            "p4": ak.zip({
+                "pt": events.SubJet_pt,
+                "eta": events.SubJet_eta,
+                "phi": events.SubJet_phi,
+                "mass": events.SubJet_mass,
+                }, with_name="PtEtaPhiMLorentzVector"),
+            })
         
         # ---- Get event weights from dataset ---- #
         if 'JetHT' in dataset: # If data is used...
-            evtweights = np.ones(FatJets.size) # set all "data weights" to one
+            evtweights = np.ones(ak.to_awkward0(FatJets).size) # set all "data weights" to one
         else: # if Monte Carlo dataset is used...
-            evtweights = df["Generator_weight"].reshape(-1, 1).flatten()
-        
+            evtweights = events.Generator_weight
         # ---- Show all events ---- #
-        output['cutflow']['all events'] += FatJets.size
-        
+        output['cutflow']['all events'] += ak.to_awkward0(FatJets).size
+
         # ---- Apply Trigger(s) ---- #
         #FatJets = FatJets[HLT_AK8_trig1]
         #evtweights = evtweights[HLT_AK8_trig1]
@@ -225,23 +237,24 @@ class TTbarResProcessor(processor.ProcessorABC):
         # ---- Jets that satisfy Jet ID ---- #
         jet_id = (FatJets.jetId > 0) # Loose jet ID
         FatJets = FatJets[jet_id]
-        output['cutflow']['jet id'] += jet_id.any().sum()
+        output['cutflow']['jet id'] += ak.to_awkward0(jet_id).any().sum()
         
         # ---- Apply pT Cut and Rapidity Window ---- #
-        jetkincut_index = (FatJets.pt > self.ak8PtMin) & (np.abs(FatJets.p4.rapidity) < 2.4)
+        FatJets_rapidity = .5*np.log( (FatJets.p4.energy + FatJets.p4.pz)/(FatJets.p4.energy - FatJets.p4.pz) )
+        jetkincut_index = (FatJets.pt > self.ak8PtMin) & (np.abs(FatJets_rapidity) < 2.4)
         FatJets = FatJets[ jetkincut_index ]
-        output['cutflow']['jet kin'] += jetkincut_index.any().sum()
+        output['cutflow']['jet kin'] += ak.to_awkward0(jetkincut_index).any().sum()
         
         # ---- Find two AK8 Jets ---- #
-        twoFatJetsKin = (FatJets.counts == 2)
+        twoFatJetsKin = (ak.num(FatJets, axis=-1) == 2)
         FatJets = FatJets[twoFatJetsKin]
         evtweights = evtweights[twoFatJetsKin]
         Jets = Jets[twoFatJetsKin]
         SubJets = SubJets[twoFatJetsKin]
-        output['cutflow']['two FatJets and jet kin'] += twoFatJetsKin.sum()
+        output['cutflow']['two FatJets and jet kin'] += ak.to_awkward0(twoFatJetsKin).sum()
         
         # ---- Apply HT Cut ---- #
-        hT = Jets.pt.sum()
+        hT = ak.to_awkward0(Jets.pt).sum()
         passhT = (hT > self.htCut)
         evtweights = evtweights[passhT]
         FatJets = FatJets[passhT]
@@ -251,113 +264,143 @@ class TTbarResProcessor(processor.ProcessorABC):
         if self.RandomDebugMode == True: # 'Sudo' randomizer for consistent results
             highPhi = FatJets.phi[:,0] > FatJets.phi[:,1]
             highRandIndex = np.where(highPhi, 0, 1)
-            index = JaggedArray.fromcounts(np.ones(len(FatJets), dtype='i'), highRandIndex )
+            index = ak.unflatten( np.ones(len(FatJets), dtype='i'), highRandIndex )
         else: # Truly randomize
-            index = JaggedArray.fromcounts(np.ones(len(FatJets), dtype='i'), self.prng.randint(2, size=len(FatJets)))
+            index = ak.unflatten( np.ones(len(FatJets), dtype='i'), self.prng.randint(2, size=len(FatJets)) )
+        
         jet0 = FatJets[index] #J0
         jet1 = FatJets[1 - index] #J1
         
-        ttbarcands = jet0.cross(jet1) #FatJets[:,0:2].distincts()
-    
+        ttbarcands = ak.cartesian([jet0, jet1])
+        #ttbarcands = ak.to_awkward0(ak.cartesian([jet0, jet1]))
+        #ttbarcands = ak.to_list(ak.cartesian([jet0, jet1], axis=0))
+        
+        """ NOTE that ak.cartesian gives a shape with one more layer than FatJets """
         # ---- Make sure we have at least 1 TTbar candidate pair and re-broadcast releveant arrays  ---- #
-        oneTTbar = (ttbarcands.counts >= 1)
-        output['cutflow']['>= one oneTTbar'] += oneTTbar.sum()
+        #print(ak.count(ttbarcands, axis=-1))
+        #print()
+        #print(ak.num(ttbarcands, axis=-1))
+        #print()
+        #print(ak.to_awkward0(ttbarcands).counts)
+        #print()
+        oneTTbar = (ak.num(ttbarcands, axis=-1) >= 1)
+        output['cutflow']['>= one oneTTbar'] += ak.to_awkward0(oneTTbar).sum()
         ttbarcands = ttbarcands[oneTTbar]
         evtweights = evtweights[oneTTbar]
         FatJets = FatJets[oneTTbar]
         SubJets = SubJets[oneTTbar]
          
         # ---- Apply Delta Phi Cut for Back to Back Topology ---- #
-        dPhiCut = (ttbarcands.i0.p4.delta_phi(ttbarcands.i1.p4) > 2.1).flatten()
-        output['cutflow']['dPhi > 2.1'] += dPhiCut.sum()
+        """ NOTE: Should find function for this; avoids 2pi problem """
+        dPhiCut = ttbarcands.slot0.p4.delta_phi(ttbarcands.slot1.p4) > 2.1
+        dPhiCut = ak.flatten(dPhiCut)
+        output['cutflow']['dPhi > 2.1'] += ak.to_awkward0(dPhiCut).sum()
         ttbarcands = ttbarcands[dPhiCut]
         evtweights = evtweights[dPhiCut]
         FatJets = FatJets[dPhiCut] 
         SubJets = SubJets[dPhiCut] 
         
         # ---- Identify subjets according to subjet ID ---- #
-        hasSubjets0 = ((ttbarcands.i0.subJetIdx1 > -1) & (ttbarcands.i0.subJetIdx2 > -1))
-        hasSubjets1 = ((ttbarcands.i1.subJetIdx1 > -1) & (ttbarcands.i1.subJetIdx2 > -1))
-        GoodSubjets = ((hasSubjets0) & (hasSubjets1)).flatten()
+        hasSubjets0 = ((ttbarcands.slot0.subJetIdx1 > -1) & (ttbarcands.slot0.subJetIdx2 > -1))
+        hasSubjets1 = ((ttbarcands.slot1.subJetIdx1 > -1) & (ttbarcands.slot1.subJetIdx2 > -1))
+        GoodSubjets = ak.flatten(((hasSubjets0) & (hasSubjets1)))
    
         ttbarcands = ttbarcands[GoodSubjets]
         
         SubJets = SubJets[GoodSubjets]
         evtweights = evtweights[GoodSubjets]
        
-        SubJet01 = SubJets[ttbarcands.i0.subJetIdx1] # FatJet i0 with subjet 1
-        SubJet02 = SubJets[ttbarcands.i0.subJetIdx2] # FatJet i0 with subjet 2
-        SubJet11 = SubJets[ttbarcands.i1.subJetIdx1] # FatJet i1 with subjet 1
-        SubJet12 = SubJets[ttbarcands.i1.subJetIdx2] # FatJet i1 with subjet 2
+        SubJet01 = SubJets[ttbarcands.slot0.subJetIdx1] # FatJet i0 with subjet 1
+        SubJet02 = SubJets[ttbarcands.slot0.subJetIdx2] # FatJet i0 with subjet 2
+        SubJet11 = SubJets[ttbarcands.slot1.subJetIdx1] # FatJet i1 with subjet 1
+        SubJet12 = SubJets[ttbarcands.slot1.subJetIdx2] # FatJet i1 with subjet 2
         
         # ---- Define Rapidity Regions ---- #
-        cen = np.abs(ttbarcands.i0.p4.rapidity - ttbarcands.i1.p4.rapidity) < 1.0
+        """ NOTE that ttbarcands.i0.p4.energy no longer works after ttbarcands is defined as an old awkward array """
+        #i0_p = ttbarcands.i0.pt*np.cosh( ttbarcands.i0.eta ) # 3-momentum magnitude
+        #i1_p = ttbarcands.i1.pt*np.cosh( ttbarcands.i1.eta ) # 3-momentum magnitude
+        #i0_energy = np.sqrt( ttbarcands.i0.mass**2 + i0_p**2 )
+        #i1_energy = np.sqrt( ttbarcands.i1.mass**2 + i1_p**2 )
+        #i0_pz = ttbarcands.i0.pt*np.sinh( ttbarcands.i0.eta )
+        #i1_pz = ttbarcands.i1.pt*np.sinh( ttbarcands.i1.eta )
+        s0_energy = ttbarcands.slot0.p4.energy
+        s1_energy = ttbarcands.slot1.p4.energy
+        s0_pz = ttbarcands.slot0.p4.pz
+        s1_pz = ttbarcands.slot1.p4.pz
+        ttbarcands_s0_rapidity = 0.5*np.log( (s0_energy+s0_pz)/(s0_energy-s0_pz) ) # rapidity as function of eta
+        ttbarcands_s1_rapidity = 0.5*np.log( (s1_energy+s1_pz)/(s1_energy-s1_pz) ) # rapidity as function of eta
+        cen = np.abs(ttbarcands_s0_rapidity - ttbarcands_s1_rapidity) < 1.0
         fwd = (~cen)
         
         # ---- CMS Top Tagger Version 2 (SD and Tau32 Cuts) ---- #
-        tau32_i0 = np.where(ttbarcands.i0.tau2>0,ttbarcands.i0.tau3/ttbarcands.i0.tau2, 0 )
-        tau32_i1 = np.where(ttbarcands.i1.tau2>0,ttbarcands.i1.tau3/ttbarcands.i1.tau2, 0 )
-        taucut_i0 = tau32_i0 < self.tau32Cut
-        taucut_i1 = tau32_i1 < self.tau32Cut
-        mcut_i0 = (self.minMSD < ttbarcands.i0.msoftdrop) & (ttbarcands.i0.msoftdrop < self.maxMSD) 
-        mcut_i1 = (self.minMSD < ttbarcands.i1.msoftdrop) & (ttbarcands.i1.msoftdrop < self.maxMSD) 
+        tau32_s0 = np.where(ttbarcands.slot0.tau2>0,ttbarcands.slot0.tau3/ttbarcands.slot0.tau2, 0 )
+        tau32_s1 = np.where(ttbarcands.slot1.tau2>0,ttbarcands.slot1.tau3/ttbarcands.slot1.tau2, 0 )
+        taucut_s0 = tau32_s0 < self.tau32Cut
+        taucut_s1 = tau32_s1 < self.tau32Cut
+        mcut_s0 = (self.minMSD < ttbarcands.slot0.msoftdrop) & (ttbarcands.slot0.msoftdrop < self.maxMSD) 
+        mcut_s1 = (self.minMSD < ttbarcands.slot1.msoftdrop) & (ttbarcands.slot1.msoftdrop < self.maxMSD) 
 
-        ttag_i0 = (taucut_i0) & (mcut_i0)
-        ttag_i1 = (taucut_i1) & (mcut_i1)
+        ttag_s0 = (taucut_s0) & (mcut_s0)
+        ttag_s1 = (taucut_s1) & (mcut_s1)
         
         # ---- Define "Top Tag" Regions ---- #
-        antitag = (~taucut_i0) & (mcut_i0) #Probe will always be ttbarcands.i1 (at)
-        antitag_probe = np.logical_and(antitag, ttag_i1) #Found an antitag and ttagged probe pair for mistag rate (Pt)
-        pretag =  ttag_i0 # Only jet0 (pret)
-        ttag0 =   (~ttag_i0) & (~ttag_i1) # No tops tagged (0t)
-        ttag1 =   ttag_i0 ^ ttag_i1 # Exclusively one top tagged (1t)
-        ttagI =   ttag_i0 | ttag_i1 # At least one top tagged ('I' for 'inclusive' tagger; >=1t; 1t+2t)
-        ttag2 =   ttag_i0 & ttag_i1 # Both jets top tagged (2t)
+        antitag = (~taucut_s0) & (mcut_s0) #Probe will always be ttbarcands.i1 (at)
+        antitag_probe = np.logical_and(antitag, ttag_s1) #Found an antitag and ttagged probe pair for mistag rate (Probet)
+        pretag =  ttag_s0 # Only jet0 (pret)
+        ttag0 =   (~ttag_s0) & (~ttag_s1) # No tops tagged (0t)
+        ttag1 =   ttag_s0 ^ ttag_s1 # Exclusively one top tagged (1t)
+        ttagI =   ttag_s0 | ttag_s1 # At least one top tagged ('I' for 'inclusive' tagger; >=1t; 1t+2t)
+        ttag2 =   ttag_s0 & ttag_s1 # Both jets top tagged (2t)
         Alltags = ttag0 | ttagI #Either no tag or at least one tag (0t+1t+2t)
         
-        # ---- Pick FatJet that passes btag cut based on its subjet with the highest btag value ---- # 
-        btag_i0 = ( np.maximum(SubJet01.btagCSVV2 , SubJet02.btagCSVV2) > self.bdisc )
-        btag_i1 = ( np.maximum(SubJet11.btagCSVV2 , SubJet12.btagCSVV2) > self.bdisc )
+        # ---- Pick FatJet that passes btag cut based on its subjet with the highest btag value ---- #
+        btag_s0 = ( np.maximum(SubJet01.btagCSVV2 , SubJet02.btagCSVV2) > self.bdisc )
+        btag_s1 = ( np.maximum(SubJet11.btagCSVV2 , SubJet12.btagCSVV2) > self.bdisc )
         
         # --- Define "B Tag" Regions ---- #
-        btag0 = (~btag_i0) & (~btag_i1) #(0b)
-        btag1 = btag_i0 ^ btag_i1 #(1b)
-        btag2 = btag_i0 & btag_i1 #(2b)
+        btag0 = (~btag_s0) & (~btag_s1) #(0b)
+        btag1 = btag_s0 ^ btag_s1 #(1b)
+        btag2 = btag_s0 & btag_s1 #(2b)
         
         # ---- Get Analysis Categories ---- # 
-        # ---- They are (central, forward) cross (0b,1b,2b) cross (At,at,0t,1t,>=1t,2t) ---- #
+        # ---- They are (central, forward) cross (0b,1b,2b) cross (Probet,at,0t,1t,>=1t,2t) ---- #
         regs = [cen,fwd]
         btags = [btag0,btag1,btag2]
         ttags = [antitag_probe,antitag,pretag,ttag0,ttag1,ttagI,ttag2,Alltags]
-        cats = [ (t&b&y).flatten() for t,b,y in itertools.product( ttags, btags, regs) ]
+        cats = [ np.asarray(ak.to_awkward0(ak.flatten(t&b&y))) for t,b,y in itertools.product( ttags, btags, regs) ]
         labels_and_categories = dict(zip( self.anacats, cats ))
+        #print(labels_and_categories)
         
         # ---- Variables for Kinematic Histograms ---- #
-        # ---- "i0" is the control jet, "i1" is the probe jet ---- #
-        ttbarmass = ttbarcands.p4.sum().mass.flatten()
-        jetpt = ttbarcands.i1.pt.flatten()
-        jeteta = ttbarcands.i1.eta.flatten()
-        jetphi = ttbarcands.i1.phi.flatten()
-        jety = ttbarcands.i1.p4.rapidity.flatten()
-        jetmass = ttbarcands.i1.p4.mass.flatten()
-        SDmass = ttbarcands.i1.msoftdrop.flatten()
-        jetdy = np.abs(ttbarcands.i0.p4.rapidity.flatten() - ttbarcands.i1.p4.rapidity.flatten())
-        Tau32 = (ttbarcands.i1.tau3/ttbarcands.i1.tau2).flatten()
+        # ---- "slot0" is the control jet, "slot1" is the probe jet ---- #
+        jetpt = ak.flatten(ttbarcands.slot1.pt)
+        jeteta = ak.flatten(ttbarcands.slot1.eta)
+        jetphi = ak.flatten(ttbarcands.slot1.phi)
+        jetmass = ak.flatten(ttbarcands.slot1.mass)
+        SDmass = ak.flatten(ttbarcands.slot1.msoftdrop)
+        Tau32 = ak.flatten((ttbarcands.slot1.tau3/ttbarcands.slot1.tau2))
+
+        """ Add 4-vectors and get its total mass """
+        ttbarp4 = ttbarcands.slot0.p4.add(ttbarcands.slot1.p4)
+        ttbarmass = ak.flatten(ttbarp4.mass)
+        
+        """ Use previously defined definitions for rapidity (until/unless better method is found) """
+        jety = ak.flatten(ttbarcands_s0_rapidity)
+        jetdy = np.abs(ak.flatten(ttbarcands_s0_rapidity) - ak.flatten(ttbarcands_s1_rapidity))
         # ---- Variables for Deep Tagger Analysis ---- #
-        deepTag = ttbarcands.i1.deepTag_TvsQCD.flatten()
-        deepTagMD = ttbarcands.i1.deepTagMD_TvsQCD.flatten()
+        deepTag = ak.flatten(ttbarcands.slot1.deepTag_TvsQCD)
+        deepTagMD = ak.flatten(ttbarcands.slot1.deepTagMD_TvsQCD)
         
-        weights = evtweights.flatten()
-        
+        weights = np.asarray(evtweights)
+
         # ---- Define the SumW2 for MC Datasets ---- #
         output['cutflow']['sumw'] += np.sum(weights)
         output['cutflow']['sumw2'] += np.sum(weights**2)
         
         # ---- Define Momentum p of probe jet as the Mistag Rate variable; M(p) ---- #
         # ---- Transverse Momentum pT can also be used instead; M(pT) ---- #
-        pT = ttbarcands.i1.pt.flatten()
-        eta = ttbarcands.i1.eta.flatten()
-        pz = np.sinh(eta)*pT
+        pT = ak.flatten(ttbarcands.slot1.pt)
+        pz = ak.flatten(ttbarcands.slot1.p4.pz)
         p = np.absolute(np.sqrt(pT**2 + pz**2))
         
         # ---- Define the Numerator and Denominator for Mistag Rate ---- #
@@ -383,7 +426,6 @@ class TTbarResProcessor(processor.ProcessorABC):
                 
                 BinKeys = np.arange(bin_widths.size) # Use as label for BinNumber column in the new dataframe
                 
-                #Bins = pd.interval_range(start=0, periods=100, freq=100, closed='left') # Recreate the momentum bins from file_df as something readable for pd.cut()
                 Bins = np.array(manual_bins)
                 
                 df['BinWidth'] = pd.cut(p, bins=Bins) # new dataframe column
@@ -396,6 +438,16 @@ class TTbarResProcessor(processor.ProcessorABC):
                 Weights = weights*WeightMatching # Include 'wgts' with the previously defined 'weights'
             else:
                 Weights = weights # No mistag rates, no change to weights
+                print("Weights = ", Weights)
+                print()
+                print(Weights.shape)
+                print()
+                print("icat = ", icat)
+                print()
+                print(icat.shape)
+                print()
+                #print(icat.tolist())
+                #print()
             ###---------------------------------------------------------------------------------------------###
             ### ----------------------------------- Mod-mass Procedure ------------------------------------ ###
             if self.ModMass == True:
