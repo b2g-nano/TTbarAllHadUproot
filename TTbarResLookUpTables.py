@@ -1,28 +1,22 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[ ]:
-
-
-import copy
-import scipy.stats as ss
+#import copy
+#import scipy.stats as ss
 from coffea import hist
-from coffea.analysis_objects import JaggedCandidateArray
-import coffea.processor as processor
+#from coffea.analysis_objects import JaggedCandidateArray
+#import coffea.processor as processor
 from coffea import util
-from awkward import JaggedArray
+#from awkward import JaggedArray
 import numpy as np
 import itertools
 import pandas as pd
-from numpy.random import RandomState
+#from numpy.random import RandomState
 from collections import defaultdict
 import os
-import os.path
+#import os.path
 from os import path
 import matplotlib.pyplot as plt
-
-
-# In[ ]:
 
 
 def mkdir_p(mypath):
@@ -38,10 +32,6 @@ def mkdir_p(mypath):
             pass
         else: raise
 
-
-# In[ ]:
-
-
 def DoesDirectoryExist(mypath): #extra precaution (Probably overkill...)
     '''Checks to see if Directory exists before running mkdir_p'''
     
@@ -50,16 +40,8 @@ def DoesDirectoryExist(mypath): #extra precaution (Probably overkill...)
     else:
         mkdir_p(mypath)
 
-
-# In[ ]:
-
-
 maindirectory = os.getcwd() # changes accordingly
 print(maindirectory)
-
-
-# In[ ]:
-
 
 # ---- Reiterate categories ---- #
 ttagcats = ["at"] #, "0t", "1t", "It", "2t"]
@@ -69,28 +51,19 @@ ycats = ['cen', 'fwd']
 list_of_cats = [ t+b+y for t,b,y in itertools.product( ttagcats, btagcats, ycats) ]
 
 
-# In[ ]:
-
-
 from Filesets import filesets
-
-
-# In[ ]:
 
 
 outputs_unweighted = {}
 for name,files in filesets.items():
-    outputs_unweighted[name] = util.load('TTbarResCoffea_' + name + '_unweighted_output_partial_2021_dask_run.coffea')
+    outputs_unweighted[name] = util.load('CoffeaOutputs/UnweightedOutputs/TTbarResCoffea_' + name + '_unweighted_output_partial_2021_dask_run.coffea')
 outputs_unweighted
 
 
-# In[ ]:
-
-
 """ ---------------- CREATE RAW MISTAG PLOTS ---------------- """
-# ---- Only Use This Cell When LookUp Tables Are Not In Use (i.e. UseLookUpTables = False) ---- #
-# ---- Mistag plot for every dataset in every category for debugging if necessary or for curiosity ---- #
-# ---- Look up tables are a bit more sophisticated and useful to the analysis ---- #
+# ---- Only Use This When LookUp Tables Were Not In Use for Previous Uproot Job (i.e. UseLookUpTables = False) ---- #
+# ---- This Creates Mistag plots for every dataset in every category for debugging if necessary or for curiosity ---- #
+# ---- Look up tables are a bit more sophisticated and much more useful to the analysis ---- #
 
 SaveDirectory = maindirectory + '/MistagPlots/'
 DoesDirectoryExist(SaveDirectory) # no need to create the directory several times
@@ -132,9 +105,6 @@ for iset in filesets:
         #print(filename + ' saved')
 
 
-# In[ ]:
-
-
 """ ---------------- Scale-Factors for JetHT Data According to Year---------------- """
 Nevts2016 = 625516390. # from dasgoclient
 Nevts2017 = 410461585. # from dasgoclient
@@ -155,14 +125,11 @@ if 'JetHT' in filesets:
     print(Nevts_sf)
 
 
-# In[ ]:
-
-
 """ ---------------- Luminosities, Cross Sections, Scale-Factors ---------------- """ 
 Lum2016 = 35920. # pb^-1 from https://twiki.cern.ch/twiki/bin/viewauth/CMS/PdmVAnalysisSummaryTable
 Lum2017 = 41530.
 Lum2018 = 59740.
-Lum     = 137190.
+Lum     = 137190. # total Luminosity of all years
 
 ttbar_BR = 0.457 # 0.442 from PDG 2018
 ttbar_xs = 1.0   # Monte Carlo already includes xs in event weight!! Otherwise, ttbar_xs = 831.76 * ttbar_BR  pb
@@ -172,23 +139,17 @@ ttbar2017_sf = ttbar_xs*Lum2017/(142155064.)
 ttbar2018_sf = ttbar_xs*Lum2018/(142155064.)
 ttbar_sf = ttbar_xs*Lum/(142155064.)
 
-print(ttbar2016_sf)
-print(ttbar2017_sf)
-print(ttbar2018_sf)
-print(ttbar_sf)
+print("ttbar 2016 scale factor = ", ttbar2016_sf)
+print("ttbar 2017 scale factor = ", ttbar2017_sf)
+print("ttbar 2018 scale factor = ", ttbar2018_sf)
+print("ttbar (all years) scale factor = ", ttbar_sf)
 
 qcd_xs = 1370000000.0 #pb From https://cms-gen-dev.cern.ch/xsdb
 #qcd_sf = qcd_xs*Lum/18455107.
 
 
-# In[ ]:
-
-
 import warnings
 warnings.filterwarnings("ignore")
-
-
-# In[ ]:
 
 
 """ ---------------- CREATE LOOK UP TABLE .CSV FILES ---------------- """
@@ -202,7 +163,7 @@ def multi_dict(K, type): # definition from https://www.geeksforgeeks.org/python-
         return defaultdict(lambda: multi_dict(K-1, type))
     
 luts = {}
-luts = multi_dict(2, str)
+luts = multi_dict(2, str) #Annoying, but necessary definition of the dictionary
 
 if runLUTS : 
 
@@ -359,15 +320,4 @@ else : # If runLUTS = False, read in [previously made] Look Up Table csv's
             luts[iset][icat] = pd.read_csv(filename)
 print(luts)
 
-
-# In[ ]:
-
-
 #!jupyter nbconvert --to script TTbarResLookUpTables.ipynb
-
-
-# In[ ]:
-
-
-
-
