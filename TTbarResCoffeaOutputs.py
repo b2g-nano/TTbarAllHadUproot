@@ -60,7 +60,7 @@ for name,files in filesets.items():
     output = processor.run_uproot_job({name:files},
                                       treename='Events',
                                       processor_instance=TTbarResProcessor(UseLookUpTables=False,
-                                                                           ModMass=False,
+                                                                           ModMass=False, 
                                                                            RandomDebugMode=False,
                                                                            prng=prng),
                                       #executor=processor.dask_executor,
