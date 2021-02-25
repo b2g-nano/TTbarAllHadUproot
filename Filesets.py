@@ -6,37 +6,21 @@
 # # ---- All JetHT Datasets used for analysis and dasgoclient searches ---- #
 # 
 # /JetHT/Run2016B_ver1-Nano25Oct2019_ver1-v1/NANOAOD 
-# 
 # /JetHT/Run2016B_ver2-Nano25Oct2019_ver2-v1/NANOAOD 
-# 
 # /JetHT/Run2016C-Nano25Oct2019-v1/NANOAOD 
-# 
 # /JetHT/Run2016D-Nano25Oct2019-v1/NANOAOD 
-# 
 # /JetHT/Run2016E-Nano25Oct2019-v1/NANOAOD 
-# 
 # /JetHT/Run2016F-Nano25Oct2019-v1/NANOAOD 
-# 
 # /JetHT/Run2016G-Nano25Oct2019-v1/NANOAOD 
-# 
 # /JetHT/Run2016H-Nano25Oct2019-v1/NANOAOD 
-# 
 # /JetHT/Run2017B-Nano25Oct2019-v1/NANOAOD 
-# 
 # /JetHT/Run2017C-Nano25Oct2019-v1/NANOAOD 
-# 
 # /JetHT/Run2017D-Nano25Oct2019-v1/NANOAOD 
-# 
 # /JetHT/Run2017E-Nano25Oct2019-v1/NANOAOD 
-# 
 # /JetHT/Run2017F-Nano25Oct2019-v1/NANOAOD 
-# 
 # /JetHT/Run2018A-Nano25Oct2019-v1/NANOAOD 
-# 
 # /JetHT/Run2018B-Nano25Oct2019-v1/NANOAOD 
-# 
 # /JetHT/Run2018C-Nano25Oct2019-v2/NANOAOD 
-# 
 # /JetHT/Run2018D-Nano25Oct2019_ver2-v1/NANOAOD
 
 xrootdstr1 = 'root://cmseos.fnal.gov//'
@@ -88,41 +72,41 @@ with open(jetdatafilename) as i:
 
 filesets = {
     'QCD':qcdfiles,
-    #'DM1000':DM1000files,
-    #'DM1500':DM1500files,
-    #'DM2000':DM2000files,
-    #'DM2500':DM2500files,
-    #'DM3000':DM3000files,
-    #'DM3500':DM3500files,
-    #'DM4000':DM4000files,
-    #'DM4500':DM4500files,
+    'DM1000':DM1000files,
+    'DM1500':DM1500files,
+    'DM2000':DM2000files,
+    'DM2500':DM2500files,
+    'DM3000':DM3000files,
+    'DM3500':DM3500files,
+    'DM4000':DM4000files,
+    'DM4500':DM4500files,
     'DM5000':DM5000files,
     'TTbar':ttbarfiles,
-    #'JetHT':jetdatafiles,
+    'JetHT':jetdatafiles,
     'JetHT2016_Data':jetdatafiles2016,
-    #'JetHT2017_Data':jetdatafiles2017,
-    #'JetHT2018_Data':jetdatafiles2018
+    'JetHT2017_Data':jetdatafiles2017,
+    'JetHT2018_Data':jetdatafiles2018
 }
 
 filesets_forweights = {
     'QCD':qcdfiles,
-    #'DM1000':DM1000files,
-    #'DM1500':DM1500files,
-    #'DM2000':DM2000files,
-    #'DM2500':DM2500files,
-    #'DM3000':DM3000files,
-    #'DM3500':DM3500files,
-    #'DM4000':DM4000files,
-    #'DM4500':DM4500files,
+    'DM1000':DM1000files,
+    'DM1500':DM1500files,
+    'DM2000':DM2000files,
+    'DM2500':DM2500files,
+    'DM3000':DM3000files,
+    'DM3500':DM3500files,
+    'DM4000':DM4000files,
+    'DM4500':DM4500files,
     'DM5000':DM5000files,
-    #'TTbar':ttbarfiles,
+    'TTbar':ttbarfiles,
     'TTbar_2016':ttbarfiles, # ttbarfiles to be subtracted from JetHT2016 data
-    #'TTbar_2017':ttbarfiles, # ttbarfiles to be subtracted from JetHT2016 data
-    #'TTbar_2018':ttbarfiles, # ttbarfiles to be subtracted from JetHT2016 data
-    #'JetHT':jetdatafiles,
+    'TTbar_2017':ttbarfiles, # ttbarfiles to be subtracted from JetHT2016 data
+    'TTbar_2018':ttbarfiles, # ttbarfiles to be subtracted from JetHT2016 data
+    'JetHT':jetdatafiles,
     'JetHT2016_Data':jetdatafiles2016,
-    #'JetHT2017_Data':jetdatafiles2017,
-    #'JetHT2018_Data':jetdatafiles2018
+    'JetHT2017_Data':jetdatafiles2017,
+    'JetHT2018_Data':jetdatafiles2018
 }
 
 
