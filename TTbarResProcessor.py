@@ -367,7 +367,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         regs = [cen,fwd]
         btags = [btag0,btag1,btag2]
         ttags = [antitag_probe,antitag,pretag,ttag0,ttag1,ttagI,ttag2,Alltags]
-        cats = [ np.asarray(ak.to_awkward0(ak.flatten(t&b&y))) for t,b,y in itertools.product( ttags, btags, regs) ]
+        cats = [ ak.to_awkward0(ak.flatten(t&b&y)) for t,b,y in itertools.product( ttags, btags, regs) ]
         labels_and_categories = dict(zip( self.anacats, cats ))
         #print(labels_and_categories)
         
@@ -381,17 +381,18 @@ class TTbarResProcessor(processor.ProcessorABC):
         Tau32 = ak.flatten((ttbarcands.slot1.tau3/ttbarcands.slot1.tau2))
 
         """ Add 4-vectors and get its total mass """
-        ttbarp4 = ttbarcands.slot0.p4.add(ttbarcands.slot1.p4)
-        ttbarmass = ak.flatten(ttbarp4.mass)
+        ttbarp4sum = ttbarcands.slot0.p4.add(ttbarcands.slot1.p4)
+        ttbarmass = ak.flatten(ttbarp4sum.mass)
         
         """ Use previously defined definitions for rapidity (until/unless better method is found) """
         jety = ak.flatten(ttbarcands_s0_rapidity)
         jetdy = np.abs(ak.flatten(ttbarcands_s0_rapidity) - ak.flatten(ttbarcands_s1_rapidity))
+
         # ---- Variables for Deep Tagger Analysis ---- #
         deepTag = ak.flatten(ttbarcands.slot1.deepTag_TvsQCD)
         deepTagMD = ak.flatten(ttbarcands.slot1.deepTagMD_TvsQCD)
         
-        weights = np.asarray(evtweights)
+        weights = evtweights
 
         # ---- Define the SumW2 for MC Datasets ---- #
         output['cutflow']['sumw'] += np.sum(weights)
@@ -406,6 +407,8 @@ class TTbarResProcessor(processor.ProcessorABC):
         # ---- Define the Numerator and Denominator for Mistag Rate ---- #
         numerator = np.where(antitag_probe, p, -1) # If no antitag and tagged probe, move event to useless bin
         denominator = np.where(antitag, p, -1) # If no antitag, move event to useless bin
+        numerator = ak.flatten(numerator)
+        denominator = ak.flatten(denominator)
         
         df = pd.DataFrame({"momentum":p}) # Used for finding values in LookUp Tables
         
@@ -438,20 +441,11 @@ class TTbarResProcessor(processor.ProcessorABC):
                 Weights = weights*WeightMatching # Include 'wgts' with the previously defined 'weights'
             else:
                 Weights = weights # No mistag rates, no change to weights
-                print("Weights = ", Weights)
-                print()
-                print(Weights.shape)
-                print()
-                print("icat = ", icat)
-                print()
-                print(icat.shape)
-                print()
-                #print(icat.tolist())
-                #print()
+                
             ###---------------------------------------------------------------------------------------------###
             ### ----------------------------------- Mod-mass Procedure ------------------------------------ ###
             if self.ModMass == True:
-                QCD_unweighted = util.load('TTbarResCoffea_QCD_unweighted_output.coffea')
+                QCD_unweighted = util.load('TTbarAllHadUproot/TTbarResCoffea_QCD_unweighted_output.coffea') #Testing! This file will change later
     
                 # ---- Extract event counts from QCD MC hist in signal region ---- #
                 QCD_hist = QCD_unweighted['jetmass'].integrate('anacat', '2t' + str(ilabel[-5:])).integrate('dataset', 'QCD')
@@ -465,8 +459,9 @@ class TTbarResProcessor(processor.ProcessorABC):
                 # ---- Define Mod Mass Distribution ---- #
                 ModMass_hist_dist = ss.rv_histogram([QCD_data,QCD_bins])
                 jet1_modp4 = copy.copy(jet1.p4) #J1's Lorentz four vector that can be safely modified
-                jet1_modp4["fMass"] = ModMass_hist_dist.rvs(size=jet1_modp4.size) #Replace J1's mass with random value of mass from mm hist
-                ttbarcands_modmass = jet0.p4.cross(jet1_modp4) #J0's four vector x modified J1's four vector
+                jet1_modp4["fMass"] = ModMass_hist_dist.rvs(size=ak.to_awkward0(jet1_modp4).size) #Replace J1's mass with random value of mass from mm hist
+                #ttbarcands_modmass = jet0.p4.cross(jet1_modp4) #J0's four vector x modified J1's four vector
+                ttbarcands_modmass = ak.cartesian([jet0, jet1_modp4])
 
                 # ---- Apply Necessary Selections to new modmass version ---- #
                 ttbarcands_modmass = ttbarcands_modmass[oneTTbar]
@@ -474,65 +469,68 @@ class TTbarResProcessor(processor.ProcessorABC):
                 ttbarcands_modmass = ttbarcands_modmass[GoodSubjets]
                 
                 # ---- Manually sum the modmass p4 candidates (Coffea technicality) ---- #
-                ttbarcands_modmass_p4_sum = (ttbarcands_modmass.i0 + ttbarcands_modmass.i1)
+                #ttbarcands_modmass_p4_sum = (ttbarcands_modmass.i0 + ttbarcands_modmass.i1)
+                ttbarcands_modmassp4sum = ttbarcands.slot0.p4.add(ttbarcands.slot1.p4)
                 
                 # ---- Re-define Mass Variables for ModMass Procedure (pt, eta, phi are redundant to change) ---- #
-                ttbarmass = ttbarcands_modmass_p4_sum.flatten().mass
-                jetmass = ttbarcands_modmass.i1.mass.flatten()
+                #ttbarmass = ttbarcands_modmass_p4_sum.flatten().mass
+                #jetmass = ttbarcands_modmass.i1.mass.flatten()
+                ttbarmass = ak.flatten(ttbarcands_modmassp4sum.mass)
+                jetmass = ak.flatten(ttbarcands_modmass.slot1.mass)
             ###---------------------------------------------------------------------------------------------###
             output['cutflow'][ilabel] += np.sum(icat)
           
-            output['ttbarmass'].fill(dataset=dataset, anacat=ilabel, 
-                                ttbarmass=ttbarmass[icat],
-                                weight=Weights[icat])
-            output['jetpt'].fill(dataset=dataset, anacat=ilabel, 
-                                jetpt=jetpt[icat],
-                                weight=Weights[icat])
-            output['probept'].fill(dataset=dataset, anacat=ilabel, 
-                                jetpt=pT[icat],
-                                weight=Weights[icat])
-            output['probep'].fill(dataset=dataset, anacat=ilabel, 
-                                jetp=p[icat],
-                                weight=Weights[icat])
-            output['jeteta'].fill(dataset=dataset, anacat=ilabel, 
-                                jeteta=jeteta[icat],
-                                weight=Weights[icat])
-            output['jetphi'].fill(dataset=dataset, anacat=ilabel, 
-                                jetphi=jetphi[icat],
-                                weight=Weights[icat])
-            output['jety'].fill(dataset=dataset, anacat=ilabel, 
-                                jety=jety[icat],
-                                weight=Weights[icat])
-            output['jetdy'].fill(dataset=dataset, anacat=ilabel, 
-                                jetdy=jetdy[icat],
-                                weight=Weights[icat])
-            output['numerator'].fill(dataset=dataset, anacat=ilabel, 
-                                jetp=numerator[icat],
-                                weight=Weights[icat])
-            output['denominator'].fill(dataset=dataset, anacat=ilabel, 
-                                jetp=denominator[icat],
-                                weight=Weights[icat])
-            output['jetmass'].fill(dataset=dataset, anacat=ilabel, 
-                                   jetmass=jetmass[icat],
-                                   weight=Weights[icat])
-            output['SDmass'].fill(dataset=dataset, anacat=ilabel, 
-                                   jetmass=SDmass[icat],
-                                   weight=Weights[icat])
-            output['tau32'].fill(dataset=dataset, anacat=ilabel,
-                                          tau32=Tau32[icat],
-                                          weight=Weights[icat])
-            output['tau32_2D'].fill(dataset=dataset, anacat=ilabel,
-                                          jetpt=pT[icat],
-                                          tau32=Tau32[icat],
-                                          weight=Weights[icat])
-            output['deepTag_TvsQCD'].fill(dataset=dataset, anacat=ilabel,
-                                          jetpt=pT[icat],
-                                          tagger=deepTag[icat],
-                                          weight=Weights[icat])
-            output['deepTagMD_TvsQCD'].fill(dataset=dataset, anacat=ilabel,
-                                            jetpt=pT[icat],
-                                            tagger=deepTagMD[icat],
-                                            weight=Weights[icat])
+            output['ttbarmass'].fill(dataset = dataset, anacat = ilabel, 
+                                ttbarmass = ak.to_numpy(ttbarmass[icat]),
+                                weight = ak.to_numpy(Weights[icat]))
+            output['jetpt'].fill(dataset = dataset, anacat = ilabel, 
+                                jetpt = ak.to_numpy(jetpt[icat]),
+                                weight = ak.to_numpy(Weights[icat]))
+            output['probept'].fill(dataset = dataset, anacat = ilabel, 
+                                jetpt = ak.to_numpy(pT[icat]),
+                                weight = ak.to_numpy(Weights[icat]))
+            output['probep'].fill(dataset = dataset, anacat = ilabel, 
+                                jetp = ak.to_numpy(p[icat]),
+                                weight = ak.to_numpy(Weights[icat]))
+            output['jeteta'].fill(dataset = dataset, anacat = ilabel, 
+                                jeteta = ak.to_numpy(jeteta[icat]),
+                                weight = ak.to_numpy(Weights[icat]))
+            output['jetphi'].fill(dataset = dataset, anacat = ilabel, 
+                                jetphi = ak.to_numpy(jetphi[icat]),
+                                weight = ak.to_numpy(Weights[icat]))
+            output['jety'].fill(dataset = dataset, anacat = ilabel, 
+                                jety = ak.to_numpy(jety[icat]),
+                                weight = ak.to_numpy(Weights[icat]))
+            output['jetdy'].fill(dataset = dataset, anacat = ilabel, 
+                                jetdy = ak.to_numpy(jetdy[icat]),
+                                weight = ak.to_numpy(Weights[icat]))
+            output['numerator'].fill(dataset = dataset, anacat = ilabel, 
+                                jetp = ak.to_numpy(numerator[icat]),
+                                weight = ak.to_numpy(Weights[icat]))
+            output['denominator'].fill(dataset = dataset, anacat = ilabel, 
+                                jetp = ak.to_numpy(denominator[icat]),
+                                weight = ak.to_numpy(Weights[icat]))
+            output['jetmass'].fill(dataset = dataset, anacat = ilabel, 
+                                   jetmass = ak.to_numpy(jetmass[icat]),
+                                   weight = ak.to_numpy(Weights[icat]))
+            output['SDmass'].fill(dataset = dataset, anacat = ilabel, 
+                                   jetmass = ak.to_numpy(SDmass[icat]),
+                                   weight = ak.to_numpy(Weights[icat]))
+            output['tau32'].fill(dataset = dataset, anacat = ilabel,
+                                          tau32 = ak.to_numpy(Tau32[icat]),
+                                          weight = ak.to_numpy(Weights[icat]))
+            output['tau32_2D'].fill(dataset = dataset, anacat = ilabel,
+                                          jetpt = ak.to_numpy(pT[icat]),
+                                          tau32 = ak.to_numpy(Tau32[icat]),
+                                          weight = ak.to_numpy(Weights[icat]))
+            output['deepTag_TvsQCD'].fill(dataset = dataset, anacat = ilabel,
+                                          jetpt = ak.to_numpy(pT[icat]),
+                                          tagger = ak.to_numpy(deepTag[icat]),
+                                          weight = ak.to_numpy(Weights[icat]))
+            output['deepTagMD_TvsQCD'].fill(dataset = dataset, anacat = ilabel,
+                                            jetpt = ak.to_numpy(pT[icat]),
+                                            tagger = ak.to_numpy(deepTagMD[icat]),
+                                            weight = ak.to_numpy(Weights[icat]))
         
         return output
 
