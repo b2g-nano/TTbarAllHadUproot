@@ -277,12 +277,6 @@ class TTbarResProcessor(processor.ProcessorABC):
         
         """ NOTE that ak.cartesian gives a shape with one more layer than FatJets """
         # ---- Make sure we have at least 1 TTbar candidate pair and re-broadcast releveant arrays  ---- #
-        #print(ak.count(ttbarcands, axis=-1))
-        #print()
-        #print(ak.num(ttbarcands, axis=-1))
-        #print()
-        #print(ak.to_awkward0(ttbarcands).counts)
-        #print()
         oneTTbar = (ak.num(ttbarcands, axis=-1) >= 1)
         output['cutflow']['>= one oneTTbar'] += ak.to_awkward0(oneTTbar).sum()
         ttbarcands = ttbarcands[oneTTbar]

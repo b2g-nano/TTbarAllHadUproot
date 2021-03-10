@@ -1,20 +1,13 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-#import copy
-#import scipy.stats as ss
 from coffea import hist
-#from coffea.analysis_objects import JaggedCandidateArray
-#import coffea.processor as processor
 from coffea import util
-#from awkward import JaggedArray
 import numpy as np
 import itertools
 import pandas as pd
-#from numpy.random import RandomState
 from collections import defaultdict
 import os
-#import os.path
 from os import path
 import matplotlib.pyplot as plt
 
