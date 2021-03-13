@@ -455,7 +455,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                 jet1_modp4 = copy.copy(jet1.p4) #J1's Lorentz four vector that can be safely modified
                 jet1_modp4["fMass"] = ModMass_hist_dist.rvs(size=ak.to_awkward0(jet1_modp4).size) #Replace J1's mass with random value of mass from mm hist
                 #ttbarcands_modmass = jet0.p4.cross(jet1_modp4) #J0's four vector x modified J1's four vector
-                ttbarcands_modmass = ak.cartesian([jet0, jet1_modp4])
+                ttbarcands_modmass = ak.cartesian([jet0.p4, jet1_modp4])
 
                 # ---- Apply Necessary Selections to new modmass version ---- #
                 ttbarcands_modmass = ttbarcands_modmass[oneTTbar]
