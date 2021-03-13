@@ -9,8 +9,7 @@ import scipy.stats as ss
 from coffea import hist, processor, nanoevents, util
 from coffea.nanoevents.methods import candidate
 from coffea.nanoevents import NanoAODSchema, BaseSchema
-#import coffea.processor as processor
-#from coffea import util
+
 import awkward as ak
 import numpy as np
 import glob as glob
@@ -54,35 +53,39 @@ seed = 1234577890
 prng = RandomState(seed)
 Chunk = [100000, 100] # [chunksize, maxchunks]
 
+LoadingUnweightedFiles = False
+# -- include another switch for using dask here -- #
 for name,files in filesets.items(): 
-    
-    print(name)
-    output = processor.run_uproot_job({name:files},
-                                      treename='Events',
-                                      processor_instance=TTbarResProcessor(UseLookUpTables=False,
-                                                                           ModMass=False, 
-                                                                           RandomDebugMode=False,
-                                                                           prng=prng),
-                                      #executor=processor.dask_executor,
-                                      #executor=processor.iterative_executor,
-                                      executor=processor.futures_executor,
-                                      executor_args={
-                                          'client': client,
-                                          'savemetrics': True,
-                                          #'nano':False, 
-                                          #'flatten':False, 
-                                          'skipbadfiles':False,
-                                          'schema': BaseSchema, #NanoAODSchema,
-                                          'align_clusters': True,
-                                          'workers': 2},
-                                      chunksize=Chunk[0], maxchunks=Chunk[1]
-                                     )
+    if not LoadingUnweightedFiles:        
+        print(name)
+        output = processor.run_uproot_job({name:files},
+                                          treename='Events',
+                                          processor_instance=TTbarResProcessor(UseLookUpTables=False,
+                                                                               ModMass=False, 
+                                                                               RandomDebugMode=False,
+                                                                               prng=prng),
+                                          #executor=processor.dask_executor,
+                                          #executor=processor.iterative_executor,
+                                          executor=processor.futures_executor,
+                                          executor_args={
+                                              'client': client,
+                                              'skipbadfiles':False,
+                                              'schema': BaseSchema, #NanoAODSchema,
+                                              'workers': 2},
+                                          chunksize=Chunk[0], maxchunks=Chunk[1]
+        				)
 
-    elapsed = time.time() - tstart
-    outputs_unweighted[name] = output
-    print(output)
-    #util.save(output, 'CoffeaOutputs/UnweightedOutputs/TTbarResCoffea_' + name + '_unweighted_output_partial_2021_dask_run.coffea')
+        elapsed = time.time() - tstart
+        outputs_unweighted[name] = output
+        print(output)
+        util.save(output, 'TTbarAllHadUproot/CoffeaOutputs/UnweightedOutputs/TTbarResCoffea_' + name + '_unweighted_output_futures_3-10-21_trial.coffea')
 
+    else:
+        output = util.load('TTbarAllHadUproot/CoffeaOutputs/UnweightedOutputs/TTbarResCoffea_' + name + '_unweighted_output_futures_3-10-21_trial.coffea')
+
+        outputs_unweighted[name] = output
+        print(name + ' unweighted output loaded')
+        elapsed = time.time() - tstart
 
 print('Elapsed time = ', elapsed, ' sec.')
 print('Elapsed time = ', elapsed/60., ' min.')
@@ -92,7 +95,6 @@ for name,output in outputs_unweighted.items():
     print("-------Unweighted " + name + "--------")
     for i,j in output['cutflow'].items():        
         print( '%20s : %12d' % (i,j) )
-
 
 # First, run the `TTbarResLookUpTables` module by simply importing it.  If it works, it will print out varies pandas dataframes with information about the mistag rates and finally print the `luts` multi-dictionary
 
@@ -131,12 +133,8 @@ for name,files in filesets_forweights.items():
                                       executor=processor.futures_executor,
                                       executor_args={
                                           'client': client, 
-                                          #'savemetrics': True,
-                                          'nano':False, 
-                                          'flatten':True, 
                                           'skipbadfiles':False,
-                                          'schema': processor.NanoEvents,
-                                          #'align_clusters': True,
+                                          'schema': BaseSchema, #NanoAODSchema,
                                           'workers': 2},
                                       chunksize=Chunk[0], maxchunks=Chunk[1]
                                      )
@@ -144,7 +142,7 @@ for name,files in filesets_forweights.items():
     elapsed = time.time() - tstart
     outputs_weighted[name] = output
     print(output)
-    #util.save(output, 'CoffeaOutputs/WeightedModMassOutputs/TTbarResCoffea_' + name + '_ModMass_weighted_output_partial_2021_dask_run.coffea')
+    util.save(output, 'TTbarAllHadUproot/CoffeaOutputs/WeightedModMassOutputs/TTbarResCoffea_' + name + '_ModMass_weighted_output_futures_3-10-21_trial.coffea')
 
 
 print('Elapsed time = ', elapsed, ' sec.')
