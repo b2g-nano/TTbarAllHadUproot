@@ -58,7 +58,7 @@ outputs_unweighted
 # ---- This Creates Mistag plots for every dataset in every category for debugging if necessary or for curiosity ---- #
 # ---- Look up tables are a bit more sophisticated and much more useful to the analysis ---- #
 
-SaveDirectory = maindirectory + '/MistagPlots/'
+SaveDirectory = maindirectory + '/TTbarAllHadUproot/MistagPlots/'
 DoesDirectoryExist(SaveDirectory) # no need to create the directory several times
 
 # Function sqrt(x)
@@ -160,7 +160,7 @@ luts = multi_dict(2, str) #Annoying, but necessary definition of the dictionary
 
 if runLUTS : 
 
-    SaveDirectory = maindirectory + '/LookupTables/'
+    SaveDirectory = maindirectory + '/TTbarAllHadUproot/LookupTables/'
     DoesDirectoryExist(SaveDirectory)
     
     # ---- Check if TTbar simulation was used in previous processor ---- #
