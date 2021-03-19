@@ -53,7 +53,7 @@ seed = 1234577890
 prng = RandomState(seed)
 Chunk = [100000, 100] # [chunksize, maxchunks]
 
-LoadingUnweightedFiles = False
+LoadingUnweightedFiles = True
 # -- include another switch for using dask here -- #
 for name,files in filesets.items(): 
     if not LoadingUnweightedFiles:        
@@ -150,8 +150,8 @@ print('Elapsed time = ', elapsed/60., ' min.')
 print('Elapsed time = ', elapsed/3600., ' hrs.') 
 
 for name,output in outputs_weighted.items(): 
-    print("-------Unweighted " + name + "--------")
+    print("-------Weighted " + name + "--------")
     for i,j in output['cutflow'].items():        
         print( '%20s : %12d' % (i,j) )
 
-
+quit()

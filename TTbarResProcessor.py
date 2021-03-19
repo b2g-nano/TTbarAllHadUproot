@@ -425,8 +425,8 @@ class TTbarResProcessor(processor.ProcessorABC):
                 
                 Bins = np.array(manual_bins)
                 
-                df['BinWidth'] = pd.cut(p, bins=Bins) # new dataframe column
-                df['BinNumber'] = pd.cut(p, bins=Bins, labels=BinKeys)
+                df['BinWidth'] = pd.cut(np.asarray(p), bins=Bins) # new dataframe column
+                df['BinNumber'] = pd.cut(np.asarray(p), bins=Bins, labels=BinKeys)
                 
                 BinNumber = df['BinNumber'].values # Collect the Bin Numbers into a numpy array
                 BinNumber = BinNumber.astype('int64') # Insures the bin numbers are integers
@@ -439,7 +439,7 @@ class TTbarResProcessor(processor.ProcessorABC):
             ###---------------------------------------------------------------------------------------------###
             ### ----------------------------------- Mod-mass Procedure ------------------------------------ ###
             if self.ModMass == True:
-                QCD_unweighted = util.load('TTbarAllHadUproot/TTbarResCoffea_QCD_unweighted_output.coffea') #Testing! This file will change later
+                QCD_unweighted = util.load('TTbarAllHadUproot/CoffeaOutputs/UnweightedOutputs/TTbarResCoffea_QCD_unweighted_output_futures_3-10-21_trial.coffea') 
     
                 # ---- Extract event counts from QCD MC hist in signal region ---- #
                 QCD_hist = QCD_unweighted['jetmass'].integrate('anacat', '2t' + str(ilabel[-5:])).integrate('dataset', 'QCD')
