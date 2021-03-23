@@ -117,33 +117,36 @@ outputs_weighted = {}
 prng = RandomState(seed)
 Chunk = [100000, 100] # [chunksize, maxchunks]
 
+OnlyCreateLookupTables = True
 for name,files in filesets_forweights.items(): 
     
+    if not OnlyCreateLookupTables:
+        print(name)
+        output = processor.run_uproot_job({name:files},
+                                          treename='Events',
+                                          processor_instance=TTbarResProcessor(UseLookUpTables=True,
+                                                                               ModMass = True,
+                                                                               RandomDebugMode = False,
+                                                                               lu=luts,
+                                                                               prng=prng),
+                                          #executor=processor.dask_executor,
+                                          #executor=processor.iterative_executor,
+                                          executor=processor.futures_executor,
+                                          executor_args={
+                                              'client': client, 
+                                              'skipbadfiles':False,
+                                              'schema': BaseSchema, #NanoAODSchema,
+                                              'workers': 2},
+                                          chunksize=Chunk[0], maxchunks=Chunk[1]
+        )
+	
+        elapsed = time.time() - tstart
+        outputs_weighted[name] = output
+        print(output)
+        util.save(output, 'TTbarAllHadUproot/CoffeaOutputs/WeightedModMassOutputs/TTbarResCoffea_' + name + '_ModMass_weighted_output_futures_3-10-21_trial.coffea')
 
-    print(name)
-    output = processor.run_uproot_job({name:files},
-                                      treename='Events',
-                                      processor_instance=TTbarResProcessor(UseLookUpTables=True,
-                                                                           ModMass = True,
-                                                                           RandomDebugMode = False,
-                                                                           lu=luts,
-                                                                           prng=prng),
-                                      #executor=processor.dask_executor,
-                                      #executor=processor.iterative_executor,
-                                      executor=processor.futures_executor,
-                                      executor_args={
-                                          'client': client, 
-                                          'skipbadfiles':False,
-                                          'schema': BaseSchema, #NanoAODSchema,
-                                          'workers': 2},
-                                      chunksize=Chunk[0], maxchunks=Chunk[1]
-                                     )
-
-    elapsed = time.time() - tstart
-    outputs_weighted[name] = output
-    print(output)
-    util.save(output, 'TTbarAllHadUproot/CoffeaOutputs/WeightedModMassOutputs/TTbarResCoffea_' + name + '_ModMass_weighted_output_futures_3-10-21_trial.coffea')
-
+    else:
+        continue
 
 print('Elapsed time = ', elapsed, ' sec.')
 print('Elapsed time = ', elapsed/60., ' min.')
@@ -154,4 +157,4 @@ for name,output in outputs_weighted.items():
     for i,j in output['cutflow'].items():        
         print( '%20s : %12d' % (i,j) )
 
-quit()
+#quit()
