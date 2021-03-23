@@ -166,11 +166,11 @@ if runLUTS :
     # ---- Check if TTbar simulation was used in previous processor ---- #
     if 'TTbar' in filesets:
         for iset in filesets:
-            filename = 'mistag_' + iset + '_' + icat + '.' + 'csv'
             #if iset != 'TTbar' or iset != 'QCD': # if JetHT filesets are found...
             if 'JetHT' in iset:
                 print('\t\tfileset: ' + iset + '\n*****************************************************\n')
                 for icat in list_of_cats:
+                    filename = 'mistag_' + iset + '_' + icat + '.' + 'csv'
                     title = iset + ' mistag ' + icat
 
                     # ---- Info from TTbar ---- #
@@ -242,6 +242,7 @@ if runLUTS :
                     df.to_csv(SaveDirectory+filename) # use later to collect bins and weights for re-scaling
             else: # If iset is not JetHT...
                 for icat in list_of_cats:
+                    filename = 'mistag_' + iset + '_' + icat + '.' + 'csv'
                     Numerator = outputs_unweighted[iset]['numerator'].integrate('anacat',icat).integrate('dataset',iset)
                     Denominator = outputs_unweighted[iset]['denominator'].integrate('anacat',icat).integrate('dataset',iset)
                     N_vals = Numerator.values()[()]
@@ -274,6 +275,7 @@ if runLUTS :
         for iset in filesets:
             print('\t\tfileset: ' + iset + '\n*****************************************************\n')
             for icat in list_of_cats:
+                filename = 'mistag_' + iset + '_' + icat + '.' + 'csv'
                 Numerator = outputs_unweighted[iset]['numerator'].integrate('anacat',icat).integrate('dataset',iset)
                 Denominator = outputs_unweighted[iset]['denominator'].integrate('anacat',icat).integrate('dataset',iset)
                 N_vals = Numerator.values()[()]
