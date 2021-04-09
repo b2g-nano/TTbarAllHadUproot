@@ -23,8 +23,8 @@
 # /JetHT/Run2018C-Nano25Oct2019-v2/NANOAOD 
 # /JetHT/Run2018D-Nano25Oct2019_ver2-v1/NANOAOD
 
-xrootdstr1 = 'root://cmseos.fnal.gov//'
-xrootdstr2 = 'root://cmsxrootd.fnal.gov//'
+xrootdstr1 = 'root://cmseos.fnal.gov/'
+xrootdstr2 = 'root://cmsxrootd.fnal.gov/'
 xrootdstr3 = 'root://cmsxrootd-site.fnal.gov/'
 
 #qcdfilename = 'TTbarAllHadUproot/QCD.txt'
@@ -34,6 +34,7 @@ with open(qcdfilename) as f:
 
 #ttbarfilename = 'TTbarAllHadUproot/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8.txt'
 #ttbarfilename = 'TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8.txt'
+#ttbarfilename = 'TTbarAllHadUproot/TTJets_TuneCP5_v2_UL16.txt'
 ttbarfilename = 'TTJets_TuneCP5_v2_UL16.txt'
 with open(ttbarfilename) as f:
     ttbarfiles = [xrootdstr2 + s.strip() for s in f.readlines()]
@@ -114,10 +115,10 @@ filesets = {
     #'RSGluon4500':RSGluon4500files,
     #'RSGluon5000':RSGluon5000files,
     'TTbar':ttbarfiles,
-    'JetHT':jetdatafiles,
-    'JetHT2016_Data':jetdatafiles2016,
-    'JetHT2017_Data':jetdatafiles2017,
-    'JetHT2018_Data':jetdatafiles2018
+    #'JetHT':jetdatafiles,
+    #'JetHT2016_Data':jetdatafiles2016,
+    #'JetHT2017_Data':jetdatafiles2017,
+    #'JetHT2018_Data':jetdatafiles2018
 }
 
 filesets_forweights = {
