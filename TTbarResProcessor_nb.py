@@ -175,7 +175,7 @@ class TTbarResProcessor(processor.ProcessorABC):
             "tau4": events.FatJet_tau4,
             "n3b1": events.FatJet_n3b1,
             "btagDeepB": events.FatJet_btagDeepB,
-            "btagCSVV2": events.FatJet_btagCSVV2,
+            "btagCSVV2": events.FatJet_btagCSVV2, # Use as a prior probability of containing a bjet?
             "deepTag_TvsQCD": events.FatJet_deepTag_TvsQCD,
             "deepTagMD_TvsQCD": events.FatJet_deepTagMD_TvsQCD,
             "subJetIdx1": events.FatJet_subJetIdx1,
@@ -230,8 +230,6 @@ class TTbarResProcessor(processor.ProcessorABC):
             evtweights = events.Generator_weight
         # ---- Show all events ---- #
         output['cutflow']['all events'] += ak.to_awkward0(FatJets).size
-        
-        btag_sf = BTagScaleFactor("DeepCSV_106XUL17SF_V2.csv", "medium")
 
         # ---- Apply Trigger(s) ---- #
         #FatJets = FatJets[HLT_AK8_trig1]
@@ -258,8 +256,6 @@ class TTbarResProcessor(processor.ProcessorABC):
         SubJets = SubJets[twoFatJetsKin]
         output['cutflow']['two FatJets and jet kin'] += ak.to_awkward0(twoFatJetsKin).sum()
         
-        
-        
         # ---- Apply HT Cut ---- #
         hT = ak.to_awkward0(Jets.pt).sum()
         passhT = (hT > self.htCut)
@@ -268,19 +264,37 @@ class TTbarResProcessor(processor.ProcessorABC):
         SubJets = SubJets[passhT]
         
         # ---- Randomly Assign AK8 Jets as TTbar Candidates 0 and 1 --- #
-        if self.RandomDebugMode == True: # 'Sudo' randomizer for consistent results
+        Counts = np.ones(len(FatJets), dtype='i') # Number 1 for each FatJet
+        
+        if self.RandomDebugMode == True: # 'Sudo' randomizer to test for consistent results
             highPhi = FatJets.phi[:,0] > FatJets.phi[:,1]
-            highRandIndex = np.where(highPhi, 0, 1)
-            index = ak.unflatten( np.ones(len(FatJets), dtype='i'), highRandIndex )
+            highRandIndex = np.where(highPhi, 0, 1) # 1D array of 0's and 1's
+            index = ak.unflatten( highRandIndex, Counts ) # Subtly confusing logic of what this does is shown below
+            """
+                For example:
+                
+                    FatJets = [[FatJet0, FatJet1], [AnotherFatJet0, AnotherFatJet1], ..., [LastFatJet0, LastFatJet1]]
+                    Counts = [1, 1, 1, 1, 1, 1]
+                    highRandIndex = [1, 1, 0, 1, 0, 0]
+                    
+                unflattening highRandIndex with Counts will group "Counts" number of highRandIndex elements together 
+                in a new higher order array:
+                
+                    index = [[1], [1], [0], [1], [0], [0]]
+                    1 - index = [[0], [0], [1], [0], [1], [1]]
+                    
+               where the index is used to slice (select) either the first FatJet (FatJets[:,0]) or the second (FatJets[:,1]):
+        
+                    FatJets[index] = [FatJet1, AnotherFatJet1, ..., LastFatJet0]
+                    FatJets[1-index] = [FatJet0, AnotherFatJet0, ..., LastFatJet1]
+            """
         else: # Truly randomize
-            index = ak.unflatten( np.ones(len(FatJets), dtype='i'), self.prng.randint(2, size=len(FatJets)) )
+            index = ak.unflatten( self.prng.randint(2, size=len(FatJets)), Counts )
         
         jet0 = FatJets[index] #J0
         jet1 = FatJets[1 - index] #J1
         
-        ttbarcands = ak.cartesian([jet0, jet1])
-        #ttbarcands = ak.to_awkward0(ak.cartesian([jet0, jet1]))
-        #ttbarcands = ak.to_list(ak.cartesian([jet0, jet1], axis=0))
+        ttbarcands = ak.cartesian([jet0, jet1]) # Re-group the randomized pairs in a similar fashion to how they were
         
         """ NOTE that ak.cartesian gives a shape with one more layer than FatJets """
         # ---- Make sure we have at least 1 TTbar candidate pair and re-broadcast releveant arrays  ---- #
@@ -302,21 +316,18 @@ class TTbarResProcessor(processor.ProcessorABC):
         SubJets = SubJets[dPhiCut] 
         
         # ---- Identify subjets according to subjet ID ---- #
-        hasSubjets0 = ((ttbarcands.slot0.subJetIdx1 > -1) & (ttbarcands.slot0.subJetIdx2 > -1))
-        hasSubjets1 = ((ttbarcands.slot1.subJetIdx1 > -1) & (ttbarcands.slot1.subJetIdx2 > -1))
-        GoodSubjets = ak.flatten(((hasSubjets0) & (hasSubjets1)))
+        hasSubjets0 = ((ttbarcands.slot0.subJetIdx1 > -1) & (ttbarcands.slot0.subJetIdx2 > -1)) # 1st candidate has two subjets
+        hasSubjets1 = ((ttbarcands.slot1.subJetIdx1 > -1) & (ttbarcands.slot1.subJetIdx2 > -1)) # 2nd candidate has two subjets
+        GoodSubjets = ak.flatten(((hasSubjets0) & (hasSubjets1))) # Selection of 4 (leading) subjects
    
-        ttbarcands = ttbarcands[GoodSubjets]
-        
+        ttbarcands = ttbarcands[GoodSubjets] # Choose only ttbar candidates with this selection of subjets
         SubJets = SubJets[GoodSubjets]
-       
-        print("SF:", btag_sf.eval("central", SubJets.hadronFlavour, abs(SubJets.eta), SubJets.pt, ignore_missing=True))
         evtweights = evtweights[GoodSubjets]
        
-        SubJet01 = SubJets[ttbarcands.slot0.subJetIdx1] # FatJet i0 with subjet 1
-        SubJet02 = SubJets[ttbarcands.slot0.subJetIdx2] # FatJet i0 with subjet 2
-        SubJet11 = SubJets[ttbarcands.slot1.subJetIdx1] # FatJet i1 with subjet 1
-        SubJet12 = SubJets[ttbarcands.slot1.subJetIdx2] # FatJet i1 with subjet 2
+        SubJet01 = SubJets[ttbarcands.slot0.subJetIdx1] # 1st candidate's subjet 1
+        SubJet02 = SubJets[ttbarcands.slot0.subJetIdx2] # 1st candidate's subjet 2
+        SubJet11 = SubJets[ttbarcands.slot1.subJetIdx1] # 2nd candidate's subjet 1
+        SubJet12 = SubJets[ttbarcands.slot1.subJetIdx2] # 2nd candidate's subjet 2
         
         # ---- Define Rapidity Regions ---- #
         """ NOTE that ttbarcands.i0.p4.energy no longer works after ttbarcands is defined as an old awkward array """
@@ -364,6 +375,48 @@ class TTbarResProcessor(processor.ProcessorABC):
         btag0 = (~btag_s0) & (~btag_s1) #(0b)
         btag1 = btag_s0 ^ btag_s1 #(1b)
         btag2 = btag_s0 & btag_s1 #(2b)
+        
+        # ---- Probabilities of finding/not finding a bjet ---- #
+        Prob_yes_s0, Prob_yes_s1 = ttbarcands.slot0.btagCSVV2, ttbarcands.slot1.btagCSVV2
+        Prob_no_s0, Prob_no_s1 = (1.-Prob_yes_s0), (1.-Prob_yes_s1) 
+        
+        Prob_btag0 = Prob_no_s0 * Prob_no_s1 # P(0 tags | 2 jets)
+        Prob_btag1 = (Prob_yes_s0*Prob_no_s1) + (Prob_no_s0*Prob_yes_s1) # P(1 tag | 2 jets)
+        Prob_btag2 = Prob_yes_s0 * Prob_yes_s1 # P(2 tags | 2 jets)
+        
+        # ---- Probabilities weighted by Scale Factors ---- #
+        
+                    # -- Subjets to use for extracting scale factors -- #
+        SubJet_s0 = np.where( np.maximum(SubJet01.btagCSVV2 , SubJet02.btagCSVV2) == SubJet01.btagCSVV2, SubJet01, SubJet02 )
+        SubJet_s1 = np.where( np.maximum(SubJet11.btagCSVV2 , SubJet12.btagCSVV2) == SubJet11.btagCSVV2, SubJet11, SubJet12 )
+        
+                    # -- Scale Factors -- #
+        btag_sf = BTagScaleFactor("DeepCSV_106XUL17SF_V2.csv", "tight")
+        BSF_s0 = btag_sf.eval("central", SubJet_s0.hadronFlavour, abs(SubJet_s0.eta), SubJet_s0.pt, ignore_missing=True)
+        BSF_s1 = btag_sf.eval("central", SubJet_s1.hadronFlavour, abs(SubJet_s1.eta), SubJet_s1.pt, ignore_missing=True)
+        
+                    # -- Re-Define Probs with BSF's -- #
+        Prob_yes_s0_sf, Prob_yes_s1_sf = (Prob_yes_s0*BSF_s0), (Prob_yes_s1*BSF_s1)
+        Prob_no_s0_sf, Prob_no_s1_sf = (Prob_no_s0*BSF_s0), (Prob_no_s1*BSF_s1)
+        
+        Prob_btag0_sf = Prob_no_s0_sf * Prob_no_s1_sf # P(0 tags | 2 jets)
+        Prob_btag1_sf = (Prob_yes_s0_sf*Prob_no_s1_sf) + (Prob_no_s0_sf*Prob_yes_s1_sf) # P(1 tag | 2 jets)
+        Prob_btag2_sf = Prob_yes_s0_sf * Prob_yes_s1_sf # P(2 tags | 2 jets)
+        
+        print("SF0:", BSF_s0)
+        print("\nType:", type(BSF_s0))
+        print("\nLength = ", len(BSF_s0))
+        print()
+        print("SF1:", BSF_s1)
+        print("\nType:", type(BSF_s1))
+        print("\nLength = ", len(BSF_s1))
+        print()
+        print("Weights", evtweights)
+        print("\nType:", type(evtweights))
+        print("\nLength = ", len(evtweights))
+        print()
+        print('_____________________________________________________________________')
+        print()
         
         # ---- Get Analysis Categories ---- # 
         # ---- They are (central, forward) cross (0b,1b,2b) cross (Probet,at,0t,1t,>=1t,2t) ---- #
