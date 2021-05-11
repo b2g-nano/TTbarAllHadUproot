@@ -27,7 +27,7 @@ class TTbarResProcessor(processor.ProcessorABC):
     def __init__(self, prng=RandomState(1234567890), htCut=950., minMSD=105., maxMSD=210.,
                  tau32Cut=0.65, ak8PtMin=400., bdisc=0.8484,
                  writePredDist=True,isData=True,year=2019, UseLookUpTables=False, lu=None, 
-                 ModMass=False, RandomDebugMode=False):
+                 ModMass=False, RandomDebugMode=False, CalcEff_MC=True):
         
         self.prng = prng
         self.htCut = htCut
@@ -43,6 +43,8 @@ class TTbarResProcessor(processor.ProcessorABC):
         self.UseLookUpTables = UseLookUpTables
         self.ModMass = ModMass
         self.RandomDebugMode = RandomDebugMode
+        self.CalcEff_MC = CalcEff_MC
+        self.ApplySF = not CalcEff_MC
         self.lu = lu # Look Up Tables
         
         self.ttagcats = ["Probet", "at", "pret", "0t", "1t", "1t+2t", "2t", "0t+1t+2t"] #anti-tag+probe, anti-tag, pre-tag, 0, 1, >=1, 2 ttags, any t-tag
@@ -103,17 +105,77 @@ class TTbarResProcessor(processor.ProcessorABC):
             'numerator':   hist.Hist("Counts", dataset_axis, cats_axis, manual_axis),
             'denominator': hist.Hist("Counts", dataset_axis, cats_axis, manual_axis),
             
+            'b_eff_numerator_pt': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis), 
+            'b_eff_numerator_eta': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
+            'c_eff_numerator_pt': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis),
+            'c_eff_numerator_eta': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
+            'uds_eff_numerator_pt': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis),
+            'uds_eff_numerator_eta': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
+            
+            'b_eff_numerator': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis, subjeteta_axis), # 2-D versions
+            'c_eff_numerator': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis, subjeteta_axis), # 2-D versions
+            'uds_eff_numerator': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis, subjeteta_axis), # 2-D versions
+            
             'cutflow': processor.defaultdict_accumulator(int),
             
         })
+        
+#     def BtagUpdater(subjet, b_eff, ScaleFactorFilename, FittingPoint, OperatingPoint):  
+#         """
+#         subjet (Flattened Awkward Array) ---> One of the Four preselected subjet awkward arrays (e.g. SubJet01)
+#         b_eff (2D Array)                 ---> The imported b-tagging efficiency of the selected subjet
+#         ScaleFactorFilename (string)     ---> CSV file containing info to evaluate scale factors with
+#         FittingPoint (string)            ---> "loose"  , "medium", "tight"
+#         OperatingPoint (string)          ---> "central", "up"    , "down"
+#         """
+#         ###############  Btag Update Method ##################
+#         #https://twiki.cern.ch/twiki/bin/viewauth/CMS/BTagSFMethods
+#         #https://github.com/rappoccio/usercode/blob/Dev_53x/EDSHyFT/plugins/BTagSFUtil_tprime.h
+        
+#         coin = np.random.uniform(0,1,len(subjet)) # used for randomly deciding which jets' btag status to update or not
+#         subjet_btag_status = (subjet.btagCSVV2 > self.bdisc) # does this subjet pass the btagger requirement
+#         btag_sf = BTagScaleFactor(ScaleFactorFilename, FittingPoint)
+#         BSF = btag_sf.eval(OperatingPoint, subjet.hadronFlavour, abs(subjet.eta), subjet.pt, ignore_missing=True)
+#         f_less = 1. - BSF # fraction of subjets to be downgraded
+#         f_greater = f_less/(1. - 1./b_eff) # fraction of subjets to be upgraded
+        
+#         """
+# *******************************************************************************************************************        
+#                         Does the Subjet Pass the Discriminator Cut?
+#                        ---------------------------------------------
+#                       True                                      False
+#                       ----                                      -----
+#         | SF = 1  |  SF < 1  |  SF > 1  |         |  SF = 1  |  SF < 1  |  SF > 1  |
 
+#         |    O    |Downgrade?|    O     |         |     X    |    X     | Upgrade? |
+#                    ----------                                             --------
+#         |         |True|False|          |         |          |          |True|False|
+#                     ---  ---                                              ---  ---
+#         |         |  X |  O  |          |         |          |          |  O |  X  |
+
+#         ---------------------------------------------------------------------------------
+
+#         KEY:
+#              O ---> btagged subjet     (boolean 'value' = True)
+#              X ---> non btagged subjet (boolean 'value' = False)
+
+#         Track all conditions where elements of 'btag_update' will be true (4 conditions marked with 'O')
+# *******************************************************************************************************************        
+#         """ 
+        
+#         subjet_new_btag_status = np.where( 
+#             (subjet_btag_status == True && (BSF == 1. || (BSF < 1.0 && coin < BSF ) || BSF > 1.))
+#             ||
+#             (subjet_btag_status == False && (BSF > 1. && coin < f_greater)), 
+#             True, False )
+
+#         return subjet_new_btag_status
             
     @property
     def accumulator(self):
         return self._accumulator
 
     def process(self, events):
-        
         output = self.accumulator.identity()
         
         # ---- Define dataset ---- #
@@ -324,10 +386,10 @@ class TTbarResProcessor(processor.ProcessorABC):
         SubJets = SubJets[GoodSubjets]
         evtweights = evtweights[GoodSubjets]
        
-        SubJet01 = SubJets[ttbarcands.slot0.subJetIdx1] # 1st candidate's subjet 1
-        SubJet02 = SubJets[ttbarcands.slot0.subJetIdx2] # 1st candidate's subjet 2
-        SubJet11 = SubJets[ttbarcands.slot1.subJetIdx1] # 2nd candidate's subjet 1
-        SubJet12 = SubJets[ttbarcands.slot1.subJetIdx2] # 2nd candidate's subjet 2
+        SubJet01 = SubJets[ttbarcands.slot0.subJetIdx1] # ttbarcandidate 0's first subjet 
+        SubJet02 = SubJets[ttbarcands.slot0.subJetIdx2] # ttbarcandidate 0's second subjet
+        SubJet11 = SubJets[ttbarcands.slot1.subJetIdx1] # ttbarcandidate 1's first subjet 
+        SubJet12 = SubJets[ttbarcands.slot1.subJetIdx2] # ttbarcandidate 1's second subjet
         
         # ---- Define Rapidity Regions ---- #
         """ NOTE that ttbarcands.i0.p4.energy no longer works after ttbarcands is defined as an old awkward array """
@@ -345,6 +407,20 @@ class TTbarResProcessor(processor.ProcessorABC):
         ttbarcands_s1_rapidity = 0.5*np.log( (s1_energy+s1_pz)/(s1_energy-s1_pz) ) # rapidity as function of eta
         cen = np.abs(ttbarcands_s0_rapidity - ttbarcands_s1_rapidity) < 1.0
         fwd = (~cen)
+        
+#      tt            tt
+#      tt            tt
+#      tt            tt
+#      tt            tt
+# ttttttttttttt ttttttttttttt   aaaaaaaaa     ggggggggggg
+#      tt            tt                aaa   gg        gg
+#      tt            tt        aaaaaaaaaaaa gg         gg
+#       tt            tt      aaa       aaa  gg        gg
+#        tt            tt      aaaaaaaaaaaa   ggggggggggg
+#                                                      gg
+#                                            gg        gg
+#                                             gg       gg
+#                                              gggggggggg        
         
         # ---- CMS Top Tagger Version 2 (SD and Tau32 Cuts) ---- #
         tau32_s0 = np.where(ttbarcands.slot0.tau2>0,ttbarcands.slot0.tau3/ttbarcands.slot0.tau2, 0 )
@@ -367,57 +443,108 @@ class TTbarResProcessor(processor.ProcessorABC):
         ttag2 =   ttag_s0 & ttag_s1 # Both jets top tagged (2t)
         Alltags = ttag0 | ttagI #Either no tag or at least one tag (0t+1t+2t)
         
-        # ---- Pick FatJet that passes btag cut based on its subjet with the highest btag value ---- #
+# bb                 tt
+# bb                 tt
+# bb                 tt
+# bb                 tt
+# bbbbbbbbbb    ttttttttttttt   aaaaaaaaa     ggggggggggg
+# bb        bb       tt                aaa   gg        gg
+# bb         bb      tt        aaaaaaaaaaaa gg         gg
+# bb        bb        tt      aaa       aaa  gg        gg
+# bbbbbbbbbb           tt      aaaaaaaaaaaa   ggggggggggg
+#                                                      gg
+#                                            gg        gg
+#                                             gg       gg
+#                                              gggggggggg
+        
+        # ---- Pick FatJet that passes btag discriminator cut based on its subjet with the highest btag value ---- #
         btag_s0 = ( np.maximum(SubJet01.btagCSVV2 , SubJet02.btagCSVV2) > self.bdisc )
         btag_s1 = ( np.maximum(SubJet11.btagCSVV2 , SubJet12.btagCSVV2) > self.bdisc )
         
+        if self.CalcEff_MC == True: # Get 'flavor' tagging efficiency from MC
+            if 'JetHT' not in dataset:
+                # --- Define pT and Eta for Both Candidates' Subjets (for simplicity) --- #
+                pT_s01 = ak.flatten(SubJet01.pt) # pT of 1st subjet in ttbarcand 0
+                eta_s01 = ak.flatten(SubJet01.eta) # eta of 1st subjet in ttbarcand 0
+                
+                pT_s02 = ak.flatten(SubJet02.pt) # pT of 2nd subjet in ttbarcand 0
+                eta_s02 = ak.flatten(SubJet02.eta) # eta of 2nd subjet in ttbarcand 0
+                
+                pT_s11 = ak.flatten(SubJet11.pt) # pT of 1st subjet in ttbarcand 1
+                eta_s11 = ak.flatten(SubJet11.eta) # eta of 1st subjet in ttbarcand 1
+                
+                pT_s12 = ak.flatten(SubJet12.pt) # pT of 2nd subjet in ttbarcand 1
+                eta_s12 = ak.flatten(SubJet12.eta) # eta of 2nd subjet in ttbarcand 1
+        
+                # --- For Efficiency Calculations, check efficiency of all four subjets passing the discriminant ---- #
+                s01_btagged = (SubJet01.btagCSVV2 > self.bdisc)
+                s02_btagged = (SubJet02.btagCSVV2 > self.bdisc)
+                s11_btagged = (SubJet11.btagCSVV2 > self.bdisc)
+                s12_btagged = (SubJet12.btagCSVV2 > self.bdisc)
+
+                # --- Calculate MC Flavor Effeciencies (Defining Numerator and Denominator) --- #
+                # --- Numerators and Denominators to be placed in both 1D and 2D output files --- #
+                Eff_b_Num_pT_s01 = np.where(s01_btagged, pT_s01, -1)
+                Eff_b_Num_eta_s01 = np.where(s01_btagged, eta_s01, -1)
+                Eff_b_Denom_pT_s01 = pT_s01
+                Eff_b_Denom_eta_s01 = eta_s01
+                
+                Eff_b_Num_pT_s02 = np.where(s02_btagged, pT_s02, -1)
+                Eff_b_Num_eta_s02 = np.where(s02_btagged, eta_s02, -1)
+                Eff_b_Denom_pT_s02 = pT_s02
+                Eff_b_Denom_eta_s02 = eta_s02
+                
+                Eff_b_Num_pT_s11 = np.where(s11_btagged, pT_s11, -1)
+                Eff_b_Num_eta_s11 = np.where(s11_btagged, eta_s11, -1)
+                Eff_b_Denom_pT_s11 = pT_s11
+                Eff_b_Denom_eta_s11 = eta_s11
+                
+                Eff_b_Num_pT_s12 = np.where(s12_btagged, pT_s12, -1)
+                Eff_b_Num_eta_s12 = np.where(s12_btagged, eta_s12, -1)
+                Eff_b_Denom_pT_s12 = pT_s12
+                Eff_b_Denom_eta_s12 = eta_s12
+                
+                # MUST STILL BE PLACED IN OUTPUT FILES #
+                # DETERMINE THE BEST WAY TO ORGANIZE THE OUTPUTS #
+        
+        if self.ApplySF == True: # Apply b Tag Scale Factors and redefine btag_s0 and btag_s1
+            if 'JetHT' not in dataset:
+                                # ---- Import MC 'flavor' efficiencies ---- #
+                """
+                e.g.)
+                    b_eff_s01 = imported b tagging efficiency for 1st subjet in ttbar candidate slot 0
+                    c_eff_s12 = imported c tagging efficiency for 2nd subjet in ttbar candidate slot 1
+                """
+                
+                # -- Scale Factor File -- #
+                SF_filename = "DeepCSV_106XUL17SF_V2.csv"    
+                Fitting = "medium"
+                
+#                 # -- Does Subjet pass the discriminator cut and is it updated -- #
+#                 SubJet01_isBtagged_central = BtagUpdater(SubJet01, b_eff, SF_filename, Fitting, "central")
+#                 SubJet02_isBtagged_central = BtagUpdater(SubJet02, b_eff, SF_filename, Fitting, "central")
+#                 SubJet11_isBtagged_central = BtagUpdater(SubJet11, b_eff, SF_filename, Fitting, "central")
+#                 SubJet12_isBtagged_central = BtagUpdater(SubJet12, b_eff, SF_filename, Fitting, "central")
+                
+#                 SubJet01_isBtagged_up = BtagUpdater(SubJet01, b_eff, SF_filename, Fitting, "up")
+#                 SubJet02_isBtagged_up = BtagUpdater(SubJet02, b_eff, SF_filename, Fitting, "up")
+#                 SubJet11_isBtagged_up = BtagUpdater(SubJet11, b_eff, SF_filename, Fitting, "up")
+#                 SubJet12_isBtagged_up = BtagUpdater(SubJet12, b_eff, SF_filename, Fitting, "up")
+                
+#                 SubJet01_isBtagged_down = BtagUpdater(SubJet01, b_eff, SF_filename, Fitting, "down")
+#                 SubJet02_isBtagged_down = BtagUpdater(SubJet02, b_eff, SF_filename, Fitting, "down")
+#                 SubJet11_isBtagged_down = BtagUpdater(SubJet11, b_eff, SF_filename, Fitting, "down")
+#                 SubJet12_isBtagged_down = BtagUpdater(SubJet12, b_eff, SF_filename, Fitting, "down")
+                
+#                 # If either subjet 1 or 2 in FatJet 0 and 1 is btagged after update, then that FatJet is considered btagged #
+#                 btag_s0 = (SubJet01_isBtagged) ^ (SubJet02_isBtagged)  
+#                 btag_s1 = (SubJet11_isBtagged) ^ (SubJet12_isBtagged)
+     
         # --- Define "B Tag" Regions ---- #
         btag0 = (~btag_s0) & (~btag_s1) #(0b)
         btag1 = btag_s0 ^ btag_s1 #(1b)
         btag2 = btag_s0 & btag_s1 #(2b)
-        
-        # ---- Probabilities of finding/not finding a bjet ---- #
-        Prob_yes_s0, Prob_yes_s1 = ttbarcands.slot0.btagCSVV2, ttbarcands.slot1.btagCSVV2
-        Prob_no_s0, Prob_no_s1 = (1.-Prob_yes_s0), (1.-Prob_yes_s1) 
-        
-        Prob_btag0 = Prob_no_s0 * Prob_no_s1 # P(0 tags | 2 jets)
-        Prob_btag1 = (Prob_yes_s0*Prob_no_s1) + (Prob_no_s0*Prob_yes_s1) # P(1 tag | 2 jets)
-        Prob_btag2 = Prob_yes_s0 * Prob_yes_s1 # P(2 tags | 2 jets)
-        
-        # ---- Probabilities weighted by Scale Factors ---- #
-        
-                    # -- Subjets to use for extracting scale factors -- #
-        SubJet_s0 = np.where( np.maximum(SubJet01.btagCSVV2 , SubJet02.btagCSVV2) == SubJet01.btagCSVV2, SubJet01, SubJet02 )
-        SubJet_s1 = np.where( np.maximum(SubJet11.btagCSVV2 , SubJet12.btagCSVV2) == SubJet11.btagCSVV2, SubJet11, SubJet12 )
-        
-                    # -- Scale Factors -- #
-        btag_sf = BTagScaleFactor("DeepCSV_106XUL17SF_V2.csv", "tight")
-        BSF_s0 = btag_sf.eval("central", SubJet_s0.hadronFlavour, abs(SubJet_s0.eta), SubJet_s0.pt, ignore_missing=True)
-        BSF_s1 = btag_sf.eval("central", SubJet_s1.hadronFlavour, abs(SubJet_s1.eta), SubJet_s1.pt, ignore_missing=True)
-        
-                    # -- Re-Define Probs with BSF's -- #
-        Prob_yes_s0_sf, Prob_yes_s1_sf = (Prob_yes_s0*BSF_s0), (Prob_yes_s1*BSF_s1)
-        Prob_no_s0_sf, Prob_no_s1_sf = (Prob_no_s0*BSF_s0), (Prob_no_s1*BSF_s1)
-        
-        Prob_btag0_sf = Prob_no_s0_sf * Prob_no_s1_sf # P(0 tags | 2 jets)
-        Prob_btag1_sf = (Prob_yes_s0_sf*Prob_no_s1_sf) + (Prob_no_s0_sf*Prob_yes_s1_sf) # P(1 tag | 2 jets)
-        Prob_btag2_sf = Prob_yes_s0_sf * Prob_yes_s1_sf # P(2 tags | 2 jets)
-        
-        print("SF0:", BSF_s0)
-        print("\nType:", type(BSF_s0))
-        print("\nLength = ", len(BSF_s0))
-        print()
-        print("SF1:", BSF_s1)
-        print("\nType:", type(BSF_s1))
-        print("\nLength = ", len(BSF_s1))
-        print()
-        print("Weights", evtweights)
-        print("\nType:", type(evtweights))
-        print("\nLength = ", len(evtweights))
-        print()
-        print('_____________________________________________________________________')
-        print()
-        
+
         # ---- Get Analysis Categories ---- # 
         # ---- They are (central, forward) cross (0b,1b,2b) cross (Probet,at,0t,1t,>=1t,2t) ---- #
         regs = [cen,fwd]
