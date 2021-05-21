@@ -677,7 +677,6 @@ class TTbarResProcessor(processor.ProcessorABC):
                 Eff_udsg_Num_pT_s12 = ak.flatten(Eff_udsg_Num_pT_s12)
                 Eff_udsg_Num_eta_s12 = ak.flatten(Eff_udsg_Num_eta_s12)
                 
-                # MUST STILL BE PLACED IN OUTPUT FILES #
                 # DETERMINE THE BEST WAY TO ORGANIZE THE OUTPUTS #
         
         if self.ApplySF == True: # Apply b Tag Scale Factors and redefine btag_s0 and btag_s1
