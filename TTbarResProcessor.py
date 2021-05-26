@@ -589,43 +589,43 @@ class TTbarResProcessor(processor.ProcessorABC):
                 # --- Denominators are independant of subjet flavor --- #
                 
                 # ---- b-tagging eff. numerators ---- #
-                Eff_b_Num_pT_s01 = np.where(s01_btagged & (flav_s01 == 0), pT_s01, -1)
-                Eff_b_Num_eta_s01 = np.where(s01_btagged & (flav_s01 == 0), eta_s01, -1)
+                Eff_b_Num_pT_s01 = np.where(s01_btagged & (flav_s01 == 5), pT_s01, -1)
+                Eff_b_Num_eta_s01 = np.where(s01_btagged & (flav_s01 == 5), eta_s01, -1)
                 
-                Eff_b_Num_pT_s02 = np.where(s02_btagged & (flav_s02 == 0), pT_s02, -1)
-                Eff_b_Num_eta_s02 = np.where(s02_btagged & (flav_s02 == 0), eta_s02, -1)
+                Eff_b_Num_pT_s02 = np.where(s02_btagged & (flav_s02 == 5), pT_s02, -1)
+                Eff_b_Num_eta_s02 = np.where(s02_btagged & (flav_s02 == 5), eta_s02, -1)
                 
-                Eff_b_Num_pT_s11 = np.where(s11_btagged & (flav_s11 == 0), pT_s11, -1)
-                Eff_b_Num_eta_s11 = np.where(s11_btagged & (flav_s11 == 0), eta_s11, -1)
+                Eff_b_Num_pT_s11 = np.where(s11_btagged & (flav_s11 == 5), pT_s11, -1)
+                Eff_b_Num_eta_s11 = np.where(s11_btagged & (flav_s11 == 5), eta_s11, -1)
                 
-                Eff_b_Num_pT_s12 = np.where(s12_btagged & (flav_s12 == 0), pT_s12, -1)
-                Eff_b_Num_eta_s12 = np.where(s12_btagged & (flav_s12 == 0), eta_s12, -1)
+                Eff_b_Num_pT_s12 = np.where(s12_btagged & (flav_s12 == 5), pT_s12, -1)
+                Eff_b_Num_eta_s12 = np.where(s12_btagged & (flav_s12 == 5), eta_s12, -1)
                 
                 # ---- c-tagging eff. numerators ---- #
-                Eff_c_Num_pT_s01 = np.where(s01_btagged & (flav_s01 == 1), pT_s01, -1)
-                Eff_c_Num_eta_s01 = np.where(s01_btagged & (flav_s01 == 1), eta_s01, -1)
+                Eff_c_Num_pT_s01 = np.where(s01_btagged & (flav_s01 == 4), pT_s01, -1)
+                Eff_c_Num_eta_s01 = np.where(s01_btagged & (flav_s01 == 4), eta_s01, -1)
                 
-                Eff_c_Num_pT_s02 = np.where(s02_btagged & (flav_s02 == 1), pT_s02, -1)
-                Eff_c_Num_eta_s02 = np.where(s02_btagged & (flav_s02 == 1), eta_s02, -1)
+                Eff_c_Num_pT_s02 = np.where(s02_btagged & (flav_s02 == 4), pT_s02, -1)
+                Eff_c_Num_eta_s02 = np.where(s02_btagged & (flav_s02 == 4), eta_s02, -1)
                 
-                Eff_c_Num_pT_s11 = np.where(s11_btagged & (flav_s11 == 1), pT_s11, -1)
-                Eff_c_Num_eta_s11 = np.where(s11_btagged & (flav_s11 == 1), eta_s11, -1)
+                Eff_c_Num_pT_s11 = np.where(s11_btagged & (flav_s11 == 4), pT_s11, -1)
+                Eff_c_Num_eta_s11 = np.where(s11_btagged & (flav_s11 == 4), eta_s11, -1)
                 
-                Eff_c_Num_pT_s12 = np.where(s12_btagged & (flav_s12 == 1), pT_s12, -1)
-                Eff_c_Num_eta_s12 = np.where(s12_btagged & (flav_s12 == 1), eta_s12, -1)
+                Eff_c_Num_pT_s12 = np.where(s12_btagged & (flav_s12 == 4), pT_s12, -1)
+                Eff_c_Num_eta_s12 = np.where(s12_btagged & (flav_s12 == 4), eta_s12, -1)
                 
                 # ---- light parton-tagging eff. numerators ---- #
-                Eff_udsg_Num_pT_s01 = np.where(s01_btagged & (flav_s01 == 2), pT_s01, -1)
-                Eff_udsg_Num_eta_s01 = np.where(s01_btagged & (flav_s01 == 2), eta_s01, -1)
+                Eff_udsg_Num_pT_s01 = np.where(s01_btagged & (flav_s01 != 5 & flav_s01 != 4), pT_s01, -1)
+                Eff_udsg_Num_eta_s01 = np.where(s01_btagged & (flav_s01 != 5 & flav_s01 != 4), eta_s01, -1)
                 
-                Eff_udsg_Num_pT_s02 = np.where(s02_btagged & (flav_s02 == 2), pT_s02, -1)
-                Eff_udsg_Num_eta_s02 = np.where(s02_btagged & (flav_s02 == 2), eta_s02, -1)
+                Eff_udsg_Num_pT_s02 = np.where(s02_btagged & (flav_s02 != 5 & flav_s02 != 4), pT_s02, -1)
+                Eff_udsg_Num_eta_s02 = np.where(s02_btagged & (flav_s02 != 5 & flav_s02 != 4), eta_s02, -1)
                 
-                Eff_udsg_Num_pT_s11 = np.where(s11_btagged & (flav_s11 == 2), pT_s11, -1)
-                Eff_udsg_Num_eta_s11 = np.where(s11_btagged & (flav_s11 == 2), eta_s11, -1)
+                Eff_udsg_Num_pT_s11 = np.where(s11_btagged & (flav_s11 != 5 & flav_s11 != 4), pT_s11, -1)
+                Eff_udsg_Num_eta_s11 = np.where(s11_btagged & (flav_s11 != 5 & flav_s11 != 4), eta_s11, -1)
                 
-                Eff_udsg_Num_pT_s12 = np.where(s12_btagged & (flav_s12 == 2), pT_s12, -1)
-                Eff_udsg_Num_eta_s12 = np.where(s12_btagged & (flav_s12 == 2), eta_s12, -1)
+                Eff_udsg_Num_pT_s12 = np.where(s12_btagged & (flav_s12 != 5 & flav_s12 != 4), pT_s12, -1)
+                Eff_udsg_Num_eta_s12 = np.where(s12_btagged & (flav_s12 != 5 & flav_s12 != 4), eta_s12, -1)
                 
                 # ---- flavor tagging eff. denominators ---- #
                 Eff_Denom_pT_s01 = pT_s01
@@ -1077,11 +1077,11 @@ class TTbarResProcessor(processor.ProcessorABC):
                                               subjeteta = ak.to_numpy(Eff_Denom_eta_s02[icat]),
                                               weight = ak.to_numpy(Weights[icat]))
             output['b_eff_denominator_s11'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_b_Num_pT_s11[icat]),
+                                              subjetpt = ak.to_numpy(Eff_Denom_pT_s11[icat]),
                                               subjeteta = ak.to_numpy(Eff_Denom_eta_s11[icat]),
                                               weight = ak.to_numpy(Weights[icat]))
             output['b_eff_denominator_s12'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_b_Num_pT_s12[icat]),
+                                              subjetpt = ak.to_numpy(Eff_Denom_pT_s12[icat]),
                                               subjeteta = ak.to_numpy(Eff_Denom_eta_s12[icat]),
                                               weight = ak.to_numpy(Weights[icat]))
             
@@ -1112,11 +1112,11 @@ class TTbarResProcessor(processor.ProcessorABC):
                                               subjeteta = ak.to_numpy(Eff_Denom_eta_s02[icat]),
                                               weight = ak.to_numpy(Weights[icat]))
             output['c_eff_denominator_s11'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_b_Num_pT_s11[icat]),
+                                              subjetpt = ak.to_numpy(Eff_Denom_pT_s11[icat]),
                                               subjeteta = ak.to_numpy(Eff_Denom_eta_s11[icat]),
                                               weight = ak.to_numpy(Weights[icat]))
             output['c_eff_denominator_s12'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_b_Num_pT_s12[icat]),
+                                              subjetpt = ak.to_numpy(Eff_Denom_pT_s12[icat]),
                                               subjeteta = ak.to_numpy(Eff_Denom_eta_s12[icat]),
                                               weight = ak.to_numpy(Weights[icat]))
             
@@ -1147,11 +1147,11 @@ class TTbarResProcessor(processor.ProcessorABC):
                                               subjeteta = ak.to_numpy(Eff_Denom_eta_s02[icat]),
                                               weight = ak.to_numpy(Weights[icat]))
             output['udsg_eff_denominator_s11'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_b_Num_pT_s11[icat]),
+                                              subjetpt = ak.to_numpy(Eff_Denom_pT_s11[icat]),
                                               subjeteta = ak.to_numpy(Eff_Denom_eta_s11[icat]),
                                               weight = ak.to_numpy(Weights[icat]))
             output['udsg_eff_denominator_s12'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_b_Num_pT_s12[icat]),
+                                              subjetpt = ak.to_numpy(Eff_Denom_pT_s12[icat]),
                                               subjeteta = ak.to_numpy(Eff_Denom_eta_s12[icat]),
                                               weight = ak.to_numpy(Weights[icat]))
         
