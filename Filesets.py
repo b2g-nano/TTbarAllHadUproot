@@ -27,7 +27,7 @@ xrootdstr1 = 'root://cmseos.fnal.gov//'
 xrootdstr2 = 'root://cmsxrootd.fnal.gov//'
 xrootdstr3 = 'root://cmsxrootd-site.fnal.gov/'
 
-qcdfilename = 'TTbarAllHadUproot/QCD_UL16_APV.txt'
+qcdfilename = 'TTbarAllHadUproot/QCD_UL16_APVv2.txt'
 #qcdfilename = 'QCD_UL16_APVv2.txt'
 with open(qcdfilename) as f:
     qcdfiles = [xrootdstr2 + s.strip() for s in f.readlines()]
@@ -92,7 +92,7 @@ with open(jetdatafilename) as i:
 """ Comment out whichever files you wish to not be included """
 
 filesets = {
-#     'QCD':qcdfiles,
+    'QCD':qcdfiles,
 #     'DM1000':DM1000files,
 #     'DM1500':DM1500files,
 #     'DM2000':DM2000files,

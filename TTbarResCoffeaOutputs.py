@@ -82,14 +82,14 @@ for name,files in filesets.items():
         elapsed = time.time() - tstart
         outputs_unweighted[name] = output
         print(output)
-        util.save(output, 'CoffeaOutputs/UnweightedOutputs/TTbarResCoffea_' 
+        util.save(output, 'TTbarAllHadUproot/CoffeaOutputs/UnweightedOutputs/TTbarResCoffea_' 
                   + name 
                   + '_unweighted_output_' 
                   + chosen_exec 
                   + '_5-19-21_MC_efficiency_test.coffea')
 
     else:
-        output = util.load('CoffeaOutputs/UnweightedOutputs/TTbarResCoffea_' 
+        output = util.load('TTbarAllHadUproot/CoffeaOutputs/UnweightedOutputs/TTbarResCoffea_' 
                            + name 
                            + '_unweighted_output_futures_3-10-21_trial.coffea')
 
@@ -168,7 +168,7 @@ for name,files in filesets.items():
         elapsed = time.time() - tstart
         outputs_unweighted[name] = output
         print(output)
-#         util.save(output, 'CoffeaOutputs/WeightedModMassOutputs/TTbarResCoffea_' 
+#         util.save(output, 'TTbarAllHadUproot/CoffeaOutputs/WeightedModMassOutputs/TTbarResCoffea_' 
 #                   + name 
 #                   + '_ModMass_weighted_output_'
 #                   + chosen_exec
