@@ -564,19 +564,19 @@ class TTbarResProcessor(processor.ProcessorABC):
                 # --- Define pT and Eta for Both Candidates' Subjets (for simplicity) --- #
                 pT_s01 = ak.flatten(SubJet01.pt) # pT of 1st subjet in ttbarcand 0
                 eta_s01 = ak.flatten(SubJet01.eta) # eta of 1st subjet in ttbarcand 0
-                flav_s01 = ak.flatten(SubJet01.hadronFlavour)
+                flav_s01 = np.abs(ak.flatten(SubJet01.hadronFlavour)) # either 'normal' or 'anti'
                 
                 pT_s02 = ak.flatten(SubJet02.pt) # pT of 2nd subjet in ttbarcand 0
                 eta_s02 = ak.flatten(SubJet02.eta) # eta of 2nd subjet in ttbarcand 0
-                flav_s02 = ak.flatten(SubJet02.hadronFlavour)
+                flav_s02 = np.abs(ak.flatten(SubJet02.hadronFlavour))
                 
                 pT_s11 = ak.flatten(SubJet11.pt) # pT of 1st subjet in ttbarcand 1
                 eta_s11 = ak.flatten(SubJet11.eta) # eta of 1st subjet in ttbarcand 1
-                flav_s11 = ak.flatten(SubJet11.hadronFlavour)
+                flav_s11 = np.abs(ak.flatten(SubJet11.hadronFlavour))
                 
                 pT_s12 = ak.flatten(SubJet12.pt) # pT of 2nd subjet in ttbarcand 1
                 eta_s12 = ak.flatten(SubJet12.eta) # eta of 2nd subjet in ttbarcand 1
-                flav_s12 = ak.flatten(SubJet12.hadronFlavour)
+                flav_s12 = np.abs(ak.flatten(SubJet12.hadronFlavour))
         
                 # --- For Efficiency Calculations, check efficiency of all four subjets passing the discriminant ---- #
                 s01_btagged = (SubJet01.btagCSVV2 > self.bdisc)
@@ -615,17 +615,22 @@ class TTbarResProcessor(processor.ProcessorABC):
                 Eff_c_Num_eta_s12 = np.where(s12_btagged & (flav_s12 == 4), eta_s12, -1)
                 
                 # ---- light parton-tagging eff. numerators ---- #
-                Eff_udsg_Num_pT_s01 = np.where(s01_btagged & (flav_s01 != 5 & flav_s01 != 4), pT_s01, -1)
-                Eff_udsg_Num_eta_s01 = np.where(s01_btagged & (flav_s01 != 5 & flav_s01 != 4), eta_s01, -1)
+                if_s01_isLightParton = (flav_s01 == 1) ^ (flav_s01 == 2) ^ (flav_s01 == 3) ^ (flav_s01 == 21)
+                if_s02_isLightParton = (flav_s02 == 1) ^ (flav_s02 == 2) ^ (flav_s02 == 3) ^ (flav_s02 == 21)
+                if_s11_isLightParton = (flav_s11 == 1) ^ (flav_s11 == 2) ^ (flav_s11 == 3) ^ (flav_s11 == 21)
+                if_s12_isLightParton = (flav_s12 == 1) ^ (flav_s12 == 2) ^ (flav_s12 == 3) ^ (flav_s12 == 21)
                 
-                Eff_udsg_Num_pT_s02 = np.where(s02_btagged & (flav_s02 != 5 & flav_s02 != 4), pT_s02, -1)
-                Eff_udsg_Num_eta_s02 = np.where(s02_btagged & (flav_s02 != 5 & flav_s02 != 4), eta_s02, -1)
+                Eff_udsg_Num_pT_s01 = np.where(s01_btagged & (if_s01_isLightParton), pT_s01, -1)
+                Eff_udsg_Num_eta_s01 = np.where(s01_btagged & (if_s01_isLightParton), eta_s01, -1)
                 
-                Eff_udsg_Num_pT_s11 = np.where(s11_btagged & (flav_s11 != 5 & flav_s11 != 4), pT_s11, -1)
-                Eff_udsg_Num_eta_s11 = np.where(s11_btagged & (flav_s11 != 5 & flav_s11 != 4), eta_s11, -1)
+                Eff_udsg_Num_pT_s02 = np.where(s02_btagged & (if_s02_isLightParton), pT_s02, -1)
+                Eff_udsg_Num_eta_s02 = np.where(s02_btagged & (if_s02_isLightParton), eta_s02, -1)
                 
-                Eff_udsg_Num_pT_s12 = np.where(s12_btagged & (flav_s12 != 5 & flav_s12 != 4), pT_s12, -1)
-                Eff_udsg_Num_eta_s12 = np.where(s12_btagged & (flav_s12 != 5 & flav_s12 != 4), eta_s12, -1)
+                Eff_udsg_Num_pT_s11 = np.where(s11_btagged & (if_s11_isLightParton), pT_s11, -1)
+                Eff_udsg_Num_eta_s11 = np.where(s11_btagged & (if_s11_isLightParton), eta_s11, -1)
+                
+                Eff_udsg_Num_pT_s12 = np.where(s12_btagged & (if_s12_isLightParton), pT_s12, -1)
+                Eff_udsg_Num_eta_s12 = np.where(s12_btagged & (if_s12_isLightParton), eta_s12, -1)
                 
                 # ---- flavor tagging eff. denominators ---- #
                 Eff_Denom_pT_s01 = pT_s01

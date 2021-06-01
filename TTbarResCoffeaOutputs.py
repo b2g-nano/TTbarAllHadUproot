@@ -86,7 +86,7 @@ for name,files in filesets.items():
                   + name 
                   + '_unweighted_output_' 
                   + chosen_exec 
-                  + '_5-19-21_MC_efficiency_test.coffea')
+                  + '_6-1-21_MC_efficiency_test.coffea')
 
     else:
         output = util.load('TTbarAllHadUproot/CoffeaOutputs/UnweightedOutputs/TTbarResCoffea_' 
@@ -136,10 +136,11 @@ for name,files in filesets.items():
             chosen_exec = 'futures'
             output = processor.run_uproot_job({name:files},
                                               treename='Events',
-                                              processor_instance=TTbarResProcessor(UseLookUpTables=False,
+                                              processor_instance=TTbarResProcessor(UseLookUpTables=True,
+                                                                                   lu=luts
                                                                                    ModMass=False, 
                                                                                    RandomDebugMode=False,
-                                                                                   CalcEff_MC=True,
+                                                                                   CalcEff_MC=False,
                                                                                    prng=prng),
                                               #executor=processor.iterative_executor,
                                               executor=processor.futures_executor,
@@ -152,10 +153,11 @@ for name,files in filesets.items():
             chosen_exec = 'dask'
             output = processor.run_uproot_job({name:files},
                                               treename='Events',
-                                              processor_instance=TTbarResProcessor(UseLookUpTables=False,
-                                                                                   ModMass=False, 
+                                              processor_instance=TTbarResProcessor(UseLookUpTables=True,
+                                                                                   lu=luts,
+                                                                                   ModMass=True, 
                                                                                    RandomDebugMode=False,
-                                                                                   CalcEff_MC=True,
+                                                                                   CalcEff_MC=False,
                                                                                    prng=prng),
                                               executor=processor.dask_executor,
                                               executor_args={
@@ -172,7 +174,7 @@ for name,files in filesets.items():
 #                   + name 
 #                   + '_ModMass_weighted_output_'
 #                   + chosen_exec
-#                   + '_5-18-21_efficiency_test.coffea')
+#                   + '_6-1-21_efficiency_test.coffea')
     else:
         continue
 
