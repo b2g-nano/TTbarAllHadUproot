@@ -41,7 +41,7 @@ outputs_unweighted = {}
 
 seed = 1234577890
 prng = RandomState(seed)
-Chunk = [100000, 500] # [chunksize, maxchunks]
+Chunk = [1000000, 200] # [chunksize, maxchunks]
 
 for name,files in filesets.items(): 
     if not LoadingUnweightedFiles:
@@ -54,14 +54,16 @@ for name,files in filesets.items():
                                                                                    ModMass=False, 
                                                                                    RandomDebugMode=False,
                                                                                    CalcEff_MC=True,
+                                                                                   ApplySF=False,
+                                                                                   UseEfficiencies=False,
                                                                                    prng=prng),
                                               #executor=processor.iterative_executor,
                                               executor=processor.futures_executor,
                                               executor_args={
                                                   'skipbadfiles':False,
                                                   'schema': BaseSchema, #NanoAODSchema,
-                                                  'workers': 2},
-                                              chunksize=Chunk[0], maxchunks=Chunk[1])
+                                                  'workers': 2})#,
+                                              #chunksize=Chunk[0], maxchunks=Chunk[1])
         else:
             chosen_exec = 'dask'
             output = processor.run_uproot_job({name:files},
@@ -70,13 +72,15 @@ for name,files in filesets.items():
                                                                                    ModMass=False, 
                                                                                    RandomDebugMode=False,
                                                                                    CalcEff_MC=True,
+                                                                                   ApplySF=False,
+                                                                                   UseEfficiencies=False,
                                                                                    prng=prng),
                                               executor=processor.dask_executor,
                                               executor_args={
                                                   'client': client,
                                                   'skipbadfiles':False,
                                                   'schema': BaseSchema, #NanoAODSchema,
-                                                  'workers': 2})
+                                                  'workers': 2})#,
                                               #chunksize=Chunk[0], maxchunks=Chunk[1])
 
         elapsed = time.time() - tstart
@@ -86,7 +90,7 @@ for name,files in filesets.items():
                   + name 
                   + '_unweighted_output_' 
                   + chosen_exec 
-                  + '_6-2-21_MC_efficiency_test.coffea')
+                  + '_6-29-21_MC_efficiency_test.coffea')
 
     else:
         output = util.load('TTbarAllHadUproot/CoffeaOutputs/UnweightedOutputs/TTbarResCoffea_' 
@@ -125,7 +129,7 @@ tstart = time.time()
 seed = 1234577890
 outputs_weighted = {}
 prng = RandomState(seed)
-Chunk = [100000, 100] # [chunksize, maxchunks]
+#Chunk = [100000, 100] # [chunksize, maxchunks]
 
 UsingDaskExecutor = True
 OnlyCreateLookupTables = True
@@ -141,6 +145,8 @@ for name,files in filesets.items():
                                                                                    ModMass=False, 
                                                                                    RandomDebugMode=False,
                                                                                    CalcEff_MC=False,
+                                                                                   ApplySF=True,
+                                                                                   UseEfficiencies=False,
                                                                                    prng=prng),
                                               #executor=processor.iterative_executor,
                                               executor=processor.futures_executor,
@@ -158,6 +164,8 @@ for name,files in filesets.items():
                                                                                    ModMass=True, 
                                                                                    RandomDebugMode=False,
                                                                                    CalcEff_MC=False,
+                                                                                   ApplySF=True,
+                                                                                   UseEfficiencies=False,
                                                                                    prng=prng),
                                               executor=processor.dask_executor,
                                               executor_args={
