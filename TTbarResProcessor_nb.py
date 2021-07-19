@@ -20,6 +20,9 @@ from coffea.nanoevents.methods import vector
 ak.behavior.update(candidate.behavior)
 ak.behavior.update(vector.behavior)
 
+# import vector
+# vector.register_awkward()
+
 # --- Define 'Manual bins' to use for mistag plots for aesthetic purposes--- #
 manual_bins = [400, 500, 600, 800, 1000, 1500, 2000, 3000, 7000, 10000]
 #manual_etabins = []
@@ -248,6 +251,12 @@ class TTbarResProcessor(processor.ProcessorABC):
             'udsg_eff_denominator_s11_largerbins': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_laxis, subjeteta_laxis),
             'udsg_eff_denominator_s12_largerbins': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_laxis, subjeteta_laxis),
             
+#********************************************************************************************************************#
+            
+            'subjet01_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+            'subjet01_btagged_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+            'subjet01_with_bquark_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+            
             'cutflow': processor.defaultdict_accumulator(int),
             
         })
@@ -398,6 +407,21 @@ class TTbarResProcessor(processor.ProcessorABC):
                 "mass": events.Jet_mass,
                 }, with_name="PtEtaPhiMLorentzVector"),
             })
+        
+        # ---- Define Generator Particles ---- #
+        GenParts = ak.zip({
+            "pdgId": events.GenPart_pdgId,
+            "pt": events.GenPart_pt,
+            "eta": events.GenPart_eta,
+            "phi": events.GenPart_phi,
+            "mass": events.GenPart_mass,
+            "p4": ak.zip({
+                "pt": events.GenPart_pt,
+                "eta": events.GenPart_eta,
+                "phi": events.GenPart_phi,
+                "mass": events.GenPart_mass,
+                }, with_name="Vector3D"),
+            })
 
         # ---- Define SubJets ---- #
         #SubJets = events.SubJet
@@ -448,7 +472,9 @@ class TTbarResProcessor(processor.ProcessorABC):
         evtweights = evtweights[twoFatJetsKin]
         Jets = Jets[twoFatJetsKin]
         SubJets = SubJets[twoFatJetsKin]
+        GenParts = GenParts[twoFatJetsKin]
         output['cutflow']['two FatJets and jet kin'] += ak.to_awkward0(twoFatJetsKin).sum()
+#         print('ok')
         
         # ---- Apply HT Cut ---- #
         hT = ak.to_awkward0(Jets.pt).sum()
@@ -456,6 +482,8 @@ class TTbarResProcessor(processor.ProcessorABC):
         evtweights = evtweights[passhT]
         FatJets = FatJets[passhT]
         SubJets = SubJets[passhT]
+        GenParts = GenParts[passhT]
+#         print('so far so good')
         
         # ---- Randomly Assign AK8 Jets as TTbar Candidates 0 and 1 --- #
         Counts = np.ones(len(FatJets), dtype='i') # Number 1 for each FatJet
@@ -498,6 +526,8 @@ class TTbarResProcessor(processor.ProcessorABC):
         evtweights = evtweights[oneTTbar]
         FatJets = FatJets[oneTTbar]
         SubJets = SubJets[oneTTbar]
+        GenParts = GenParts[oneTTbar]
+#         print('close')
          
         # ---- Apply Delta Phi Cut for Back to Back Topology ---- #
         """ NOTE: Should find function for this; avoids 2pi problem """
@@ -508,6 +538,8 @@ class TTbarResProcessor(processor.ProcessorABC):
         evtweights = evtweights[dPhiCut]
         FatJets = FatJets[dPhiCut] 
         SubJets = SubJets[dPhiCut] 
+        GenParts = GenParts[dPhiCut]
+#         print('closer')
         
         # ---- Identify subjets according to subjet ID ---- #
         hasSubjets0 = ((ttbarcands.slot0.subJetIdx1 > -1) & (ttbarcands.slot0.subJetIdx2 > -1)) # 1st candidate has two subjets
@@ -516,12 +548,46 @@ class TTbarResProcessor(processor.ProcessorABC):
    
         ttbarcands = ttbarcands[GoodSubjets] # Choose only ttbar candidates with this selection of subjets
         SubJets = SubJets[GoodSubjets]
+        GenParts = GenParts[GoodSubjets]
         evtweights = evtweights[GoodSubjets]
        
         SubJet01 = SubJets[ttbarcands.slot0.subJetIdx1] # ttbarcandidate 0's first subjet 
         SubJet02 = SubJets[ttbarcands.slot0.subJetIdx2] # ttbarcandidate 0's second subjet
         SubJet11 = SubJets[ttbarcands.slot1.subJetIdx1] # ttbarcandidate 1's first subjet 
         SubJet12 = SubJets[ttbarcands.slot1.subJetIdx2] # ttbarcandidate 1's second subjet
+#         print('almost there')
+        
+#         # ---- Delta R Test between a Subjet and its neighboring quark---- #
+#         pairing_subjet01 = ak.cartesian([SubJet01.p4, GenParts.p4]) # Group the subjet with generator level particles
+#         pairing_subjet11 = ak.cartesian([SubJet11.p4, GenParts.p4])
+        
+#         DeltaR_subjet01 = pairing_subjet01.slot0.delta_r(pairing_subjet01.slot1)
+#         DeltaR_subjet11 = pairing_subjet11.slot0.delta_r(pairing_subjet11.slot1)
+        
+# #         DeltaR_Charm = np.where(GenParts.pdgId==4, pairing.slot0.delta_r(pairing.slot1), None)
+# #         DeltaR_Charm_subjet01 = DeltaR_subjet01[GenParts.pdgId==4]
+# #         DeltaR_Charm_subjet11 = DeltaR_subjet11[GenParts.pdgId==4]
+        
+#         DeltaR_Charm_subjet01 = DeltaR_subjet01.nearest(GenParts.p4[np.abs(GenParts.pdgId)==4])
+#         DeltaR_Charm_subjet11 = DeltaR_subjet11.nearest(GenParts.p4[np.abs(GenParts.pdgId)==4])
+        
+#         print('Behaved Subjet\'s flavor    = ', np.abs(SubJet01.hadronFlavour))
+#         print('Misbehaved Subjet\'s flavor = ', np.abs(SubJet11.hadronFlavour))
+#         print()
+#         print('Behaved Subjet is Charm    : ', np.abs(SubJet01.hadronFlavour) == 4)
+#         print('Misbehaved Subjet is Charm : ', np.abs(SubJet11.hadronFlavour) == 4)
+#         print()
+# #         print('Behaved Subjet is Lighter Quark    : ', SubJet01.hadronFlavour == 0)
+# #         print('Misbehaved Subjet is Lighter Quark : ', SubJet11.hadronFlavour == 0)
+# #         print()
+#         print('Behaved Subjet and Charm Delta R    = ', DeltaR_Charm_subjet01)
+#         print('Misbehaved Subjet and Charm Delta R = ', DeltaR_Charm_subjet11)
+#         print()
+#         print('Behaved Subjet and Charm Delta R < 0.4    : ', DeltaR_Charm_subjet01 < 0.4)
+#         print('Misbehaved Subjet and Charm Delta R < 0.4 : ', DeltaR_Charm_subjet11 < 0.4)
+#         print('-----------------------------------------------------------------------------')
+#         print()
+        
         
         # ---- Define Rapidity Regions ---- #
         """ NOTE that ttbarcands.i0.p4.energy no longer works after ttbarcands is defined as an old awkward array """
@@ -627,8 +693,6 @@ class TTbarResProcessor(processor.ProcessorABC):
                 eta_s12 = ak.flatten(SubJet12.eta) # eta of 2nd subjet in ttbarcand 1
                 flav_s12 = np.abs(ak.flatten(SubJet12.hadronFlavour))
                 
-                print('subjet01 flavor = ', flav_s01)
-                print()
         
                 # --- For Efficiency Calculations, check efficiency of all four subjets passing the discriminant ---- #
                 s01_btagged = (SubJet01.btagCSVV2 > self.bdisc)
@@ -870,63 +934,63 @@ class TTbarResProcessor(processor.ProcessorABC):
                     Wgts_to_2btag_region_nonzero = np.where(Wgts_to_2btag_region==0., 1., Wgts_to_2btag_region)
                     
                     # ---- test printing ---- #
-                    print('btag_wgts = w(n|m) = ', btag_wgts)
-                    print()
-                    print('SF0 = ', BSF_s0)
-                    print('SF1 = ', BSF_s1)
-                    print('Subjet pt = ', LeadingSubjet_s0.pt)
-                    print('Subjet eta = ', LeadingSubjet_s0.eta)
-                    print('w(0|0) = ', btag_wgts['0b'][0])
-                    print('w(0|1) = ', btag_wgts['1b'][0])
-                    print('w(1|1) = ', btag_wgts['1b'][1])
-                    print('w(0|2) = ', btag_wgts['2b'][0])
-                    print('w(1|2) = ', btag_wgts['2b'][1])
-                    print('w(2|2) = ', btag_wgts['2b'][2])
-                    print('Weights = ', evtweights)
-                    print()
-                    print('*************** Test Normalization *****************\n')
-                    print('w(0|2) + w(1|2) + w(2|2) as np array = ', 
-                          ak.flatten(btag_wgts['2b'][0] + btag_wgts['2b'][1] + btag_wgts['2b'][2]))
-                    print()
-                    print('w(0|1) + w(1|1) as np array          = ', 
-                          ak.flatten(btag_wgts['1b'][0] + btag_wgts['1b'][1]))
-                    print()
-                    print('w(0|0) as np array                   = ', 
-                          ak.flatten(btag_wgts['0b'][0]))
-                    print()
-                    print('*************** Print Weights to be Applied *****************\n')
-                    print('w(0|0) + w(0|1) + w(0|2) as np array = ', 
-                          Wgts_to_0btag_region)
-                    print()
-                    print('w(1|1) + w(1|2) as np array          = ', 
-                          Wgts_to_1btag_region)
-                    print()
-                    print('w(2|2) as np array                   = ', 
-                          Wgts_to_2btag_region)
-                    print('*************** Print Non-zero Weights to be Applied *****************\n')
-                    print('w(0|0) + w(0|1) + w(0|2) as np array = ', 
-                          Wgts_to_0btag_region_nonzero)
-                    print()
-                    print('w(1|1) + w(1|2) as np array          = ', 
-                          Wgts_to_1btag_region_nonzero)
-                    print()
-                    print('w(2|2) as np array                   = ', 
-                          Wgts_to_2btag_region_nonzero)
-                    print()
-                    print('w(0|0) shape = ',np.shape( ak.to_numpy(ak.flatten(btag_wgts['0b'][0] ))))
-                    print()
-                    print('w(0|1) shape =',np.shape( ak.to_numpy(ak.flatten(btag_wgts['1b'][0] ))))
-                    print()
-                    print('w(0|2) shape =',np.shape( ak.to_numpy(ak.flatten(btag_wgts['2b'][0] ))))
-                    print()
-                    print('weights shape = ', np.shape( ak.to_numpy(evtweights) ))
-                    print()
-                    print('******************* Double Check Compatibility ********************\n')
-                    print()
-                    print('Weights Type      = ', type(evtweights))
-                    print()
-                    print('BTag weights Type = ', type(Wgts_to_2btag_region_nonzero))
-                    print()
+#                     print('btag_wgts = w(n|m) = ', btag_wgts)
+#                     print()
+#                     print('SF0 = ', BSF_s0)
+#                     print('SF1 = ', BSF_s1)
+#                     print('Subjet pt = ', LeadingSubjet_s0.pt)
+#                     print('Subjet eta = ', LeadingSubjet_s0.eta)
+#                     print('w(0|0) = ', btag_wgts['0b'][0])
+#                     print('w(0|1) = ', btag_wgts['1b'][0])
+#                     print('w(1|1) = ', btag_wgts['1b'][1])
+#                     print('w(0|2) = ', btag_wgts['2b'][0])
+#                     print('w(1|2) = ', btag_wgts['2b'][1])
+#                     print('w(2|2) = ', btag_wgts['2b'][2])
+#                     print('Weights = ', evtweights)
+#                     print()
+#                     print('*************** Test Normalization *****************\n')
+#                     print('w(0|2) + w(1|2) + w(2|2) as np array = ', 
+#                           ak.flatten(btag_wgts['2b'][0] + btag_wgts['2b'][1] + btag_wgts['2b'][2]))
+#                     print()
+#                     print('w(0|1) + w(1|1) as np array          = ', 
+#                           ak.flatten(btag_wgts['1b'][0] + btag_wgts['1b'][1]))
+#                     print()
+#                     print('w(0|0) as np array                   = ', 
+#                           ak.flatten(btag_wgts['0b'][0]))
+#                     print()
+#                     print('*************** Print Weights to be Applied *****************\n')
+#                     print('w(0|0) + w(0|1) + w(0|2) as np array = ', 
+#                           Wgts_to_0btag_region)
+#                     print()
+#                     print('w(1|1) + w(1|2) as np array          = ', 
+#                           Wgts_to_1btag_region)
+#                     print()
+#                     print('w(2|2) as np array                   = ', 
+#                           Wgts_to_2btag_region)
+#                     print('*************** Print Non-zero Weights to be Applied *****************\n')
+#                     print('w(0|0) + w(0|1) + w(0|2) as np array = ', 
+#                           Wgts_to_0btag_region_nonzero)
+#                     print()
+#                     print('w(1|1) + w(1|2) as np array          = ', 
+#                           Wgts_to_1btag_region_nonzero)
+#                     print()
+#                     print('w(2|2) as np array                   = ', 
+#                           Wgts_to_2btag_region_nonzero)
+#                     print()
+#                     print('w(0|0) shape = ',np.shape( ak.to_numpy(ak.flatten(btag_wgts['0b'][0] ))))
+#                     print()
+#                     print('w(0|1) shape =',np.shape( ak.to_numpy(ak.flatten(btag_wgts['1b'][0] ))))
+#                     print()
+#                     print('w(0|2) shape =',np.shape( ak.to_numpy(ak.flatten(btag_wgts['2b'][0] ))))
+#                     print()
+#                     print('weights shape = ', np.shape( ak.to_numpy(evtweights) ))
+#                     print()
+#                     print('******************* Double Check Compatibility ********************\n')
+#                     print()
+#                     print('Weights Type      = ', type(evtweights))
+#                     print()
+#                     print('BTag weights Type = ', type(Wgts_to_2btag_region_nonzero))
+#                     print()
                     
                 else: # Upgrade or Downgrade btag status based on btag efficiency of all four subjets per event
                     
@@ -955,6 +1019,48 @@ class TTbarResProcessor(processor.ProcessorABC):
                     btag0 = (~btag_s0) & (~btag_s1) #(0b)
                     btag1 = btag_s0 ^ btag_s1 #(1b)
                     btag2 = btag_s0 & btag_s1 #(2b)
+                    
+        # ---- Delta R Test between a Subjet and its neighboring quark---- #
+        
+        # ---- Subjet01 with Nearest b and c quarks ---- #
+        #[np.abs(pairing_01.slot1.pdgId)==5]
+        isGenPart_bquark = np.abs(GenParts.pdgId) == 5
+        pairing_01 = ak.cartesian([SubJet01.p4, GenParts.p4[isGenPart_bquark]]) # Group the subjet with gen level bquark
+        deltaR_01 = pairing_01.slot0.delta_r(pairing_01.slot1) # Distance between subjet and bquark
+        minimumR_index01 = ak.argmin(deltaR_01, axis=-1) # Select smallest distance
+        PassSubJet01Radius = deltaR_01[minimumR_index01] < 0.4 # is nearest genpart within SubJet01 radius?
+        # -- Choose pairs with closest quark (min. index) that passes subjet radius cut (pass radius)  -- #
+        pairs_of_interest = pairing_01[minimumR_index01][PassSubJet01Radius]
+        
+        
+        print('SubJet01 pt               = ', SubJet01.p4.pt)
+        print()
+        print('SubJet01 btagged pt       = ', SubJet01[s01_btagged].p4.pt)
+        print()
+        print('SubJet01 pt with b quarks = ', pairs_of_interest.slot0.pt)
+        print()
+        
+        print('-----------------------------------------------------------------------------')
+        print()
+        
+        # ---- Compare these plots as a test ---- #
+        subjet01_pt = ak.flatten(SubJet01.p4.pt)
+        subjet01_btagged_pt = ak.flatten(SubJet01[s01_btagged].p4.pt)
+        subjet01_with_bquark_pt = ak.flatten(pairs_of_interest.slot0.pt)
+        
+        output['subjet01_pt'].fill(dataset = dataset,
+                                  subjetpt = ak.to_numpy(subjet01_pt),
+                                  weight = ak.to_numpy(evtweights))
+        output['subjet01_btagged_pt'].fill(dataset = dataset,
+                                  subjetpt = ak.to_numpy(subjet01_btagged_pt),
+                                  weight = ak.to_numpy(evtweights[s01_btagged]))
+        output['subjet01_with_bquark_pt'].fill(dataset = dataset,
+                                  subjetpt = ak.to_numpy(subjet01_with_bquark_pt),
+                                  weight = ak.to_numpy(evtweights[minimumR_index01][PassSubJet01Radius]))
+        
+        print(subjet01_with_bquark_pt)
+        
+        """ Delta R to nearest b quark and c quark, for subjets that are identified as “5” or “4". """
 
         # ---- Get Analysis Categories ---- # 
         # ---- They are (central, forward) cross (0b,1b,2b) cross (Probet,at,0t,1t,>=1t,2t) ---- #
@@ -997,6 +1103,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         pT = ak.flatten(ttbarcands.slot1.pt)
         pz = ak.flatten(ttbarcands.slot1.p4.pz)
         p = np.absolute(np.sqrt(pT**2 + pz**2))
+#         p = np.absolute( ttbarcands.slot1.p4.p )
         
         # ---- Define the Numerator and Denominator for Mistag Rate ---- #
         numerator = np.where(antitag_probe, p, -1) # If no antitag and tagged probe, move event to useless bin
@@ -1090,8 +1197,8 @@ class TTbarResProcessor(processor.ProcessorABC):
                     Weights = Weights*Wgts_to_1btag_region_nonzero 
                 else:
                     Weights = Weights*Wgts_to_2btag_region_nonzero 
-                print('New weights for ' + str(ilabel[-5:-3]) + ' categories = ', Weights)
-                print('-----------------------------------------------------------------------')
+#                 print('New weights for ' + str(ilabel[-5:-3]) + ' categories = ', Weights)
+#                 print('-----------------------------------------------------------------------')
                     
                 
             ###---------------------------------------------------------------------------------------------###
@@ -1517,7 +1624,8 @@ class TTbarResProcessor(processor.ProcessorABC):
                                               subjetpt = ak.to_numpy(Eff_udsg_Denom_pT_s12[icat]),
                                               subjeteta = ak.to_numpy(Eff_udsg_Denom_eta_s12[icat]),
                                               weight = ak.to_numpy(Weights[icat]))
-        
+            
+            
         
         return output
 
