@@ -95,7 +95,7 @@ with open(jetdatafilename) as i:
 """ Comment out whichever files you wish to not be included """
 
 filesets = {
-#    'QCD':qcdfiles,
+   'QCD':qcdfiles,
 #     'DM1000':DM1000files,
 #     'DM1500':DM1500files,
 #     'DM2000':DM2000files,
