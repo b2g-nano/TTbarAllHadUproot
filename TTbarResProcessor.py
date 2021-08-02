@@ -119,134 +119,134 @@ class TTbarResProcessor(processor.ProcessorABC):
             
 #********************************************************************************************************************#
             
-            # ---- SubJet b-tag Efficiency as function of pT ---- #
-            'b_eff_numerator_pt_s01': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis), 
-            'b_eff_numerator_pt_s02': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis), 
-            'b_eff_numerator_pt_s11': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis), 
-            'b_eff_numerator_pt_s12': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis), 
+#             # ---- SubJet b-tag Efficiency as function of pT ---- #
+#             'b_eff_numerator_pt_s01': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis), 
+#             'b_eff_numerator_pt_s02': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis), 
+#             'b_eff_numerator_pt_s11': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis), 
+#             'b_eff_numerator_pt_s12': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis), 
             
-            'b_eff_denominator_pt_s01': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis), 
-            'b_eff_denominator_pt_s02': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis), 
-            'b_eff_denominator_pt_s11': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis), 
-            'b_eff_denominator_pt_s12': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis), 
+#             'b_eff_denominator_pt_s01': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis), 
+#             'b_eff_denominator_pt_s02': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis), 
+#             'b_eff_denominator_pt_s11': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis), 
+#             'b_eff_denominator_pt_s12': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis), 
             
-            # ---- SubJet b-tag Efficiency as function of eta ---- #
-            'b_eff_numerator_eta_s01': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
-            'b_eff_numerator_eta_s02': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
-            'b_eff_numerator_eta_s11': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
-            'b_eff_numerator_eta_s12': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
+#             # ---- SubJet b-tag Efficiency as function of eta ---- #
+#             'b_eff_numerator_eta_s01': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
+#             'b_eff_numerator_eta_s02': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
+#             'b_eff_numerator_eta_s11': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
+#             'b_eff_numerator_eta_s12': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
             
-            'b_eff_denominator_eta_s01': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
-            'b_eff_denominator_eta_s02': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
-            'b_eff_denominator_eta_s11': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
-            'b_eff_denominator_eta_s12': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
+#             'b_eff_denominator_eta_s01': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
+#             'b_eff_denominator_eta_s02': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
+#             'b_eff_denominator_eta_s11': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
+#             'b_eff_denominator_eta_s12': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
             
-            # ---- SubJet c-tag Efficiency as function of pT ---- #
-            'c_eff_numerator_pt_s01': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis),
-            'c_eff_numerator_pt_s02': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis),
-            'c_eff_numerator_pt_s11': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis),
-            'c_eff_numerator_pt_s12': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis),
+#             # ---- SubJet c-tag Efficiency as function of pT ---- #
+#             'c_eff_numerator_pt_s01': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis),
+#             'c_eff_numerator_pt_s02': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis),
+#             'c_eff_numerator_pt_s11': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis),
+#             'c_eff_numerator_pt_s12': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis),
             
-            'c_eff_denominator_pt_s01': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis),
-            'c_eff_denominator_pt_s02': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis),
-            'c_eff_denominator_pt_s11': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis),
-            'c_eff_denominator_pt_s12': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis),
+#             'c_eff_denominator_pt_s01': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis),
+#             'c_eff_denominator_pt_s02': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis),
+#             'c_eff_denominator_pt_s11': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis),
+#             'c_eff_denominator_pt_s12': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis),
             
-            # ---- SubJet c-tag Efficiency as function of eta ---- #
-            'c_eff_numerator_eta_s01': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
-            'c_eff_numerator_eta_s02': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
-            'c_eff_numerator_eta_s11': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
-            'c_eff_numerator_eta_s12': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
+#             # ---- SubJet c-tag Efficiency as function of eta ---- #
+#             'c_eff_numerator_eta_s01': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
+#             'c_eff_numerator_eta_s02': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
+#             'c_eff_numerator_eta_s11': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
+#             'c_eff_numerator_eta_s12': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
             
-            'c_eff_denominator_eta_s01': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
-            'c_eff_denominator_eta_s02': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
-            'c_eff_denominator_eta_s11': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
-            'c_eff_denominator_eta_s12': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
+#             'c_eff_denominator_eta_s01': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
+#             'c_eff_denominator_eta_s02': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
+#             'c_eff_denominator_eta_s11': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
+#             'c_eff_denominator_eta_s12': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
             
-            # ---- SubJet light quark-tag Efficiency as function of pT ---- #
-            'udsg_eff_numerator_pt_s01': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis),
-            'udsg_eff_numerator_pt_s02': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis),
-            'udsg_eff_numerator_pt_s11': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis),
-            'udsg_eff_numerator_pt_s12': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis),
+#             # ---- SubJet light quark-tag Efficiency as function of pT ---- #
+#             'udsg_eff_numerator_pt_s01': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis),
+#             'udsg_eff_numerator_pt_s02': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis),
+#             'udsg_eff_numerator_pt_s11': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis),
+#             'udsg_eff_numerator_pt_s12': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis),
             
-            'udsg_eff_denominator_pt_s01': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis),
-            'udsg_eff_denominator_pt_s02': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis),
-            'udsg_eff_denominator_pt_s11': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis),
-            'udsg_eff_denominator_pt_s12': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis),
+#             'udsg_eff_denominator_pt_s01': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis),
+#             'udsg_eff_denominator_pt_s02': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis),
+#             'udsg_eff_denominator_pt_s11': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis),
+#             'udsg_eff_denominator_pt_s12': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis),
             
-            # ---- SubJet light quark-tag Efficiency as function of eta ---- #
-            'udsg_eff_numerator_eta_s01': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
-            'udsg_eff_numerator_eta_s02': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
-            'udsg_eff_numerator_eta_s11': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
-            'udsg_eff_numerator_eta_s12': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
+#             # ---- SubJet light quark-tag Efficiency as function of eta ---- #
+#             'udsg_eff_numerator_eta_s01': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
+#             'udsg_eff_numerator_eta_s02': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
+#             'udsg_eff_numerator_eta_s11': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
+#             'udsg_eff_numerator_eta_s12': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
             
-            'udsg_eff_denominator_eta_s01': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
-            'udsg_eff_denominator_eta_s02': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
-            'udsg_eff_denominator_eta_s11': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
-            'udsg_eff_denominator_eta_s12': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
+#             'udsg_eff_denominator_eta_s01': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
+#             'udsg_eff_denominator_eta_s02': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
+#             'udsg_eff_denominator_eta_s11': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
+#             'udsg_eff_denominator_eta_s12': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
             
             # ---- 2D SubJet b-tag Efficiency ---- #
-            'b_eff_numerator_s01': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis, subjeteta_axis),
-            'b_eff_numerator_s02': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis, subjeteta_axis),
-            'b_eff_numerator_s11': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis, subjeteta_axis),
-            'b_eff_numerator_s12': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis, subjeteta_axis),
+            'b_eff_numerator_s01': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
+            'b_eff_numerator_s02': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
+            'b_eff_numerator_s11': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
+            'b_eff_numerator_s12': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
             
-            'b_eff_denominator_s01': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis, subjeteta_axis),
-            'b_eff_denominator_s02': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis, subjeteta_axis),
-            'b_eff_denominator_s11': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis, subjeteta_axis),
-            'b_eff_denominator_s12': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis, subjeteta_axis),
+            'b_eff_denominator_s01': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
+            'b_eff_denominator_s02': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
+            'b_eff_denominator_s11': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
+            'b_eff_denominator_s12': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
             
-            'b_eff_numerator_s01_largerbins': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_laxis, subjeteta_laxis),
-            'b_eff_numerator_s02_largerbins': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_laxis, subjeteta_laxis),
-            'b_eff_numerator_s11_largerbins': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_laxis, subjeteta_laxis),
-            'b_eff_numerator_s12_largerbins': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_laxis, subjeteta_laxis),
+            'b_eff_numerator_s01_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
+            'b_eff_numerator_s02_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
+            'b_eff_numerator_s11_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
+            'b_eff_numerator_s12_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
             
-            'b_eff_denominator_s01_largerbins': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_laxis, subjeteta_laxis),
-            'b_eff_denominator_s02_largerbins': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_laxis, subjeteta_laxis),
-            'b_eff_denominator_s11_largerbins': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_laxis, subjeteta_laxis),
-            'b_eff_denominator_s12_largerbins': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_laxis, subjeteta_laxis),
+            'b_eff_denominator_s01_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
+            'b_eff_denominator_s02_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
+            'b_eff_denominator_s11_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
+            'b_eff_denominator_s12_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
             
             # ---- 2D SubJet c-tag Efficiency ---- #
-            'c_eff_numerator_s01': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis, subjeteta_axis),
-            'c_eff_numerator_s02': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis, subjeteta_axis),
-            'c_eff_numerator_s11': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis, subjeteta_axis),
-            'c_eff_numerator_s12': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis, subjeteta_axis),
+            'c_eff_numerator_s01': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
+            'c_eff_numerator_s02': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
+            'c_eff_numerator_s11': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
+            'c_eff_numerator_s12': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
             
-            'c_eff_denominator_s01': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis, subjeteta_axis),
-            'c_eff_denominator_s02': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis, subjeteta_axis),
-            'c_eff_denominator_s11': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis, subjeteta_axis),
-            'c_eff_denominator_s12': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis, subjeteta_axis),
+            'c_eff_denominator_s01': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
+            'c_eff_denominator_s02': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
+            'c_eff_denominator_s11': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
+            'c_eff_denominator_s12': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
             
-            'c_eff_numerator_s01_largerbins': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_laxis, subjeteta_laxis),
-            'c_eff_numerator_s02_largerbins': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_laxis, subjeteta_laxis),
-            'c_eff_numerator_s11_largerbins': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_laxis, subjeteta_laxis),
-            'c_eff_numerator_s12_largerbins': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_laxis, subjeteta_laxis),
+            'c_eff_numerator_s01_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
+            'c_eff_numerator_s02_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
+            'c_eff_numerator_s11_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
+            'c_eff_numerator_s12_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
             
-            'c_eff_denominator_s01_largerbins': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_laxis, subjeteta_laxis),
-            'c_eff_denominator_s02_largerbins': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_laxis, subjeteta_laxis),
-            'c_eff_denominator_s11_largerbins': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_laxis, subjeteta_laxis),
-            'c_eff_denominator_s12_largerbins': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_laxis, subjeteta_laxis),
+            'c_eff_denominator_s01_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
+            'c_eff_denominator_s02_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
+            'c_eff_denominator_s11_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
+            'c_eff_denominator_s12_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
             
             # ---- 2D SubJet light quark-tag Efficiency ---- #
-            'udsg_eff_numerator_s01': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis, subjeteta_axis),
-            'udsg_eff_numerator_s02': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis, subjeteta_axis),
-            'udsg_eff_numerator_s11': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis, subjeteta_axis),
-            'udsg_eff_numerator_s12': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis, subjeteta_axis),
+            'udsg_eff_numerator_s01': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
+            'udsg_eff_numerator_s02': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
+            'udsg_eff_numerator_s11': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
+            'udsg_eff_numerator_s12': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
             
-            'udsg_eff_denominator_s01': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis, subjeteta_axis),
-            'udsg_eff_denominator_s02': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis, subjeteta_axis),
-            'udsg_eff_denominator_s11': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis, subjeteta_axis),
-            'udsg_eff_denominator_s12': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis, subjeteta_axis),
+            'udsg_eff_denominator_s01': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
+            'udsg_eff_denominator_s02': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
+            'udsg_eff_denominator_s11': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
+            'udsg_eff_denominator_s12': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
             
-            'udsg_eff_numerator_s01_largerbins': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_laxis, subjeteta_laxis),
-            'udsg_eff_numerator_s02_largerbins': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_laxis, subjeteta_laxis),
-            'udsg_eff_numerator_s11_largerbins': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_laxis, subjeteta_laxis),
-            'udsg_eff_numerator_s12_largerbins': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_laxis, subjeteta_laxis),
+            'udsg_eff_numerator_s01_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
+            'udsg_eff_numerator_s02_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
+            'udsg_eff_numerator_s11_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
+            'udsg_eff_numerator_s12_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
             
-            'udsg_eff_denominator_s01_largerbins': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_laxis, subjeteta_laxis),
-            'udsg_eff_denominator_s02_largerbins': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_laxis, subjeteta_laxis),
-            'udsg_eff_denominator_s11_largerbins': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_laxis, subjeteta_laxis),
-            'udsg_eff_denominator_s12_largerbins': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_laxis, subjeteta_laxis),
+            'udsg_eff_denominator_s01_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
+            'udsg_eff_denominator_s02_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
+            'udsg_eff_denominator_s11_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
+            'udsg_eff_denominator_s12_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
             
             'cutflow': processor.defaultdict_accumulator(int),
             
@@ -525,12 +525,6 @@ class TTbarResProcessor(processor.ProcessorABC):
         
         # ---- Define Rapidity Regions ---- #
         """ NOTE that ttbarcands.i0.p4.energy no longer works after ttbarcands is defined as an old awkward array """
-        #i0_p = ttbarcands.i0.pt*np.cosh( ttbarcands.i0.eta ) # 3-momentum magnitude
-        #i1_p = ttbarcands.i1.pt*np.cosh( ttbarcands.i1.eta ) # 3-momentum magnitude
-        #i0_energy = np.sqrt( ttbarcands.i0.mass**2 + i0_p**2 )
-        #i1_energy = np.sqrt( ttbarcands.i1.mass**2 + i1_p**2 )
-        #i0_pz = ttbarcands.i0.pt*np.sinh( ttbarcands.i0.eta )
-        #i1_pz = ttbarcands.i1.pt*np.sinh( ttbarcands.i1.eta )
         s0_energy = ttbarcands.slot0.p4.energy
         s1_energy = ttbarcands.slot1.p4.energy
         s0_pz = ttbarcands.slot0.p4.pz
@@ -738,6 +732,219 @@ class TTbarResProcessor(processor.ProcessorABC):
                 
                 Eff_udsg_Num_pT_s12 = ak.flatten(Eff_udsg_Num_pT_s12)
                 Eff_udsg_Num_eta_s12 = ak.flatten(Eff_udsg_Num_eta_s12)
+                
+                # **************************************************************************************** #
+                # ----------------------------- 2-D B-tagging Efficiencies ------------------------------- #
+                # **************************************************************************************** #
+                output['b_eff_numerator_s01'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_b_Num_pT_s01),
+                                                  subjeteta = ak.to_numpy(Eff_b_Num_eta_s01),
+                                                   weight = ak.to_numpy(evtweights))
+                output['b_eff_numerator_s02'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_b_Num_pT_s02),
+                                                  subjeteta = ak.to_numpy(Eff_b_Num_eta_s02),
+                                                   weight = ak.to_numpy(evtweights))
+                output['b_eff_numerator_s11'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_b_Num_pT_s11),
+                                                  subjeteta = ak.to_numpy(Eff_b_Num_eta_s11),
+                                                  weight = ak.to_numpy(evtweights))
+                output['b_eff_numerator_s12'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_b_Num_pT_s12),
+                                                  subjeteta = ak.to_numpy(Eff_b_Num_eta_s12),
+                                                  weight = ak.to_numpy(evtweights))
+
+                output['b_eff_denominator_s01'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_b_Denom_pT_s01),
+                                                  subjeteta = ak.to_numpy(Eff_b_Denom_eta_s01),
+                                                  weight = ak.to_numpy(evtweights))
+                output['b_eff_denominator_s02'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_b_Denom_pT_s02),
+                                                  subjeteta = ak.to_numpy(Eff_b_Denom_eta_s02),
+                                                  weight = ak.to_numpy(evtweights))
+                output['b_eff_denominator_s11'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_b_Denom_pT_s11),
+                                                  subjeteta = ak.to_numpy(Eff_b_Denom_eta_s11),
+                                                  weight = ak.to_numpy(evtweights))
+                output['b_eff_denominator_s12'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_b_Denom_pT_s12),
+                                                  subjeteta = ak.to_numpy(Eff_b_Denom_eta_s12),
+                                                  weight = ak.to_numpy(evtweights))
+
+                output['b_eff_numerator_s01_largerbins'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_b_Num_pT_s01),
+                                                  subjeteta = ak.to_numpy(Eff_b_Num_eta_s01),
+                                                  weight = ak.to_numpy(evtweights))
+                output['b_eff_numerator_s02_largerbins'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_b_Num_pT_s02),
+                                                  subjeteta = ak.to_numpy(Eff_b_Num_eta_s02),
+                                                  weight = ak.to_numpy(evtweights))
+                output['b_eff_numerator_s11_largerbins'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_b_Num_pT_s11),
+                                                  subjeteta = ak.to_numpy(Eff_b_Num_eta_s11),
+                                                  weight = ak.to_numpy(evtweights))
+                output['b_eff_numerator_s12_largerbins'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_b_Num_pT_s12),
+                                                  subjeteta = ak.to_numpy(Eff_b_Num_eta_s12),
+                                                  weight = ak.to_numpy(evtweights))
+
+                output['b_eff_denominator_s01_largerbins'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_b_Denom_pT_s01),
+                                                  subjeteta = ak.to_numpy(Eff_b_Denom_eta_s01),
+                                                  weight = ak.to_numpy(evtweights))
+                output['b_eff_denominator_s02_largerbins'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_b_Denom_pT_s02),
+                                                  subjeteta = ak.to_numpy(Eff_b_Denom_eta_s02),
+                                                  weight = ak.to_numpy(evtweights))
+                output['b_eff_denominator_s11_largerbins'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_b_Denom_pT_s11),
+                                                  subjeteta = ak.to_numpy(Eff_b_Denom_eta_s11),
+                                                  weight = ak.to_numpy(evtweights))
+                output['b_eff_denominator_s12_largerbins'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_b_Denom_pT_s12),
+                                                  subjeteta = ak.to_numpy(Eff_b_Denom_eta_s12),
+                                                  weight = ak.to_numpy(evtweights))
+
+                # **************************************************************************************** #
+                # ----------------------------- 2-D C-tagging Efficiencies ------------------------------- #
+                # **************************************************************************************** #
+                output['c_eff_numerator_s01'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_c_Num_pT_s01),
+                                                  subjeteta = ak.to_numpy(Eff_c_Num_eta_s01),
+                                                  weight = ak.to_numpy(evtweights))
+                output['c_eff_numerator_s02'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_c_Num_pT_s02),
+                                                  subjeteta = ak.to_numpy(Eff_c_Num_eta_s02),
+                                                  weight = ak.to_numpy(evtweights))
+                output['c_eff_numerator_s11'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_c_Num_pT_s11),
+                                                  subjeteta = ak.to_numpy(Eff_c_Num_eta_s11),
+                                                  weight = ak.to_numpy(evtweights))
+                output['c_eff_numerator_s12'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_c_Num_pT_s12),
+                                                  subjeteta = ak.to_numpy(Eff_c_Num_eta_s12),
+                                                  weight = ak.to_numpy(evtweights))
+
+                output['c_eff_denominator_s01'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_c_Denom_pT_s01),
+                                                  subjeteta = ak.to_numpy(Eff_c_Denom_eta_s01),
+                                                  weight = ak.to_numpy(evtweights))
+                output['c_eff_denominator_s02'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_c_Denom_pT_s02),
+                                                  subjeteta = ak.to_numpy(Eff_c_Denom_eta_s02),
+                                                  weight = ak.to_numpy(evtweights))
+                output['c_eff_denominator_s11'].fill(dataset = dataset,
+                                                     subjetpt = ak.to_numpy(Eff_c_Denom_pT_s11),
+                                                  subjeteta = ak.to_numpy(Eff_c_Denom_eta_s11),
+                                                  weight = ak.to_numpy(evtweights))
+                output['c_eff_denominator_s12'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_c_Denom_pT_s12),
+                                                  subjeteta = ak.to_numpy(Eff_c_Denom_eta_s12),
+                                                  weight = ak.to_numpy(evtweights))
+
+                output['c_eff_numerator_s01_largerbins'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_c_Num_pT_s01),
+                                                  subjeteta = ak.to_numpy(Eff_c_Num_eta_s01),
+                                                  weight = ak.to_numpy(evtweights))
+                output['c_eff_numerator_s02_largerbins'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_c_Num_pT_s02),
+                                                  subjeteta = ak.to_numpy(Eff_c_Num_eta_s02),
+                                                  weight = ak.to_numpy(evtweights))
+                output['c_eff_numerator_s11_largerbins'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_c_Num_pT_s11),
+                                                  subjeteta = ak.to_numpy(Eff_c_Num_eta_s11),
+                                                  weight = ak.to_numpy(evtweights))
+                output['c_eff_numerator_s12_largerbins'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_c_Num_pT_s12),
+                                                  subjeteta = ak.to_numpy(Eff_c_Num_eta_s12),
+                                                  weight = ak.to_numpy(evtweights))
+
+                output['c_eff_denominator_s01_largerbins'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_c_Denom_pT_s01),
+                                                  subjeteta = ak.to_numpy(Eff_c_Denom_eta_s01),
+                                                  weight = ak.to_numpy(evtweights))
+                output['c_eff_denominator_s02_largerbins'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_c_Denom_pT_s02),
+                                                  subjeteta = ak.to_numpy(Eff_c_Denom_eta_s02),
+                                                  weight = ak.to_numpy(evtweights))
+                output['c_eff_denominator_s11_largerbins'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_c_Denom_pT_s11),
+                                                  subjeteta = ak.to_numpy(Eff_c_Denom_eta_s11),
+                                                  weight = ak.to_numpy(evtweights))
+                output['c_eff_denominator_s12_largerbins'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_c_Denom_pT_s12),
+                                                  subjeteta = ak.to_numpy(Eff_c_Denom_eta_s12),
+                                                  weight = ak.to_numpy(evtweights))
+                
+                # **************************************************************************************** #
+                # ------------------------ 2-D Light Parton-tagging Efficiencies ------------------------- #
+                # **************************************************************************************** #
+                output['udsg_eff_numerator_s01'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_udsg_Num_pT_s01),
+                                                  subjeteta = ak.to_numpy(Eff_udsg_Num_eta_s01),
+                                                  weight = ak.to_numpy(evtweights))
+                output['udsg_eff_numerator_s02'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_udsg_Num_pT_s02),
+                                                  subjeteta = ak.to_numpy(Eff_udsg_Num_eta_s02),
+                                                  weight = ak.to_numpy(evtweights))
+                output['udsg_eff_numerator_s11'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_udsg_Num_pT_s11),
+                                                  subjeteta = ak.to_numpy(Eff_udsg_Num_eta_s11),
+                                                  weight = ak.to_numpy(evtweights))
+                output['udsg_eff_numerator_s12'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_udsg_Num_pT_s12),
+                                                  subjeteta = ak.to_numpy(Eff_udsg_Num_eta_s12),
+                                                  weight = ak.to_numpy(evtweights))
+
+                output['udsg_eff_denominator_s01'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_udsg_Denom_pT_s01),
+                                                  subjeteta = ak.to_numpy(Eff_udsg_Denom_eta_s01),
+                                                  weight = ak.to_numpy(evtweights))
+                output['udsg_eff_denominator_s02'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_udsg_Denom_pT_s02),
+                                                  subjeteta = ak.to_numpy(Eff_udsg_Denom_eta_s02),
+                                                  weight = ak.to_numpy(evtweights))
+                output['udsg_eff_denominator_s11'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_udsg_Denom_pT_s11),
+                                                  subjeteta = ak.to_numpy(Eff_udsg_Denom_eta_s11),
+                                                  weight = ak.to_numpy(evtweights))
+                output['udsg_eff_denominator_s12'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_udsg_Denom_pT_s12),
+                                                  subjeteta = ak.to_numpy(Eff_udsg_Denom_eta_s12),
+                                                  weight = ak.to_numpy(evtweights))
+
+                output['udsg_eff_numerator_s01_largerbins'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_udsg_Num_pT_s01),
+                                                  subjeteta = ak.to_numpy(Eff_udsg_Num_eta_s01),
+                                                  weight = ak.to_numpy(evtweights))
+                output['udsg_eff_numerator_s02_largerbins'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_udsg_Num_pT_s02),
+                                                  subjeteta = ak.to_numpy(Eff_udsg_Num_eta_s02),
+                                                  weight = ak.to_numpy(evtweights))
+                output['udsg_eff_numerator_s11_largerbins'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_udsg_Num_pT_s11),
+                                                  subjeteta = ak.to_numpy(Eff_udsg_Num_eta_s11),
+                                                  weight = ak.to_numpy(evtweights))
+                output['udsg_eff_numerator_s12_largerbins'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_udsg_Num_pT_s12),
+                                                  subjeteta = ak.to_numpy(Eff_udsg_Num_eta_s12),
+                                                  weight = ak.to_numpy(evtweights))
+
+                output['udsg_eff_denominator_s01_largerbins'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_udsg_Denom_pT_s01),
+                                                  subjeteta = ak.to_numpy(Eff_udsg_Denom_eta_s01),
+                                                  weight = ak.to_numpy(evtweights))
+                output['udsg_eff_denominator_s02_largerbins'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_udsg_Denom_pT_s02),
+                                                  subjeteta = ak.to_numpy(Eff_udsg_Denom_eta_s02),
+                                                  weight = ak.to_numpy(evtweights))
+                output['udsg_eff_denominator_s11_largerbins'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_udsg_Denom_pT_s11),
+                                                  subjeteta = ak.to_numpy(Eff_udsg_Denom_eta_s11),
+                                                  weight = ak.to_numpy(evtweights))
+                output['udsg_eff_denominator_s12_largerbins'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_udsg_Denom_pT_s12),
+                                                  subjeteta = ak.to_numpy(Eff_udsg_Denom_eta_s12),
+                                                  weight = ak.to_numpy(evtweights))
                 
         
         if self.ApplySF == True: # Apply b Tag Scale Factors and redefine btag_s0 and btag_s1
@@ -1011,372 +1218,166 @@ class TTbarResProcessor(processor.ProcessorABC):
 # ************************************************************************************************************ #            
             
             
-            # ---- 1-D B-tagging Efficiencies ---- #
-            output['b_eff_numerator_pt_s01'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_b_Num_pT_s01[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['b_eff_numerator_pt_s02'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_b_Num_pT_s02[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['b_eff_numerator_pt_s11'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_b_Num_pT_s11[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['b_eff_numerator_pt_s12'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_b_Num_pT_s12[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
+#             # ---- 1-D B-tagging Efficiencies ---- #
+#             output['b_eff_numerator_pt_s01'].fill(dataset = dataset, anacat = ilabel,
+#                                               subjetpt = ak.to_numpy(Eff_b_Num_pT_s01[icat]),
+#                                               weight = ak.to_numpy(Weights[icat]))
+#             output['b_eff_numerator_pt_s02'].fill(dataset = dataset, anacat = ilabel,
+#                                               subjetpt = ak.to_numpy(Eff_b_Num_pT_s02[icat]),
+#                                               weight = ak.to_numpy(Weights[icat]))
+#             output['b_eff_numerator_pt_s11'].fill(dataset = dataset, anacat = ilabel,
+#                                               subjetpt = ak.to_numpy(Eff_b_Num_pT_s11[icat]),
+#                                               weight = ak.to_numpy(Weights[icat]))
+#             output['b_eff_numerator_pt_s12'].fill(dataset = dataset, anacat = ilabel,
+#                                               subjetpt = ak.to_numpy(Eff_b_Num_pT_s12[icat]),
+#                                               weight = ak.to_numpy(Weights[icat]))
             
-            output['b_eff_denominator_pt_s01'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_b_Denom_pT_s01[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['b_eff_denominator_pt_s02'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_b_Denom_pT_s02[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['b_eff_denominator_pt_s11'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_b_Denom_pT_s11[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['b_eff_denominator_pt_s12'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_b_Denom_pT_s12[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
+#             output['b_eff_denominator_pt_s01'].fill(dataset = dataset, anacat = ilabel,
+#                                               subjetpt = ak.to_numpy(Eff_b_Denom_pT_s01[icat]),
+#                                               weight = ak.to_numpy(Weights[icat]))
+#             output['b_eff_denominator_pt_s02'].fill(dataset = dataset, anacat = ilabel,
+#                                               subjetpt = ak.to_numpy(Eff_b_Denom_pT_s02[icat]),
+#                                               weight = ak.to_numpy(Weights[icat]))
+#             output['b_eff_denominator_pt_s11'].fill(dataset = dataset, anacat = ilabel,
+#                                               subjetpt = ak.to_numpy(Eff_b_Denom_pT_s11[icat]),
+#                                               weight = ak.to_numpy(Weights[icat]))
+#             output['b_eff_denominator_pt_s12'].fill(dataset = dataset, anacat = ilabel,
+#                                               subjetpt = ak.to_numpy(Eff_b_Denom_pT_s12[icat]),
+#                                               weight = ak.to_numpy(Weights[icat]))
             
-            output['b_eff_numerator_eta_s01'].fill(dataset = dataset, anacat = ilabel,
-                                              subjeteta = ak.to_numpy(Eff_b_Num_eta_s01[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['b_eff_numerator_eta_s02'].fill(dataset = dataset, anacat = ilabel,
-                                              subjeteta = ak.to_numpy(Eff_b_Num_eta_s02[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['b_eff_numerator_eta_s11'].fill(dataset = dataset, anacat = ilabel,
-                                              subjeteta = ak.to_numpy(Eff_b_Num_eta_s11[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['b_eff_numerator_eta_s12'].fill(dataset = dataset, anacat = ilabel,
-                                              subjeteta = ak.to_numpy(Eff_b_Num_eta_s12[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
+#             output['b_eff_numerator_eta_s01'].fill(dataset = dataset, anacat = ilabel,
+#                                               subjeteta = ak.to_numpy(Eff_b_Num_eta_s01[icat]),
+#                                               weight = ak.to_numpy(Weights[icat]))
+#             output['b_eff_numerator_eta_s02'].fill(dataset = dataset, anacat = ilabel,
+#                                               subjeteta = ak.to_numpy(Eff_b_Num_eta_s02[icat]),
+#                                               weight = ak.to_numpy(Weights[icat]))
+#             output['b_eff_numerator_eta_s11'].fill(dataset = dataset, anacat = ilabel,
+#                                               subjeteta = ak.to_numpy(Eff_b_Num_eta_s11[icat]),
+#                                               weight = ak.to_numpy(Weights[icat]))
+#             output['b_eff_numerator_eta_s12'].fill(dataset = dataset, anacat = ilabel,
+#                                               subjeteta = ak.to_numpy(Eff_b_Num_eta_s12[icat]),
+#                                               weight = ak.to_numpy(Weights[icat]))
             
-            output['b_eff_denominator_eta_s01'].fill(dataset = dataset, anacat = ilabel,
-                                              subjeteta = ak.to_numpy(Eff_b_Denom_eta_s01[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['b_eff_denominator_eta_s02'].fill(dataset = dataset, anacat = ilabel,
-                                              subjeteta = ak.to_numpy(Eff_b_Denom_eta_s02[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['b_eff_denominator_eta_s11'].fill(dataset = dataset, anacat = ilabel,
-                                              subjeteta = ak.to_numpy(Eff_b_Denom_eta_s11[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['b_eff_denominator_eta_s12'].fill(dataset = dataset, anacat = ilabel,
-                                              subjeteta = ak.to_numpy(Eff_b_Denom_eta_s12[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
+#             output['b_eff_denominator_eta_s01'].fill(dataset = dataset, anacat = ilabel,
+#                                               subjeteta = ak.to_numpy(Eff_b_Denom_eta_s01[icat]),
+#                                               weight = ak.to_numpy(Weights[icat]))
+#             output['b_eff_denominator_eta_s02'].fill(dataset = dataset, anacat = ilabel,
+#                                               subjeteta = ak.to_numpy(Eff_b_Denom_eta_s02[icat]),
+#                                               weight = ak.to_numpy(Weights[icat]))
+#             output['b_eff_denominator_eta_s11'].fill(dataset = dataset, anacat = ilabel,
+#                                               subjeteta = ak.to_numpy(Eff_b_Denom_eta_s11[icat]),
+#                                               weight = ak.to_numpy(Weights[icat]))
+#             output['b_eff_denominator_eta_s12'].fill(dataset = dataset, anacat = ilabel,
+#                                               subjeteta = ak.to_numpy(Eff_b_Denom_eta_s12[icat]),
+#                                               weight = ak.to_numpy(Weights[icat]))
             
-            # ---- 1-D C-tagging Efficiencies ---- #
-            output['c_eff_numerator_pt_s01'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_c_Num_pT_s01[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['c_eff_numerator_pt_s02'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_c_Num_pT_s02[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['c_eff_numerator_pt_s11'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_c_Num_pT_s11[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['c_eff_numerator_pt_s12'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_c_Num_pT_s12[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
+#             # ---- 1-D C-tagging Efficiencies ---- #
+#             output['c_eff_numerator_pt_s01'].fill(dataset = dataset, anacat = ilabel,
+#                                               subjetpt = ak.to_numpy(Eff_c_Num_pT_s01[icat]),
+#                                               weight = ak.to_numpy(Weights[icat]))
+#             output['c_eff_numerator_pt_s02'].fill(dataset = dataset, anacat = ilabel,
+#                                               subjetpt = ak.to_numpy(Eff_c_Num_pT_s02[icat]),
+#                                               weight = ak.to_numpy(Weights[icat]))
+#             output['c_eff_numerator_pt_s11'].fill(dataset = dataset, anacat = ilabel,
+#                                               subjetpt = ak.to_numpy(Eff_c_Num_pT_s11[icat]),
+#                                               weight = ak.to_numpy(Weights[icat]))
+#             output['c_eff_numerator_pt_s12'].fill(dataset = dataset, anacat = ilabel,
+#                                               subjetpt = ak.to_numpy(Eff_c_Num_pT_s12[icat]),
+#                                               weight = ak.to_numpy(Weights[icat]))
             
-            output['c_eff_denominator_pt_s01'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_c_Denom_pT_s01[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['c_eff_denominator_pt_s02'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_c_Denom_pT_s02[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['c_eff_denominator_pt_s11'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_c_Denom_pT_s11[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['c_eff_denominator_pt_s12'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_c_Denom_pT_s12[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
+#             output['c_eff_denominator_pt_s01'].fill(dataset = dataset, anacat = ilabel,
+#                                               subjetpt = ak.to_numpy(Eff_c_Denom_pT_s01[icat]),
+#                                               weight = ak.to_numpy(Weights[icat]))
+#             output['c_eff_denominator_pt_s02'].fill(dataset = dataset, anacat = ilabel,
+#                                               subjetpt = ak.to_numpy(Eff_c_Denom_pT_s02[icat]),
+#                                               weight = ak.to_numpy(Weights[icat]))
+#             output['c_eff_denominator_pt_s11'].fill(dataset = dataset, anacat = ilabel,
+#                                               subjetpt = ak.to_numpy(Eff_c_Denom_pT_s11[icat]),
+#                                               weight = ak.to_numpy(Weights[icat]))
+#             output['c_eff_denominator_pt_s12'].fill(dataset = dataset, anacat = ilabel,
+#                                               subjetpt = ak.to_numpy(Eff_c_Denom_pT_s12[icat]),
+#                                               weight = ak.to_numpy(Weights[icat]))
             
-            output['c_eff_numerator_eta_s01'].fill(dataset = dataset, anacat = ilabel,
-                                              subjeteta = ak.to_numpy(Eff_c_Num_eta_s01[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['c_eff_numerator_eta_s02'].fill(dataset = dataset, anacat = ilabel,
-                                              subjeteta = ak.to_numpy(Eff_c_Num_eta_s02[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['c_eff_numerator_eta_s11'].fill(dataset = dataset, anacat = ilabel,
-                                              subjeteta = ak.to_numpy(Eff_c_Num_eta_s11[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['c_eff_numerator_eta_s12'].fill(dataset = dataset, anacat = ilabel,
-                                              subjeteta = ak.to_numpy(Eff_c_Num_eta_s12[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
+#             output['c_eff_numerator_eta_s01'].fill(dataset = dataset, anacat = ilabel,
+#                                               subjeteta = ak.to_numpy(Eff_c_Num_eta_s01[icat]),
+#                                               weight = ak.to_numpy(Weights[icat]))
+#             output['c_eff_numerator_eta_s02'].fill(dataset = dataset, anacat = ilabel,
+#                                               subjeteta = ak.to_numpy(Eff_c_Num_eta_s02[icat]),
+#                                               weight = ak.to_numpy(Weights[icat]))
+#             output['c_eff_numerator_eta_s11'].fill(dataset = dataset, anacat = ilabel,
+#                                               subjeteta = ak.to_numpy(Eff_c_Num_eta_s11[icat]),
+#                                               weight = ak.to_numpy(Weights[icat]))
+#             output['c_eff_numerator_eta_s12'].fill(dataset = dataset, anacat = ilabel,
+#                                               subjeteta = ak.to_numpy(Eff_c_Num_eta_s12[icat]),
+#                                               weight = ak.to_numpy(Weights[icat]))
             
-            output['c_eff_denominator_eta_s01'].fill(dataset = dataset, anacat = ilabel,
-                                              subjeteta = ak.to_numpy(Eff_c_Denom_eta_s01[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['c_eff_denominator_eta_s02'].fill(dataset = dataset, anacat = ilabel,
-                                              subjeteta = ak.to_numpy(Eff_c_Denom_eta_s02[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['c_eff_denominator_eta_s11'].fill(dataset = dataset, anacat = ilabel,
-                                              subjeteta = ak.to_numpy(Eff_c_Denom_eta_s11[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['c_eff_denominator_eta_s12'].fill(dataset = dataset, anacat = ilabel,
-                                              subjeteta = ak.to_numpy(Eff_c_Denom_eta_s12[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
+#             output['c_eff_denominator_eta_s01'].fill(dataset = dataset, anacat = ilabel,
+#                                               subjeteta = ak.to_numpy(Eff_c_Denom_eta_s01[icat]),
+#                                               weight = ak.to_numpy(Weights[icat]))
+#             output['c_eff_denominator_eta_s02'].fill(dataset = dataset, anacat = ilabel,
+#                                               subjeteta = ak.to_numpy(Eff_c_Denom_eta_s02[icat]),
+#                                               weight = ak.to_numpy(Weights[icat]))
+#             output['c_eff_denominator_eta_s11'].fill(dataset = dataset, anacat = ilabel,
+#                                               subjeteta = ak.to_numpy(Eff_c_Denom_eta_s11[icat]),
+#                                               weight = ak.to_numpy(Weights[icat]))
+#             output['c_eff_denominator_eta_s12'].fill(dataset = dataset, anacat = ilabel,
+#                                               subjeteta = ak.to_numpy(Eff_c_Denom_eta_s12[icat]),
+#                                               weight = ak.to_numpy(Weights[icat]))
             
-            # ---- 1-D Light Parton-tagging Efficiencies ---- #
-            output['udsg_eff_numerator_pt_s01'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_udsg_Num_pT_s01[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['udsg_eff_numerator_pt_s02'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_udsg_Num_pT_s02[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['udsg_eff_numerator_pt_s11'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_udsg_Num_pT_s11[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['udsg_eff_numerator_pt_s12'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_udsg_Num_pT_s12[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
+#             # ---- 1-D Light Parton-tagging Efficiencies ---- #
+#             output['udsg_eff_numerator_pt_s01'].fill(dataset = dataset, anacat = ilabel,
+#                                               subjetpt = ak.to_numpy(Eff_udsg_Num_pT_s01[icat]),
+#                                               weight = ak.to_numpy(Weights[icat]))
+#             output['udsg_eff_numerator_pt_s02'].fill(dataset = dataset, anacat = ilabel,
+#                                               subjetpt = ak.to_numpy(Eff_udsg_Num_pT_s02[icat]),
+#                                               weight = ak.to_numpy(Weights[icat]))
+#             output['udsg_eff_numerator_pt_s11'].fill(dataset = dataset, anacat = ilabel,
+#                                               subjetpt = ak.to_numpy(Eff_udsg_Num_pT_s11[icat]),
+#                                               weight = ak.to_numpy(Weights[icat]))
+#             output['udsg_eff_numerator_pt_s12'].fill(dataset = dataset, anacat = ilabel,
+#                                               subjetpt = ak.to_numpy(Eff_udsg_Num_pT_s12[icat]),
+#                                               weight = ak.to_numpy(Weights[icat]))
             
-            output['udsg_eff_denominator_pt_s01'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_udsg_Denom_pT_s01[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['udsg_eff_denominator_pt_s02'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_udsg_Denom_pT_s02[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['udsg_eff_denominator_pt_s11'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_udsg_Denom_pT_s11[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['udsg_eff_denominator_pt_s12'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_udsg_Denom_pT_s12[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
+#             output['udsg_eff_denominator_pt_s01'].fill(dataset = dataset, anacat = ilabel,
+#                                               subjetpt = ak.to_numpy(Eff_udsg_Denom_pT_s01[icat]),
+#                                               weight = ak.to_numpy(Weights[icat]))
+#             output['udsg_eff_denominator_pt_s02'].fill(dataset = dataset, anacat = ilabel,
+#                                               subjetpt = ak.to_numpy(Eff_udsg_Denom_pT_s02[icat]),
+#                                               weight = ak.to_numpy(Weights[icat]))
+#             output['udsg_eff_denominator_pt_s11'].fill(dataset = dataset, anacat = ilabel,
+#                                               subjetpt = ak.to_numpy(Eff_udsg_Denom_pT_s11[icat]),
+#                                               weight = ak.to_numpy(Weights[icat]))
+#             output['udsg_eff_denominator_pt_s12'].fill(dataset = dataset, anacat = ilabel,
+#                                               subjetpt = ak.to_numpy(Eff_udsg_Denom_pT_s12[icat]),
+#                                               weight = ak.to_numpy(Weights[icat]))
             
-            output['udsg_eff_numerator_eta_s01'].fill(dataset = dataset, anacat = ilabel,
-                                              subjeteta = ak.to_numpy(Eff_udsg_Num_eta_s01[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['udsg_eff_numerator_eta_s02'].fill(dataset = dataset, anacat = ilabel,
-                                              subjeteta = ak.to_numpy(Eff_udsg_Num_eta_s02[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['udsg_eff_numerator_eta_s11'].fill(dataset = dataset, anacat = ilabel,
-                                              subjeteta = ak.to_numpy(Eff_udsg_Num_eta_s11[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['udsg_eff_numerator_eta_s12'].fill(dataset = dataset, anacat = ilabel,
-                                              subjeteta = ak.to_numpy(Eff_udsg_Num_eta_s12[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
+#             output['udsg_eff_numerator_eta_s01'].fill(dataset = dataset, anacat = ilabel,
+#                                               subjeteta = ak.to_numpy(Eff_udsg_Num_eta_s01[icat]),
+#                                               weight = ak.to_numpy(Weights[icat]))
+#             output['udsg_eff_numerator_eta_s02'].fill(dataset = dataset, anacat = ilabel,
+#                                               subjeteta = ak.to_numpy(Eff_udsg_Num_eta_s02[icat]),
+#                                               weight = ak.to_numpy(Weights[icat]))
+#             output['udsg_eff_numerator_eta_s11'].fill(dataset = dataset, anacat = ilabel,
+#                                               subjeteta = ak.to_numpy(Eff_udsg_Num_eta_s11[icat]),
+#                                               weight = ak.to_numpy(Weights[icat]))
+#             output['udsg_eff_numerator_eta_s12'].fill(dataset = dataset, anacat = ilabel,
+#                                               subjeteta = ak.to_numpy(Eff_udsg_Num_eta_s12[icat]),
+#                                               weight = ak.to_numpy(Weights[icat]))
             
-            output['udsg_eff_denominator_eta_s01'].fill(dataset = dataset, anacat = ilabel,
-                                              subjeteta = ak.to_numpy(Eff_udsg_Denom_eta_s01[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['udsg_eff_denominator_eta_s02'].fill(dataset = dataset, anacat = ilabel,
-                                              subjeteta = ak.to_numpy(Eff_udsg_Denom_eta_s02[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['udsg_eff_denominator_eta_s11'].fill(dataset = dataset, anacat = ilabel,
-                                              subjeteta = ak.to_numpy(Eff_udsg_Denom_eta_s11[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['udsg_eff_denominator_eta_s12'].fill(dataset = dataset, anacat = ilabel,
-                                              subjeteta = ak.to_numpy(Eff_udsg_Denom_eta_s12[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            
-            # ---- 2-D B-tagging Efficiencies ---- #
-            output['b_eff_numerator_s01'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_b_Num_pT_s01[icat]),
-                                              subjeteta = ak.to_numpy(Eff_b_Num_eta_s01[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['b_eff_numerator_s02'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_b_Num_pT_s02[icat]),
-                                              subjeteta = ak.to_numpy(Eff_b_Num_eta_s02[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['b_eff_numerator_s11'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_b_Num_pT_s11[icat]),
-                                              subjeteta = ak.to_numpy(Eff_b_Num_eta_s11[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['b_eff_numerator_s12'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_b_Num_pT_s12[icat]),
-                                              subjeteta = ak.to_numpy(Eff_b_Num_eta_s12[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            
-            output['b_eff_denominator_s01'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_b_Denom_pT_s01[icat]),
-                                              subjeteta = ak.to_numpy(Eff_b_Denom_eta_s01[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['b_eff_denominator_s02'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_b_Denom_pT_s02[icat]),
-                                              subjeteta = ak.to_numpy(Eff_b_Denom_eta_s02[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['b_eff_denominator_s11'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_b_Denom_pT_s11[icat]),
-                                              subjeteta = ak.to_numpy(Eff_b_Denom_eta_s11[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['b_eff_denominator_s12'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_b_Denom_pT_s12[icat]),
-                                              subjeteta = ak.to_numpy(Eff_b_Denom_eta_s12[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            
-            output['b_eff_numerator_s01_largerbins'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_b_Num_pT_s01[icat]),
-                                              subjeteta = ak.to_numpy(Eff_b_Num_eta_s01[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['b_eff_numerator_s02_largerbins'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_b_Num_pT_s02[icat]),
-                                              subjeteta = ak.to_numpy(Eff_b_Num_eta_s02[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['b_eff_numerator_s11_largerbins'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_b_Num_pT_s11[icat]),
-                                              subjeteta = ak.to_numpy(Eff_b_Num_eta_s11[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['b_eff_numerator_s12_largerbins'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_b_Num_pT_s12[icat]),
-                                              subjeteta = ak.to_numpy(Eff_b_Num_eta_s12[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            
-            output['b_eff_denominator_s01_largerbins'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_b_Denom_pT_s01[icat]),
-                                              subjeteta = ak.to_numpy(Eff_b_Denom_eta_s01[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['b_eff_denominator_s02_largerbins'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_b_Denom_pT_s02[icat]),
-                                              subjeteta = ak.to_numpy(Eff_b_Denom_eta_s02[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['b_eff_denominator_s11_largerbins'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_b_Denom_pT_s11[icat]),
-                                              subjeteta = ak.to_numpy(Eff_b_Denom_eta_s11[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['b_eff_denominator_s12_largerbins'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_b_Denom_pT_s12[icat]),
-                                              subjeteta = ak.to_numpy(Eff_b_Denom_eta_s12[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
+#             output['udsg_eff_denominator_eta_s01'].fill(dataset = dataset, anacat = ilabel,
+#                                               subjeteta = ak.to_numpy(Eff_udsg_Denom_eta_s01[icat]),
+#                                               weight = ak.to_numpy(Weights[icat]))
+#             output['udsg_eff_denominator_eta_s02'].fill(dataset = dataset, anacat = ilabel,
+#                                               subjeteta = ak.to_numpy(Eff_udsg_Denom_eta_s02[icat]),
+#                                               weight = ak.to_numpy(Weights[icat]))
+#             output['udsg_eff_denominator_eta_s11'].fill(dataset = dataset, anacat = ilabel,
+#                                               subjeteta = ak.to_numpy(Eff_udsg_Denom_eta_s11[icat]),
+#                                               weight = ak.to_numpy(Weights[icat]))
+#             output['udsg_eff_denominator_eta_s12'].fill(dataset = dataset, anacat = ilabel,
+#                                               subjeteta = ak.to_numpy(Eff_udsg_Denom_eta_s12[icat]),
+#                                               weight = ak.to_numpy(Weights[icat]))
             
             
-            # ---- 2-D C-tagging Efficiencies ---- #
-            output['c_eff_numerator_s01'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_c_Num_pT_s01[icat]),
-                                              subjeteta = ak.to_numpy(Eff_c_Num_eta_s01[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['c_eff_numerator_s02'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_c_Num_pT_s02[icat]),
-                                              subjeteta = ak.to_numpy(Eff_c_Num_eta_s02[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['c_eff_numerator_s11'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_c_Num_pT_s11[icat]),
-                                              subjeteta = ak.to_numpy(Eff_c_Num_eta_s11[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['c_eff_numerator_s12'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_c_Num_pT_s12[icat]),
-                                              subjeteta = ak.to_numpy(Eff_c_Num_eta_s12[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            
-            output['c_eff_denominator_s01'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_c_Denom_pT_s01[icat]),
-                                              subjeteta = ak.to_numpy(Eff_c_Denom_eta_s01[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['c_eff_denominator_s02'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_c_Denom_pT_s02[icat]),
-                                              subjeteta = ak.to_numpy(Eff_c_Denom_eta_s02[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['c_eff_denominator_s11'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_c_Denom_pT_s11[icat]),
-                                              subjeteta = ak.to_numpy(Eff_c_Denom_eta_s11[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['c_eff_denominator_s12'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_c_Denom_pT_s12[icat]),
-                                              subjeteta = ak.to_numpy(Eff_c_Denom_eta_s12[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            
-            output['c_eff_numerator_s01_largerbins'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_c_Num_pT_s01[icat]),
-                                              subjeteta = ak.to_numpy(Eff_c_Num_eta_s01[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['c_eff_numerator_s02_largerbins'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_c_Num_pT_s02[icat]),
-                                              subjeteta = ak.to_numpy(Eff_c_Num_eta_s02[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['c_eff_numerator_s11_largerbins'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_c_Num_pT_s11[icat]),
-                                              subjeteta = ak.to_numpy(Eff_c_Num_eta_s11[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['c_eff_numerator_s12_largerbins'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_c_Num_pT_s12[icat]),
-                                              subjeteta = ak.to_numpy(Eff_c_Num_eta_s12[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            
-            output['c_eff_denominator_s01_largerbins'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_c_Denom_pT_s01[icat]),
-                                              subjeteta = ak.to_numpy(Eff_c_Denom_eta_s01[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['c_eff_denominator_s02_largerbins'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_c_Denom_pT_s02[icat]),
-                                              subjeteta = ak.to_numpy(Eff_c_Denom_eta_s02[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['c_eff_denominator_s11_largerbins'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_c_Denom_pT_s11[icat]),
-                                              subjeteta = ak.to_numpy(Eff_c_Denom_eta_s11[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['c_eff_denominator_s12_largerbins'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_c_Denom_pT_s12[icat]),
-                                              subjeteta = ak.to_numpy(Eff_c_Denom_eta_s12[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            
-            # ---- 2-D Light Parton-tagging Efficiencies ---- #
-            output['udsg_eff_numerator_s01'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_udsg_Num_pT_s01[icat]),
-                                              subjeteta = ak.to_numpy(Eff_udsg_Num_eta_s01[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['udsg_eff_numerator_s02'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_udsg_Num_pT_s02[icat]),
-                                              subjeteta = ak.to_numpy(Eff_udsg_Num_eta_s02[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['udsg_eff_numerator_s11'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_udsg_Num_pT_s11[icat]),
-                                              subjeteta = ak.to_numpy(Eff_udsg_Num_eta_s11[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['udsg_eff_numerator_s12'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_udsg_Num_pT_s12[icat]),
-                                              subjeteta = ak.to_numpy(Eff_udsg_Num_eta_s12[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            
-            output['udsg_eff_denominator_s01'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_udsg_Denom_pT_s01[icat]),
-                                              subjeteta = ak.to_numpy(Eff_udsg_Denom_eta_s01[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['udsg_eff_denominator_s02'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_udsg_Denom_pT_s02[icat]),
-                                              subjeteta = ak.to_numpy(Eff_udsg_Denom_eta_s02[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['udsg_eff_denominator_s11'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_udsg_Denom_pT_s11[icat]),
-                                              subjeteta = ak.to_numpy(Eff_udsg_Denom_eta_s11[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['udsg_eff_denominator_s12'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_udsg_Denom_pT_s12[icat]),
-                                              subjeteta = ak.to_numpy(Eff_udsg_Denom_eta_s12[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            
-            output['udsg_eff_numerator_s01_largerbins'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_udsg_Num_pT_s01[icat]),
-                                              subjeteta = ak.to_numpy(Eff_udsg_Num_eta_s01[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['udsg_eff_numerator_s02_largerbins'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_udsg_Num_pT_s02[icat]),
-                                              subjeteta = ak.to_numpy(Eff_udsg_Num_eta_s02[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['udsg_eff_numerator_s11_largerbins'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_udsg_Num_pT_s11[icat]),
-                                              subjeteta = ak.to_numpy(Eff_udsg_Num_eta_s11[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['udsg_eff_numerator_s12_largerbins'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_udsg_Num_pT_s12[icat]),
-                                              subjeteta = ak.to_numpy(Eff_udsg_Num_eta_s12[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            
-            output['udsg_eff_denominator_s01_largerbins'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_udsg_Denom_pT_s01[icat]),
-                                              subjeteta = ak.to_numpy(Eff_udsg_Denom_eta_s01[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['udsg_eff_denominator_s02_largerbins'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_udsg_Denom_pT_s02[icat]),
-                                              subjeteta = ak.to_numpy(Eff_udsg_Denom_eta_s02[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['udsg_eff_denominator_s11_largerbins'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_udsg_Denom_pT_s11[icat]),
-                                              subjeteta = ak.to_numpy(Eff_udsg_Denom_eta_s11[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
-            output['udsg_eff_denominator_s12_largerbins'].fill(dataset = dataset, anacat = ilabel,
-                                              subjetpt = ak.to_numpy(Eff_udsg_Denom_pT_s12[icat]),
-                                              subjeteta = ak.to_numpy(Eff_udsg_Denom_eta_s12[icat]),
-                                              weight = ak.to_numpy(Weights[icat]))
         
         return output
 
