@@ -41,7 +41,7 @@ outputs_unweighted = {}
 
 seed = 1234577890
 prng = RandomState(seed)
-Chunk = [1000000, 200] # [chunksize, maxchunks]
+Chunk = [10000, 100] # [chunksize, maxchunks]
 
 for name,files in filesets.items(): 
     if not LoadingUnweightedFiles:
@@ -62,8 +62,8 @@ for name,files in filesets.items():
                                               executor_args={
                                                   'skipbadfiles':False,
                                                   'schema': BaseSchema, #NanoAODSchema,
-                                                  'workers': 2})#,
-                                              #chunksize=Chunk[0], maxchunks=Chunk[1])
+                                                  'workers': 2},
+                                              chunksize=Chunk[0], maxchunks=Chunk[1])
         else:
             chosen_exec = 'dask'
             output = processor.run_uproot_job({name:files},
@@ -80,8 +80,8 @@ for name,files in filesets.items():
                                                   'client': client,
                                                   'skipbadfiles':False,
                                                   'schema': BaseSchema, #NanoAODSchema,
-                                                  'workers': 2})#,
-                                              #chunksize=Chunk[0], maxchunks=Chunk[1])
+                                                  'workers': 2},
+                                              chunksize=Chunk[0], maxchunks=Chunk[1])
 
         elapsed = time.time() - tstart
         outputs_unweighted[name] = output
@@ -90,7 +90,7 @@ for name,files in filesets.items():
                   + name 
                   + '_unweighted_output_' 
                   + chosen_exec 
-                  + '_6-29-21_MC_efficiency_test.coffea')
+                  + '_8-01-21_MC_efficiency_NoAnacats_100chunks_10000chunksize.coffea')
 
     else:
         output = util.load('TTbarAllHadUproot/CoffeaOutputs/UnweightedOutputs/TTbarResCoffea_' 
