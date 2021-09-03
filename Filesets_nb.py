@@ -114,7 +114,7 @@ filesets = {
 #     'RSGluon4000':RSGluon4000files,
 #     'RSGluon4500':RSGluon4500files,
 #     'RSGluon5000':RSGluon5000files,
-    'TTbar':ttbarfiles,
+#     'TTbar':ttbarfiles,
 #     'JetHT':jetdatafiles,
 #     'JetHT2016_Data':jetdatafiles2016,
 #     'JetHT2017_Data':jetdatafiles2017,
