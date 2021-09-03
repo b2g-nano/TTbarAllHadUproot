@@ -90,6 +90,8 @@ class TTbarResProcessor(processor.ProcessorABC):
         subjeteta_laxis = hist.Bin("subjeteta", r"SubJet $\eta$", 10, -3, 3) #Larger bins
         subjetphi_axis = hist.Bin("subjetphi", r"SubJet $\phi$", 50, -np.pi, np.pi)
         
+        distance_axis = hist.Bin("delta_r", r"$\Delta r$", 50, 0, 5)
+        
         self._accumulator = processor.dict_accumulator({
             'ttbarmass': hist.Hist("Counts", dataset_axis, cats_axis, ttbarmass_axis),
             
@@ -259,6 +261,21 @@ class TTbarResProcessor(processor.ProcessorABC):
             'subjet02_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
             'subjet11_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
             'subjet12_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+            
+            'subjet01_bquark_distance': hist.Hist("Counts", dataset_axis, distance_axis),
+            'subjet02_bquark_distance': hist.Hist("Counts", dataset_axis, distance_axis),
+            'subjet11_bquark_distance': hist.Hist("Counts", dataset_axis, distance_axis),
+            'subjet12_bquark_distance': hist.Hist("Counts", dataset_axis, distance_axis),
+            
+            'subjet01_cquark_distance': hist.Hist("Counts", dataset_axis, distance_axis),
+            'subjet02_cquark_distance': hist.Hist("Counts", dataset_axis, distance_axis),
+            'subjet11_cquark_distance': hist.Hist("Counts", dataset_axis, distance_axis),
+            'subjet12_cquark_distance': hist.Hist("Counts", dataset_axis, distance_axis),
+            
+            'subjet01_lightquark_distance': hist.Hist("Counts", dataset_axis, distance_axis),
+            'subjet02_lightquark_distance': hist.Hist("Counts", dataset_axis, distance_axis),
+            'subjet11_lightquark_distance': hist.Hist("Counts", dataset_axis, distance_axis),
+            'subjet12_lightquark_distance': hist.Hist("Counts", dataset_axis, distance_axis),
             
             'subjet01_bflavor_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
             'subjet01_with_bquark_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
@@ -1075,6 +1092,8 @@ class TTbarResProcessor(processor.ProcessorABC):
         SubJet01_and_nearby_bquark = pairing_b01.slot0[np.arange(ak.size(pairing_b01.slot0,0)),ak.to_numpy(minimumR_indexb01)]
                         # Finally.) Used for Test Output #
         SubJet01_with_bquark = SubJet01_and_nearby_bquark[isQuarkWithinRadiusb01] 
+        deltaR_b01_min = deltaR_b01[np.arange(ak.size(deltaR_b01,0)),ak.to_numpy(minimumR_indexb01)]
+        deltaR_b01_lessthanAK4 = deltaR_b01_new[isQuarkWithinRadiusb01]
         
         # Repeat all 7 steps and select desired subjets with quarks for SubJets 02, 11, and 12 #
         pairing_b02 = ak.cartesian([SubJet02.p4, GenParts.p4[isGenPart_bquark]]) 
@@ -1085,6 +1104,8 @@ class TTbarResProcessor(processor.ProcessorABC):
         isQuarkWithinRadiusb02 = deltaR_b02[np.arange(ak.size(deltaR_b02,0)),ak.to_numpy(minimumR_indexb02)] < 0.4 
         SubJet02_and_nearby_bquark = pairing_b02.slot0[np.arange(ak.size(pairing_b02.slot0,0)),ak.to_numpy(minimumR_indexb02)]
         SubJet02_with_bquark = SubJet02_and_nearby_bquark[isQuarkWithinRadiusb02]
+        deltaR_b02_min = deltaR_b01[np.arange(ak.size(deltaR_b02,0)),ak.to_numpy(minimumR_indexb02)]
+        deltaR_b02_lessthanAK4 = deltaR_b02_new[isQuarkWithinRadiusb02]
         
         pairing_b11 = ak.cartesian([SubJet11.p4, GenParts.p4[isGenPart_bquark]]) 
         keepEvents_b11 = np.where(ak.count(pairing_b11.slot0.pt,-1) == 0, False, True)
@@ -1094,6 +1115,8 @@ class TTbarResProcessor(processor.ProcessorABC):
         isQuarkWithinRadiusb11 = deltaR_b11[np.arange(ak.size(deltaR_b11,0)),ak.to_numpy(minimumR_indexb11)] < 0.4 
         SubJet11_and_nearby_bquark = pairing_b11.slot0[np.arange(ak.size(pairing_b11.slot0,0)),ak.to_numpy(minimumR_indexb11)]
         SubJet11_with_bquark = SubJet11_and_nearby_bquark[isQuarkWithinRadiusb11]
+        deltaR_b11_min = deltaR_b01[np.arange(ak.size(deltaR_b11,0)),ak.to_numpy(minimumR_indexb11)]
+        deltaR_b11_lessthanAK4 = deltaR_b11_new[isQuarkWithinRadiusb11]
         
         pairing_b12 = ak.cartesian([SubJet12.p4, GenParts.p4[isGenPart_bquark]]) 
         keepEvents_b12 = np.where(ak.count(pairing_b12.slot0.pt,-1) == 0, False, True)
@@ -1103,6 +1126,8 @@ class TTbarResProcessor(processor.ProcessorABC):
         isQuarkWithinRadiusb12 = deltaR_b12[np.arange(ak.size(deltaR_b12,0)),ak.to_numpy(minimumR_indexb12)] < 0.4 
         SubJet12_and_nearby_bquark = pairing_b12.slot0[np.arange(ak.size(pairing_b12.slot0,0)),ak.to_numpy(minimumR_indexb12)]
         SubJet12_with_bquark = SubJet12_and_nearby_bquark[isQuarkWithinRadiusb12]
+        deltaR_b12_min = deltaR_b12[np.arange(ak.size(deltaR_b12,0)),ak.to_numpy(minimumR_indexb12)]
+        deltaR_b12_lessthanAK4 = deltaR_b12_new[isQuarkWithinRadiusb12]
         
         """ ---------------------------------------------------------------------------------------------------------- """
         
@@ -1111,12 +1136,17 @@ class TTbarResProcessor(processor.ProcessorABC):
         
         pairing_c01 = ak.cartesian([SubJet01.p4, GenParts.p4[isGenPart_cquark]]) 
         keepEvents_c01 = np.where(ak.count(pairing_c01.slot0.pt,-1) == 0, False, True)
-        pairing_c01 = pairing_c01[keepEvents_c01]
+        #bquark_contamination01 = np.where(keepEvents_b01, False, True) # If bquarks are also in this subjet, don't count this
+        #print('bquark contamination = ', bquark_contamination01)
+        pairing_c01 = pairing_c01[keepEvents_c01]#, pairing_c01 = pairing_c01[bquark_contamination01]
+        print('pairing pt = ', pairing_c01.slot0.pt)
         deltaR_c01 = pairing_c01.slot0.delta_r(pairing_c01.slot1) 
         minimumR_indexc01 = ak.argmin(deltaR_c01, axis=-1) 
         isQuarkWithinRadiusc01 = deltaR_c01[np.arange(ak.size(deltaR_c01,0)),ak.to_numpy(minimumR_indexc01)] < 0.4 
         SubJet01_and_nearby_cquark = pairing_c01.slot0[np.arange(ak.size(pairing_c01.slot0,0)),ak.to_numpy(minimumR_indexc01)]
         SubJet01_with_cquark = SubJet01_and_nearby_cquark[isQuarkWithinRadiusc01] 
+        deltaR_c01_min = deltaR_c01[np.arange(ak.size(deltaR_c01,0)),ak.to_numpy(minimumR_indexc01)]
+        deltaR_c01_lessthanAK4 = deltaR_c01_new[isQuarkWithinRadiusc01]
         
         pairing_c02 = ak.cartesian([SubJet02.p4, GenParts.p4[isGenPart_cquark]]) 
         keepEvents_c02 = np.where(ak.count(pairing_c02.slot0.pt,-1) == 0, False, True)
@@ -1126,6 +1156,8 @@ class TTbarResProcessor(processor.ProcessorABC):
         isQuarkWithinRadiusc02 = deltaR_c02[np.arange(ak.size(deltaR_c02,0)),ak.to_numpy(minimumR_indexc02)] < 0.4 
         SubJet02_and_nearby_cquark = pairing_c02.slot0[np.arange(ak.size(pairing_c02.slot0,0)),ak.to_numpy(minimumR_indexc02)]
         SubJet02_with_cquark = SubJet02_and_nearby_cquark[isQuarkWithinRadiusc02]
+        deltaR_c02_min = deltaR_c02[np.arange(ak.size(deltaR_c02,0)),ak.to_numpy(minimumR_indexc02)]
+        deltaR_c02_lessthanAK4 = deltaR_c02_new[isQuarkWithinRadiusc02]
         
         pairing_c11 = ak.cartesian([SubJet11.p4, GenParts.p4[isGenPart_cquark]]) 
         keepEvents_c11 = np.where(ak.count(pairing_c11.slot0.pt,-1) == 0, False, True)
@@ -1135,6 +1167,8 @@ class TTbarResProcessor(processor.ProcessorABC):
         isQuarkWithinRadiusc11 = deltaR_c11[np.arange(ak.size(deltaR_c11,0)),ak.to_numpy(minimumR_indexc11)] < 0.4 
         SubJet11_and_nearby_cquark = pairing_c11.slot0[np.arange(ak.size(pairing_c11.slot0,0)),ak.to_numpy(minimumR_indexc11)]
         SubJet11_with_cquark = SubJet11_and_nearby_cquark[isQuarkWithinRadiusc11]
+        deltaR_c11_min = deltaR_c11[np.arange(ak.size(deltaR_c11,0)),ak.to_numpy(minimumR_indexc11)]
+        deltaR_c11_lessthanAK4 = deltaR_c11_new[isQuarkWithinRadiusc11]
         
         pairing_c12 = ak.cartesian([SubJet12.p4, GenParts.p4[isGenPart_cquark]]) 
         keepEvents_c12 = np.where(ak.count(pairing_c12.slot0.pt,-1) == 0, False, True)
@@ -1144,6 +1178,8 @@ class TTbarResProcessor(processor.ProcessorABC):
         isQuarkWithinRadiusc12 = deltaR_c12[np.arange(ak.size(deltaR_c12,0)),ak.to_numpy(minimumR_indexc12)] < 0.4 
         SubJet12_and_nearby_cquark = pairing_c12.slot0[np.arange(ak.size(pairing_c12.slot0,0)),ak.to_numpy(minimumR_indexc12)]
         SubJet12_with_cquark = SubJet12_and_nearby_cquark[isQuarkWithinRadiusc12]
+        deltaR_c12_min = deltaR_c12[np.arange(ak.size(deltaR_c12,0)),ak.to_numpy(minimumR_indexc12)]
+        deltaR_c12_lessthanAK4 = deltaR_c12_new[isQuarkWithinRadiusc12]
         
         """ ---------------------------------------------------------------------------------------------------------- """
         
@@ -1163,6 +1199,8 @@ class TTbarResProcessor(processor.ProcessorABC):
         isQuarkWithinRadiusl01 = deltaR_l01[np.arange(ak.size(deltaR_l01,0)),ak.to_numpy(minimumR_indexl01)] < 0.4 
         SubJet01_and_nearby_lquark = pairing_l01.slot0[np.arange(ak.size(pairing_l01.slot0,0)),ak.to_numpy(minimumR_indexl01)]
         SubJet01_with_lquark = SubJet01_and_nearby_lquark[isQuarkWithinRadiusl01] 
+        deltaR_l01_min = deltaR_l01[np.arange(ak.size(deltaR_l01,0)),ak.to_numpy(minimumR_indexl01)]
+        deltaR_l01_lessthanAK4 = deltaR_l01_new[isQuarkWithinRadiusl01]
         
         pairing_l02 = ak.cartesian([SubJet02.p4, GenParts.p4[isGenPart_lightquark]]) 
         keepEvents_l02 = np.where(ak.count(pairing_l02.slot0.pt,-1) == 0, False, True)
@@ -1172,6 +1210,8 @@ class TTbarResProcessor(processor.ProcessorABC):
         isQuarkWithinRadiusl02 = deltaR_l02[np.arange(ak.size(deltaR_l02,0)),ak.to_numpy(minimumR_indexl02)] < 0.4 
         SubJet02_and_nearby_lquark = pairing_l02.slot0[np.arange(ak.size(pairing_l02.slot0,0)),ak.to_numpy(minimumR_indexl02)]
         SubJet02_with_lquark = SubJet02_and_nearby_lquark[isQuarkWithinRadiusl02]
+        deltaR_l02_min = deltaR_l02[np.arange(ak.size(deltaR_l02,0)),ak.to_numpy(minimumR_indexl02)]
+        deltaR_l02_lessthanAK4 = deltaR_l02_new[isQuarkWithinRadiusl02]
         
         pairing_l11 = ak.cartesian([SubJet11.p4, GenParts.p4[isGenPart_lightquark]]) 
         keepEvents_l11 = np.where(ak.count(pairing_l11.slot0.pt,-1) == 0, False, True)
@@ -1181,6 +1221,8 @@ class TTbarResProcessor(processor.ProcessorABC):
         isQuarkWithinRadiusl11 = deltaR_l11[np.arange(ak.size(deltaR_l11,0)),ak.to_numpy(minimumR_indexl11)] < 0.4 
         SubJet11_and_nearby_lquark = pairing_l11.slot0[np.arange(ak.size(pairing_l11.slot0,0)),ak.to_numpy(minimumR_indexl11)]
         SubJet11_with_lquark = SubJet11_and_nearby_lquark[isQuarkWithinRadiusl11]
+        deltaR_l11_min = deltaR_l11[np.arange(ak.size(deltaR_l11,0)),ak.to_numpy(minimumR_indexl11)]
+        deltaR_l11_lessthanAK4 = deltaR_l11_new[isQuarkWithinRadiusl11]
         
         pairing_l12 = ak.cartesian([SubJet12.p4, GenParts.p4[isGenPart_lightquark]]) 
         keepEvents_l12 = np.where(ak.count(pairing_l12.slot0.pt,-1) == 0, False, True)
@@ -1190,6 +1232,8 @@ class TTbarResProcessor(processor.ProcessorABC):
         isQuarkWithinRadiusl12 = deltaR_l12[np.arange(ak.size(deltaR_l12,0)),ak.to_numpy(minimumR_indexl12)] < 0.4 
         SubJet12_and_nearby_lquark = pairing_l12.slot0[np.arange(ak.size(pairing_l12.slot0,0)),ak.to_numpy(minimumR_indexl12)]
         SubJet12_with_lquark = SubJet12_and_nearby_lquark[isQuarkWithinRadiusl12]
+        deltaR_l12_min = deltaR_l12[np.arange(ak.size(deltaR_l12,0)),ak.to_numpy(minimumR_indexl12)]
+        deltaR_l12_lessthanAK4 = deltaR_l12_new[isQuarkWithinRadiusl12]
         
         
 #         print('ALL SHAPE SIZES ARE FLATTENED')
@@ -1198,15 +1242,15 @@ class TTbarResProcessor(processor.ProcessorABC):
 #         print('SubJet01 pt               = ', SubJet01.p4.pt)
 #         print('SubJet01 pt shape               = ', np.shape( ak.to_numpy(ak.flatten(SubJet01.p4.pt)) ))
 #         print()
-#         print('Weights                   = ', evtweights)
-#         print('Weights shape                   = ', np.shape( ak.to_numpy(evtweights) ))
+#         print('Weights                        = ', evtweights[isQuarkWithinRadiusb01])
+#         print('Weights shape                   = ', np.shape( ak.to_numpy(evtweights[isQuarkWithinRadiusb01]) ))
 #         print()
 #         print('-----------------------------------------------------------------------------')
-#         print('pairing_01 pt                  = ', pairing_01)
-#         print('pairing_01 shape                = ', np.shape( ak.to_numpy(ak.flatten(pairing_01)) ))
+#         print('pairing_01 pt                  = ', pairing_b01)
+#         print('pairing_01 shape                = ', np.shape( ak.to_numpy(ak.flatten(pairing_b01)) ))
 #         print()
-#         print('deltaR_01                      = ', deltaR_01)
-#         print('deltaR_01 shape                 = ', np.shape( ak.to_numpy(ak.flatten(deltaR_01)) ))
+#         print('deltaR_b01_lessthanAK4                     = ', deltaR_b01_lessthanAK4)
+#         print('deltaR_b01_lessthanAK4 shape                = ', np.shape( ak.to_numpy(deltaR_b01_lessthanAK4) ))
 #         print()
 #         print('minimumR_index01               = ', minimumR_index01) # should be flat already
 #         print('minimumR_index01 shape          = ', np.shape( ak.to_numpy(minimumR_index01) ))
@@ -1388,6 +1432,45 @@ class TTbarResProcessor(processor.ProcessorABC):
         
         
         """ Delta R to nearest b quark and c quark, for subjets that are identified as “5” or “4". """
+        
+        output['subjet01_bquark_distance'].fill(dataset = dataset,
+                                               delta_r = ak.to_numpy(deltaR_b01_lessthanAK4),
+                                               weight = ak.to_numpy(evtweights[isQuarkWithinRadiusb01]))
+        output['subjet02_bquark_distance'].fill(dataset = dataset,
+                                               delta_r = ak.to_numpy(deltaR_b02_lessthanAK4),
+                                               weight = ak.to_numpy(evtweights[isQuarkWithinRadiusb02]))
+        output['subjet11_bquark_distance'].fill(dataset = dataset,
+                                               delta_r = ak.to_numpy(deltaR_b11_lessthanAK4),
+                                               weight = ak.to_numpy(evtweights[isQuarkWithinRadiusb11]))
+        output['subjet12_bquark_distance'].fill(dataset = dataset,
+                                               delta_r = ak.to_numpy(deltaR_b12_lessthanAK4),
+                                               weight = ak.to_numpy(evtweights[isQuarkWithinRadiusb12]))
+        
+        output['subjet01_cquark_distance'].fill(dataset = dataset,
+                                               delta_r = ak.to_numpy(deltaR_c01_lessthanAK4),
+                                               weight = ak.to_numpy(evtweights[isQuarkWithinRadiusbc1]))
+        output['subjet02_cquark_distance'].fill(dataset = dataset,
+                                               delta_r = ak.to_numpy(deltaR_c02_lessthanAK4),
+                                               weight = ak.to_numpy(evtweights[isQuarkWithinRadiusc02]))
+        output['subjet11_cquark_distance'].fill(dataset = dataset,
+                                               delta_r = ak.to_numpy(deltaR_c11_lessthanAK4),
+                                               weight = ak.to_numpy(evtweights[isQuarkWithinRadiusc11]))
+        output['subjet12_cquark_distance'].fill(dataset = dataset,
+                                               delta_r = ak.to_numpy(deltaR_c12_lessthanAK4),
+                                               weight = ak.to_numpy(evtweights[isQuarkWithinRadiusc12]))
+        
+        output['subjet01_lightquark_distance'].fill(dataset = dataset,
+                                               delta_r = ak.to_numpy(deltaR_l01_lessthanAK4),
+                                               weight = ak.to_numpy(evtweights[isQuarkWithinRadiusl01]))
+        output['subjet02_lightquark_distance'].fill(dataset = dataset,
+                                               delta_r = ak.to_numpy(deltaR_l02_lessthanAK4),
+                                               weight = ak.to_numpy(evtweights[isQuarkWithinRadiusl02]))
+        output['subjet11_lightquark_distance'].fill(dataset = dataset,
+                                               delta_r = ak.to_numpy(deltaR_l11_lessthanAK4),
+                                               weight = ak.to_numpy(evtweights[isQuarkWithinRadiusl11]))
+        output['subjet12_lightquark_distance'].fill(dataset = dataset,
+                                               delta_r = ak.to_numpy(deltaR_l12_lessthanAK4),
+                                               weight = ak.to_numpy(evtweights[isQuarkWithinRadiusl12]))
 
         # ---- Get Analysis Categories ---- # 
         # ---- They are (central, forward) cross (0b,1b,2b) cross (Probet,at,0t,1t,>=1t,2t) ---- #
