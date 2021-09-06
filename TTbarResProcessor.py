@@ -86,6 +86,16 @@ class TTbarResProcessor(processor.ProcessorABC):
         subjetphi_axis = hist.Bin("subjetphi", r"SubJet $\phi$", 50, -np.pi, np.pi)
 
         self._accumulator = processor.dict_accumulator({
+#    ===================================================================================================================
+#    K     K IIIIIII N     N EEEEEEE M     M    A    TTTTTTT IIIIIII   CCCC      H     H IIIIIII   SSSSS TTTTTTT   SSSSS     
+#    K   K      I    NN    N E       MM   MM   A A      T       I     C          H     H    I     S         T     S          
+#    K K        I    N N   N E       M M M M  A   A     T       I    C           H     H    I    S          T    S           
+#    KKk        I    N  N  N EEEEEEE M  M  M  AAAAA     T       I    C           HHHHHHH    I     SSSSS     T     SSSSS      
+#    K  K       I    N   N N E       M     M A     A    T       I    C           H     H    I          S    T          S     
+#    K   K      I    N    NN E       M     M A     A    T       I     C          H     H    I         S     T         S      
+#    K   K   IIIIIII N     N EEEEEEE M     M A     A    T    IIIIIII   CCCC      H     H IIIIIII SSSSS      T    SSSSS 
+#    ===================================================================================================================
+            
             'ttbarmass': hist.Hist("Counts", dataset_axis, cats_axis, ttbarmass_axis),
             
             'jetmass':         hist.Hist("Counts", dataset_axis, cats_axis, jetmass_axis),
@@ -185,6 +195,16 @@ class TTbarResProcessor(processor.ProcessorABC):
 #             'udsg_eff_denominator_eta_s11': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
 #             'udsg_eff_denominator_eta_s12': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
             
+#    ====================================================================
+#    EEEEEEE FFFFFFF FFFFFFF      H     H IIIIIII   SSSSS TTTTTTT   SSSSS     
+#    E       F       F            H     H    I     S         T     S          
+#    E       F       F            H     H    I    S          T    S           
+#    EEEEEEE FFFFFFF FFFFFFF      HHHHHHH    I     SSSSS     T     SSSSS      
+#    E       F       F            H     H    I          S    T          S     
+#    E       F       F            H     H    I         S     T         S      
+#    EEEEEEE F       F       *    H     H IIIIIII SSSSS      T    SSSSS
+#    ====================================================================
+            
             # ---- 2D SubJet b-tag Efficiency ---- #
             'b_eff_numerator_s01': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
             'b_eff_numerator_s02': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
@@ -247,6 +267,68 @@ class TTbarResProcessor(processor.ProcessorABC):
             'udsg_eff_denominator_s02_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
             'udsg_eff_denominator_s11_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
             'udsg_eff_denominator_s12_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
+            
+            #********************************************************************************************************************#
+            
+#    =============================================================================      
+#   " TTTTTTT EEEEEEE   SSSSS TTTTTTT "    H     H IIIIIII   SSSSS TTTTTTT   SSSSS     
+#        T    E        S         T         H     H    I     S         T     S          
+#        T    E       S          T         H     H    I    S          T    S           
+#        T    EEEEEEE  SSSSS     T         HHHHHHH    I     SSSSS     T     SSSSS      
+#        T    E             S    T         H     H    I          S    T          S     
+#        T    E            S     T         H     H    I         S     T         S      
+#        T    EEEEEEE SSSSS      T         H     H IIIIIII SSSSS      T    SSSSS 
+#    =============================================================================  
+            
+            # ---- 4 Subjet's pt independant of category (testing purposes only) ---- #
+            'subjet01_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+            'subjet02_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+            'subjet11_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+            'subjet12_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+            
+            # ---- Distance between subjet and Gen level quark ---- #
+            'subjet01_bquark_distance': hist.Hist("Counts", dataset_axis, distance_axis),
+            'subjet02_bquark_distance': hist.Hist("Counts", dataset_axis, distance_axis),
+            'subjet11_bquark_distance': hist.Hist("Counts", dataset_axis, distance_axis),
+            'subjet12_bquark_distance': hist.Hist("Counts", dataset_axis, distance_axis),
+            
+            'subjet01_cquark_distance': hist.Hist("Counts", dataset_axis, distance_axis),
+            'subjet02_cquark_distance': hist.Hist("Counts", dataset_axis, distance_axis),
+            'subjet11_cquark_distance': hist.Hist("Counts", dataset_axis, distance_axis),
+            'subjet12_cquark_distance': hist.Hist("Counts", dataset_axis, distance_axis),
+            
+            'subjet01_lightquark_distance': hist.Hist("Counts", dataset_axis, distance_axis),
+            'subjet02_lightquark_distance': hist.Hist("Counts", dataset_axis, distance_axis),
+            'subjet11_lightquark_distance': hist.Hist("Counts", dataset_axis, distance_axis),
+            'subjet12_lightquark_distance': hist.Hist("Counts", dataset_axis, distance_axis),
+            
+            # pt of subjet defined with 'hadronFlavour' and subjet defined with nearest flavoured genpart #
+            'subjet01_bflavor_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+            'subjet01_with_bquark_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+            'subjet02_bflavor_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+            'subjet02_with_bquark_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+            'subjet11_bflavor_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+            'subjet11_with_bquark_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+            'subjet12_bflavor_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+            'subjet12_with_bquark_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+            
+            'subjet01_cflavor_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+            'subjet01_with_cquark_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+            'subjet02_cflavor_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+            'subjet02_with_cquark_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+            'subjet11_cflavor_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+            'subjet11_with_cquark_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+            'subjet12_cflavor_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+            'subjet12_with_cquark_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+            
+            'subjet01_lightflavor_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+            'subjet01_with_lightquark_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+            'subjet02_lightflavor_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+            'subjet02_with_lightquark_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+            'subjet11_lightflavor_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+            'subjet11_with_lightquark_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+            'subjet12_lightflavor_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+            'subjet12_with_lightquark_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
             
             'cutflow': processor.defaultdict_accumulator(int),
             
@@ -313,6 +395,16 @@ class TTbarResProcessor(processor.ProcessorABC):
         # ---- Define dataset ---- #
         dataset = events.metadata['dataset']
         
+#    ================================================================
+#    TTTTTTT RRRRRR  IIIIIII GGGGGGG GGGGGGG EEEEEEE RRRRRR    SSSSS     
+#       T    R     R    I    G       G       E       R     R  S          
+#       T    R     R    I    G       G       E       R     R S           
+#       T    RRRRRR     I    G  GGGG G  GGGG EEEEEEE RRRRRR   SSSSS      
+#       T    R   R      I    G     G G     G E       R   R         S     
+#       T    R    R     I    G     G G     G E       R    R       S      
+#       T    R     R IIIIIII  GGGGG   GGGGG  EEEEEEE R     R SSSSS  
+#    ================================================================
+        
         # ---- Get triggers from Dataset_info ---- #
         #triggers = [itrig for itrig in Dataset_info if 'HLT_PFHT' in itrig]
         #AK8triggers = [itrig for itrig in Dataset_info if 'HLT_AK8PFHT' in itrig]
@@ -350,7 +442,16 @@ class TTbarResProcessor(processor.ProcessorABC):
         #HLT_trig2 = df[HLT_trig2_str]
         #HLT_AK8_trig1 = df[HLT_AK8_trig1_str]
         #HLT_AK8_trig2 = df[HLT_AK8_trig2_str]
-       
+
+#    ===========================================================================================    
+#    N     N    A    N     N   OOO      A      OOO   DDDD          OOO   BBBBBB  JJJJJJJ   SSSSS     
+#    NN    N   A A   NN    N  O   O    A A    O   O  D   D        O   O  B     B    J     S          
+#    N N   N  A   A  N N   N O     O  A   A  O     O D    D      O     O B     B    J    S           
+#    N  N  N  AAAAA  N  N  N O     O  AAAAA  O     O D     D     O     O BBBBBB     J     SSSSS      
+#    N   N N A     A N   N N O     O A     A O     O D    D      O     O B     B J  J          S     
+#    N    NN A     A N    NN  O   O  A     A  O   O  D   D        O   O  B     B J  J         S      
+#    N     N A     A N     N   OOO   A     A   OOO   DDDD          OOO   BBBBBB   JJ     SSSSS 
+#    =========================================================================================== 
         
         # ---- Define AK8 Jets as FatJets ---- #
         #FatJets = events.FatJet # Everything should already be defined in here.  example) df['FatJet_pt] -> events.FatJet.pt
@@ -416,6 +517,16 @@ class TTbarResProcessor(processor.ProcessorABC):
                 "mass": events.SubJet_mass,
                 }, with_name="PtEtaPhiMLorentzVector"),
             })
+
+#    ===================================================================================
+#    PPPPPP  RRRRRR  EEEEEEE L       IIIIIII M     M       CCCC  U     U TTTTTTT   SSSSS     
+#    P     P R     R E       L          I    MM   MM      C      U     U    T     S          
+#    P     P R     R E       L          I    M M M M     C       U     U    T    S           
+#    PPPPPP  RRRRRR  EEEEEEE L          I    M  M  M     C       U     U    T     SSSSS      
+#    P       R   R   E       L          I    M     M     C       U     U    T          S     
+#    P       R    R  E       L          I    M     M      C       U   U     T         S      
+#    P       R     R EEEEEEE LLLLLLL IIIIIII M     M       CCCC    UUU      T    SSSSS
+#    ===================================================================================
         
         # ---- Get event weights from dataset ---- #
         if 'JetHT' in dataset: # If data is used...
@@ -535,7 +646,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         fwd = (~cen)
         
 
-
+#    ============================================================
 #    TTTTTTT     TTTTTTT    A    GGGGGGG GGGGGGG EEEEEEE RRRRRR  
 #       T           T      A A   G       G       E       R     R 
 #       T           T     A   A  G       G       E       R     R 
@@ -543,6 +654,7 @@ class TTbarResProcessor(processor.ProcessorABC):
 #       T           T    A     A G     G G     G E       R   R   
 #       T           T    A     A G     G G     G E       R    R   
 #       T           T    A     A  GGGGG   GGGGG  EEEEEEE R     R
+#    ============================================================
 
         # ---- CMS Top Tagger Version 2 (SD and Tau32 Cuts) ---- #
         tau32_s0 = np.where(ttbarcands.slot0.tau2>0,ttbarcands.slot0.tau3/ttbarcands.slot0.tau2, 0 )
@@ -565,7 +677,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         ttag2 =   ttag_s0 & ttag_s1 # Both jets top tagged (2t)
         Alltags = ttag0 | ttagI #Either no tag or at least one tag (0t+1t+2t)
         
-        
+#    ============================================================        
 #    BBBBBB      TTTTTTT    A    GGGGGGG GGGGGGG EEEEEEE RRRRRR  
 #    B     B        T      A A   G       G       E       R     R 
 #    B     B        T     A   A  G       G       E       R     R 
@@ -573,6 +685,7 @@ class TTbarResProcessor(processor.ProcessorABC):
 #    B     B        T    A     A G     G G     G E       R   R   
 #    B     B        T    A     A G     G G     G E       R    R   
 #    BBBBBB         T    A     A  GGGGG   GGGGG  EEEEEEE R     R
+#    ============================================================
         
         # ---- Pick FatJet that passes btag discriminator cut based on its subjet with the highest btag value ---- #
         btag_s0 = ( np.maximum(SubJet01.btagCSVV2 , SubJet02.btagCSVV2) > self.bdisc )
@@ -957,15 +1070,20 @@ class TTbarResProcessor(processor.ProcessorABC):
                                  '2b':np.array([None, None, None])}
                     
                     """
+                    ******************************************************************************************************
                     btag_wgts['mb'][n] --> w(n|m) --> "Probability" of n number of b-tags given m number of b-tagged jets
                     -----------------------------------------------------------------------------------------
                     w(0|0) = 1
+                    
                     w(0|1), w(1|1) = 1 - BSF, 
                                    = BSF
+                                   
                     w(0|2), w(1|2), w(2|2) = (1 - BSF_s0)(1 - BSF_s1), 
                                            = (1 - BSF_s0)BSF_s1 + BSF_s0(1 - BSF_s1),
                                            = (BSF_s0)(BSF_s1)
+                                           
                     w(1|0), w(2|0), w(2|1) = Undef.
+                    ******************************************************************************************************
                     """
                     
                     # ---- Use the leading subjet again to get the scale factors ---- #
@@ -1031,7 +1149,380 @@ class TTbarResProcessor(processor.ProcessorABC):
                     btag0 = (~btag_s0) & (~btag_s1) #(0b)
                     btag1 = btag_s0 ^ btag_s1 #(1b)
                     btag2 = btag_s0 & btag_s1 #(2b)
+                    
+#    ===========================================================================================
+#    PPPPPP     A    IIIIIII RRRRRR  IIIIIII N     N GGGGGGG     TTTTTTT EEEEEEE   SSSSS TTTTTTT 
+#    P     P   A A      I    R     R    I    NN    N G              T    E        S         T    
+#    P     P  A   A     I    R     R    I    N N   N G              T    E       S          T    
+#    PPPPPP   AAAAA     I    RRRRRR     I    N  N  N G  GGGG        T    EEEEEEE  SSSSS     T    
+#    P       A     A    I    R   R      I    N   N N G     G        T    E             S    T    
+#    P       A     A    I    R    R     I    N    NN G     G        T    E            S     T    
+#    P       A     A IIIIIII R     R IIIIIII N     N  GGGGG         T    EEEEEEE SSSSS      T  
+#    ===========================================================================================
 
+# ---- Subjets with Nearest b quarks ---- #
+        isGenPart_bquark = (np.abs(GenParts.pdgId) == 5)
+        
+        # Start with SubJet01 #
+        
+                        # 1.) Group the subjet with gen level bquark #
+        pairing_b01 = ak.cartesian([SubJet01.p4, GenParts.p4[isGenPart_bquark]]) 
+                        # 2.) Check if pair exists #
+        keepEvents_b01 = np.where(ak.count(pairing_b01.slot0.pt,-1) == 0, False, True) 
+                        # 3.) Only keep pairs if the event exists (avoid empty array elements) #
+        pairing_b01 = pairing_b01[keepEvents_b01] 
+                        # 4.) Distance between subjet and bquark #
+        deltaR_b01 = pairing_b01.slot0.delta_r(pairing_b01.slot1) 
+                        # 5.) Select (index of) smallest distance (also flattens deltaR_01) #
+        minimumR_indexb01 = ak.argmin(deltaR_b01, axis=-1) 
+                        # 6.) is nearest genpart within SubJet01 radius? #
+        deltaR_b01_new = deltaR_b01[np.arange(ak.size(deltaR_b01,0)),ak.to_numpy(minimumR_indexb01)]
+        isQuarkWithinRadiusb01 = deltaR_b01_new < 0.4 
+                        # 7.) Choose pairs with closest quark (min. index) that passes subjet radius cut (pass radius) #
+        SubJet01_and_nearby_bquark = pairing_b01.slot0[np.arange(ak.size(pairing_b01.slot0,0)),ak.to_numpy(minimumR_indexb01)]
+                        # Finally.) Used for Test Output #
+        SubJet01_with_bquark = SubJet01_and_nearby_bquark[isQuarkWithinRadiusb01] 
+        deltaR_b01_lessthanAK4 = deltaR_b01_new[isQuarkWithinRadiusb01]
+        
+        # Repeat all 7 steps and select desired subjets with quarks for SubJets 02, 11, and 12 #
+        pairing_b02 = ak.cartesian([SubJet02.p4, GenParts.p4[isGenPart_bquark]]) 
+        keepEvents_b02 = np.where(ak.count(pairing_b02.slot0.pt,-1) == 0, False, True)
+        pairing_b02 = pairing_b02[keepEvents_b02]
+        deltaR_b02 = pairing_b02.slot0.delta_r(pairing_b02.slot1)
+        minimumR_indexb02 = ak.argmin(deltaR_b02, axis=-1) 
+        deltaR_b02_new = deltaR_b01[np.arange(ak.size(deltaR_b02,0)),ak.to_numpy(minimumR_indexb02)]
+        isQuarkWithinRadiusb02 = deltaR_b02_new < 0.4 
+        SubJet02_and_nearby_bquark = pairing_b02.slot0[np.arange(ak.size(pairing_b02.slot0,0)),ak.to_numpy(minimumR_indexb02)]
+        SubJet02_with_bquark = SubJet02_and_nearby_bquark[isQuarkWithinRadiusb02]
+        deltaR_b02_lessthanAK4 = deltaR_b02_new[isQuarkWithinRadiusb02]
+        
+        pairing_b11 = ak.cartesian([SubJet11.p4, GenParts.p4[isGenPart_bquark]]) 
+        keepEvents_b11 = np.where(ak.count(pairing_b11.slot0.pt,-1) == 0, False, True)
+        pairing_b11 = pairing_b11[keepEvents_b11]
+        deltaR_b11 = pairing_b11.slot0.delta_r(pairing_b11.slot1)
+        minimumR_indexb11 = ak.argmin(deltaR_b11, axis=-1) 
+        deltaR_b11_new = deltaR_b01[np.arange(ak.size(deltaR_b11,0)),ak.to_numpy(minimumR_indexb11)]
+        isQuarkWithinRadiusb11 = deltaR_b11_new < 0.4 
+        SubJet11_and_nearby_bquark = pairing_b11.slot0[np.arange(ak.size(pairing_b11.slot0,0)),ak.to_numpy(minimumR_indexb11)]
+        SubJet11_with_bquark = SubJet11_and_nearby_bquark[isQuarkWithinRadiusb11]
+        deltaR_b11_lessthanAK4 = deltaR_b11_new[isQuarkWithinRadiusb11]
+        
+        pairing_b12 = ak.cartesian([SubJet12.p4, GenParts.p4[isGenPart_bquark]]) 
+        keepEvents_b12 = np.where(ak.count(pairing_b12.slot0.pt,-1) == 0, False, True)
+        pairing_b12 = pairing_b12[keepEvents_b12]
+        deltaR_b12 = pairing_b12.slot0.delta_r(pairing_b12.slot1)
+        minimumR_indexb12 = ak.argmin(deltaR_b12, axis=-1) 
+        deltaR_b12_new = deltaR_b12[np.arange(ak.size(deltaR_b12,0)),ak.to_numpy(minimumR_indexb12)]
+        isQuarkWithinRadiusb12 = deltaR_b12_new < 0.4 
+        SubJet12_and_nearby_bquark = pairing_b12.slot0[np.arange(ak.size(pairing_b12.slot0,0)),ak.to_numpy(minimumR_indexb12)]
+        SubJet12_with_bquark = SubJet12_and_nearby_bquark[isQuarkWithinRadiusb12]
+        deltaR_b12_lessthanAK4 = deltaR_b12_new[isQuarkWithinRadiusb12]
+        
+        """ ---------------------------------------------------------------------------------------------------------- """
+        
+        # ---- Subjets with Nearest c quarks ---- #  ak.fill_none(array, 0)
+        isGenPart_cquark = (np.abs(GenParts.pdgId) == 4)
+        
+        pairing_c01 = ak.cartesian([SubJet01.p4, GenParts.p4[isGenPart_cquark]]) 
+        keepEvents_c01 = np.where(ak.count(pairing_c01.slot0.pt,-1) == 0, False, True)
+        bquark_contamination01 = np.where(keepEvents_b01, False, True) # If bquarks are also in this subjet, don't count this
+        pairing_c01 = pairing_c01[keepEvents_c01]#, pairing_c01 = pairing_c01[bquark_contamination01]
+        deltaR_c01 = pairing_c01.slot0.delta_r(pairing_c01.slot1) 
+        minimumR_indexc01 = ak.argmin(deltaR_c01, axis=-1) 
+        deltaR_c01_new = deltaR_c01[np.arange(ak.size(deltaR_c01,0)),ak.to_numpy(minimumR_indexc01)]
+        isQuarkWithinRadiusc01 = deltaR_c01_new < 0.4 
+        SubJet01_and_nearby_cquark = pairing_c01.slot0[np.arange(ak.size(pairing_c01.slot0,0)),ak.to_numpy(minimumR_indexc01)]
+        SubJet01_with_cquark = SubJet01_and_nearby_cquark[isQuarkWithinRadiusc01] 
+        deltaR_c01_lessthanAK4 = deltaR_c01_new[isQuarkWithinRadiusc01]
+        
+        pairing_c02 = ak.cartesian([SubJet02.p4, GenParts.p4[isGenPart_cquark]]) 
+        keepEvents_c02 = np.where(ak.count(pairing_c02.slot0.pt,-1) == 0, False, True)
+        pairing_c02 = pairing_c02[keepEvents_c02]
+        deltaR_c02 = pairing_c02.slot0.delta_r(pairing_c02.slot1)
+        minimumR_indexc02 = ak.argmin(deltaR_c02, axis=-1) 
+        deltaR_c02_new = deltaR_c02[np.arange(ak.size(deltaR_c02,0)),ak.to_numpy(minimumR_indexc02)]
+        isQuarkWithinRadiusc02 = deltaR_c02_new < 0.4 
+        SubJet02_and_nearby_cquark = pairing_c02.slot0[np.arange(ak.size(pairing_c02.slot0,0)),ak.to_numpy(minimumR_indexc02)]
+        SubJet02_with_cquark = SubJet02_and_nearby_cquark[isQuarkWithinRadiusc02]
+        deltaR_c02_lessthanAK4 = deltaR_c02_new[isQuarkWithinRadiusc02]
+        
+        pairing_c11 = ak.cartesian([SubJet11.p4, GenParts.p4[isGenPart_cquark]]) 
+        keepEvents_c11 = np.where(ak.count(pairing_c11.slot0.pt,-1) == 0, False, True)
+        pairing_c11 = pairing_c11[keepEvents_c11]
+        deltaR_c11 = pairing_c11.slot0.delta_r(pairing_c11.slot1)
+        minimumR_indexc11 = ak.argmin(deltaR_c11, axis=-1)
+        deltaR_c11_new = deltaR_c11[np.arange(ak.size(deltaR_c11,0)),ak.to_numpy(minimumR_indexc11)]
+        isQuarkWithinRadiusc11 = deltaR_c11_new < 0.4 
+        SubJet11_and_nearby_cquark = pairing_c11.slot0[np.arange(ak.size(pairing_c11.slot0,0)),ak.to_numpy(minimumR_indexc11)]
+        SubJet11_with_cquark = SubJet11_and_nearby_cquark[isQuarkWithinRadiusc11]
+        deltaR_c11_lessthanAK4 = deltaR_c11_new[isQuarkWithinRadiusc11]
+        
+        pairing_c12 = ak.cartesian([SubJet12.p4, GenParts.p4[isGenPart_cquark]]) 
+        keepEvents_c12 = np.where(ak.count(pairing_c12.slot0.pt,-1) == 0, False, True)
+        pairing_c12 = pairing_c12[keepEvents_c12]
+        deltaR_c12 = pairing_c12.slot0.delta_r(pairing_c12.slot1)
+        minimumR_indexc12 = ak.argmin(deltaR_c12, axis=-1) 
+        deltaR_c12_new = deltaR_c12[np.arange(ak.size(deltaR_c12,0)),ak.to_numpy(minimumR_indexc12)]
+        isQuarkWithinRadiusc12 = deltaR_c12_new < 0.4 
+        SubJet12_and_nearby_cquark = pairing_c12.slot0[np.arange(ak.size(pairing_c12.slot0,0)),ak.to_numpy(minimumR_indexc12)]
+        SubJet12_with_cquark = SubJet12_and_nearby_cquark[isQuarkWithinRadiusc12]
+        deltaR_c12_lessthanAK4 = deltaR_c12_new[isQuarkWithinRadiusc12]
+        
+        """ ---------------------------------------------------------------------------------------------------------- """
+        
+        # ---- Subjets with Nearest light quarks ---- #
+        isGenPart_1or2  = np.logical_or(np.abs(GenParts.pdgId) == 1, np.abs(GenParts.pdgId) == 2)
+        isGenPart_3or21 = np.logical_or(np.abs(GenParts.pdgId) == 3, np.abs(GenParts.pdgId) == 21)
+        isGenPart_lightquark = np.logical_or(isGenPart_1or2, isGenPart_3or21)
+        
+        pairing_l01 = ak.cartesian([SubJet01.p4, GenParts.p4[isGenPart_lightquark]]) 
+        keepEvents_l01 = np.where(ak.count(pairing_l01.slot0.pt,-1) == 0, False, True)
+        pairing_l01 = pairing_l01[keepEvents_l01]
+        deltaR_l01 = pairing_l01.slot0.delta_r(pairing_l01.slot1) 
+        minimumR_indexl01 = ak.argmin(deltaR_l01, axis=-1) 
+        deltaR_l01_new = deltaR_l01[np.arange(ak.size(deltaR_l01,0)),ak.to_numpy(minimumR_indexl01)]
+        isQuarkWithinRadiusl01 = deltaR_l01_new < 0.4 
+        SubJet01_and_nearby_lquark = pairing_l01.slot0[np.arange(ak.size(pairing_l01.slot0,0)),ak.to_numpy(minimumR_indexl01)]
+        SubJet01_with_lquark = SubJet01_and_nearby_lquark[isQuarkWithinRadiusl01] 
+        deltaR_l01_lessthanAK4 = deltaR_l01_new[isQuarkWithinRadiusl01]
+        
+        pairing_l02 = ak.cartesian([SubJet02.p4, GenParts.p4[isGenPart_lightquark]]) 
+        keepEvents_l02 = np.where(ak.count(pairing_l02.slot0.pt,-1) == 0, False, True)
+        pairing_l02 = pairing_l02[keepEvents_l02]
+        deltaR_l02 = pairing_l02.slot0.delta_r(pairing_l02.slot1)
+        minimumR_indexl02 = ak.argmin(deltaR_l02, axis=-1) 
+        deltaR_l02_new = deltaR_l02[np.arange(ak.size(deltaR_l02,0)),ak.to_numpy(minimumR_indexl02)]
+        isQuarkWithinRadiusl02 = deltaR_l02_new < 0.4 
+        SubJet02_and_nearby_lquark = pairing_l02.slot0[np.arange(ak.size(pairing_l02.slot0,0)),ak.to_numpy(minimumR_indexl02)]
+        SubJet02_with_lquark = SubJet02_and_nearby_lquark[isQuarkWithinRadiusl02]
+        deltaR_l02_lessthanAK4 = deltaR_l02_new[isQuarkWithinRadiusl02]
+        
+        pairing_l11 = ak.cartesian([SubJet11.p4, GenParts.p4[isGenPart_lightquark]]) 
+        keepEvents_l11 = np.where(ak.count(pairing_l11.slot0.pt,-1) == 0, False, True)
+        pairing_l11 = pairing_l11[keepEvents_l11]
+        deltaR_l11 = pairing_l11.slot0.delta_r(pairing_l11.slot1)
+        minimumR_indexl11 = ak.argmin(deltaR_l11, axis=-1) 
+        deltaR_l11_new = deltaR_l11[np.arange(ak.size(deltaR_l11,0)),ak.to_numpy(minimumR_indexl11)]
+        isQuarkWithinRadiusl11 = deltaR_l11_new < 0.4 
+        SubJet11_and_nearby_lquark = pairing_l11.slot0[np.arange(ak.size(pairing_l11.slot0,0)),ak.to_numpy(minimumR_indexl11)]
+        SubJet11_with_lquark = SubJet11_and_nearby_lquark[isQuarkWithinRadiusl11]
+        deltaR_l11_lessthanAK4 = deltaR_l11_new[isQuarkWithinRadiusl11]
+        
+        pairing_l12 = ak.cartesian([SubJet12.p4, GenParts.p4[isGenPart_lightquark]]) 
+        keepEvents_l12 = np.where(ak.count(pairing_l12.slot0.pt,-1) == 0, False, True)
+        pairing_l12 = pairing_l12[keepEvents_l12]
+        deltaR_l12 = pairing_l12.slot0.delta_r(pairing_l12.slot1)
+        minimumR_indexl12 = ak.argmin(deltaR_l12, axis=-1) 
+        deltaR_l12_new = deltaR_l12[np.arange(ak.size(deltaR_l12,0)),ak.to_numpy(minimumR_indexl12)]
+        isQuarkWithinRadiusl12 = deltaR_l12_new < 0.4 
+        SubJet12_and_nearby_lquark = pairing_l12.slot0[np.arange(ak.size(pairing_l12.slot0,0)),ak.to_numpy(minimumR_indexl12)]
+        SubJet12_with_lquark = SubJet12_and_nearby_lquark[isQuarkWithinRadiusl12]
+        deltaR_l12_lessthanAK4 = deltaR_l12_new[isQuarkWithinRadiusl12]
+        
+        # ---- Compare these plots as a test ---- # 
+        # ---- Flavors from s01 should agree well with genpart matching ---- #
+        # ---- B flavor from all 4 subjets should agree well with genpart matching ---- #
+        
+        # Check the SubJets' SubJet_hadronFlavor #
+        isSubJet01_bflavor = (flav_s01 == 5)
+        isSubJet02_bflavor = (flav_s02 == 5)
+        isSubJet11_bflavor = (flav_s11 == 5)
+        isSubJet12_bflavor = (flav_s12 == 5)
+        
+        isSubJet01_cflavor = (flav_s01 == 4)
+        isSubJet02_cflavor = (flav_s02 == 4)
+        isSubJet11_cflavor = (flav_s11 == 4)
+        isSubJet12_cflavor = (flav_s12 == 4)
+        
+        isSubJet01_lightflavor = if_s01_isLightParton # Defined previously...
+        isSubJet02_lightflavor = if_s02_isLightParton # Defined previously...
+        isSubJet11_lightflavor = if_s11_isLightParton # Defined previously...
+        isSubJet12_lightflavor = if_s12_isLightParton # Defined previously...
+        
+        # SubJets #
+        subjet01_pt = ak.flatten(SubJet01.p4.pt)
+        subjet02_pt = ak.flatten(SubJet02.p4.pt)
+        subjet11_pt = ak.flatten(SubJet11.p4.pt)
+        subjet12_pt = ak.flatten(SubJet12.p4.pt)
+        
+        # SubJets that are given a SubJet_hadronFlavor #
+        subjet01_bflavor_pt = ak.flatten(SubJet01[isSubJet01_bflavor].p4.pt)
+        subjet02_bflavor_pt = ak.flatten(SubJet02[isSubJet02_bflavor].p4.pt)
+        subjet11_bflavor_pt = ak.flatten(SubJet11[isSubJet11_bflavor].p4.pt)
+        subjet12_bflavor_pt = ak.flatten(SubJet12[isSubJet12_bflavor].p4.pt)
+        
+        subjet01_cflavor_pt = ak.flatten(SubJet01[isSubJet01_cflavor].p4.pt)
+        subjet02_cflavor_pt = ak.flatten(SubJet02[isSubJet02_cflavor].p4.pt)
+        subjet11_cflavor_pt = ak.flatten(SubJet11[isSubJet11_cflavor].p4.pt)
+        subjet12_cflavor_pt = ak.flatten(SubJet12[isSubJet12_cflavor].p4.pt)
+        
+        subjet01_lightflavor_pt = ak.flatten(SubJet01[isSubJet01_lightflavor].p4.pt)
+        subjet02_lightflavor_pt = ak.flatten(SubJet02[isSubJet02_lightflavor].p4.pt)
+        subjet11_lightflavor_pt = ak.flatten(SubJet11[isSubJet11_lightflavor].p4.pt)
+        subjet12_lightflavor_pt = ak.flatten(SubJet12[isSubJet12_lightflavor].p4.pt)
+        
+        # SubJets that are paired with a GenPart_pdgId #
+        subjet01_with_bquark_pt = SubJet01_with_bquark.pt
+        subjet02_with_bquark_pt = SubJet02_with_bquark.pt
+        subjet11_with_bquark_pt = SubJet11_with_bquark.pt
+        subjet12_with_bquark_pt = SubJet12_with_bquark.pt
+        
+        subjet01_with_cquark_pt = SubJet01_with_cquark.pt
+        subjet02_with_cquark_pt = SubJet02_with_cquark.pt
+        subjet11_with_cquark_pt = SubJet11_with_cquark.pt
+        subjet12_with_cquark_pt = SubJet12_with_cquark.pt
+        
+        subjet01_with_lightquark_pt = SubJet01_with_lquark.pt
+        subjet02_with_lightquark_pt = SubJet02_with_lquark.pt
+        subjet11_with_lightquark_pt = SubJet11_with_lquark.pt
+        subjet12_with_lightquark_pt = SubJet12_with_lquark.pt
+        
+        # ******************************************************************************** #
+        # ------------------------------- Outputs for Test ------------------------------- #
+        # ******************************************************************************** #
+        output['subjet01_pt'].fill(dataset = dataset,
+                                  subjetpt = ak.to_numpy(subjet01_pt),
+                                  weight = ak.to_numpy(evtweights))
+        output['subjet02_pt'].fill(dataset = dataset,
+                                  subjetpt = ak.to_numpy(subjet02_pt),
+                                  weight = ak.to_numpy(evtweights))
+        output['subjet11_pt'].fill(dataset = dataset,
+                                  subjetpt = ak.to_numpy(subjet11_pt),
+                                  weight = ak.to_numpy(evtweights))
+        output['subjet12_pt'].fill(dataset = dataset,
+                                  subjetpt = ak.to_numpy(subjet12_pt),
+                                  weight = ak.to_numpy(evtweights))
+        
+        
+        output['subjet01_bflavor_pt'].fill(dataset = dataset,
+                                  subjetpt = ak.to_numpy(subjet01_bflavor_pt),
+                                  weight = ak.to_numpy(evtweights[isSubJet01_bflavor]))
+        output['subjet01_with_bquark_pt'].fill(dataset = dataset,
+                                  subjetpt = ak.to_numpy(subjet01_with_bquark_pt),
+                                  weight = ak.to_numpy(evtweights[isQuarkWithinRadiusb01]))
+        output['subjet02_bflavor_pt'].fill(dataset = dataset,
+                                  subjetpt = ak.to_numpy(subjet02_bflavor_pt),
+                                  weight = ak.to_numpy(evtweights[isSubJet02_bflavor]))
+        output['subjet02_with_bquark_pt'].fill(dataset = dataset,
+                                  subjetpt = ak.to_numpy(subjet02_with_bquark_pt),
+                                  weight = ak.to_numpy(evtweights[isQuarkWithinRadiusb02]))
+        output['subjet11_bflavor_pt'].fill(dataset = dataset,
+                                  subjetpt = ak.to_numpy(subjet11_bflavor_pt),
+                                  weight = ak.to_numpy(evtweights[isSubJet11_bflavor]))
+        output['subjet11_with_bquark_pt'].fill(dataset = dataset,
+                                  subjetpt = ak.to_numpy(subjet11_with_bquark_pt),
+                                  weight = ak.to_numpy(evtweights[isQuarkWithinRadiusb11]))
+        output['subjet12_bflavor_pt'].fill(dataset = dataset,
+                                  subjetpt = ak.to_numpy(subjet12_bflavor_pt),
+                                  weight = ak.to_numpy(evtweights[isSubJet12_bflavor]))
+        output['subjet12_with_bquark_pt'].fill(dataset = dataset,
+                                  subjetpt = ak.to_numpy(subjet12_with_bquark_pt),
+                                  weight = ak.to_numpy(evtweights[isQuarkWithinRadiusb12]))
+        
+        
+        output['subjet01_cflavor_pt'].fill(dataset = dataset,
+                                  subjetpt = ak.to_numpy(subjet01_cflavor_pt),
+                                  weight = ak.to_numpy(evtweights[isSubJet01_cflavor]))
+        output['subjet01_with_cquark_pt'].fill(dataset = dataset,
+                                  subjetpt = ak.to_numpy(subjet01_with_cquark_pt),
+                                  weight = ak.to_numpy(evtweights[isQuarkWithinRadiusc01]))
+        output['subjet02_cflavor_pt'].fill(dataset = dataset,
+                                  subjetpt = ak.to_numpy(subjet02_cflavor_pt),
+                                  weight = ak.to_numpy(evtweights[isSubJet02_cflavor]))
+        output['subjet02_with_cquark_pt'].fill(dataset = dataset,
+                                  subjetpt = ak.to_numpy(subjet02_with_cquark_pt),
+                                  weight = ak.to_numpy(evtweights[isQuarkWithinRadiusc02]))
+        output['subjet11_cflavor_pt'].fill(dataset = dataset,
+                                  subjetpt = ak.to_numpy(subjet11_cflavor_pt),
+                                  weight = ak.to_numpy(evtweights[isSubJet11_cflavor]))
+        output['subjet11_with_cquark_pt'].fill(dataset = dataset,
+                                  subjetpt = ak.to_numpy(subjet11_with_cquark_pt),
+                                  weight = ak.to_numpy(evtweights[isQuarkWithinRadiusc11]))
+        output['subjet12_cflavor_pt'].fill(dataset = dataset,
+                                  subjetpt = ak.to_numpy(subjet12_cflavor_pt),
+                                  weight = ak.to_numpy(evtweights[isSubJet12_cflavor]))
+        output['subjet12_with_cquark_pt'].fill(dataset = dataset,
+                                  subjetpt = ak.to_numpy(subjet12_with_cquark_pt),
+                                  weight = ak.to_numpy(evtweights[isQuarkWithinRadiusc12]))
+        
+        
+        output['subjet01_lightflavor_pt'].fill(dataset = dataset,
+                                  subjetpt = ak.to_numpy(subjet01_lightflavor_pt),
+                                  weight = ak.to_numpy(evtweights[isSubJet01_lightflavor]))
+        output['subjet01_with_lightquark_pt'].fill(dataset = dataset,
+                                  subjetpt = ak.to_numpy(subjet01_with_lightquark_pt),
+                                  weight = ak.to_numpy(evtweights[isQuarkWithinRadiusl01]))
+        output['subjet02_lightflavor_pt'].fill(dataset = dataset,
+                                  subjetpt = ak.to_numpy(subjet02_lightflavor_pt),
+                                  weight = ak.to_numpy(evtweights[isSubJet02_lightflavor]))
+        output['subjet02_with_lightquark_pt'].fill(dataset = dataset,
+                                  subjetpt = ak.to_numpy(subjet02_with_lightquark_pt),
+                                  weight = ak.to_numpy(evtweights[isQuarkWithinRadiusl02]))
+        output['subjet11_lightflavor_pt'].fill(dataset = dataset,
+                                  subjetpt = ak.to_numpy(subjet11_lightflavor_pt),
+                                  weight = ak.to_numpy(evtweights[isSubJet11_lightflavor]))
+        output['subjet11_with_lightquark_pt'].fill(dataset = dataset,
+                                  subjetpt = ak.to_numpy(subjet11_with_lightquark_pt),
+                                  weight = ak.to_numpy(evtweights[isQuarkWithinRadiusl11]))
+        output['subjet12_lightflavor_pt'].fill(dataset = dataset,
+                                  subjetpt = ak.to_numpy(subjet12_lightflavor_pt),
+                                  weight = ak.to_numpy(evtweights[isSubJet12_lightflavor]))
+        output['subjet12_with_lightquark_pt'].fill(dataset = dataset,
+                                  subjetpt = ak.to_numpy(subjet12_with_lightquark_pt),
+                                  weight = ak.to_numpy(evtweights[isQuarkWithinRadiusl12]))
+        
+        
+        # ---- Delta R to nearest b quark and c quark, for subjets that are identified as “5” or “4". ---- #
+        
+        output['subjet01_bquark_distance'].fill(dataset = dataset,
+                                               delta_r = ak.to_numpy(deltaR_b01_lessthanAK4),
+                                               weight = ak.to_numpy(evtweights[isQuarkWithinRadiusb01]))
+        output['subjet02_bquark_distance'].fill(dataset = dataset,
+                                               delta_r = ak.to_numpy(deltaR_b02_lessthanAK4),
+                                               weight = ak.to_numpy(evtweights[isQuarkWithinRadiusb02]))
+        output['subjet11_bquark_distance'].fill(dataset = dataset,
+                                               delta_r = ak.to_numpy(deltaR_b11_lessthanAK4),
+                                               weight = ak.to_numpy(evtweights[isQuarkWithinRadiusb11]))
+        output['subjet12_bquark_distance'].fill(dataset = dataset,
+                                               delta_r = ak.to_numpy(deltaR_b12_lessthanAK4),
+                                               weight = ak.to_numpy(evtweights[isQuarkWithinRadiusb12]))
+        
+        output['subjet01_cquark_distance'].fill(dataset = dataset,
+                                               delta_r = ak.to_numpy(deltaR_c01_lessthanAK4),
+                                               weight = ak.to_numpy(evtweights[isQuarkWithinRadiusc01]))
+        output['subjet02_cquark_distance'].fill(dataset = dataset,
+                                               delta_r = ak.to_numpy(deltaR_c02_lessthanAK4),
+                                               weight = ak.to_numpy(evtweights[isQuarkWithinRadiusc02]))
+        output['subjet11_cquark_distance'].fill(dataset = dataset,
+                                               delta_r = ak.to_numpy(deltaR_c11_lessthanAK4),
+                                               weight = ak.to_numpy(evtweights[isQuarkWithinRadiusc11]))
+        output['subjet12_cquark_distance'].fill(dataset = dataset,
+                                               delta_r = ak.to_numpy(deltaR_c12_lessthanAK4),
+                                               weight = ak.to_numpy(evtweights[isQuarkWithinRadiusc12]))
+        
+        output['subjet01_lightquark_distance'].fill(dataset = dataset,
+                                               delta_r = ak.to_numpy(deltaR_l01_lessthanAK4),
+                                               weight = ak.to_numpy(evtweights[isQuarkWithinRadiusl01]))
+        output['subjet02_lightquark_distance'].fill(dataset = dataset,
+                                               delta_r = ak.to_numpy(deltaR_l02_lessthanAK4),
+                                               weight = ak.to_numpy(evtweights[isQuarkWithinRadiusl02]))
+        output['subjet11_lightquark_distance'].fill(dataset = dataset,
+                                               delta_r = ak.to_numpy(deltaR_l11_lessthanAK4),
+                                               weight = ak.to_numpy(evtweights[isQuarkWithinRadiusl11]))
+        output['subjet12_lightquark_distance'].fill(dataset = dataset,
+                                               delta_r = ak.to_numpy(deltaR_l12_lessthanAK4),
+                                               weight = ak.to_numpy(evtweights[isQuarkWithinRadiusl12]))
+        
+#    ================================================================
+#       A    N     N    A    L       Y     Y   SSSSS IIIIIII   SSSSS 
+#      A A   NN    N   A A   L        Y   Y   S         I     S      
+#     A   A  N N   N  A   A  L         Y Y   S          I    S       
+#     AAAAA  N  N  N  AAAAA  L          Y     SSSSS     I     SSSSS  
+#    A     A N   N N A     A L          Y          S    I          S 
+#    A     A N    NN A     A L          Y         S     I         S  
+#    A     A N     N A     A LLLLLLL    Y    SSSSS   IIIIIII SSSSS   
+#    ================================================================
+        
         # ---- Get Analysis Categories ---- # 
         # ---- They are (central, forward) cross (0b,1b,2b) cross (Probet,at,0t,1t,>=1t,2t) ---- #
         regs = [cen,fwd]
@@ -1062,9 +1553,10 @@ class TTbarResProcessor(processor.ProcessorABC):
         deepTag = ak.flatten(ttbarcands.slot1.deepTag_TvsQCD)
         deepTagMD = ak.flatten(ttbarcands.slot1.deepTagMD_TvsQCD)
         
+        # ---- Weights ---- #
         weights = evtweights
 
-        # ---- Define the SumW2 for MC Datasets ---- #
+        # ---- Define the SumW2 for MC Datasets (Probably unnecessary now) ---- #
         output['cutflow']['sumw'] += np.sum(weights)
         output['cutflow']['sumw2'] += np.sum(weights**2)
         
@@ -1081,14 +1573,17 @@ class TTbarResProcessor(processor.ProcessorABC):
         numerator = ak.flatten(numerator)
         denominator = ak.flatten(denominator)
         
-        df = pd.DataFrame({"momentum":p}) # Used for finding values in LookUp Tables
+        df = pd.DataFrame({"momentum":p}) # DataFrame used for finding values in LookUp Tables
         
         for ilabel,icat in labels_and_categories.items():
+            ###------------------------------------------------------------------------------------------###
             ### ------------------------------------ Mistag Scaling ------------------------------------ ###
+            ###------------------------------------------------------------------------------------------###
             if self.UseLookUpTables == True:
                 # ---- Weight ttbar M.C. and data by mistag from data (corresponding to its year) ---- #
+                # -- Pick out proper JetHT year mistag for TTbar sim. -- #
                 if 'TTbar_' in dataset:
-                    file_df = self.lu['JetHT' + dataset[-4:] + '_Data']['at' + str(ilabel[-5:])] #Pick out proper JetHT year mistag for TTbar sim.
+                    file_df = self.lu['JetHT' + dataset[-4:] + '_Data']['at' + str(ilabel[-5:])] 
                 elif dataset == 'TTbar':
                     file_df = self.lu['JetHT']['at' + str(ilabel[-5:])] # All JetHT years mistag for TTbar sim.
                 else:
@@ -1115,6 +1610,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                 
             ###---------------------------------------------------------------------------------------------###
             ### ----------------------------------- Mod-mass Procedure ------------------------------------ ###
+            ###---------------------------------------------------------------------------------------------###
             if self.ModMass == True:
                 QCD_unweighted = util.load('CoffeaOutputs/UnweightedOutputs/TTbarResCoffea_QCD_unweighted_output_futures_3-10-21_trial.coffea') 
     
@@ -1131,7 +1627,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                 ModMass_hist_dist = ss.rv_histogram([QCD_data,QCD_bins])
                 jet1_modp4 = copy.copy(jet1.p4) #J1's Lorentz four vector that can be safely modified
                 jet1_modp4["fMass"] = ModMass_hist_dist.rvs(size=ak.to_awkward0(jet1_modp4).size) #Replace J1's mass with random value of mass from mm hist
-                #ttbarcands_modmass = jet0.p4.cross(jet1_modp4) #J0's four vector x modified J1's four vector
+                
                 ttbarcands_modmass = ak.cartesian([jet0.p4, jet1_modp4])
 
                 # ---- Apply Necessary Selections to new modmass version ---- #
@@ -1140,17 +1636,15 @@ class TTbarResProcessor(processor.ProcessorABC):
                 ttbarcands_modmass = ttbarcands_modmass[GoodSubjets]
                 
                 # ---- Manually sum the modmass p4 candidates (Coffea technicality) ---- #
-                #ttbarcands_modmass_p4_sum = (ttbarcands_modmass.i0 + ttbarcands_modmass.i1)
                 ttbarcands_modmassp4sum = ttbarcands.slot0.p4.add(ttbarcands.slot1.p4)
                 
                 # ---- Re-define Mass Variables for ModMass Procedure (pt, eta, phi are redundant to change) ---- #
-                #ttbarmass = ttbarcands_modmass_p4_sum.flatten().mass
-                #jetmass = ttbarcands_modmass.i1.mass.flatten()
                 ttbarmass = ak.flatten(ttbarcands_modmassp4sum.mass)
                 jetmass = ak.flatten(ttbarcands_modmass.slot1.mass)
                 
             ###---------------------------------------------------------------------------------------------###
             ### ------------------------------ B-Tag Weighting (S.F. Only) -------------------------------- ###
+            ###---------------------------------------------------------------------------------------------###
             if (self.ApplySF == True) and (self.UseEfficiencies == False):
  
                 if '0b' in ilabel:
@@ -1159,8 +1653,8 @@ class TTbarResProcessor(processor.ProcessorABC):
                     Weights = Weights*Wgts_to_1btag_region_nonzero 
                 else:
                     Weights = Weights*Wgts_to_2btag_region_nonzero 
-  
-            ###---------------------------------------------------------------------------------------------###
+
+# ************************************************************************************************************ #      
             output['cutflow'][ilabel] += np.sum(icat)
           
             output['ttbarmass'].fill(dataset = dataset, anacat = ilabel, 
