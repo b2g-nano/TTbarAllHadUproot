@@ -85,6 +85,8 @@ class TTbarResProcessor(processor.ProcessorABC):
         subjeteta_laxis = hist.Bin("subjeteta", r"SubJet $\eta$", 10, -3, 3) #Larger bins
         subjetphi_axis = hist.Bin("subjetphi", r"SubJet $\phi$", 50, -np.pi, np.pi)
 
+        distance_axis = hist.Bin("delta_r", r"$\Delta r$", 50, 0, 5)
+
         self._accumulator = processor.dict_accumulator({
 #    ===================================================================================================================
 #    K     K IIIIIII N     N EEEEEEE M     M    A    TTTTTTT IIIIIII   CCCC      H     H IIIIIII   SSSSS TTTTTTT   SSSSS     
