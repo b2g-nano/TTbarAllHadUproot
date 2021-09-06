@@ -520,6 +520,21 @@ class TTbarResProcessor(processor.ProcessorABC):
                 }, with_name="PtEtaPhiMLorentzVector"),
             })
 
+        # ---- Define Generator Particles ---- #
+        GenParts = ak.zip({
+            "pdgId": events.GenPart_pdgId,
+            "pt": events.GenPart_pt,
+            "eta": events.GenPart_eta,
+            "phi": events.GenPart_phi,
+            "mass": events.GenPart_mass,
+            "p4": ak.zip({
+                "pt": events.GenPart_pt,
+                "eta": events.GenPart_eta,
+                "phi": events.GenPart_phi,
+                "mass": events.GenPart_mass,
+                }, with_name="Vector3D"),
+            })
+
 #    ===================================================================================
 #    PPPPPP  RRRRRR  EEEEEEE L       IIIIIII M     M       CCCC  U     U TTTTTTT   SSSSS     
 #    P     P R     R E       L          I    MM   MM      C      U     U    T     S          
