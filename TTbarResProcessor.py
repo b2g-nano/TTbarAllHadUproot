@@ -561,6 +561,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         evtweights = evtweights[twoFatJetsKin]
         Jets = Jets[twoFatJetsKin]
         SubJets = SubJets[twoFatJetsKin]
+        GenParts = GenParts[twoFatJetsKin]
         output['cutflow']['two FatJets and jet kin'] += ak.to_awkward0(twoFatJetsKin).sum()
         
         # ---- Apply HT Cut ---- #
@@ -569,6 +570,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         evtweights = evtweights[passhT]
         FatJets = FatJets[passhT]
         SubJets = SubJets[passhT]
+        GenParts = GenParts[passhT]
         
         # ---- Randomly Assign AK8 Jets as TTbar Candidates 0 and 1 --- #
         Counts = np.ones(len(FatJets), dtype='i') # Number 1 for each FatJet
@@ -611,6 +613,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         evtweights = evtweights[oneTTbar]
         FatJets = FatJets[oneTTbar]
         SubJets = SubJets[oneTTbar]
+        GenParts = GenParts[oneTTbar]
          
         # ---- Apply Delta Phi Cut for Back to Back Topology ---- #
         """ NOTE: Should find function for this; avoids 2pi problem """
@@ -621,6 +624,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         evtweights = evtweights[dPhiCut]
         FatJets = FatJets[dPhiCut] 
         SubJets = SubJets[dPhiCut] 
+        GenParts = GenParts[dPhiCut]
         
         # ---- Identify subjets according to subjet ID ---- #
         hasSubjets0 = ((ttbarcands.slot0.subJetIdx1 > -1) & (ttbarcands.slot0.subJetIdx2 > -1)) # 1st candidate has two subjets
@@ -629,6 +633,7 @@ class TTbarResProcessor(processor.ProcessorABC):
    
         ttbarcands = ttbarcands[GoodSubjets] # Choose only ttbar candidates with this selection of subjets
         SubJets = SubJets[GoodSubjets]
+        GenParts = GenParts[GoodSubjets]
         evtweights = evtweights[GoodSubjets]
        
         SubJet01 = SubJets[ttbarcands.slot0.subJetIdx1] # ttbarcandidate 0's first subjet 
