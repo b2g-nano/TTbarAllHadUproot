@@ -1135,9 +1135,10 @@ class TTbarResProcessor(processor.ProcessorABC):
         isGenPart_cquark = (np.abs(GenParts.pdgId) == 4)
         
         pairing_c01 = ak.cartesian([SubJet01.p4, GenParts.p4[isGenPart_cquark]]) 
-        keepEvents_c01 = np.where(ak.count(pairing_c01.slot0.pt,-1) == 0, False, True)
-        bquark_contamination01 = np.where(keepEvents_b01, False, True) # If bquarks are also in this subjet, don't count this
-        pairing_c01 = pairing_c01[keepEvents_c01]#, pairing_c01 = pairing_c01[bquark_contamination01]
+        keep_condition_one_c01 = (ak.count(pairing_c01.slot0.pt,-1) == 0)
+        keep_condition_two_c01 = (keepEvents_b01 == True)
+        keepEvents_c01 = np.where( np.logical_or(keep_condition_one_c01, keep_condition_two_c01) , False, True )
+        pairing_c01 = pairing_c01[keepEvents_c01] 
         deltaR_c01 = pairing_c01.slot0.delta_r(pairing_c01.slot1) 
         minimumR_indexc01 = ak.argmin(deltaR_c01, axis=-1) 
         deltaR_c01_new = deltaR_c01[np.arange(ak.size(deltaR_c01,0)),ak.to_numpy(minimumR_indexc01)]
@@ -1147,7 +1148,9 @@ class TTbarResProcessor(processor.ProcessorABC):
         deltaR_c01_lessthanAK4 = deltaR_c01_new[isQuarkWithinRadiusc01]
         
         pairing_c02 = ak.cartesian([SubJet02.p4, GenParts.p4[isGenPart_cquark]]) 
-        keepEvents_c02 = np.where(ak.count(pairing_c02.slot0.pt,-1) == 0, False, True)
+        keep_condition_one_c02 = (ak.count(pairing_c02.slot0.pt,-1) == 0)
+        keep_condition_two_c02 = (keepEvents_b02 == True)
+        keepEvents_c02 = np.where( np.logical_or(keep_condition_one_c02, keep_condition_two_c02) , False, True )
         pairing_c02 = pairing_c02[keepEvents_c02]
         deltaR_c02 = pairing_c02.slot0.delta_r(pairing_c02.slot1)
         minimumR_indexc02 = ak.argmin(deltaR_c02, axis=-1) 
@@ -1156,6 +1159,8 @@ class TTbarResProcessor(processor.ProcessorABC):
         SubJet02_and_nearby_cquark = pairing_c02.slot0[np.arange(ak.size(pairing_c02.slot0,0)),ak.to_numpy(minimumR_indexc02)]
         SubJet02_with_cquark = SubJet02_and_nearby_cquark[isQuarkWithinRadiusc02]
         deltaR_c02_lessthanAK4 = deltaR_c02_new[isQuarkWithinRadiusc02]
+        
+        print('this works!')
         
         pairing_c11 = ak.cartesian([SubJet11.p4, GenParts.p4[isGenPart_cquark]]) 
         keepEvents_c11 = np.where(ak.count(pairing_c11.slot0.pt,-1) == 0, False, True)
