@@ -1246,9 +1246,10 @@ class TTbarResProcessor(processor.ProcessorABC):
         isGenPart_cquark = (np.abs(GenParts.pdgId) == 4)
         
         pairing_c01 = ak.cartesian([SubJet01.p4, GenParts.p4[isGenPart_cquark]]) 
-        keepEvents_c01 = np.where(ak.count(pairing_c01.slot0.pt,-1) == 0, False, True)
-        bquark_contamination01 = np.where(keepEvents_b01, False, True) # If bquarks are also in this subjet, don't count this
-        pairing_c01 = pairing_c01[keepEvents_c01]#, pairing_c01 = pairing_c01[bquark_contamination01]
+        keep_condition_one_c01 = (ak.count(pairing_c01.slot0.pt,-1) == 0)
+        keep_condition_two_c01 = (keepEvents_b01 == True) # If b quarks are also present in subjets...
+        keepEvents_c01 = np.where( np.logical_or(keep_condition_one_c01, keep_condition_two_c01) , False, True )
+        pairing_c01 = pairing_c01[keepEvents_c01]
         deltaR_c01 = pairing_c01.slot0.delta_r(pairing_c01.slot1) 
         minimumR_indexc01 = ak.argmin(deltaR_c01, axis=-1) 
         deltaR_c01_new = deltaR_c01[np.arange(ak.size(deltaR_c01,0)),ak.to_numpy(minimumR_indexc01)]
@@ -1258,7 +1259,9 @@ class TTbarResProcessor(processor.ProcessorABC):
         deltaR_c01_lessthanAK4 = deltaR_c01_new[isQuarkWithinRadiusc01]
         
         pairing_c02 = ak.cartesian([SubJet02.p4, GenParts.p4[isGenPart_cquark]]) 
-        keepEvents_c02 = np.where(ak.count(pairing_c02.slot0.pt,-1) == 0, False, True)
+        keep_condition_one_c02 = (ak.count(pairing_c02.slot0.pt,-1) == 0)
+        keep_condition_two_c02 = (keepEvents_b02 == True) # If b quarks are also present in subjets...
+        keepEvents_c02 = np.where( np.logical_or(keep_condition_one_c02, keep_condition_two_c02) , False, True )
         pairing_c02 = pairing_c02[keepEvents_c02]
         deltaR_c02 = pairing_c02.slot0.delta_r(pairing_c02.slot1)
         minimumR_indexc02 = ak.argmin(deltaR_c02, axis=-1) 
@@ -1269,7 +1272,9 @@ class TTbarResProcessor(processor.ProcessorABC):
         deltaR_c02_lessthanAK4 = deltaR_c02_new[isQuarkWithinRadiusc02]
         
         pairing_c11 = ak.cartesian([SubJet11.p4, GenParts.p4[isGenPart_cquark]]) 
-        keepEvents_c11 = np.where(ak.count(pairing_c11.slot0.pt,-1) == 0, False, True)
+        keep_condition_one_c11 = (ak.count(pairing_c11.slot0.pt,-1) == 0)
+        keep_condition_two_c11 = (keepEvents_b11 == True) # If b quarks are also present in subjets...
+        keepEvents_c11 = np.where( np.logical_or(keep_condition_one_c11, keep_condition_two_c11) , False, True )
         pairing_c11 = pairing_c11[keepEvents_c11]
         deltaR_c11 = pairing_c11.slot0.delta_r(pairing_c11.slot1)
         minimumR_indexc11 = ak.argmin(deltaR_c11, axis=-1)
@@ -1280,7 +1285,9 @@ class TTbarResProcessor(processor.ProcessorABC):
         deltaR_c11_lessthanAK4 = deltaR_c11_new[isQuarkWithinRadiusc11]
         
         pairing_c12 = ak.cartesian([SubJet12.p4, GenParts.p4[isGenPart_cquark]]) 
-        keepEvents_c12 = np.where(ak.count(pairing_c12.slot0.pt,-1) == 0, False, True)
+        keep_condition_one_c12 = (ak.count(pairing_c12.slot0.pt,-1) == 0)
+        keep_condition_two_c12 = (keepEvents_b12 == True) # If b quarks are also present in subjets...
+        keepEvents_c12 = np.where( np.logical_or(keep_condition_one_c12, keep_condition_two_c12) , False, True )
         pairing_c12 = pairing_c12[keepEvents_c12]
         deltaR_c12 = pairing_c12.slot0.delta_r(pairing_c12.slot1)
         minimumR_indexc12 = ak.argmin(deltaR_c12, axis=-1) 
