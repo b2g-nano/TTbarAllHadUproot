@@ -776,9 +776,9 @@ class TTbarResProcessor(processor.ProcessorABC):
                 
                 # ---- light parton-tagging eff. numerators ---- #
                 if_s01_isLightParton = (flav_s01 != 5) & (flav_s01 != 4)
-                if_s02_isLightParton = (flav_s01 != 5) & (flav_s01 != 4)
-                if_s11_isLightParton = (flav_s01 != 5) & (flav_s01 != 4)
-                if_s12_isLightParton = (flav_s01 != 5) & (flav_s01 != 4)
+                if_s02_isLightParton = (flav_s02 != 5) & (flav_s02 != 4)
+                if_s11_isLightParton = (flav_s11 != 5) & (flav_s11 != 4)
+                if_s12_isLightParton = (flav_s12 != 5) & (flav_s12 != 4)
                 
                 Eff_udsg_Num_pT_s01 = np.where(s01_btagged & (if_s01_isLightParton), pT_s01, -1)
                 Eff_udsg_Num_eta_s01 = np.where(s01_btagged & (if_s01_isLightParton), eta_s01, -1)
@@ -796,27 +796,27 @@ class TTbarResProcessor(processor.ProcessorABC):
                 Eff_b_Denom_pT_s01 = np.where(flav_s01 == 5, pT_s01, -1)
                 Eff_b_Denom_eta_s01 = np.where(flav_s01 == 5, eta_s01, -1)
                 
-                Eff_b_Denom_pT_s02 = np.where(flav_s01 == 5, pT_s02, -1)
-                Eff_b_Denom_eta_s02 = np.where(flav_s01 == 5, eta_s02, -1)
+                Eff_b_Denom_pT_s02 = np.where(flav_s02 == 5, pT_s02, -1)
+                Eff_b_Denom_eta_s02 = np.where(flav_s02 == 5, eta_s02, -1)
                 
-                Eff_b_Denom_pT_s11 = np.where(flav_s01 == 5, pT_s11, -1)
-                Eff_b_Denom_eta_s11 = np.where(flav_s01 == 5, eta_s11, -1)
+                Eff_b_Denom_pT_s11 = np.where(flav_s11 == 5, pT_s11, -1)
+                Eff_b_Denom_eta_s11 = np.where(flav_s11 == 5, eta_s11, -1)
                 
-                Eff_b_Denom_pT_s12 = np.where(flav_s01 == 5, pT_s12, -1)
-                Eff_b_Denom_eta_s12 = np.where(flav_s01 == 5, eta_s12, -1)
+                Eff_b_Denom_pT_s12 = np.where(flav_s12 == 5, pT_s12, -1)
+                Eff_b_Denom_eta_s12 = np.where(flav_s12 == 5, eta_s12, -1)
                 
                 # ---- c-tagging eff. denominators ---- #
                 Eff_c_Denom_pT_s01 = np.where(flav_s01 == 4, pT_s01, -1)
                 Eff_c_Denom_eta_s01 = np.where(flav_s01 == 4, eta_s01, -1)
                 
-                Eff_c_Denom_pT_s02 = np.where(flav_s01 == 4, pT_s02, -1)
-                Eff_c_Denom_eta_s02 = np.where(flav_s01 == 4, eta_s02, -1)
+                Eff_c_Denom_pT_s02 = np.where(flav_s02 == 4, pT_s02, -1)
+                Eff_c_Denom_eta_s02 = np.where(flav_s02 == 4, eta_s02, -1)
                 
-                Eff_c_Denom_pT_s11 = np.where(flav_s01 == 4, pT_s11, -1)
-                Eff_c_Denom_eta_s11 = np.where(flav_s01 == 4, eta_s11, -1)
+                Eff_c_Denom_pT_s11 = np.where(flav_s11 == 4, pT_s11, -1)
+                Eff_c_Denom_eta_s11 = np.where(flav_s11 == 4, eta_s11, -1)
                 
-                Eff_c_Denom_pT_s12 = np.where(flav_s01 == 4, pT_s12, -1)
-                Eff_c_Denom_eta_s12 = np.where(flav_s01 == 4, eta_s12, -1)
+                Eff_c_Denom_pT_s12 = np.where(flav_s12 == 4, pT_s12, -1)
+                Eff_c_Denom_eta_s12 = np.where(flav_s12 == 4, eta_s12, -1)
                 
                 # ---- light parton-tagging eff. denominators ---- #
                 Eff_udsg_Denom_pT_s01 = np.where(if_s01_isLightParton, pT_s01, -1)
@@ -968,7 +968,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                                                   subjeteta = ak.to_numpy(Eff_c_Denom_eta_s02),
                                                   weight = ak.to_numpy(evtweights))
                 output['c_eff_denominator_s11'].fill(dataset = dataset,
-                                                     subjetpt = ak.to_numpy(Eff_c_Denom_pT_s11),
+                                                  subjetpt = ak.to_numpy(Eff_c_Denom_pT_s11),
                                                   subjeteta = ak.to_numpy(Eff_c_Denom_eta_s11),
                                                   weight = ak.to_numpy(evtweights))
                 output['c_eff_denominator_s12'].fill(dataset = dataset,
@@ -1305,7 +1305,11 @@ class TTbarResProcessor(processor.ProcessorABC):
         isGenPart_lightquark = np.logical_or(isGenPart_1or2, isGenPart_3or21)
         
         pairing_l01 = ak.cartesian([SubJet01.p4, GenParts.p4[isGenPart_lightquark]]) 
-        keepEvents_l01 = np.where(ak.count(pairing_l01.slot0.pt,-1) == 0, False, True)
+        keep_condition_one_l01 = (ak.count(pairing_l01.slot0.pt,-1) == 0)
+        keep_condition_two_l01 = (keepEvents_b01 == True) # if b is found in subjet...
+        keep_condition_three_l01 = (keepEvents_c01 == True) # if c is found in subjet...
+        keep_condition_heavy_l01 = np.logical_or(keep_condition_two_l01, keep_condition_three_l01) # Is heavy quark in subjet
+        keepEvents_l01 = np.where( np.logical_or(keep_condition_one_l01, keep_condition_heavy_l01) , False, True )
         pairing_l01 = pairing_l01[keepEvents_l01]
         deltaR_l01 = pairing_l01.slot0.delta_r(pairing_l01.slot1) 
         minimumR_indexl01 = ak.argmin(deltaR_l01, axis=-1) 
@@ -1316,7 +1320,11 @@ class TTbarResProcessor(processor.ProcessorABC):
         deltaR_l01_lessthanAK4 = deltaR_l01_new[isQuarkWithinRadiusl01]
         
         pairing_l02 = ak.cartesian([SubJet02.p4, GenParts.p4[isGenPart_lightquark]]) 
-        keepEvents_l02 = np.where(ak.count(pairing_l02.slot0.pt,-1) == 0, False, True)
+        keep_condition_one_l02 = (ak.count(pairing_l02.slot0.pt,-1) == 0)
+        keep_condition_two_l02 = (keepEvents_b02 == True) 
+        keep_condition_three_l02 = (keepEvents_c02 == True) 
+        keep_condition_heavy_l02 = np.logical_or(keep_condition_two_l02, keep_condition_three_l02) 
+        keepEvents_l02 = np.where( np.logical_or(keep_condition_one_l02, keep_condition_heavy_l02) , False, True )
         pairing_l02 = pairing_l02[keepEvents_l02]
         deltaR_l02 = pairing_l02.slot0.delta_r(pairing_l02.slot1)
         minimumR_indexl02 = ak.argmin(deltaR_l02, axis=-1) 
@@ -1327,7 +1335,11 @@ class TTbarResProcessor(processor.ProcessorABC):
         deltaR_l02_lessthanAK4 = deltaR_l02_new[isQuarkWithinRadiusl02]
         
         pairing_l11 = ak.cartesian([SubJet11.p4, GenParts.p4[isGenPart_lightquark]]) 
-        keepEvents_l11 = np.where(ak.count(pairing_l11.slot0.pt,-1) == 0, False, True)
+        keep_condition_one_l11 = (ak.count(pairing_l11.slot0.pt,-1) == 0)
+        keep_condition_two_l11 = (keepEvents_b11 == True) 
+        keep_condition_three_l11 = (keepEvents_c11 == True) 
+        keep_condition_heavy_l11 = np.logical_or(keep_condition_two_l11, keep_condition_three_l11) 
+        keepEvents_l11 = np.where( np.logical_or(keep_condition_one_l11, keep_condition_heavy_l11) , False, True )
         pairing_l11 = pairing_l11[keepEvents_l11]
         deltaR_l11 = pairing_l11.slot0.delta_r(pairing_l11.slot1)
         minimumR_indexl11 = ak.argmin(deltaR_l11, axis=-1) 
@@ -1338,7 +1350,11 @@ class TTbarResProcessor(processor.ProcessorABC):
         deltaR_l11_lessthanAK4 = deltaR_l11_new[isQuarkWithinRadiusl11]
         
         pairing_l12 = ak.cartesian([SubJet12.p4, GenParts.p4[isGenPart_lightquark]]) 
-        keepEvents_l12 = np.where(ak.count(pairing_l12.slot0.pt,-1) == 0, False, True)
+        keep_condition_one_l12 = (ak.count(pairing_l12.slot0.pt,-1) == 0)
+        keep_condition_two_l12 = (keepEvents_b12 == True) 
+        keep_condition_three_l12 = (keepEvents_c12 == True) 
+        keep_condition_heavy_l12 = np.logical_or(keep_condition_two_l12, keep_condition_three_l12) 
+        keepEvents_l12 = np.where( np.logical_or(keep_condition_one_l12, keep_condition_heavy_l12) , False, True )
         pairing_l12 = pairing_l12[keepEvents_l12]
         deltaR_l12 = pairing_l12.slot0.delta_r(pairing_l12.slot1)
         minimumR_indexl12 = ak.argmin(deltaR_l12, axis=-1) 
