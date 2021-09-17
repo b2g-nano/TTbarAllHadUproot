@@ -1160,8 +1160,6 @@ class TTbarResProcessor(processor.ProcessorABC):
         SubJet02_with_cquark = SubJet02_and_nearby_cquark[isQuarkWithinRadiusc02]
         deltaR_c02_lessthanAK4 = deltaR_c02_new[isQuarkWithinRadiusc02]
         
-        print('this works!')
-        
         pairing_c11 = ak.cartesian([SubJet11.p4, GenParts.p4[isGenPart_cquark]]) 
         keepEvents_c11 = np.where(ak.count(pairing_c11.slot0.pt,-1) == 0, False, True)
         pairing_c11 = pairing_c11[keepEvents_c11]
@@ -1195,7 +1193,11 @@ class TTbarResProcessor(processor.ProcessorABC):
 #                                 np.abs(GenParts.pdgId) == 3 | np.abs(GenParts.pdgId) == 21)
         
         pairing_l01 = ak.cartesian([SubJet01.p4, GenParts.p4[isGenPart_lightquark]]) 
-        keepEvents_l01 = np.where(ak.count(pairing_l01.slot0.pt,-1) == 0, False, True)
+        keep_condition_one_l01 = (ak.count(pairing_l01.slot0.pt,-1) == 0)
+        keep_condition_two_l01 = (keepEvents_b01 == True) # if b is found in subjet...
+        keep_condition_three_l01 = (keepEvents_c01 == True) # if c is found in subjet...
+        keep_condition_heavy_l01 = np.logical_or(keep_condition_two_l01, keep_condition_three_l01) # Is heavy quark in subjet
+        keepEvents_l01 = np.where( np.logical_or(keep_condition_one_l01, keep_condition_heavy_l01) , False, True )
         pairing_l01 = pairing_l01[keepEvents_l01]
         deltaR_l01 = pairing_l01.slot0.delta_r(pairing_l01.slot1) 
         minimumR_indexl01 = ak.argmin(deltaR_l01, axis=-1) 
@@ -1204,7 +1206,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         SubJet01_and_nearby_lquark = pairing_l01.slot0[np.arange(ak.size(pairing_l01.slot0,0)),ak.to_numpy(minimumR_indexl01)]
         SubJet01_with_lquark = SubJet01_and_nearby_lquark[isQuarkWithinRadiusl01] 
         deltaR_l01_lessthanAK4 = deltaR_l01_new[isQuarkWithinRadiusl01]
-        
+        print('this works!')
         pairing_l02 = ak.cartesian([SubJet02.p4, GenParts.p4[isGenPart_lightquark]]) 
         keepEvents_l02 = np.where(ak.count(pairing_l02.slot0.pt,-1) == 0, False, True)
         pairing_l02 = pairing_l02[keepEvents_l02]
