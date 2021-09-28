@@ -88,14 +88,14 @@ for name,files in filesets.items():
         print(output)
         util.save(output, 'TTbarAllHadUproot/CoffeaOutputs/UnweightedOutputs/TTbarResCoffea_' 
                   + name 
-                  + '_unweighted_output_' 
-                  + chosen_exec 
-                  + '_9-11-21_MC_efficiency_NoAnacats_FullDataset.coffea')
+                  + '_unweighted_output' 
+#                   + chosen_exec 
+                  + '.coffea')
 
     else:
         output = util.load('TTbarAllHadUproot/CoffeaOutputs/UnweightedOutputs/TTbarResCoffea_' 
                            + name 
-                           + '_unweighted_output_futures_3-10-21_trial.coffea')
+                           + '_unweighted_output.coffea')
 
         outputs_unweighted[name] = output
         print(name + ' unweighted output loaded')
@@ -131,7 +131,7 @@ outputs_weighted = {}
 prng = RandomState(seed)
 #Chunk = [100000, 100] # [chunksize, maxchunks]
 
-UsingDaskExecutor = True
+UsingDaskExecutor = False
 OnlyCreateLookupTables = True
 for name,files in filesets.items(): 
     if not OnlyCreateLookupTables:
@@ -180,9 +180,9 @@ for name,files in filesets.items():
         print(output)
 #         util.save(output, 'TTbarAllHadUproot/CoffeaOutputs/WeightedModMassOutputs/TTbarResCoffea_' 
 #                   + name 
-#                   + '_ModMass_weighted_output_'
+#                   + '_ModMass_weighted_output'
 #                   + chosen_exec
-#                   + '_6-1-21_efficiency_test.coffea')
+#                   + '.coffea')
     else:
         continue
 
