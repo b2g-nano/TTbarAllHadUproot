@@ -24,7 +24,7 @@ from TTbarResProcessor import TTbarResProcessor
 from Filesets import filesets
 
 LoadingUnweightedFiles = False
-UsingDaskExecutor = False
+UsingDaskExecutor = True
 
 if UsingDaskExecutor == True:
     if __name__ == "__main__":
@@ -86,11 +86,11 @@ for name,files in filesets.items():
         elapsed = time.time() - tstart
         outputs_unweighted[name] = output
         print(output)
-        util.save(output, 'TTbarAllHadUproot/CoffeaOutputs/UnweightedOutputs/TTbarResCoffea_' 
-                  + name 
-                  + '_unweighted_output' 
-#                   + chosen_exec 
-                  + '.coffea')
+#         util.save(output, 'TTbarAllHadUproot/CoffeaOutputs/UnweightedOutputs/TTbarResCoffea_' 
+#                   + name 
+#                   + '_unweighted_output' 
+# #                   + chosen_exec 
+#                   + '.coffea')
 
     else:
         output = util.load('TTbarAllHadUproot/CoffeaOutputs/UnweightedOutputs/TTbarResCoffea_' 
