@@ -21,10 +21,10 @@ from lpcjobqueue import LPCCondorCluster
 ak.behavior.update(candidate.behavior)
 
 from TTbarResProcessor import TTbarResProcessor
-from Filesets import filesets
+from Filesets import filesets, filesets_forweights
 
-LoadingUnweightedFiles = False
-UsingDaskExecutor = True
+LoadingUnweightedFiles = True
+UsingDaskExecutor = False
 
 if UsingDaskExecutor == True:
     if __name__ == "__main__":
@@ -41,7 +41,7 @@ outputs_unweighted = {}
 
 seed = 1234577890
 prng = RandomState(seed)
-#Chunk = [10000, 100] # [chunksize, maxchunks]
+#Chunk = [1000, 10] # [chunksize, maxchunks]
 
 for name,files in filesets.items(): 
     if not LoadingUnweightedFiles:
@@ -57,9 +57,9 @@ for name,files in filesets.items():
                                                                                    ApplySF=False,
                                                                                    UseEfficiencies=False,
                                                                                    prng=prng),
-                                              #executor=processor.iterative_executor,
                                               executor=processor.futures_executor,
                                               executor_args={
+                                                  'client': client,
                                                   'skipbadfiles':False,
                                                   'schema': BaseSchema, #NanoAODSchema,
                                                   'workers': 2})#,
@@ -79,18 +79,17 @@ for name,files in filesets.items():
                                               executor_args={
                                                   'client': client,
                                                   'skipbadfiles':False,
-                                                  'schema': BaseSchema, #NanoAODSchema,
-                                                  'workers': 2})#,
+                                                  'schema': BaseSchema})#,
                                               #chunksize=Chunk[0], maxchunks=Chunk[1])
 
         elapsed = time.time() - tstart
         outputs_unweighted[name] = output
         print(output)
-#         util.save(output, 'TTbarAllHadUproot/CoffeaOutputs/UnweightedOutputs/TTbarResCoffea_' 
-#                   + name 
-#                   + '_unweighted_output' 
-# #                   + chosen_exec 
-#                   + '.coffea')
+        util.save(output, 'TTbarAllHadUproot/CoffeaOutputs/UnweightedOutputs/TTbarResCoffea_' 
+                  + name 
+                  + '_unweighted_output' 
+#                   + chosen_exec 
+                  + '.coffea')
 
     else:
         output = util.load('TTbarAllHadUproot/CoffeaOutputs/UnweightedOutputs/TTbarResCoffea_' 
@@ -118,7 +117,7 @@ import TTbarResLookUpTables
 
 from TTbarResLookUpTables import luts
 
-from Filesets import filesets_forweights
+#from Filesets import filesets_forweights
 
 # Ensure that the necessary files have been included in the `TTbarResLookUpTables` process before running the next processor, as the mistag procedure is found within that module.  For details about the categories used to write the mistag procedure, refer to the `TTbarResProcessor` module.
 
@@ -129,11 +128,25 @@ tstart = time.time()
 seed = 1234577890
 outputs_weighted = {}
 prng = RandomState(seed)
-#Chunk = [100000, 100] # [chunksize, maxchunks]
+Chunk = [10000, 100] # [chunksize, maxchunks]
 
 UsingDaskExecutor = False
-OnlyCreateLookupTables = True
-for name,files in filesets.items(): 
+OnlyCreateLookupTables = False
+
+if UsingDaskExecutor == True:
+    if __name__ == "__main__":
+        tic = time.time()
+        cluster = LPCCondorCluster()
+        # minimum > 0: https://github.com/CoffeaTeam/coffea/issues/465
+        cluster.adapt(minimum=1, maximum=10)
+        client = Client(cluster)
+        client.upload_file('TTbarAllHadUproot/TTbarResProcessor.py')
+        client.upload_file('TTbarAllHadUproot/TTbarResLookUpTables.py')
+        client.upload_file('TTbarAllHadUproot/Filesets.py')
+
+outputs_weighted = {}
+
+for name,files in filesets_forweights.items(): 
     if not OnlyCreateLookupTables:
         print('Processing', name)
         if not UsingDaskExecutor:
@@ -142,7 +155,7 @@ for name,files in filesets.items():
                                               treename='Events',
                                               processor_instance=TTbarResProcessor(UseLookUpTables=True,
                                                                                    lu=luts,
-                                                                                   ModMass=False, 
+                                                                                   ModMass=True, 
                                                                                    RandomDebugMode=False,
                                                                                    CalcEff_MC=False,
                                                                                    ApplySF=True,
@@ -171,18 +184,17 @@ for name,files in filesets.items():
                                               executor_args={
                                                   'client': client,
                                                   'skipbadfiles':False,
-                                                  'schema': BaseSchema, #NanoAODSchema,
-                                                  'workers': 2},
+                                                  'schema': BaseSchema},
                                               chunksize=Chunk[0], maxchunks=Chunk[1])
 
         elapsed = time.time() - tstart
-        outputs_unweighted[name] = output
+        outputs_weighted[name] = output
         print(output)
-#         util.save(output, 'TTbarAllHadUproot/CoffeaOutputs/WeightedModMassOutputs/TTbarResCoffea_' 
-#                   + name 
-#                   + '_ModMass_weighted_output'
-#                   + chosen_exec
-#                   + '.coffea')
+        util.save(output, 'TTbarAllHadUproot/CoffeaOutputs/WeightedModMassOutputs/TTbarResCoffea_' 
+                  + name 
+                  + '_weighted_output'
+                  # + chosen_exec
+                  + '.coffea')
     else:
         continue
 
@@ -195,7 +207,8 @@ if not OnlyCreateLookupTables:
         print("-------Unweighted " + name + "--------")
         for i,j in output['cutflow'].items():        
             print( '%20s : %12d' % (i,j) )
+    print("\n\nWe\'re done here!!")
 else:
-    print('We\'re done here!!')
+    print('\n\nWe\'re done here!!')
 
 #quit()
