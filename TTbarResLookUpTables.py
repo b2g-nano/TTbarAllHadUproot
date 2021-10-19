@@ -312,7 +312,7 @@ else : # If runLUTS = False, read in [previously made] Look Up Table csv's
         for icat in list_of_cats:
             title = iset + ' mistag ' + icat
             filename = 'mistag_' + iset + '_' + icat + '.' + 'csv'
-            luts[iset][icat] = pd.read_csv(filename)
+            luts[iset][icat] = pd.read_csv('TTbarAllHadUproot/LookupTables/'+filename)
 print(luts)
 
 #!jupyter nbconvert --to script TTbarResLookUpTables.ipynb

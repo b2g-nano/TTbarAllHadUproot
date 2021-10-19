@@ -22,6 +22,8 @@
 # /JetHT/Run2018B-Nano25Oct2019-v1/NANOAOD 
 # /JetHT/Run2018C-Nano25Oct2019-v2/NANOAOD 
 # /JetHT/Run2018D-Nano25Oct2019_ver2-v1/NANOAOD
+#
+# Weighted JetHT files are for the data driven background (pre-tag region)
 
 xrootdstr1 = 'root://cmseos.fnal.gov//'
 xrootdstr2 = 'root://cmsxrootd.fnal.gov//'
@@ -111,40 +113,40 @@ filesets = {
     # 'RSGluon4000':RSGluon4000files,
     # 'RSGluon4500':RSGluon4500files,
     # 'RSGluon5000':RSGluon5000files,
-    'TTbar':ttbarfiles,
+    # 'TTbar':ttbarfiles,
     # 'JetHT':jetdatafiles,
-    # 'JetHT2016_Data':jetdatafiles2016,
+    'JetHT2016_Data':jetdatafiles2016,
     # 'JetHT2017_Data':jetdatafiles2017,
     # 'JetHT2018_Data':jetdatafiles2018
 }
 
 filesets_forweights = {
-#     'QCD':qcdfiles,
-#     'DM1000':DM1000files,
-#     'DM1500':DM1500files,
-#     'DM2000':DM2000files,
-#     'DM2500':DM2500files,
-#     'DM3000':DM3000files,
-#     'DM3500':DM3500files,
-#     'DM4000':DM4000files,
-#     'DM4500':DM4500files,
-#     'DM5000':DM5000files,
-#     'RSGluon1000':RSGluon1000files,
-#     'RSGluon1500':RSGluon1500files,
-#     'RSGluon2000':RSGluon2000files,
-#     'RSGluon2500':RSGluon2500files,
-#     'RSGluon3000':RSGluon3000files,
-#     'RSGluon3500':RSGluon3500files,
-#     'RSGluon4000':RSGluon4000files,
-#     'RSGluon4500':RSGluon4500files,
-#     'RSGluon5000':RSGluon5000files,
-#     'TTbar':ttbarfiles,
-#     'TTbar_2016':ttbarfiles, # ttbarfiles to be subtracted from JetHT2016 data
-#     'TTbar_2017':ttbarfiles, # ttbarfiles to be subtracted from JetHT2016 data
-#     'TTbar_2018':ttbarfiles, # ttbarfiles to be subtracted from JetHT2016 data
-#     'JetHT':jetdatafiles,
-#     'JetHT2016_Data':jetdatafiles2016,
-#     'JetHT2017_Data':jetdatafiles2017,
-#     'JetHT2018_Data':jetdatafiles2018
+    # 'QCD':qcdfiles,
+    # 'DM1000':DM1000files,
+    # 'DM1500':DM1500files,
+    # 'DM2000':DM2000files,
+    # 'DM2500':DM2500files,
+    # 'DM3000':DM3000files,
+    # 'DM3500':DM3500files,
+    # 'DM4000':DM4000files,
+    # 'DM4500':DM4500files,
+    # 'DM5000':DM5000files,
+    # 'RSGluon1000':RSGluon1000files,
+    # 'RSGluon1500':RSGluon1500files,
+    # 'RSGluon2000':RSGluon2000files,
+    # 'RSGluon2500':RSGluon2500files,
+    # 'RSGluon3000':RSGluon3000files,
+    # 'RSGluon3500':RSGluon3500files,
+    # 'RSGluon4000':RSGluon4000files,
+    # 'RSGluon4500':RSGluon4500files,
+    # 'RSGluon5000':RSGluon5000files,
+    # 'TTbar':ttbarfiles, # ttbarfiles to be subtracted from all years of JetHT data
+    # 'TTbar_2016':ttbarfiles, # ttbarfiles to be subtracted from JetHT2016 data
+    # 'TTbar_2017':ttbarfiles, # ttbarfiles to be subtracted from JetHT2017 data
+    # 'TTbar_2018':ttbarfiles, # ttbarfiles to be subtracted from JetHT2018 data
+    # 'JetHT':jetdatafiles, # all years
+    'JetHT2016_Data':jetdatafiles2016,
+    # 'JetHT2017_Data':jetdatafiles2017,
+    # 'JetHT2018_Data':jetdatafiles2018
 }
 
