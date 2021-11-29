@@ -11,6 +11,12 @@ import os
 from os import path
 import matplotlib.pyplot as plt
 
+# -------------------------------------------------------------------------------------------------------------------------------- #
+# -- if 'runLUTS' is true, make separate Directory to place new Look-Up Tables and perform ttbar subtraction for mistag weights -- #
+# ---------- if 'runLUTS' is false, read in [previously made] Look Up Table csv's [and don't overwrite or make new ones] --------- #
+# -------------------------------------------------------------------------------------------------------------------------------- #
+
+runLUTS = False # Make separate Directory to place Look-Up Tables and perform ttbar subtraction for mistag weights
 
 def mkdir_p(mypath):
     '''Creates a directory. equivalent to using mkdir -p on the command line'''
@@ -146,8 +152,6 @@ warnings.filterwarnings("ignore")
 
 
 """ ---------------- CREATE LOOK UP TABLE .CSV FILES ---------------- """
-
-runLUTS = True # Make separate Directory to place Look-Up Tables and perform ttbar subtraction for mistag weights
 
 def multi_dict(K, type): # definition from https://www.geeksforgeeks.org/python-creating-multidimensional-dictionary/
     if K == 1: 
