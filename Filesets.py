@@ -25,8 +25,8 @@
 #
 # Weighted JetHT files are for the data driven background (pre-tag region)
 
-xrootdstr1 = 'root://cmseos.fnal.gov//'
-xrootdstr2 = 'root://cmsxrootd.fnal.gov//'
+xrootdstr1 = 'root://cmseos.fnal.gov/'
+xrootdstr2 = 'root://cmsxrootd.fnal.gov/'
 xrootdstr3 = 'root://cmsxrootd-site.fnal.gov/'
 
 qcdfilename = 'TTbarAllHadUproot/QCD_UL16_APVv2.txt'
@@ -113,9 +113,9 @@ filesets = {
     # 'RSGluon4000':RSGluon4000files,
     # 'RSGluon4500':RSGluon4500files,
     # 'RSGluon5000':RSGluon5000files,
-    # 'TTbar':ttbarfiles,
+    'TTbar':ttbarfiles
     # 'JetHT':jetdatafiles,
-    'JetHT2016_Data':jetdatafiles2016,
+    # 'JetHT2016_Data':jetdatafiles2016,
     # 'JetHT2017_Data':jetdatafiles2017,
     # 'JetHT2018_Data':jetdatafiles2018
 }
@@ -145,7 +145,7 @@ filesets_forweights = {
     # 'TTbar_2017':ttbarfiles, # ttbarfiles to be subtracted from JetHT2017 data
     # 'TTbar_2018':ttbarfiles, # ttbarfiles to be subtracted from JetHT2018 data
     # 'JetHT':jetdatafiles, # all years
-    'JetHT2016_Data':jetdatafiles2016,
+    # 'JetHT2016_Data':jetdatafiles2016,
     # 'JetHT2017_Data':jetdatafiles2017,
     # 'JetHT2018_Data':jetdatafiles2018
 }
