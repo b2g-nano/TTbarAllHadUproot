@@ -20,11 +20,27 @@ from lpcjobqueue import LPCCondorCluster
 
 ak.behavior.update(candidate.behavior)
 
-from TTbarResProcessor import TTbarResProcessor
-from Filesets import filesets, filesets_forweights
-
-LoadingUnweightedFiles = True
+Testing = False
+LoadingUnweightedFiles = False # don't run processor the first time; just run the processor with the systematics and corrections 
+RunAllRootFiles = False # if not, processor will only run over the number of chunks defined by the user
 UsingDaskExecutor = False
+SaveFirstRun = True # Make a coffea output file of the first uproot job (without the systematics and corrections)
+OnlyCreateLookupTables = True # don't run processor the second time; just run the processor the first time without systematics and corrections
+#%------------------------------------------------------------------------------------------------------------------------------------
+SaveSecondRun = False # Make a coffea output file of the second uproot job (with the systematics and corrections)
+
+from TTbarResProcessor import TTbarResProcessor
+if not Testing:
+    from Filesets import filesets, filesets_forweights
+else:
+    TestRootFiles = ["/uscms/home/bonillaj/nobackup/samples/ttbarRES/SMttbar_nEvents10.root"]
+    #TestRootFiles = ["/uscms_data/d1/bonillaj/samples/ttbarRES/SMttbar_nEvents10.root"]
+    filesets = {
+        'TestSample_ttbarRES':TestRootFiles
+    }
+
+
+Chunk = [10000, 500] # [chunksize, maxchunks]
 
 if UsingDaskExecutor == True:
     if __name__ == "__main__":
@@ -41,57 +57,106 @@ outputs_unweighted = {}
 
 seed = 1234577890
 prng = RandomState(seed)
-#Chunk = [1000, 10] # [chunksize, maxchunks]
 
 for name,files in filesets.items(): 
     if not LoadingUnweightedFiles:
-        print('Processing', name)
-        if not UsingDaskExecutor:
-            chosen_exec = 'futures'
-            output = processor.run_uproot_job({name:files},
-                                              treename='Events',
-                                              processor_instance=TTbarResProcessor(UseLookUpTables=False,
-                                                                                   ModMass=False, 
-                                                                                   RandomDebugMode=False,
-                                                                                   CalcEff_MC=True,
-                                                                                   ApplySF=False,
-                                                                                   UseEfficiencies=False,
-                                                                                   prng=prng),
-                                              executor=processor.futures_executor,
-                                              executor_args={
-                                                  'client': client,
-                                                  'skipbadfiles':False,
-                                                  'schema': BaseSchema, #NanoAODSchema,
-                                                  'workers': 2})#,
-                                              #chunksize=Chunk[0], maxchunks=Chunk[1])
-        else:
-            chosen_exec = 'dask'
-            output = processor.run_uproot_job({name:files},
-                                              treename='Events',
-                                              processor_instance=TTbarResProcessor(UseLookUpTables=False,
-                                                                                   ModMass=False, 
-                                                                                   RandomDebugMode=False,
-                                                                                   CalcEff_MC=True,
-                                                                                   ApplySF=False,
-                                                                                   UseEfficiencies=False,
-                                                                                   prng=prng),
-                                              executor=processor.dask_executor,
-                                              executor_args={
-                                                  'client': client,
-                                                  'skipbadfiles':False,
-                                                  'schema': BaseSchema})#,
-                                              #chunksize=Chunk[0], maxchunks=Chunk[1])
+        print('Processing', name, '...')
+        if not RunAllRootFiles:
+            if not UsingDaskExecutor:
+                chosen_exec = 'futures'
+                output = processor.run_uproot_job({name:files},
+                                                  treename='Events',
+                                                  processor_instance=TTbarResProcessor(UseLookUpTables=False,
+                                                                                       ModMass=False, 
+                                                                                       RandomDebugMode=False,
+                                                                                       CalcEff_MC=True,
+                                                                                       ApplySF=False,
+                                                                                       UseEfficiencies=False,
+                                                                                       prng=prng),
+                                                  executor=processor.futures_executor,
+                                                  executor_args={
+                                                      #'client': client,
+                                                      'skipbadfiles':False,
+                                                      'schema': BaseSchema, #NanoAODSchema,
+                                                      'workers': 2},
+                                                  chunksize=Chunk[0], maxchunks=Chunk[1])
+            else: # use dask
+                chosen_exec = 'dask'
+#                 client.wait_for_workers(1)
+                output = processor.run_uproot_job({name:files},
+                                                  treename='Events',
+                                                  processor_instance=TTbarResProcessor(UseLookUpTables=False,
+                                                                                       ModMass=False, 
+                                                                                       RandomDebugMode=False,
+                                                                                       CalcEff_MC=True,
+                                                                                       ApplySF=False,
+                                                                                       UseEfficiencies=False,
+                                                                                       prng=prng),
+                                                  executor=processor.dask_executor,
+                                                  executor_args={
+                                                      'client': client,
+                                                      'skipbadfiles':False,
+                                                      'schema': BaseSchema},
+                                                  chunksize=Chunk[0], maxchunks=Chunk[1])
 
-        elapsed = time.time() - tstart
-        outputs_unweighted[name] = output
-        print(output)
-        util.save(output, 'TTbarAllHadUproot/CoffeaOutputs/UnweightedOutputs/TTbarResCoffea_' 
-                  + name 
-                  + '_unweighted_output' 
-#                   + chosen_exec 
-                  + '.coffea')
+            elapsed = time.time() - tstart
+            outputs_unweighted[name] = output
+            print(output)
+            if SaveFirstRun:
+                util.save(output, 'TTbarAllHadUproot/CoffeaOutputs/UnweightedOutputs/TTbarResCoffea_' 
+                          + name 
+                          + '_unweighted_output_mcEffTest3' 
+#                           + chosen_exec 
+                          + '.coffea')
+            
+        else: # Run all Root Files
+            if not UsingDaskExecutor:
+                chosen_exec = 'futures'
+                output = processor.run_uproot_job({name:files},
+                                                  treename='Events',
+                                                  processor_instance=TTbarResProcessor(UseLookUpTables=False,
+                                                                                       ModMass=False, 
+                                                                                       RandomDebugMode=False,
+                                                                                       CalcEff_MC=True,
+                                                                                       ApplySF=False,
+                                                                                       UseEfficiencies=False,
+                                                                                       prng=prng),
+                                                  executor=processor.futures_executor,
+                                                  executor_args={
+                                                      #'client': client,
+                                                      'skipbadfiles':False,
+                                                      'schema': BaseSchema, #NanoAODSchema,
+                                                      'workers': 2})
 
-    else:
+            else: # use dask
+                chosen_exec = 'dask'
+                client.wait_for_workers(1)
+                output = processor.run_uproot_job({name:files},
+                                                  treename='Events',
+                                                  processor_instance=TTbarResProcessor(UseLookUpTables=False,
+                                                                                       ModMass=False, 
+                                                                                       RandomDebugMode=False,
+                                                                                       CalcEff_MC=True,
+                                                                                       ApplySF=False,
+                                                                                       UseEfficiencies=False,
+                                                                                       prng=prng),
+                                                  executor=processor.dask_executor,
+                                                  executor_args={
+                                                      'client': client,
+                                                      'skipbadfiles':False,
+                                                      'schema': BaseSchema})
+
+            elapsed = time.time() - tstart
+            outputs_unweighted[name] = output
+            print(output)
+            if SaveFirstRun:
+                util.save(output, 'TTbarAllHadUproot/CoffeaOutputs/UnweightedOutputs/TTbarResCoffea_' 
+                          + name 
+                          + '_unweighted_output_mcEffTest3' 
+#                           + chosen_exec 
+                          + '.coffea')
+
+    else: # Load files
         output = util.load('TTbarAllHadUproot/CoffeaOutputs/UnweightedOutputs/TTbarResCoffea_' 
                            + name 
                            + '_unweighted_output.coffea')
@@ -100,9 +165,9 @@ for name,files in filesets.items():
         print(name + ' unweighted output loaded')
         elapsed = time.time() - tstart
 
-print('Elapsed time = ', elapsed, ' sec.')
-print('Elapsed time = ', elapsed/60., ' min.')
-print('Elapsed time = ', elapsed/3600., ' hrs.') 
+    print('Elapsed time = ', elapsed, ' sec.')
+    print('Elapsed time = ', elapsed/60., ' min.')
+    print('Elapsed time = ', elapsed/3600., ' hrs.') 
 
 for name,output in outputs_unweighted.items(): 
     print("-------Unweighted " + name + "--------")
@@ -125,13 +190,12 @@ from TTbarResLookUpTables import luts
 
 tstart = time.time()
 
-seed = 1234577890
 outputs_weighted = {}
-prng = RandomState(seed)
-Chunk = [10000, 100] # [chunksize, maxchunks]
 
-UsingDaskExecutor = False
-OnlyCreateLookupTables = False
+seed = 1234577890
+prng = RandomState(seed)
+
+#UsingDaskExecutor = False
 
 if UsingDaskExecutor == True:
     if __name__ == "__main__":
@@ -149,62 +213,114 @@ outputs_weighted = {}
 for name,files in filesets_forweights.items(): 
     if not OnlyCreateLookupTables:
         print('Processing', name)
-        if not UsingDaskExecutor:
-            chosen_exec = 'futures'
-            output = processor.run_uproot_job({name:files},
-                                              treename='Events',
-                                              processor_instance=TTbarResProcessor(UseLookUpTables=True,
-                                                                                   lu=luts,
-                                                                                   ModMass=True, 
-                                                                                   RandomDebugMode=False,
-                                                                                   CalcEff_MC=False,
-                                                                                   ApplySF=True,
-                                                                                   UseEfficiencies=False,
-                                                                                   prng=prng),
-                                              #executor=processor.iterative_executor,
-                                              executor=processor.futures_executor,
-                                              executor_args={
-                                                  'skipbadfiles':False,
-                                                  'schema': BaseSchema, #NanoAODSchema,
-                                                  'workers': 2},
-                                              chunksize=Chunk[0], maxchunks=Chunk[1])
-        else:
-            chosen_exec = 'dask'
-            output = processor.run_uproot_job({name:files},
-                                              treename='Events',
-                                              processor_instance=TTbarResProcessor(UseLookUpTables=True,
-                                                                                   lu=luts,
-                                                                                   ModMass=True, 
-                                                                                   RandomDebugMode=False,
-                                                                                   CalcEff_MC=False,
-                                                                                   ApplySF=True,
-                                                                                   UseEfficiencies=False,
-                                                                                   prng=prng),
-                                              executor=processor.dask_executor,
-                                              executor_args={
-                                                  'client': client,
-                                                  'skipbadfiles':False,
-                                                  'schema': BaseSchema},
-                                              chunksize=Chunk[0], maxchunks=Chunk[1])
+        if not RunAllRootFiles:
+            if not UsingDaskExecutor:
+                chosen_exec = 'futures'
+                output = processor.run_uproot_job({name:files},
+                                                  treename='Events',
+                                                  processor_instance=TTbarResProcessor(UseLookUpTables=True,
+                                                                                       lu=luts,
+                                                                                       ModMass=True, 
+                                                                                       RandomDebugMode=False,
+                                                                                       CalcEff_MC=False,
+                                                                                       ApplySF=True,
+                                                                                       UseEfficiencies=False,
+                                                                                       prng=prng),
+                                                  #executor=processor.iterative_executor,
+                                                  executor=processor.futures_executor,
+                                                  executor_args={
+                                                      'skipbadfiles':False,
+                                                      'schema': BaseSchema, #NanoAODSchema,
+                                                      'workers': 2},
+                                                  chunksize=Chunk[0], maxchunks=Chunk[1])
+            else:
+                chosen_exec = 'dask'
+                print(client.dashboard_link)
+                output = processor.run_uproot_job({name:files},
+                                                  treename='Events',
+                                                  processor_instance=TTbarResProcessor(UseLookUpTables=True,
+                                                                                       lu=luts,
+                                                                                       ModMass=True, 
+                                                                                       RandomDebugMode=False,
+                                                                                       CalcEff_MC=False,
+                                                                                       ApplySF=True,
+                                                                                       UseEfficiencies=False,
+                                                                                       prng=prng),
+                                                  executor=processor.dask_executor,
+                                                  executor_args={
+                                                      'client': client,
+                                                      'skipbadfiles':False,
+                                                      'schema': BaseSchema},
+                                                  chunksize=Chunk[0], maxchunks=Chunk[1])
 
-        elapsed = time.time() - tstart
-        outputs_weighted[name] = output
-        print(output)
-        util.save(output, 'TTbarAllHadUproot/CoffeaOutputs/WeightedModMassOutputs/TTbarResCoffea_' 
-                  + name 
-                  + '_weighted_output'
-                  # + chosen_exec
-                  + '.coffea')
+            elapsed = time.time() - tstart
+            outputs_weighted[name] = output
+            print(output)
+            if SaveSecondRun:
+                util.save(output, 'TTbarAllHadUproot/CoffeaOutputs/WeightedModMassOutputs/TTbarResCoffea_' 
+                          + name 
+                          + '_weighted_output'
+#                           + chosen_exec
+                          + '.coffea')
+            
+        else: # Run all Root Files
+            if not UsingDaskExecutor:
+                chosen_exec = 'futures'
+                output = processor.run_uproot_job({name:files},
+                                                  treename='Events',
+                                                  processor_instance=TTbarResProcessor(UseLookUpTables=True,
+                                                                                       lu=luts,
+                                                                                       ModMass=True, 
+                                                                                       RandomDebugMode=False,
+                                                                                       CalcEff_MC=False,
+                                                                                       ApplySF=True,
+                                                                                       UseEfficiencies=False,
+                                                                                       prng=prng),
+                                                  #executor=processor.iterative_executor,
+                                                  executor=processor.futures_executor,
+                                                  executor_args={
+                                                      'skipbadfiles':False,
+                                                      'schema': BaseSchema, #NanoAODSchema,
+                                                      'workers': 2})
+
+            else:
+                chosen_exec = 'dask'
+#                 print(client.dashboard_link)
+                output = processor.run_uproot_job({name:files},
+                                                  treename='Events',
+                                                  processor_instance=TTbarResProcessor(UseLookUpTables=True,
+                                                                                       lu=luts,
+                                                                                       ModMass=True, 
+                                                                                       RandomDebugMode=False,
+                                                                                       CalcEff_MC=False,
+                                                                                       ApplySF=True,
+                                                                                       UseEfficiencies=False,
+                                                                                       prng=prng),
+                                                  executor=processor.dask_executor,
+                                                  executor_args={
+                                                      'client': client,
+                                                      'skipbadfiles':False,
+                                                      'schema': BaseSchema})
+
+            elapsed = time.time() - tstart
+            outputs_weighted[name] = output
+            print(output)
+            if SaveSecondRun:
+                util.save(output, 'TTbarAllHadUproot/CoffeaOutputs/WeightedModMassOutputs/TTbarResCoffea_' 
+                          + name 
+                          + '_weighted_output'
+#                           + chosen_exec
+                          + '.coffea')
     else:
         continue
 
-print('Elapsed time = ', elapsed, ' sec.')
-print('Elapsed time = ', elapsed/60., ' min.')
-print('Elapsed time = ', elapsed/3600., ' hrs.') 
+    print('Elapsed time = ', elapsed, ' sec.')
+    print('Elapsed time = ', elapsed/60., ' min.')
+    print('Elapsed time = ', elapsed/3600., ' hrs.') 
 
 if not OnlyCreateLookupTables:
     for name,output in outputs_weighted.items(): 
-        print("-------Unweighted " + name + "--------")
+        print("-------Weighted " + name + "--------")
         for i,j in output['cutflow'].items():        
             print( '%20s : %12d' % (i,j) )
     print("\n\nWe\'re done here!!")
