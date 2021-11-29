@@ -80,9 +80,9 @@ class TTbarResProcessor(processor.ProcessorABC):
         
         subjetmass_axis = hist.Bin("subjetmass", r"SubJet $m$ [GeV]", 50, 0, 500)
         subjetpt_axis = hist.Bin("subjetpt", r"SubJet $p_{T}$ [GeV]", 50, 0, 2000)
-        subjetpt_laxis = hist.Bin("subjetpt", r"SubJet $p_{T}$ [GeV]", 10, 0, 2000) #Larger bins
+        subjetpt_laxis = hist.Bin("subjetpt", r"SubJet $p_{T}$ [GeV]", 8, 0, 2000) #Larger bins
         subjeteta_axis = hist.Bin("subjeteta", r"SubJet $\eta$", 50, -3, 3)
-        subjeteta_laxis = hist.Bin("subjeteta", r"SubJet $\eta$", 10, -3, 3) #Larger bins
+        subjeteta_laxis = hist.Bin("subjeteta", r"SubJet $\eta$", 8, -3, 3) #Larger bins
         subjetphi_axis = hist.Bin("subjetphi", r"SubJet $\phi$", 50, -np.pi, np.pi)
 
         distance_axis = hist.Bin("delta_r", r"$\Delta r$", 50, 0, 5)
@@ -664,7 +664,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         SubJets = SubJets[oneTTbar]
         if 'JetHT' not in dataset: # If MC is used...
             GenParts = GenParts[oneTTbar]
-         
+            
         # ---- Apply Delta Phi Cut for Back to Back Topology ---- #
         """ NOTE: Should find function for this; avoids 2pi problem """
         dPhiCut = ttbarcands.slot0.p4.delta_phi(ttbarcands.slot1.p4) > 2.1
@@ -681,13 +681,13 @@ class TTbarResProcessor(processor.ProcessorABC):
         hasSubjets0 = ((ttbarcands.slot0.subJetIdx1 > -1) & (ttbarcands.slot0.subJetIdx2 > -1)) # 1st candidate has two subjets
         hasSubjets1 = ((ttbarcands.slot1.subJetIdx1 > -1) & (ttbarcands.slot1.subJetIdx2 > -1)) # 2nd candidate has two subjets
         GoodSubjets = ak.flatten(((hasSubjets0) & (hasSubjets1))) # Selection of 4 (leading) subjects
-   
+        
         ttbarcands = ttbarcands[GoodSubjets] # Choose only ttbar candidates with this selection of subjets
         SubJets = SubJets[GoodSubjets]
         if 'JetHT' not in dataset: # If MC is used...
             GenParts = GenParts[GoodSubjets]
         evtweights = evtweights[GoodSubjets]
-       
+        
         SubJet01 = SubJets[ttbarcands.slot0.subJetIdx1] # ttbarcandidate 0's first subjet 
         SubJet02 = SubJets[ttbarcands.slot0.subJetIdx2] # ttbarcandidate 0's second subjet
         SubJet11 = SubJets[ttbarcands.slot1.subJetIdx1] # ttbarcandidate 1's first subjet 
@@ -727,8 +727,8 @@ class TTbarResProcessor(processor.ProcessorABC):
         ttag_s1 = (taucut_s1) & (mcut_s1)
         
         # ---- Define "Top Tag" Regions ---- #
-        antitag = (~taucut_s0) & (mcut_s0) #Probe will always be ttbarcands.i1 (at)
-        antitag_probe = np.logical_and(antitag, ttag_s1) #Found an antitag and ttagged probe pair for mistag rate (Probet)
+        antitag = (~taucut_s0) & (mcut_s0) # The Probe jet will always be ttbarcands.slot1 (at)
+        antitag_probe = np.logical_and(antitag, ttag_s1) # Found an antitag and ttagged probe pair for mistag rate (Probet)
         pretag =  ttag_s0 # Only jet0 (pret)
         ttag0 =   (~ttag_s0) & (~ttag_s1) # No tops tagged (0t)
         ttag1 =   ttag_s0 ^ ttag_s1 # Exclusively one top tagged (1t)
@@ -782,6 +782,16 @@ class TTbarResProcessor(processor.ProcessorABC):
 
             if self.CalcEff_MC == True: # Get 'flavor' tagging efficiency from MC
 
+#                ===============================================================================
+#                M     M   CCCC      FFFFFFF L          A    V     V     EEEEEEE FFFFFFF FFFFFFF     
+#                MM   MM  C          F       L         A A   V     V     E       F       F           
+#                M M M M C           F       L        A   A  V     V     E       F       F           
+#                M  M  M C           FFFFFFF L        AAAAA  V     V     EEEEEEE FFFFFFF FFFFFFF     
+#                M     M C           F       L       A     A  V   V      E       F       F           
+#                M     M  C          F       L       A     A   V V       E       F       F           
+#                M     M   CCCC      F       LLLLLLL A     A    V        EEEEEEE F       F  
+#                ===============================================================================
+                
                 # --- For Efficiency Calculations, check efficiency of all four subjets passing the discriminant ---- #
                 s01_btagged = (SubJet01.btagCSVV2 > self.bdisc)
                 s02_btagged = (SubJet02.btagCSVV2 > self.bdisc)
@@ -793,81 +803,81 @@ class TTbarResProcessor(processor.ProcessorABC):
                 # --- Denominators are independant of subjet flavor --- #
 
                 # ---- b-tagging eff. numerators ---- #
-                Eff_b_Num_pT_s01 = np.where(s01_btagged & (flav_s01 == 5), pT_s01, -1)
-                Eff_b_Num_eta_s01 = np.where(s01_btagged & (flav_s01 == 5), eta_s01, -1)
+                Eff_b_Num_pT_s01 = np.where(s01_btagged & (flav_s01 == 5), pT_s01, -1) # if not putting pT of subjet, then put non exisitent bin, i.e. -1
+                Eff_b_Num_eta_s01 = np.where(s01_btagged & (flav_s01 == 5), eta_s01, 5) # if not putting pT of subjet, then put non exisitent bin, i.e. 5
 
                 Eff_b_Num_pT_s02 = np.where(s02_btagged & (flav_s02 == 5), pT_s02, -1)
-                Eff_b_Num_eta_s02 = np.where(s02_btagged & (flav_s02 == 5), eta_s02, -1)
+                Eff_b_Num_eta_s02 = np.where(s02_btagged & (flav_s02 == 5), eta_s02, 5)
 
                 Eff_b_Num_pT_s11 = np.where(s11_btagged & (flav_s11 == 5), pT_s11, -1)
-                Eff_b_Num_eta_s11 = np.where(s11_btagged & (flav_s11 == 5), eta_s11, -1)
+                Eff_b_Num_eta_s11 = np.where(s11_btagged & (flav_s11 == 5), eta_s11, 5)
 
                 Eff_b_Num_pT_s12 = np.where(s12_btagged & (flav_s12 == 5), pT_s12, -1)
-                Eff_b_Num_eta_s12 = np.where(s12_btagged & (flav_s12 == 5), eta_s12, -1)
+                Eff_b_Num_eta_s12 = np.where(s12_btagged & (flav_s12 == 5), eta_s12, 5)
 
                 # ---- c-tagging eff. numerators ---- #
                 Eff_c_Num_pT_s01 = np.where(s01_btagged & (flav_s01 == 4), pT_s01, -1)
-                Eff_c_Num_eta_s01 = np.where(s01_btagged & (flav_s01 == 4), eta_s01, -1)
+                Eff_c_Num_eta_s01 = np.where(s01_btagged & (flav_s01 == 4), eta_s01, 5)
 
                 Eff_c_Num_pT_s02 = np.where(s02_btagged & (flav_s02 == 4), pT_s02, -1)
-                Eff_c_Num_eta_s02 = np.where(s02_btagged & (flav_s02 == 4), eta_s02, -1)
+                Eff_c_Num_eta_s02 = np.where(s02_btagged & (flav_s02 == 4), eta_s02, 5)
 
                 Eff_c_Num_pT_s11 = np.where(s11_btagged & (flav_s11 == 4), pT_s11, -1)
-                Eff_c_Num_eta_s11 = np.where(s11_btagged & (flav_s11 == 4), eta_s11, -1)
+                Eff_c_Num_eta_s11 = np.where(s11_btagged & (flav_s11 == 4), eta_s11, 5)
 
                 Eff_c_Num_pT_s12 = np.where(s12_btagged & (flav_s12 == 4), pT_s12, -1)
-                Eff_c_Num_eta_s12 = np.where(s12_btagged & (flav_s12 == 4), eta_s12, -1)
+                Eff_c_Num_eta_s12 = np.where(s12_btagged & (flav_s12 == 4), eta_s12, 5)
 
                 Eff_udsg_Num_pT_s01 = np.where(s01_btagged & (if_s01_isLightParton), pT_s01, -1)
-                Eff_udsg_Num_eta_s01 = np.where(s01_btagged & (if_s01_isLightParton), eta_s01, -1)
+                Eff_udsg_Num_eta_s01 = np.where(s01_btagged & (if_s01_isLightParton), eta_s01, 5)
 
                 Eff_udsg_Num_pT_s02 = np.where(s02_btagged & (if_s02_isLightParton), pT_s02, -1)
-                Eff_udsg_Num_eta_s02 = np.where(s02_btagged & (if_s02_isLightParton), eta_s02, -1)
+                Eff_udsg_Num_eta_s02 = np.where(s02_btagged & (if_s02_isLightParton), eta_s02, 5)
 
                 Eff_udsg_Num_pT_s11 = np.where(s11_btagged & (if_s11_isLightParton), pT_s11, -1)
-                Eff_udsg_Num_eta_s11 = np.where(s11_btagged & (if_s11_isLightParton), eta_s11, -1)
+                Eff_udsg_Num_eta_s11 = np.where(s11_btagged & (if_s11_isLightParton), eta_s11, 5)
 
                 Eff_udsg_Num_pT_s12 = np.where(s12_btagged & (if_s12_isLightParton), pT_s12, -1)
-                Eff_udsg_Num_eta_s12 = np.where(s12_btagged & (if_s12_isLightParton), eta_s12, -1)
+                Eff_udsg_Num_eta_s12 = np.where(s12_btagged & (if_s12_isLightParton), eta_s12, 5)
 
                 # ---- b-tagging eff. denominators ---- #
                 Eff_b_Denom_pT_s01 = np.where(flav_s01 == 5, pT_s01, -1)
-                Eff_b_Denom_eta_s01 = np.where(flav_s01 == 5, eta_s01, -1)
+                Eff_b_Denom_eta_s01 = np.where(flav_s01 == 5, eta_s01, 5)
 
                 Eff_b_Denom_pT_s02 = np.where(flav_s02 == 5, pT_s02, -1)
-                Eff_b_Denom_eta_s02 = np.where(flav_s02 == 5, eta_s02, -1)
+                Eff_b_Denom_eta_s02 = np.where(flav_s02 == 5, eta_s02, 5)
 
                 Eff_b_Denom_pT_s11 = np.where(flav_s11 == 5, pT_s11, -1)
-                Eff_b_Denom_eta_s11 = np.where(flav_s11 == 5, eta_s11, -1)
+                Eff_b_Denom_eta_s11 = np.where(flav_s11 == 5, eta_s11, 5)
 
                 Eff_b_Denom_pT_s12 = np.where(flav_s12 == 5, pT_s12, -1)
-                Eff_b_Denom_eta_s12 = np.where(flav_s12 == 5, eta_s12, -1)
+                Eff_b_Denom_eta_s12 = np.where(flav_s12 == 5, eta_s12, 5)
 
                 # ---- c-tagging eff. denominators ---- #
                 Eff_c_Denom_pT_s01 = np.where(flav_s01 == 4, pT_s01, -1)
-                Eff_c_Denom_eta_s01 = np.where(flav_s01 == 4, eta_s01, -1)
+                Eff_c_Denom_eta_s01 = np.where(flav_s01 == 4, eta_s01, 5)
 
                 Eff_c_Denom_pT_s02 = np.where(flav_s02 == 4, pT_s02, -1)
-                Eff_c_Denom_eta_s02 = np.where(flav_s02 == 4, eta_s02, -1)
+                Eff_c_Denom_eta_s02 = np.where(flav_s02 == 4, eta_s02, 5)
 
                 Eff_c_Denom_pT_s11 = np.where(flav_s11 == 4, pT_s11, -1)
-                Eff_c_Denom_eta_s11 = np.where(flav_s11 == 4, eta_s11, -1)
+                Eff_c_Denom_eta_s11 = np.where(flav_s11 == 4, eta_s11, 5)
 
                 Eff_c_Denom_pT_s12 = np.where(flav_s12 == 4, pT_s12, -1)
-                Eff_c_Denom_eta_s12 = np.where(flav_s12 == 4, eta_s12, -1)
+                Eff_c_Denom_eta_s12 = np.where(flav_s12 == 4, eta_s12, 5)
 
                 # ---- light parton-tagging eff. denominators ---- #
                 Eff_udsg_Denom_pT_s01 = np.where(if_s01_isLightParton, pT_s01, -1)
-                Eff_udsg_Denom_eta_s01 = np.where(if_s01_isLightParton, eta_s01, -1)
+                Eff_udsg_Denom_eta_s01 = np.where(if_s01_isLightParton, eta_s01, 5)
 
                 Eff_udsg_Denom_pT_s02 = np.where(if_s02_isLightParton, pT_s02, -1)
-                Eff_udsg_Denom_eta_s02 = np.where(if_s02_isLightParton, eta_s02, -1)
+                Eff_udsg_Denom_eta_s02 = np.where(if_s02_isLightParton, eta_s02, 5)
 
                 Eff_udsg_Denom_pT_s11 = np.where(if_s11_isLightParton, pT_s11, -1)
-                Eff_udsg_Denom_eta_s11 = np.where(if_s11_isLightParton, eta_s11, -1)
+                Eff_udsg_Denom_eta_s11 = np.where(if_s11_isLightParton, eta_s11, 5)
 
                 Eff_udsg_Denom_pT_s12 = np.where(if_s12_isLightParton, pT_s12, -1)
-                Eff_udsg_Denom_eta_s12 = np.where(if_s12_isLightParton, eta_s12, -1)
+                Eff_udsg_Denom_eta_s12 = np.where(if_s12_isLightParton, eta_s12, 5)
 
                 # --- Flatten all numerators --- #
                 Eff_b_Num_pT_s01 = ak.flatten(Eff_b_Num_pT_s01)
@@ -905,6 +915,8 @@ class TTbarResProcessor(processor.ProcessorABC):
 
                 Eff_udsg_Num_pT_s12 = ak.flatten(Eff_udsg_Num_pT_s12)
                 Eff_udsg_Num_eta_s12 = ak.flatten(Eff_udsg_Num_eta_s12)
+                
+                #removeMCweights = np.ones(ak.to_awkward0(evtweights).size)
 
                 # **************************************************************************************** #
                 # ----------------------------- 2-D B-tagging Efficiencies ------------------------------- #
@@ -912,11 +924,11 @@ class TTbarResProcessor(processor.ProcessorABC):
                 output['b_eff_numerator_s01'].fill(dataset = dataset,
                                                   subjetpt = ak.to_numpy(Eff_b_Num_pT_s01),
                                                   subjeteta = ak.to_numpy(Eff_b_Num_eta_s01),
-                                                   weight = ak.to_numpy(evtweights))
+                                                  weight = ak.to_numpy(evtweights))
                 output['b_eff_numerator_s02'].fill(dataset = dataset,
                                                   subjetpt = ak.to_numpy(Eff_b_Num_pT_s02),
                                                   subjeteta = ak.to_numpy(Eff_b_Num_eta_s02),
-                                                   weight = ak.to_numpy(evtweights))
+                                                  weight = ak.to_numpy(evtweights))
                 output['b_eff_numerator_s11'].fill(dataset = dataset,
                                                   subjetpt = ak.to_numpy(Eff_b_Num_pT_s11),
                                                   subjeteta = ak.to_numpy(Eff_b_Num_eta_s11),
@@ -1118,11 +1130,26 @@ class TTbarResProcessor(processor.ProcessorABC):
                                                   subjetpt = ak.to_numpy(Eff_udsg_Denom_pT_s12),
                                                   subjeteta = ak.to_numpy(Eff_udsg_Denom_eta_s12),
                                                   weight = ak.to_numpy(evtweights))
-
+            
+#            ===========================================================
+#               A    PPPPPP  PPPPPP  L       Y     Y       SSSSS FFFFFFF     
+#              A A   P     P P     P L        Y   Y       S      F           
+#             A   A  P     P P     P L         Y Y       S       F           
+#             AAAAA  PPPPPP  PPPPPP  L          Y         SSSSS  FFFFFFF     
+#            A     A P       P       L          Y              S F           
+#            A     A P       P       L          Y             S  F           
+#            A     A P       P       LLLLLLL    Y        SSSSS   F
+#            ===========================================================
+            
             Btag_wgts = {} # To be filled with "btag_wgts" corrections below (Needs to be defined for higher scope)
             if self.ApplySF == True: # Apply b Tag Scale Factors and redefine btag_s0 and btag_s1
                 if self.UseEfficiencies == False: # Define weights solely from BSF to weight each btag category region
-
+                    
+                    # **************************************************************************************** #
+                    # --------------------------- Method 1c) Apply Event Weights ----------------------------- #
+                    # -------------- https://twiki.cern.ch/twiki/bin/viewauth/CMS/BTagSFMethods -------------- #
+                    # **************************************************************************************** #
+                
                     # ---- Temporarily define the 'outline' of the collection of weights to calculate ---- # 
                     btag_wgts = {'0b':np.array([None]),
                                  '1b':np.array([None, None]),
@@ -1184,12 +1211,19 @@ class TTbarResProcessor(processor.ProcessorABC):
                     Wgts_to_1btag_region_nonzero = np.where(Wgts_to_1btag_region==0., 1., Wgts_to_1btag_region)
                     Wgts_to_2btag_region_nonzero = np.where(Wgts_to_2btag_region==0., 1., Wgts_to_2btag_region)
 
+                    # ---- Avoid Potential Scope Issues (Unpredictable when/if scope error occurs, so best to avoid it entirely) ---- #
                     Btag_wgts['0b'] = Wgts_to_0btag_region_nonzero
                     Btag_wgts['1b'] = Wgts_to_1btag_region_nonzero
                     Btag_wgts['2b'] = Wgts_to_2btag_region_nonzero
 
 
                 else: # Upgrade or Downgrade btag status based on btag efficiency of all four subjets per event
+                    
+                    # **************************************************************************************** #
+                    # --------------------------- Method 2a) Update B-tag Status ----------------------------- #
+                    # -------------- https://twiki.cern.ch/twiki/bin/viewauth/CMS/BTagSFMethods -------------- #
+                    # **************************************************************************************** #
+                    
                                 # ---- Import MC 'flavor' efficiencies ---- #
                     """
                     e.g.)
@@ -1738,14 +1772,15 @@ class TTbarResProcessor(processor.ProcessorABC):
             ###---------------------------------------------------------------------------------------------###
             ### ------------------------------ B-Tag Weighting (S.F. Only) -------------------------------- ###
             ###---------------------------------------------------------------------------------------------###
-            if (self.ApplySF == True) and (self.UseEfficiencies == False):
- 
-                if '0b' in ilabel:
-                    Weights = Weights*Btag_wgts['0b']
-                elif '1b' in ilabel:
-                    Weights = Weights*Btag_wgts['1b']
-                else:
-                    Weights = Weights*Btag_wgts['2b']
+            if 'JetHT' not in dataset:
+                if (self.ApplySF == True) and (self.UseEfficiencies == False):
+                    Weights = Weights*Btag_wgts[str(ilabel[-5:-3])]
+#                     if '0b' in ilabel:
+#                         Weights = Weights*Btag_wgts['0b']
+#                     elif '1b' in ilabel:
+#                         Weights = Weights*Btag_wgts['1b']
+#                     else:
+#                         Weights = Weights*Btag_wgts['2b']
 
 # ************************************************************************************************************ #      
             output['cutflow'][ilabel] += np.sum(icat)
