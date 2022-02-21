@@ -16,7 +16,10 @@ import matplotlib.pyplot as plt
 # ---------- if 'runLUTS' is false, read in [previously made] Look Up Table csv's [and don't overwrite or make new ones] --------- #
 # -------------------------------------------------------------------------------------------------------------------------------- #
 
-runLUTS = False # Make separate Directory to place Look-Up Tables and perform ttbar subtraction for mistag weights
+runLUTS = True # Make separate Directory to place Look-Up Tables (and maybe perform ttbar subtraction for mistag weights)
+
+if not runLUTS:
+    print("\n\nLoading Previously Made Look Up Tables for Mistag Rate\n\nDoes not Correspond to Test Files...\n\n")
 
 def mkdir_p(mypath):
     '''Creates a directory. equivalent to using mkdir -p on the command line'''
@@ -40,7 +43,7 @@ def DoesDirectoryExist(mypath): #extra precaution (Probably overkill...)
         mkdir_p(mypath)
 
 maindirectory = os.getcwd() # changes accordingly
-print(maindirectory)
+#print(maindirectory)
 
 # ---- Reiterate categories ---- #
 ttagcats = ["at"] #, "0t", "1t", "It", "2t"]
@@ -75,7 +78,7 @@ def forward(x):
 def inverse(x):
     return x**2
 
-print(SaveDirectory)
+#print(SaveDirectory)
 for iset in filesets:
     for icat in list_of_cats:
         print(iset)
@@ -112,16 +115,16 @@ Nevts = Nevts2016 + Nevts2017 + Nevts2018 # for all three years
 
 if 'JetHT2016_Data' in filesets:
     Nevts2016_sf = Nevts2016/outputs_unweighted['JetHT2016_Data']['cutflow']['all events']
-    print(Nevts2016_sf)
+#     print(Nevts2016_sf)
 if 'JetHT2017_Data' in filesets:
     Nevts2017_sf = Nevts2017/outputs_unweighted['JetHT2017_Data']['cutflow']['all events']
-    print(Nevts2017_sf)
+#     print(Nevts2017_sf)
 if 'JetHT2018_Data' in filesets:
     Nevts2018_sf = Nevts2018/outputs_unweighted['JetHT2018_Data']['cutflow']['all events']
-    print(Nevts2018_sf)
+#     print(Nevts2018_sf)
 if 'JetHT' in filesets:
     Nevts_sf = Nevts / outputs_unweighted['JetHT']['cutflow']['all events']
-    print(Nevts_sf)
+#     print(Nevts_sf)
 
 
 """ ---------------- Luminosities, Cross Sections, Scale-Factors ---------------- """ 
@@ -138,10 +141,10 @@ ttbar2017_sf = ttbar_xs*Lum2017/(142155064.)
 ttbar2018_sf = ttbar_xs*Lum2018/(142155064.)
 ttbar_sf = ttbar_xs*Lum/(142155064.)
 
-print("ttbar 2016 scale factor = ", ttbar2016_sf)
-print("ttbar 2017 scale factor = ", ttbar2017_sf)
-print("ttbar 2018 scale factor = ", ttbar2018_sf)
-print("ttbar (all years) scale factor = ", ttbar_sf)
+# print("ttbar 2016 scale factor = ", ttbar2016_sf)
+# print("ttbar 2017 scale factor = ", ttbar2017_sf)
+# print("ttbar 2018 scale factor = ", ttbar2018_sf)
+# print("ttbar (all years) scale factor = ", ttbar_sf)
 
 qcd_xs = 1370000000.0 #pb From https://cms-gen-dev.cern.ch/xsdb
 #qcd_sf = qcd_xs*Lum/18455107.

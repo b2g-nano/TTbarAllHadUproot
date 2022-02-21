@@ -22,6 +22,11 @@ ak.behavior.update(vector.behavior)
 
 # --- Define 'Manual bins' to use for mistag plots for aesthetic purposes--- #
 manual_bins = [400, 500, 600, 800, 1000, 1500, 2000, 3000, 7000, 10000]
+
+# --- Define 'Manual pT bins' to use for mc flavor efficiency plots for higher stats per bin--- #
+#manual_subjetpt_bins = [0, 250, 500, 750, 1000, 1500, 2000]
+# manual_subjetpt_bins = [0, 200, 400, 600, 800, 1000, 1500, 2000, 3000] # Used before 2/21/22 on Biased TTbar samples (8 bins) 
+manual_subjetpt_bins = [0, 200, 400, 800, 1600, 3200] # Used on 2/21/22 for QCD and RSGluon1000 (5 bins)
 #manual_etabins = []
 
 """@TTbarResAnaHadronic Package to perform the data-driven mistag-rate-based ttbar hadronic analysis. 
@@ -79,10 +84,13 @@ class TTbarResProcessor(processor.ProcessorABC):
         tau32_axis = hist.Bin("tau32", r"$\tau_3/\tau_2$", 50, 0, 2)
         
         subjetmass_axis = hist.Bin("subjetmass", r"SubJet $m$ [GeV]", 50, 0, 500)
+        
         subjetpt_axis = hist.Bin("subjetpt", r"SubJet $p_{T}$ [GeV]", 50, 0, 2000)
-        subjetpt_laxis = hist.Bin("subjetpt", r"SubJet $p_{T}$ [GeV]", 8, 0, 2000) #Larger bins
-        subjeteta_axis = hist.Bin("subjeteta", r"SubJet $\eta$", 50, -3, 3)
-        subjeteta_laxis = hist.Bin("subjeteta", r"SubJet $\eta$", 8, -3, 3) #Larger bins
+        subjetpt_laxis = hist.Bin("subjetpt", r"SubJet $p_{T}$ [GeV]", 6, 0, 2000) #Larger bins
+        subjetpt_maxis = hist.Bin("subjetpt", r"SubJet $p_T$ [GeV]", manual_subjetpt_bins) #Manually defined bins for better statistics per bin
+        subjeteta_axis = hist.Bin("subjeteta", r"SubJet $\eta$", 50, -2.4, 2.4)
+        subjeteta_laxis = hist.Bin("subjeteta", r"SubJet $\eta$", 8, -2.4, 2.4) #Larger bins
+        
         subjetphi_axis = hist.Bin("subjetphi", r"SubJet $\phi$", 50, -np.pi, np.pi)
 
         distance_axis = hist.Bin("delta_r", r"$\Delta r$", 50, 0, 5)
@@ -228,6 +236,16 @@ class TTbarResProcessor(processor.ProcessorABC):
             'b_eff_denominator_s11_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
             'b_eff_denominator_s12_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
             
+            'b_eff_numerator_s01_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_laxis),
+            'b_eff_numerator_s02_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_laxis),
+            'b_eff_numerator_s11_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_laxis),
+            'b_eff_numerator_s12_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_laxis),
+            
+            'b_eff_denominator_s01_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_laxis),
+            'b_eff_denominator_s02_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_laxis),
+            'b_eff_denominator_s11_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_laxis),
+            'b_eff_denominator_s12_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_laxis),
+            
             # ---- 2D SubJet c-tag Efficiency ---- #
             'c_eff_numerator_s01': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
             'c_eff_numerator_s02': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
@@ -249,6 +267,16 @@ class TTbarResProcessor(processor.ProcessorABC):
             'c_eff_denominator_s11_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
             'c_eff_denominator_s12_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
             
+            'c_eff_numerator_s01_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_laxis),
+            'c_eff_numerator_s02_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_laxis),
+            'c_eff_numerator_s11_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_laxis),
+            'c_eff_numerator_s12_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_laxis),
+            
+            'c_eff_denominator_s01_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_laxis),
+            'c_eff_denominator_s02_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_laxis),
+            'c_eff_denominator_s11_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_laxis),
+            'c_eff_denominator_s12_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_laxis),
+            
             # ---- 2D SubJet light quark-tag Efficiency ---- #
             'udsg_eff_numerator_s01': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
             'udsg_eff_numerator_s02': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
@@ -269,6 +297,16 @@ class TTbarResProcessor(processor.ProcessorABC):
             'udsg_eff_denominator_s02_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
             'udsg_eff_denominator_s11_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
             'udsg_eff_denominator_s12_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
+            
+            'udsg_eff_numerator_s01_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_laxis),
+            'udsg_eff_numerator_s02_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_laxis),
+            'udsg_eff_numerator_s11_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_laxis),
+            'udsg_eff_numerator_s12_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_laxis),
+            
+            'udsg_eff_denominator_s01_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_laxis),
+            'udsg_eff_denominator_s02_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_laxis),
+            'udsg_eff_denominator_s11_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_laxis),
+            'udsg_eff_denominator_s12_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_laxis),
             
             #********************************************************************************************************************#
             
@@ -487,35 +525,52 @@ class TTbarResProcessor(processor.ProcessorABC):
 
         # ---- Define AK4 jets as Jets ---- #
         #Jets = events.Jet
+#         if 'JetHT' not in dataset: # If MC is used...
+#             Jets = ak.zip({
+#                 "pt": events.Jet_pt,
+#                 "eta": events.Jet_eta,
+#                 "phi": events.Jet_phi,
+#                 "mass": events.Jet_mass,
+#                 "area": events.Jet_area,
+#                 "hadronFlavour": events.Jet_hadronFlavour,
+#                 "p4": ak.zip({
+#                     "pt": events.Jet_pt,
+#                     "eta": events.Jet_eta,
+#                     "phi": events.Jet_phi,
+#                     "mass": events.Jet_mass,
+#                     }, with_name="PtEtaPhiMLorentzVector"),
+#                 })
+#         else:
+#             Jets = ak.zip({
+#                 "pt": events.Jet_pt,
+#                 "eta": events.Jet_eta,
+#                 "phi": events.Jet_phi,
+#                 "mass": events.Jet_mass,
+#                 "area": events.Jet_area,
+#                 "p4": ak.zip({
+#                     "pt": events.Jet_pt,
+#                     "eta": events.Jet_eta,
+#                     "phi": events.Jet_phi,
+#                     "mass": events.Jet_mass,
+#                     }, with_name="PtEtaPhiMLorentzVector"),
+#                 })
+
+        Jets = ak.zip({
+            "pt": events.Jet_pt,
+            "eta": events.Jet_eta,
+            "phi": events.Jet_phi,
+            "mass": events.Jet_mass,
+            "area": events.Jet_area,
+            "p4": ak.zip({
+                "pt": events.Jet_pt,
+                "eta": events.Jet_eta,
+                "phi": events.Jet_phi,
+                "mass": events.Jet_mass,
+                }, with_name="PtEtaPhiMLorentzVector"),
+            })
+    
         if 'JetHT' not in dataset: # If MC is used...
-            Jets = ak.zip({
-                "pt": events.Jet_pt,
-                "eta": events.Jet_eta,
-                "phi": events.Jet_phi,
-                "mass": events.Jet_mass,
-                "area": events.Jet_area,
-                "hadronFlavour": events.Jet_hadronFlavour,
-                "p4": ak.zip({
-                    "pt": events.Jet_pt,
-                    "eta": events.Jet_eta,
-                    "phi": events.Jet_phi,
-                    "mass": events.Jet_mass,
-                    }, with_name="PtEtaPhiMLorentzVector"),
-                })
-        else:
-            Jets = ak.zip({
-                "pt": events.Jet_pt,
-                "eta": events.Jet_eta,
-                "phi": events.Jet_phi,
-                "mass": events.Jet_mass,
-                "area": events.Jet_area,
-                "p4": ak.zip({
-                    "pt": events.Jet_pt,
-                    "eta": events.Jet_eta,
-                    "phi": events.Jet_phi,
-                    "mass": events.Jet_mass,
-                    }, with_name="PtEtaPhiMLorentzVector"),
-                })
+            Jets['hadronFlavour'] = events.Jet_hadronFlavour
 
         # ---- Define SubJets ---- #
         #SubJets = events.SubJet
@@ -553,6 +608,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         
         # ---- Define Generator Particles ---- #
         if 'JetHT' not in dataset: # If MC is used...
+#             try:
             GenParts = ak.zip({
                 "pdgId": events.GenPart_pdgId,
                 "pt": events.GenPart_pt,
@@ -566,6 +622,20 @@ class TTbarResProcessor(processor.ProcessorABC):
                     "mass": events.GenPart_mass,
                     }, with_name="Vector3D"),
                 })
+#             except:
+#                 GenParts = ak.zip({
+#                     "pdgId": events.customGenParticles_pdgId,
+#                     "pt": events.customGenParticles_pt,
+#                     "eta": events.customGenParticles_eta,
+#                     "phi": events.customGenParticles_phi,
+#                     "mass": events.customGenParticles_mass,
+#                     "p4": ak.zip({
+#                         "pt": events.customGenParticles_pt,
+#                         "eta": events.customGenParticles_eta,
+#                         "phi": events.customGenParticles_phi,
+#                         "mass": events.customGenParticles_mass,
+#                         }, with_name="Vector3D"),
+#                     })
 
 #    ===================================================================================
 #    PPPPPP  RRRRRR  EEEEEEE L       IIIIIII M     M       CCCC  U     U TTTTTTT   SSSSS     
@@ -937,7 +1007,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                                                   subjetpt = ak.to_numpy(Eff_b_Num_pT_s12),
                                                   subjeteta = ak.to_numpy(Eff_b_Num_eta_s12),
                                                   weight = ak.to_numpy(evtweights))
-
+                #-----------------------------------------------------------------------------------------#
                 output['b_eff_denominator_s01'].fill(dataset = dataset,
                                                   subjetpt = ak.to_numpy(Eff_b_Denom_pT_s01),
                                                   subjeteta = ak.to_numpy(Eff_b_Denom_eta_s01),
@@ -954,7 +1024,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                                                   subjetpt = ak.to_numpy(Eff_b_Denom_pT_s12),
                                                   subjeteta = ak.to_numpy(Eff_b_Denom_eta_s12),
                                                   weight = ak.to_numpy(evtweights))
-
+                #-----------------------------------------------------------------------------------------#
                 output['b_eff_numerator_s01_largerbins'].fill(dataset = dataset,
                                                   subjetpt = ak.to_numpy(Eff_b_Num_pT_s01),
                                                   subjeteta = ak.to_numpy(Eff_b_Num_eta_s01),
@@ -971,7 +1041,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                                                   subjetpt = ak.to_numpy(Eff_b_Num_pT_s12),
                                                   subjeteta = ak.to_numpy(Eff_b_Num_eta_s12),
                                                   weight = ak.to_numpy(evtweights))
-
+                #-----------------------------------------------------------------------------------------#
                 output['b_eff_denominator_s01_largerbins'].fill(dataset = dataset,
                                                   subjetpt = ak.to_numpy(Eff_b_Denom_pT_s01),
                                                   subjeteta = ak.to_numpy(Eff_b_Denom_eta_s01),
@@ -985,6 +1055,40 @@ class TTbarResProcessor(processor.ProcessorABC):
                                                   subjeteta = ak.to_numpy(Eff_b_Denom_eta_s11),
                                                   weight = ak.to_numpy(evtweights))
                 output['b_eff_denominator_s12_largerbins'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_b_Denom_pT_s12),
+                                                  subjeteta = ak.to_numpy(Eff_b_Denom_eta_s12),
+                                                  weight = ak.to_numpy(evtweights))
+                #-----------------------------------------------------------------------------------------#
+                output['b_eff_numerator_s01_manualbins'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_b_Num_pT_s01),
+                                                  subjeteta = ak.to_numpy(Eff_b_Num_eta_s01),
+                                                  weight = ak.to_numpy(evtweights))
+                output['b_eff_numerator_s02_manualbins'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_b_Num_pT_s02),
+                                                  subjeteta = ak.to_numpy(Eff_b_Num_eta_s02),
+                                                  weight = ak.to_numpy(evtweights))
+                output['b_eff_numerator_s11_manualbins'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_b_Num_pT_s11),
+                                                  subjeteta = ak.to_numpy(Eff_b_Num_eta_s11),
+                                                  weight = ak.to_numpy(evtweights))
+                output['b_eff_numerator_s12_manualbins'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_b_Num_pT_s12),
+                                                  subjeteta = ak.to_numpy(Eff_b_Num_eta_s12),
+                                                  weight = ak.to_numpy(evtweights))
+                #-----------------------------------------------------------------------------------------#
+                output['b_eff_denominator_s01_manualbins'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_b_Denom_pT_s01),
+                                                  subjeteta = ak.to_numpy(Eff_b_Denom_eta_s01),
+                                                  weight = ak.to_numpy(evtweights))
+                output['b_eff_denominator_s02_manualbins'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_b_Denom_pT_s02),
+                                                  subjeteta = ak.to_numpy(Eff_b_Denom_eta_s02),
+                                                  weight = ak.to_numpy(evtweights))
+                output['b_eff_denominator_s11_manualbins'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_b_Denom_pT_s11),
+                                                  subjeteta = ak.to_numpy(Eff_b_Denom_eta_s11),
+                                                  weight = ak.to_numpy(evtweights))
+                output['b_eff_denominator_s12_manualbins'].fill(dataset = dataset,
                                                   subjetpt = ak.to_numpy(Eff_b_Denom_pT_s12),
                                                   subjeteta = ak.to_numpy(Eff_b_Denom_eta_s12),
                                                   weight = ak.to_numpy(evtweights))
@@ -1008,7 +1112,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                                                   subjetpt = ak.to_numpy(Eff_c_Num_pT_s12),
                                                   subjeteta = ak.to_numpy(Eff_c_Num_eta_s12),
                                                   weight = ak.to_numpy(evtweights))
-
+                #-----------------------------------------------------------------------------------------#
                 output['c_eff_denominator_s01'].fill(dataset = dataset,
                                                   subjetpt = ak.to_numpy(Eff_c_Denom_pT_s01),
                                                   subjeteta = ak.to_numpy(Eff_c_Denom_eta_s01),
@@ -1025,7 +1129,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                                                   subjetpt = ak.to_numpy(Eff_c_Denom_pT_s12),
                                                   subjeteta = ak.to_numpy(Eff_c_Denom_eta_s12),
                                                   weight = ak.to_numpy(evtweights))
-
+                #-----------------------------------------------------------------------------------------#
                 output['c_eff_numerator_s01_largerbins'].fill(dataset = dataset,
                                                   subjetpt = ak.to_numpy(Eff_c_Num_pT_s01),
                                                   subjeteta = ak.to_numpy(Eff_c_Num_eta_s01),
@@ -1042,7 +1146,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                                                   subjetpt = ak.to_numpy(Eff_c_Num_pT_s12),
                                                   subjeteta = ak.to_numpy(Eff_c_Num_eta_s12),
                                                   weight = ak.to_numpy(evtweights))
-
+                #-----------------------------------------------------------------------------------------#
                 output['c_eff_denominator_s01_largerbins'].fill(dataset = dataset,
                                                   subjetpt = ak.to_numpy(Eff_c_Denom_pT_s01),
                                                   subjeteta = ak.to_numpy(Eff_c_Denom_eta_s01),
@@ -1056,6 +1160,40 @@ class TTbarResProcessor(processor.ProcessorABC):
                                                   subjeteta = ak.to_numpy(Eff_c_Denom_eta_s11),
                                                   weight = ak.to_numpy(evtweights))
                 output['c_eff_denominator_s12_largerbins'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_c_Denom_pT_s12),
+                                                  subjeteta = ak.to_numpy(Eff_c_Denom_eta_s12),
+                                                  weight = ak.to_numpy(evtweights))
+                #-----------------------------------------------------------------------------------------#
+                output['c_eff_numerator_s01_manualbins'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_c_Num_pT_s01),
+                                                  subjeteta = ak.to_numpy(Eff_c_Num_eta_s01),
+                                                  weight = ak.to_numpy(evtweights))
+                output['c_eff_numerator_s02_manualbins'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_c_Num_pT_s02),
+                                                  subjeteta = ak.to_numpy(Eff_c_Num_eta_s02),
+                                                  weight = ak.to_numpy(evtweights))
+                output['c_eff_numerator_s11_manualbins'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_c_Num_pT_s11),
+                                                  subjeteta = ak.to_numpy(Eff_c_Num_eta_s11),
+                                                  weight = ak.to_numpy(evtweights))
+                output['c_eff_numerator_s12_manualbins'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_c_Num_pT_s12),
+                                                  subjeteta = ak.to_numpy(Eff_c_Num_eta_s12),
+                                                  weight = ak.to_numpy(evtweights))
+                #-----------------------------------------------------------------------------------------#
+                output['c_eff_denominator_s01_manualbins'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_c_Denom_pT_s01),
+                                                  subjeteta = ak.to_numpy(Eff_c_Denom_eta_s01),
+                                                  weight = ak.to_numpy(evtweights))
+                output['c_eff_denominator_s02_manualbins'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_c_Denom_pT_s02),
+                                                  subjeteta = ak.to_numpy(Eff_c_Denom_eta_s02),
+                                                  weight = ak.to_numpy(evtweights))
+                output['c_eff_denominator_s11_manualbins'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_c_Denom_pT_s11),
+                                                  subjeteta = ak.to_numpy(Eff_c_Denom_eta_s11),
+                                                  weight = ak.to_numpy(evtweights))
+                output['c_eff_denominator_s12_manualbins'].fill(dataset = dataset,
                                                   subjetpt = ak.to_numpy(Eff_c_Denom_pT_s12),
                                                   subjeteta = ak.to_numpy(Eff_c_Denom_eta_s12),
                                                   weight = ak.to_numpy(evtweights))
@@ -1079,7 +1217,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                                                   subjetpt = ak.to_numpy(Eff_udsg_Num_pT_s12),
                                                   subjeteta = ak.to_numpy(Eff_udsg_Num_eta_s12),
                                                   weight = ak.to_numpy(evtweights))
-
+                #-----------------------------------------------------------------------------------------#
                 output['udsg_eff_denominator_s01'].fill(dataset = dataset,
                                                   subjetpt = ak.to_numpy(Eff_udsg_Denom_pT_s01),
                                                   subjeteta = ak.to_numpy(Eff_udsg_Denom_eta_s01),
@@ -1096,7 +1234,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                                                   subjetpt = ak.to_numpy(Eff_udsg_Denom_pT_s12),
                                                   subjeteta = ak.to_numpy(Eff_udsg_Denom_eta_s12),
                                                   weight = ak.to_numpy(evtweights))
-
+                #-----------------------------------------------------------------------------------------#
                 output['udsg_eff_numerator_s01_largerbins'].fill(dataset = dataset,
                                                   subjetpt = ak.to_numpy(Eff_udsg_Num_pT_s01),
                                                   subjeteta = ak.to_numpy(Eff_udsg_Num_eta_s01),
@@ -1113,7 +1251,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                                                   subjetpt = ak.to_numpy(Eff_udsg_Num_pT_s12),
                                                   subjeteta = ak.to_numpy(Eff_udsg_Num_eta_s12),
                                                   weight = ak.to_numpy(evtweights))
-
+                #-----------------------------------------------------------------------------------------#
                 output['udsg_eff_denominator_s01_largerbins'].fill(dataset = dataset,
                                                   subjetpt = ak.to_numpy(Eff_udsg_Denom_pT_s01),
                                                   subjeteta = ak.to_numpy(Eff_udsg_Denom_eta_s01),
@@ -1127,6 +1265,40 @@ class TTbarResProcessor(processor.ProcessorABC):
                                                   subjeteta = ak.to_numpy(Eff_udsg_Denom_eta_s11),
                                                   weight = ak.to_numpy(evtweights))
                 output['udsg_eff_denominator_s12_largerbins'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_udsg_Denom_pT_s12),
+                                                  subjeteta = ak.to_numpy(Eff_udsg_Denom_eta_s12),
+                                                  weight = ak.to_numpy(evtweights))
+                #-----------------------------------------------------------------------------------------#
+                output['udsg_eff_numerator_s01_manualbins'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_udsg_Num_pT_s01),
+                                                  subjeteta = ak.to_numpy(Eff_udsg_Num_eta_s01),
+                                                  weight = ak.to_numpy(evtweights))
+                output['udsg_eff_numerator_s02_manualbins'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_udsg_Num_pT_s02),
+                                                  subjeteta = ak.to_numpy(Eff_udsg_Num_eta_s02),
+                                                  weight = ak.to_numpy(evtweights))
+                output['udsg_eff_numerator_s11_manualbins'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_udsg_Num_pT_s11),
+                                                  subjeteta = ak.to_numpy(Eff_udsg_Num_eta_s11),
+                                                  weight = ak.to_numpy(evtweights))
+                output['udsg_eff_numerator_s12_manualbins'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_udsg_Num_pT_s12),
+                                                  subjeteta = ak.to_numpy(Eff_udsg_Num_eta_s12),
+                                                  weight = ak.to_numpy(evtweights))
+                #-----------------------------------------------------------------------------------------#
+                output['udsg_eff_denominator_s01_manualbins'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_udsg_Denom_pT_s01),
+                                                  subjeteta = ak.to_numpy(Eff_udsg_Denom_eta_s01),
+                                                  weight = ak.to_numpy(evtweights))
+                output['udsg_eff_denominator_s02_manualbins'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_udsg_Denom_pT_s02),
+                                                  subjeteta = ak.to_numpy(Eff_udsg_Denom_eta_s02),
+                                                  weight = ak.to_numpy(evtweights))
+                output['udsg_eff_denominator_s11_manualbins'].fill(dataset = dataset,
+                                                  subjetpt = ak.to_numpy(Eff_udsg_Denom_pT_s11),
+                                                  subjeteta = ak.to_numpy(Eff_udsg_Denom_eta_s11),
+                                                  weight = ak.to_numpy(evtweights))
+                output['udsg_eff_denominator_s12_manualbins'].fill(dataset = dataset,
                                                   subjetpt = ak.to_numpy(Eff_udsg_Denom_pT_s12),
                                                   subjeteta = ak.to_numpy(Eff_udsg_Denom_eta_s12),
                                                   weight = ak.to_numpy(evtweights))

@@ -38,6 +38,14 @@ ttbarfilename = 'TTbarAllHadUproot/TTJets_TuneCP5_v2_UL16.txt'
 #ttbarfilename = 'TTJets_TuneCP5_v2_UL16.txt'
 with open(ttbarfilename) as f:
     ttbarfiles = [xrootdstr2 + s.strip() for s in f.readlines()]
+    
+ttbar1000toInffilename = 'TTbarAllHadUproot/TTJets_Mtt-1000toInf_UL16.txt'
+with open(ttbar1000toInffilename) as f:
+    ttbar1000toInffiles = [xrootdstr2 + s.strip() for s in f.readlines()]
+    
+ttbar700to1000filename = 'TTbarAllHadUproot/TTJets_Mtt-700to1000_UL16.txt'
+with open(ttbar700to1000filename) as f:
+    ttbar700to1000files = [xrootdstr2 + s.strip() for s in f.readlines()]
 
 ZprimeDMfilename = 'TTbarAllHadUproot/ZprimeDMToTTbar_UL16.txt'
 #ZprimeDMfilename = 'ZprimeDMToTTbar_UL16.txt'
@@ -113,7 +121,9 @@ filesets = {
     # 'RSGluon4000':RSGluon4000files,
     # 'RSGluon4500':RSGluon4500files,
     # 'RSGluon5000':RSGluon5000files,
-    'TTbar':ttbarfiles
+    # 'TTbar':ttbarfiles,
+    'TTbar_biased_700to1000': ttbar700to1000files,
+    'TTbar_biased_1000toInf': ttbar1000toInffiles,
     # 'JetHT':jetdatafiles,
     # 'JetHT2016_Data':jetdatafiles2016,
     # 'JetHT2017_Data':jetdatafiles2017,

@@ -22,8 +22,8 @@ ak.behavior.update(candidate.behavior)
 
 Testing = False
 LoadingUnweightedFiles = False # don't run processor the first time; just run the processor with the systematics and corrections 
-RunAllRootFiles = False # if not, processor will only run over the number of chunks defined by the user
-UsingDaskExecutor = False
+RunAllRootFiles = True # if not, processor will only run over the number of chunks defined by the user
+UsingDaskExecutor = True
 SaveFirstRun = True # Make a coffea output file of the first uproot job (without the systematics and corrections)
 OnlyCreateLookupTables = True # don't run processor the second time; just run the processor the first time without systematics and corrections
 #%------------------------------------------------------------------------------------------------------------------------------------
@@ -33,11 +33,17 @@ from TTbarResProcessor import TTbarResProcessor
 if not Testing:
     from Filesets import filesets, filesets_forweights
 else:
-    TestRootFiles = ["/uscms/home/bonillaj/nobackup/samples/ttbarRES/SMttbar_nEvents10.root"]
-    #TestRootFiles = ["/uscms_data/d1/bonillaj/samples/ttbarRES/SMttbar_nEvents10.root"]
+    TestRootFiles = [#"TTbarAllHadUproot/SMttbar_nEvents10.root",
+                     #"TTbarAllHadUproot/SMttbar_nEvents10000.root",
+                     #"TTbarAllHadUproot/SMttbar_nEvents60000.root",
+                     "TTbarAllHadUproot/ttbar_Mtt-1000toInf_nEvents50000.root"]
+                     #"TTbarAllHadUproot/QCD_pt600to800_customNano_numEvents79200.root"]
     filesets = {
         'TestSample_ttbarRES':TestRootFiles
     }
+    filesets_forweights = filesets
+    
+# print(filesets)
 
 
 Chunk = [10000, 500] # [chunksize, maxchunks]
@@ -105,7 +111,7 @@ for name,files in filesets.items():
             if SaveFirstRun:
                 util.save(output, 'TTbarAllHadUproot/CoffeaOutputs/UnweightedOutputs/TTbarResCoffea_' 
                           + name 
-                          + '_unweighted_output_mcEffTest3' 
+                          + '_unweighted_output'  
 #                           + chosen_exec 
                           + '.coffea')
             
@@ -152,7 +158,7 @@ for name,files in filesets.items():
             if SaveFirstRun:
                 util.save(output, 'TTbarAllHadUproot/CoffeaOutputs/UnweightedOutputs/TTbarResCoffea_' 
                           + name 
-                          + '_unweighted_output_mcEffTest3' 
+                          + '_unweighted_output' 
 #                           + chosen_exec 
                           + '.coffea')
 
