@@ -109,3 +109,7 @@ dask_client_cert.pem
 
 # png's
 *.png
+
+# root files
+*.root
+
