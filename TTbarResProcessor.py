@@ -10,6 +10,7 @@ import numpy as np
 import itertools
 import pandas as pd
 from numpy.random import RandomState
+# from correctionlib.schemav2 import Correction
 
 import awkward as ak
 #from coffea.nanoevents.methods import nanoaod
@@ -35,7 +36,7 @@ class TTbarResProcessor(processor.ProcessorABC):
     def __init__(self, prng=RandomState(1234567890), htCut=950., minMSD=105., maxMSD=210.,
                  tau32Cut=0.65, ak8PtMin=400., bdisc=0.8484,
                  writePredDist=True,isData=True,year=2019, UseLookUpTables=False, lu=None, 
-                 ModMass=False, RandomDebugMode=False, CalcEff_MC=True, ApplySF=False, UseEfficiencies=False):
+                 ModMass=False, RandomDebugMode=False, CalcEff_MC=True, ApplySF=False, sysType=None, UseEfficiencies=False):
         
         self.prng = prng
         self.htCut = htCut
@@ -53,6 +54,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         self.RandomDebugMode = RandomDebugMode
         self.CalcEff_MC = CalcEff_MC # Only for first run of the processor
         self.ApplySF = ApplySF # Only apply scale factors when MC efficiencies are being imported in second run of processor
+        self.sysType = sysType # string for btag SF evaluator --> "central", "up", or "down"
         self.UseEfficiencies = UseEfficiencies
         self.lu = lu # Look Up Tables
         
@@ -374,6 +376,34 @@ class TTbarResProcessor(processor.ProcessorABC):
             
         })
         
+#     def FormatCSV(filename):
+#         """
+#         filename ---> String (bTag SF .csv file)
+#         """
+#         ############### Ensures that file's workingpoint is written as an integer ##################
+
+#         workingpoints = {
+#             'L':0,
+#             'M':1,
+#             'T':2,
+#             'R':3
+#         }
+
+#         SF_stuff = [line.split(',') for line in open(filename)] # "Stuff" in the file
+#         SF_stuff_array = np.array(SF_stuff) # Convert the lines into numpy array (for slicing)
+#         OperatingPoints = SF_stuff_array[1:,0] # Select only the first element of each line ("Operating Points")
+#         Type = OperatingPoints.dtype.type
+#         String = "<type 'numpy.string_'>"
+#         if Type is String:
+#             IntegerPoints = [workingpoints[letter] for letter in OperatingPoints] # Convert the strings to integers
+#             dataframe = pd.read_csv(filename) # Prep to swap out the "string" column for the new "integer" column
+#             dataframe.OperatingPoint = IntegerPoints # Complete the swap
+#             ConvertedFile = dataframe.to_csv(filename+'_converted.csv', index = False) # Output new converted csv file
+#         else:
+#             ConvertedFile = filename
+
+#         return ConvertedFile
+    
     def BtagUpdater(subjet, b_eff, ScaleFactorFilename, FittingPoint, OperatingPoint):  
         """
         subjet (Flattened Awkward Array) ---> One of the Four preselected subjet awkward arrays (e.g. SubJet01)
@@ -897,7 +927,8 @@ class TTbarResProcessor(processor.ProcessorABC):
 
                 Eff_c_Num_pT_s12 = np.where(s12_btagged & (flav_s12 == 4), pT_s12, -1)
                 Eff_c_Num_eta_s12 = np.where(s12_btagged & (flav_s12 == 4), eta_s12, 5)
-
+                
+                # ---- light parton-tagging eff. numerators ---- #
                 Eff_udsg_Num_pT_s01 = np.where(s01_btagged & (if_s01_isLightParton), pT_s01, -1)
                 Eff_udsg_Num_eta_s01 = np.where(s01_btagged & (if_s01_isLightParton), eta_s01, 5)
 
@@ -1352,12 +1383,12 @@ class TTbarResProcessor(processor.ProcessorABC):
                     SF_filename = "TTbarAllHadUproot/DeepCSV_106XUL17SF_V2.csv"    
                     Fitting = "medium"
 
-                    btag_sf = BTagScaleFactor(SF_filename, Fitting)
+                    btag_sf = BTagScaleFactor(SF_filename, Fitting, )
 
-                    BSF_s0 = btag_sf.eval("central", 
+                    BSF_s0 = btag_sf.eval(self.sysType, 
                                           LeadingSubjet_s0.hadronFlavour, abs(LeadingSubjet_s0.eta), LeadingSubjet_s0.pt,
                                           ignore_missing=True)
-                    BSF_s1 = btag_sf.eval("central", 
+                    BSF_s1 = btag_sf.eval(self.sysType, 
                                           LeadingSubjet_s1.hadronFlavour, abs(LeadingSubjet_s1.eta), LeadingSubjet_s1.pt,
                                           ignore_missing=True)
 
@@ -1404,7 +1435,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                     """
 
                     # -- Scale Factor File -- #
-                    SF_filename = "TTbarAllHadUproot/DeepCSV_106XUL17SF_V2.csv"    
+                    SF_filename = "TTbarAllHadUproot/wp_deepCSV_106XUL16postVFP_v3.csv"    
                     Fitting = "medium"
 
                     # -- Does Subjet pass the discriminator cut and is it updated -- #
