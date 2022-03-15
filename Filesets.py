@@ -34,7 +34,8 @@ qcdfilename = 'TTbarAllHadUproot/QCD_UL16_APVv2.txt'
 with open(qcdfilename) as f:
     qcdfiles = [xrootdstr2 + s.strip() for s in f.readlines()]
 
-ttbarfilename = 'TTbarAllHadUproot/TTJets_TuneCP5_v2_UL16.txt'
+ttbarfilename = 'TTbarAllHadUproot/TTJets_BiasedSamples.txt'
+#ttbarfilename = 'TTbarAllHadUproot/TTJets_TuneCP5_v2_UL16.txt'
 #ttbarfilename = 'TTJets_TuneCP5_v2_UL16.txt'
 with open(ttbarfilename) as f:
     ttbarfiles = [xrootdstr2 + s.strip() for s in f.readlines()]
@@ -46,7 +47,7 @@ with open(ttbar1000toInffilename) as f:
 ttbar700to1000filename = 'TTbarAllHadUproot/TTJets_Mtt-700to1000_UL16.txt'
 with open(ttbar700to1000filename) as f:
     ttbar700to1000files = [xrootdstr2 + s.strip() for s in f.readlines()]
-
+    
 ZprimeDMfilename = 'TTbarAllHadUproot/ZprimeDMToTTbar_UL16.txt'
 #ZprimeDMfilename = 'ZprimeDMToTTbar_UL16.txt'
 with open(ZprimeDMfilename) as f:
@@ -102,8 +103,8 @@ with open(jetdatafilename) as i:
 """ Comment out whichever files you wish to not be included """
 
 filesets = {
-    # 'QCD':qcdfiles,
-    # 'DM1000':DM1000files,
+    'QCD':qcdfiles,
+    'DM1000':DM1000files,
     # 'DM1500':DM1500files,
     # 'DM2000':DM2000files,
     # 'DM2500':DM2500files,
@@ -112,7 +113,7 @@ filesets = {
     # 'DM4000':DM4000files,
     # 'DM4500':DM4500files,
     # 'DM5000':DM5000files,
-    # 'RSGluon1000':RSGluon1000files,
+    'RSGluon1000':RSGluon1000files,
     # 'RSGluon1500':RSGluon1500files,
     # 'RSGluon2000':RSGluon2000files,
     # 'RSGluon2500':RSGluon2500files,
@@ -121,9 +122,9 @@ filesets = {
     # 'RSGluon4000':RSGluon4000files,
     # 'RSGluon4500':RSGluon4500files,
     # 'RSGluon5000':RSGluon5000files,
-    # 'TTbar':ttbarfiles,
-    'TTbar_biased_700to1000': ttbar700to1000files,
-    'TTbar_biased_1000toInf': ttbar1000toInffiles,
+    'TTbar':ttbarfiles,
+    # 'TTbar_biased_700to1000': ttbar700to1000files,
+    # 'TTbar_biased_1000toInf': ttbar1000toInffiles,
     # 'JetHT':jetdatafiles,
     # 'JetHT2016_Data':jetdatafiles2016,
     # 'JetHT2017_Data':jetdatafiles2017,
