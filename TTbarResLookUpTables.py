@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 # ---------- if 'runLUTS' is false, read in [previously made] Look Up Table csv's [and don't overwrite or make new ones] --------- #
 # -------------------------------------------------------------------------------------------------------------------------------- #
 
-runLUTS = True # Make separate Directory to place Look-Up Tables (and maybe perform ttbar subtraction for mistag weights)
+runLUTS = False # Make separate Directory to place Look-Up Tables (and maybe perform ttbar subtraction for mistag weights)
 
 if not runLUTS:
     print("\n\nLoading Previously Made Look Up Tables for Mistag Rate\n\nDoes not Correspond to Test Files...\n\n")
@@ -175,7 +175,7 @@ if runLUTS :
         for iset in filesets:
             #if iset != 'TTbar' or iset != 'QCD': # if JetHT filesets are found...
             if 'JetHT' in iset:
-                print('\t\tfileset: ' + iset + '\n*****************************************************\n')
+                print('\t\tfileset: ' + iset + 'Wtih Contamination Removed!\n*****************************************************\n')
                 for icat in list_of_cats:
                     filename = 'mistag_' + iset + '_' + icat + '.' + 'csv'
                     title = iset + ' mistag ' + icat
@@ -248,6 +248,7 @@ if runLUTS :
 
                     df.to_csv(SaveDirectory+filename) # use later to collect bins and weights for re-scaling
             else: # If iset is not JetHT...
+                print('\t\tfileset: ' + iset + '\n*****************************************************\n')
                 for icat in list_of_cats:
                     filename = 'mistag_' + iset + '_' + icat + '.' + 'csv'
                     Numerator = outputs_unweighted[iset]['numerator'].integrate('anacat',icat).integrate('dataset',iset)
