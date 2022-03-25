@@ -28,6 +28,7 @@ manual_bins = [400, 500, 600, 800, 1000, 1500, 2000, 3000, 7000, 10000]
 #manual_subjetpt_bins = [0, 250, 500, 750, 1000, 1500, 2000]
 # manual_subjetpt_bins = [0, 200, 400, 600, 800, 1000, 1500, 2000, 3000] # Used before 2/21/22 on Biased TTbar samples (8 bins) 
 manual_subjetpt_bins = [0, 200, 400, 800, 1600, 3200] # Used on 2/21/22 for QCD and RSGluon1000 (5 bins)
+manual_subjeteta_bins = [-2.4, -1.8, -1.2, -0.6, 0., 0.6, 1.2, 1.8, 2.4]
 #manual_etabins = []
 
 """@TTbarResAnaHadronic Package to perform the data-driven mistag-rate-based ttbar hadronic analysis. 
@@ -403,25 +404,78 @@ class TTbarResProcessor(processor.ProcessorABC):
 #             ConvertedFile = filename
 
 #         return ConvertedFile
+
+    #https://stackoverflow.com/questions/11144513/cartesian-product-of-x-and-y-array-points-into-single-array-of-2d-points/11146645#11146645
+    def cartesian_product(self, *arrays): 
+        la = len(arrays)
+        dtype = np.result_type(*arrays)
+        arr = np.empty([len(a) for a in arrays] + [la], dtype=dtype)
+        for i, a in enumerate(np.ix_(*arrays)):
+            arr[...,i] = a
+        return arr.reshape(-1, la)
     
-    def BtagUpdater(subjet, b_eff, ScaleFactorFilename, FittingPoint, OperatingPoint):  
+    def BtagUpdater(self, subjet, Eff_filename_list, ScaleFactorFilename, FittingPoint, OperatingPoint):  
         """
-        subjet (Flattened Awkward Array) ---> One of the Four preselected subjet awkward arrays (e.g. SubJet01)
-        b_eff (2D Array)                 ---> The imported b-tagging efficiency of the selected subjet
-        ScaleFactorFilename (string)     ---> CSV file containing info to evaluate scale factors with
-        FittingPoint (string)            ---> "loose"  , "medium", "tight"
-        OperatingPoint (string)          ---> "central", "up"    , "down"
+        subjet (Flattened Awkward Array)       ---> One of the Four preselected subjet awkward arrays (e.g. SubJet01)
+        Eff_filename_list (Array of strings)   ---> List of imported b-tagging efficiency files of the selected subjet (corresponding to the hadron flavour of the subjet)
+        ScaleFactorFilename (string)           ---> CSV file containing info to evaluate scale factors with
+        FittingPoint (string)                  ---> "loose"  , "medium", "tight"
+        OperatingPoint (string)                ---> "central", "up"    , "down"
         """
+        # ---- Declare flattened pT and Eta variables ---- #
+        pT = np.asarray(ak.flatten(subjet.p4.pt))
+        Eta = np.asarray(ak.flatten(subjet.p4.eta))
+        
+        # ---- Import Flavor Efficiency Tables as Dataframes ---- #
+        subjet_flav_index = np.arange(ak.to_numpy(subjet.hadronFlavour).size)
+        df_list = [ pd.read_csv(Eff_filename_list[i]) for i in subjet_flav_index ] # List of efficiency dataframes; imported to extract list of eff_vals
+        eff_vals_list = [ df_list[i]['efficiency'].values for i in subjet_flav_index ] # 40 efficiency values for each file read in; one file per element of subjet array
+        
+        # ---- Match subjet pt and eta to appropriate bins ---- #
+        pt_BinKeys = np.arange(np.array(manual_subjetpt_bins).size - 1) # the -1 ensures proper size for bin labeling
+        eta_BinKeys = np.arange(np.array(manual_subjeteta_bins).size - 1) # the -1 ensures proper size for bin labeling
+        pt_Bins = np.array(manual_subjetpt_bins)
+        eta_Bins = np.array(manual_subjeteta_bins)
+        
+        # ---- Usable pt and eta bin indices ---- #
+        pt_indices = np.digitize(pT, pt_Bins, right=True) - 1 # minus one because digitize labels first element as 1 instead of 0
+        eta_indices = np.digitize(Eta, eta_Bins, right=True) - 1
+        
+        pt_indices = np.where(pt_indices == pt_BinKeys.size, pt_indices-1, pt_indices) # if value is larger than largest bin, bin number will be defaulted to largest 
+        eta_indices = np.where(eta_indices == eta_BinKeys.size, eta_indices-1, eta_indices)
+        
+        pt_indices = np.where(pt_indices < 0, 0, pt_indices) # if value is less than smallest bin, bin number will be defaulted to smallest bin (zeroth)
+        eta_indices = np.where(eta_indices < 0, 0, eta_indices)
+        
+        # ---- Pair the indices together ---- #
+        index_pairs = np.vstack((pt_indices, eta_indices)).T  # Pairs of pt and eta bin indices to be mapped to corresponding efficiency bin number
+        index_pairs_tuples = [tuple(e) for e in index_pairs] # This can be indexed easily for reading from dictionary
+        
+        # ---- Get Efficiencies from  ---- #
+        eff_BinKeys_comb = self.cartesian_product(pt_BinKeys, eta_BinKeys) #List of Combined pt and eta keys (should be 40 of them)
+        effBinKeys = np.arange( len(eff_BinKeys_comb) )
+        EffKeys_Dict = dict(zip([tuple(eff_BinKeys_comb[i]) for i in effBinKeys], effBinKeys)) # Mapping combined pt and eta keys to a single integer (for boradcasting)
+        Eff_indices = [EffKeys_Dict[index_pairs_tuples[i]] for i in range(pt_indices.size)] # Indices for selecting efficiency values from the lists for each subjet index
+        
+        eff_val = np.asarray([ eff_vals_list[i][Eff_indices[i]] for i in subjet_flav_index ])
+        
+        """
+                                    !! NOTE !!
+                Some efficiency values (eff_val array elements) are zero
+                and must be taken into account when dividing by the efficiency
+        """
+
         ###############  Btag Update Method ##################
         #https://twiki.cern.ch/twiki/bin/viewauth/CMS/BTagSFMethods
         #https://github.com/rappoccio/usercode/blob/Dev_53x/EDSHyFT/plugins/BTagSFUtil_tprime.h
         
         coin = np.random.uniform(0,1,len(subjet)) # used for randomly deciding which jets' btag status to update or not
-        subjet_btag_status = (subjet.btagCSVV2 > self.bdisc) # does this subjet pass the btagger requirement
+        subjet_btag_status = np.asarray((subjet.btagCSVV2 > self.bdisc)) # do subjets pass the btagger requirement
         btag_sf = BTagScaleFactor(ScaleFactorFilename, FittingPoint)
-        BSF = btag_sf.eval(OperatingPoint, subjet.hadronFlavour, abs(subjet.eta), subjet.pt, ignore_missing=True)
+        BSF = btag_sf.eval(OperatingPoint, subjet.hadronFlavour, abs(subjet.eta), subjet.pt, ignore_missing=True) # List of Scale Factors
+
         f_less = 1. - BSF # fraction of subjets to be downgraded
-        f_greater = f_less/(1. - 1./b_eff) # fraction of subjets to be upgraded
+        f_greater = np.where(eff_val > 0., f_less/(1. - 1./eff_val), np.abs(f_less)) # fraction of subjets to be upgraded 
         
         """
 *******************************************************************************************************************        
@@ -437,7 +491,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                     ---  ---                                              ---  ---
         |         |  X |  O  |          |         |          |          |  O |  X  |
 
-        ---------------------------------------------------------------------------------
+        --------------------------------------------------------------------------------
 
         KEY:
              O ---> btagged subjet     (boolean 'value' = True)
@@ -446,12 +500,12 @@ class TTbarResProcessor(processor.ProcessorABC):
         Track all conditions where elements of 'btag_update' will be true (4 conditions marked with 'O')
 *******************************************************************************************************************        
         """ 
-        
-        subjet_new_btag_status = np.where( 
-            (subjet_btag_status == True & (BSF == 1. ^ (BSF < 1.0 & coin < BSF ) ^ BSF > 1.))
-            ^
-            (subjet_btag_status == False & (BSF > 1. & coin < f_greater)), 
-            True, False )
+        condition1 = (subjet_btag_status == True) & (BSF == 1.)
+        condition2 = (subjet_btag_status == True) & ((BSF < 1.0) & (coin < BSF)) 
+        condition3 = (subjet_btag_status == True) & (BSF > 1.)
+        condition4 = (subjet_btag_status == False) & ((BSF > 1.) & (coin < f_greater))
+
+        subjet_new_btag_status = np.where((condition1 ^ condition2) ^ (condition3 ^ condition4), True, False)
 
         return subjet_new_btag_status
             
@@ -1420,7 +1474,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                     Btag_wgts['2b'] = Wgts_to_2btag_region_nonzero
 
 
-                else: # Upgrade or Downgrade btag status based on btag efficiency of all four subjets per event
+                else: # Upgrade or Downgrade btag status based on btag efficiency of all four subjets
                     
                     # **************************************************************************************** #
                     # --------------------------- Method 2a) Update B-tag Status ----------------------------- #
@@ -1428,21 +1482,44 @@ class TTbarResProcessor(processor.ProcessorABC):
                     # **************************************************************************************** #
                     
                                 # ---- Import MC 'flavor' efficiencies ---- #
-                    """
-                    e.g.)
-                        b_eff_s01 = imported b tagging efficiency for 1st subjet in ttbar candidate slot 0
-                        c_eff_s12 = imported c tagging efficiency for 2nd subjet in ttbar candidate slot 1
-                    """
 
                     # -- Scale Factor File -- #
-                    SF_filename = "TTbarAllHadUproot/wp_deepCSV_106XUL16postVFP_v3.csv"    
+                    SF_filename = "TTbarAllHadUproot/DeepCSV_106XUL17SF_V2.csv"    
                     Fitting = "medium"
+                    
+                    # -- Get Efficiency .csv Files -- #
+                    FlavorTagsDict = {
+                        5 : 'btag',
+                        4 : 'ctag',
+                        0 : 'udsgtag'
+                    }
 
+                    SubjetNumDict = {
+                        'SubJet01' : [SubJet01, 's01'],
+                        'SubJet02' : [SubJet02, 's02'],
+                        'SubJet11' : [SubJet11, 's11'],
+                        'SubJet12' : [SubJet12, 's12']
+                    }
+                    
+                    EffFileDict = {
+                        'Eff_File_s01' : [], # List of eff files corresponding to 1st subjet's flavours
+                        'Eff_File_s02' : [], # List of eff files corresponding to 2nd subjet's flavours
+                        'Eff_File_s11' : [], # List of eff files corresponding to 3rd subjet's flavours
+                        'Eff_File_s12' : []  # List of eff files corresponding to 4th subjet's flavours
+                    }
+                    
+                    for subjet,subjet_info in SubjetNumDict.items():
+                        flav_tag_list = [FlavorTagsDict[num] for num in np.abs(ak.flatten(subjet_info[0].hadronFlavour))] # List of tags i.e.) ['btag', 'udsgtag', 'ctag',...]
+                        for flav_tag in flav_tag_list:
+                            EffFileDict['Eff_File_'+subjet_info[1]].append('TTbarAllHadUproot/FlavorTagEfficiencies/' + flav_tag 
+                                                                           + 'EfficiencyTables/' + dataset + '_' + subjet_info[1] 
+                                                                           + '_' + flav_tag + 'eff_large_bins.csv')
+                            
                     # -- Does Subjet pass the discriminator cut and is it updated -- #
-                    SubJet01_isBtagged_central = BtagUpdater(SubJet01, b_eff, SF_filename, Fitting, "central")
-                    SubJet02_isBtagged_central = BtagUpdater(SubJet02, b_eff, SF_filename, Fitting, "central")
-                    SubJet11_isBtagged_central = BtagUpdater(SubJet11, b_eff, SF_filename, Fitting, "central")
-                    SubJet12_isBtagged_central = BtagUpdater(SubJet12, b_eff, SF_filename, Fitting, "central")
+                    SubJet01_isBtagged = self.BtagUpdater(SubJet01, EffFileDict['Eff_File_s01'], SF_filename, Fitting, "central")
+                    SubJet02_isBtagged = self.BtagUpdater(SubJet02, EffFileDict['Eff_File_s02'], SF_filename, Fitting, "central")
+                    SubJet11_isBtagged = self.BtagUpdater(SubJet11, EffFileDict['Eff_File_s11'], SF_filename, Fitting, "central")
+                    SubJet12_isBtagged = self.BtagUpdater(SubJet12, EffFileDict['Eff_File_s12'], SF_filename, Fitting, "central")
 
                     # If either subjet 1 or 2 in FatJet 0 and 1 is btagged after update, then that FatJet is considered btagged #
                     btag_s0 = (SubJet01_isBtagged) ^ (SubJet02_isBtagged)  
