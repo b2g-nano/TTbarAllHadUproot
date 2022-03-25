@@ -104,7 +104,7 @@ with open(jetdatafilename) as i:
 
 filesets = {
     'QCD':qcdfiles,
-    'DM1000':DM1000files,
+    # 'DM1000':DM1000files,
     # 'DM1500':DM1500files,
     # 'DM2000':DM2000files,
     # 'DM2500':DM2500files,
@@ -113,7 +113,7 @@ filesets = {
     # 'DM4000':DM4000files,
     # 'DM4500':DM4500files,
     # 'DM5000':DM5000files,
-    'RSGluon1000':RSGluon1000files,
+    # 'RSGluon1000':RSGluon1000files,
     # 'RSGluon1500':RSGluon1500files,
     # 'RSGluon2000':RSGluon2000files,
     # 'RSGluon2500':RSGluon2500files,
@@ -122,7 +122,7 @@ filesets = {
     # 'RSGluon4000':RSGluon4000files,
     # 'RSGluon4500':RSGluon4500files,
     # 'RSGluon5000':RSGluon5000files,
-    'TTbar':ttbarfiles,
+    # 'TTbar':ttbarfiles,
     # 'TTbar_biased_700to1000': ttbar700to1000files,
     # 'TTbar_biased_1000toInf': ttbar1000toInffiles,
     # 'JetHT':jetdatafiles,
@@ -132,7 +132,7 @@ filesets = {
 }
 
 filesets_forweights = {
-    # 'QCD':qcdfiles,
+    'QCD':qcdfiles,
     # 'DM1000':DM1000files,
     # 'DM1500':DM1500files,
     # 'DM2000':DM2000files,

@@ -21,11 +21,11 @@ from lpcjobqueue import LPCCondorCluster
 ak.behavior.update(candidate.behavior)
 
 Testing = False
-LoadingUnweightedFiles = False # don't run processor the first time; just run the processor with the systematics and corrections 
-RunAllRootFiles = True # if not, processor will only run over the number of chunks defined by the user
-UsingDaskExecutor = True
-SaveFirstRun = True # Make a coffea output file of the first uproot job (without the systematics and corrections)
-OnlyCreateLookupTables = True # don't run processor the second time; just run the processor the first time without systematics and corrections
+LoadingUnweightedFiles = True # don't run processor the first time; just run the processor with the systematics and corrections 
+RunAllRootFiles = False # if not, processor will only run over the number of chunks defined by the user
+UsingDaskExecutor = False
+SaveFirstRun = False # Make a coffea output file of the first uproot job (without the systematics and corrections)
+OnlyCreateLookupTables = False # don't run processor the second time; just run the processor the first time without systematics and corrections
 systemType = "central" # string for btag SF evaluator --> "central", "up", or "down"
 #%------------------------------------------------------------------------------------------------------------------------------------
 SaveSecondRun = False # Make a coffea output file of the second uproot job (with the systematics and corrections)
@@ -48,7 +48,7 @@ else:
 # print(filesets)
 
 
-Chunk = [100000, 100] # [chunksize, maxchunks]
+Chunk = [10000, 5] # [chunksize, maxchunks]
 
 # class TextFileReaderPlugin(SchedulerPlugin):
 #     def __init__(self, filename):
@@ -264,7 +264,7 @@ for name,files in filesets_forweights.items():
                                                                                        CalcEff_MC=False,
                                                                                        ApplySF=True,
                                                                                        sysType=systemType,
-                                                                                       UseEfficiencies=False,
+                                                                                       UseEfficiencies=True,
                                                                                        prng=prng),
                                                   #executor=processor.iterative_executor,
                                                   executor=processor.futures_executor,
