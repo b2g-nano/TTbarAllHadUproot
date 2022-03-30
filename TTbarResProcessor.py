@@ -140,73 +140,7 @@ class TTbarResProcessor(processor.ProcessorABC):
             'numerator':   hist.Hist("Counts", dataset_axis, cats_axis, manual_axis),
             'denominator': hist.Hist("Counts", dataset_axis, cats_axis, manual_axis),
             
-#********************************************************************************************************************#
-            
-#             # ---- SubJet b-tag Efficiency as function of pT ---- #
-#             'b_eff_numerator_pt_s01': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis), 
-#             'b_eff_numerator_pt_s02': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis), 
-#             'b_eff_numerator_pt_s11': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis), 
-#             'b_eff_numerator_pt_s12': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis), 
-            
-#             'b_eff_denominator_pt_s01': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis), 
-#             'b_eff_denominator_pt_s02': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis), 
-#             'b_eff_denominator_pt_s11': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis), 
-#             'b_eff_denominator_pt_s12': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis), 
-            
-#             # ---- SubJet b-tag Efficiency as function of eta ---- #
-#             'b_eff_numerator_eta_s01': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
-#             'b_eff_numerator_eta_s02': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
-#             'b_eff_numerator_eta_s11': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
-#             'b_eff_numerator_eta_s12': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
-            
-#             'b_eff_denominator_eta_s01': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
-#             'b_eff_denominator_eta_s02': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
-#             'b_eff_denominator_eta_s11': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
-#             'b_eff_denominator_eta_s12': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
-            
-#             # ---- SubJet c-tag Efficiency as function of pT ---- #
-#             'c_eff_numerator_pt_s01': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis),
-#             'c_eff_numerator_pt_s02': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis),
-#             'c_eff_numerator_pt_s11': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis),
-#             'c_eff_numerator_pt_s12': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis),
-            
-#             'c_eff_denominator_pt_s01': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis),
-#             'c_eff_denominator_pt_s02': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis),
-#             'c_eff_denominator_pt_s11': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis),
-#             'c_eff_denominator_pt_s12': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis),
-            
-#             # ---- SubJet c-tag Efficiency as function of eta ---- #
-#             'c_eff_numerator_eta_s01': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
-#             'c_eff_numerator_eta_s02': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
-#             'c_eff_numerator_eta_s11': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
-#             'c_eff_numerator_eta_s12': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
-            
-#             'c_eff_denominator_eta_s01': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
-#             'c_eff_denominator_eta_s02': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
-#             'c_eff_denominator_eta_s11': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
-#             'c_eff_denominator_eta_s12': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
-            
-#             # ---- SubJet light quark-tag Efficiency as function of pT ---- #
-#             'udsg_eff_numerator_pt_s01': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis),
-#             'udsg_eff_numerator_pt_s02': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis),
-#             'udsg_eff_numerator_pt_s11': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis),
-#             'udsg_eff_numerator_pt_s12': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis),
-            
-#             'udsg_eff_denominator_pt_s01': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis),
-#             'udsg_eff_denominator_pt_s02': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis),
-#             'udsg_eff_denominator_pt_s11': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis),
-#             'udsg_eff_denominator_pt_s12': hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis),
-            
-#             # ---- SubJet light quark-tag Efficiency as function of eta ---- #
-#             'udsg_eff_numerator_eta_s01': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
-#             'udsg_eff_numerator_eta_s02': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
-#             'udsg_eff_numerator_eta_s11': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
-#             'udsg_eff_numerator_eta_s12': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
-            
-#             'udsg_eff_denominator_eta_s01': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
-#             'udsg_eff_denominator_eta_s02': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
-#             'udsg_eff_denominator_eta_s11': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
-#             'udsg_eff_denominator_eta_s12': hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
+
             
 #    ====================================================================
 #    EEEEEEE FFFFFFF FFFFFFF      H     H IIIIIII   SSSSS TTTTTTT   SSSSS     
@@ -377,42 +311,27 @@ class TTbarResProcessor(processor.ProcessorABC):
             
         })
         
-#     def FormatCSV(filename):
-#         """
-#         filename ---> String (bTag SF .csv file)
-#         """
-#         ############### Ensures that file's workingpoint is written as an integer ##################
-
-#         workingpoints = {
-#             'L':0,
-#             'M':1,
-#             'T':2,
-#             'R':3
-#         }
-
-#         SF_stuff = [line.split(',') for line in open(filename)] # "Stuff" in the file
-#         SF_stuff_array = np.array(SF_stuff) # Convert the lines into numpy array (for slicing)
-#         OperatingPoints = SF_stuff_array[1:,0] # Select only the first element of each line ("Operating Points")
-#         Type = OperatingPoints.dtype.type
-#         String = "<type 'numpy.string_'>"
-#         if Type is String:
-#             IntegerPoints = [workingpoints[letter] for letter in OperatingPoints] # Convert the strings to integers
-#             dataframe = pd.read_csv(filename) # Prep to swap out the "string" column for the new "integer" column
-#             dataframe.OperatingPoint = IntegerPoints # Complete the swap
-#             ConvertedFile = dataframe.to_csv(filename+'_converted.csv', index = False) # Output new converted csv file
-#         else:
-#             ConvertedFile = filename
-
-#         return ConvertedFile
+#   =======================================================================
+#   FFFFFFF U     U N     N   CCCC  TTTTTTT IIIIIII   OOO   N     N   SSSSS     
+#   F       U     U NN    N  C         T       I     O   O  NN    N  S          
+#   F       U     U N N   N C          T       I    O     O N N   N S           
+#   FFFFFFF U     U N  N  N C          T       I    O     O N  N  N  SSSSS      
+#   F       U     U N   N N C          T       I    O     O N   N N       S     
+#   F        U   U  N    NN  C         T       I     O   O  N    NN      S      
+#   F         UUU   N     N   CCCC     T    IIIIIII   OOO   N     N SSSSS
+#   =======================================================================
 
     #https://stackoverflow.com/questions/11144513/cartesian-product-of-x-and-y-array-points-into-single-array-of-2d-points/11146645#11146645
-    def cartesian_product(self, *arrays): 
+    def CartesianProduct(self, *arrays): 
         la = len(arrays)
         dtype = np.result_type(*arrays)
         arr = np.empty([len(a) for a in arrays] + [la], dtype=dtype)
         for i, a in enumerate(np.ix_(*arrays)):
             arr[...,i] = a
         return arr.reshape(-1, la)
+    
+#     def LoadFiles(self, filename_list, index_array):
+#         yield [ pd.read_csv(filename_list[i], usecols=['efficiency']) for i in index_array ]
     
     def BtagUpdater(self, subjet, Eff_filename_list, ScaleFactorFilename, FittingPoint, OperatingPoint):  
         """
@@ -428,8 +347,12 @@ class TTbarResProcessor(processor.ProcessorABC):
         
         # ---- Import Flavor Efficiency Tables as Dataframes ---- #
         subjet_flav_index = np.arange(ak.to_numpy(subjet.hadronFlavour).size)
+#         df_list = [ l for l in self.LoadFiles(Eff_filename_list, subjet_flav_index) ]
+#         print("New:\n", df_list, "\n\n")
         df_list = [ pd.read_csv(Eff_filename_list[i]) for i in subjet_flav_index ] # List of efficiency dataframes; imported to extract list of eff_vals
-        eff_vals_list = [ df_list[i]['efficiency'].values for i in subjet_flav_index ] # 40 efficiency values for each file read in; one file per element of subjet array
+#         print("Old:\n", Df_list, "\n**********************************************\n")
+        eff_vals_list = [ df_list.values for i in subjet_flav_index ] # 40 efficiency values for each file read in; one file per element of subjet array
+#         eff_vals_list = [ vals for vals in df_list ]
         
         # ---- Match subjet pt and eta to appropriate bins ---- #
         pt_BinKeys = np.arange(np.array(manual_subjetpt_bins).size - 1) # the -1 ensures proper size for bin labeling
@@ -452,7 +375,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         index_pairs_tuples = [tuple(e) for e in index_pairs] # This can be indexed easily for reading from dictionary
         
         # ---- Get Efficiencies from  ---- #
-        eff_BinKeys_comb = self.cartesian_product(pt_BinKeys, eta_BinKeys) #List of Combined pt and eta keys (should be 40 of them)
+        eff_BinKeys_comb = self.CartesianProduct(pt_BinKeys, eta_BinKeys) #List of Combined pt and eta keys (should be 40 of them)
         effBinKeys = np.arange( len(eff_BinKeys_comb) )
         EffKeys_Dict = dict(zip([tuple(eff_BinKeys_comb[i]) for i in effBinKeys], effBinKeys)) # Mapping combined pt and eta keys to a single integer (for boradcasting)
         Eff_indices = [EffKeys_Dict[index_pairs_tuples[i]] for i in range(pt_indices.size)] # Indices for selecting efficiency values from the lists for each subjet index
@@ -608,37 +531,6 @@ class TTbarResProcessor(processor.ProcessorABC):
             })
 
         # ---- Define AK4 jets as Jets ---- #
-        #Jets = events.Jet
-#         if 'JetHT' not in dataset: # If MC is used...
-#             Jets = ak.zip({
-#                 "pt": events.Jet_pt,
-#                 "eta": events.Jet_eta,
-#                 "phi": events.Jet_phi,
-#                 "mass": events.Jet_mass,
-#                 "area": events.Jet_area,
-#                 "hadronFlavour": events.Jet_hadronFlavour,
-#                 "p4": ak.zip({
-#                     "pt": events.Jet_pt,
-#                     "eta": events.Jet_eta,
-#                     "phi": events.Jet_phi,
-#                     "mass": events.Jet_mass,
-#                     }, with_name="PtEtaPhiMLorentzVector"),
-#                 })
-#         else:
-#             Jets = ak.zip({
-#                 "pt": events.Jet_pt,
-#                 "eta": events.Jet_eta,
-#                 "phi": events.Jet_phi,
-#                 "mass": events.Jet_mass,
-#                 "area": events.Jet_area,
-#                 "p4": ak.zip({
-#                     "pt": events.Jet_pt,
-#                     "eta": events.Jet_eta,
-#                     "phi": events.Jet_phi,
-#                     "mass": events.Jet_mass,
-#                     }, with_name="PtEtaPhiMLorentzVector"),
-#                 })
-
         Jets = ak.zip({
             "pt": events.Jet_pt,
             "eta": events.Jet_eta,
@@ -652,47 +544,25 @@ class TTbarResProcessor(processor.ProcessorABC):
                 "mass": events.Jet_mass,
                 }, with_name="PtEtaPhiMLorentzVector"),
             })
-    
-        if 'JetHT' not in dataset: # If MC is used...
-            Jets['hadronFlavour'] = events.Jet_hadronFlavour
 
         # ---- Define SubJets ---- #
-        #SubJets = events.SubJet
-        if 'JetHT' not in dataset: # If MC is used...
-            SubJets = ak.zip({
+        SubJets = ak.zip({
+            "pt": events.SubJet_pt,
+            "eta": events.SubJet_eta,
+            "phi": events.SubJet_phi,
+            "mass": events.SubJet_mass,
+            "btagDeepB": events.SubJet_btagDeepB,
+            "btagCSVV2": events.SubJet_btagCSVV2,
+            "p4": ak.zip({
                 "pt": events.SubJet_pt,
                 "eta": events.SubJet_eta,
                 "phi": events.SubJet_phi,
                 "mass": events.SubJet_mass,
-                "btagDeepB": events.SubJet_btagDeepB,
-                "btagCSVV2": events.SubJet_btagCSVV2,
-                "hadronFlavour": events.SubJet_hadronFlavour,
-                "p4": ak.zip({
-                    "pt": events.SubJet_pt,
-                    "eta": events.SubJet_eta,
-                    "phi": events.SubJet_phi,
-                    "mass": events.SubJet_mass,
-                    }, with_name="PtEtaPhiMLorentzVector"),
-                })
-        else:
-            SubJets = ak.zip({
-                "pt": events.SubJet_pt,
-                "eta": events.SubJet_eta,
-                "phi": events.SubJet_phi,
-                "mass": events.SubJet_mass,
-                "btagDeepB": events.SubJet_btagDeepB,
-                "btagCSVV2": events.SubJet_btagCSVV2,
-                "p4": ak.zip({
-                    "pt": events.SubJet_pt,
-                    "eta": events.SubJet_eta,
-                    "phi": events.SubJet_phi,
-                    "mass": events.SubJet_mass,
-                    }, with_name="PtEtaPhiMLorentzVector"),
-                })
+                }, with_name="PtEtaPhiMLorentzVector"),
+            })
         
-        # ---- Define Generator Particles ---- #
+        # ---- Define Generator Particles and other needed event properties for MC ---- #
         if 'JetHT' not in dataset: # If MC is used...
-#             try:
             GenParts = ak.zip({
                 "pdgId": events.GenPart_pdgId,
                 "pt": events.GenPart_pt,
@@ -706,20 +576,10 @@ class TTbarResProcessor(processor.ProcessorABC):
                     "mass": events.GenPart_mass,
                     }, with_name="Vector3D"),
                 })
-#             except:
-#                 GenParts = ak.zip({
-#                     "pdgId": events.customGenParticles_pdgId,
-#                     "pt": events.customGenParticles_pt,
-#                     "eta": events.customGenParticles_eta,
-#                     "phi": events.customGenParticles_phi,
-#                     "mass": events.customGenParticles_mass,
-#                     "p4": ak.zip({
-#                         "pt": events.customGenParticles_pt,
-#                         "eta": events.customGenParticles_eta,
-#                         "phi": events.customGenParticles_phi,
-#                         "mass": events.customGenParticles_mass,
-#                         }, with_name="Vector3D"),
-#                     })
+            
+            Jets['hadronFlavour'] = events.Jet_hadronFlavour
+            SubJets['hadronFlavour'] = events.SubJet_hadronFlavour
+
 
 #    ===================================================================================
 #    PPPPPP  RRRRRR  EEEEEEE L       IIIIIII M     M       CCCC  U     U TTTTTTT   SSSSS     
@@ -743,7 +603,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         #FatJets = FatJets[HLT_AK8_trig1]
         #evtweights = evtweights[HLT_AK8_trig1]
         #Jets = Jets[HLT_AK8_trig1]
-        #SubJets = SubJets[HLT_AK8_trig1]
+        #SubJets = SubJets[HLT_AK8_trig1] 
         
         # ---- Jets that satisfy Jet ID ---- #
         jet_id = (FatJets.jetId > 0) # Loose jet ID
