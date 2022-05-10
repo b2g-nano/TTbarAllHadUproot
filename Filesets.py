@@ -25,31 +25,29 @@
 #
 # Weighted JetHT files are for the data driven background (pre-tag region)
 
+import os
+
 xrootdstr1 = 'root://cmseos.fnal.gov/'
 xrootdstr2 = 'root://cmsxrootd.fnal.gov/'
 xrootdstr3 = 'root://cmsxrootd-site.fnal.gov/'
 
-qcdfilename = 'TTbarAllHadUproot/QCD_UL16_APVv2.txt'
-#qcdfilename = 'QCD_UL16_APVv2.txt'
+filedir = 'TTbarAllHadUproot/nanoAODv9Files/'
+
+qcdfilename = filedir + 'QCD/QCD_NanoAODv9_UL16_postVFP.txt'
 with open(qcdfilename) as f:
     qcdfiles = [xrootdstr2 + s.strip() for s in f.readlines()]
 
-ttbarfilename = 'TTbarAllHadUproot/TTJets_BiasedSamples.txt'
-#ttbarfilename = 'TTbarAllHadUproot/TTJets_TuneCP5_v2_UL16.txt'
-#ttbarfilename = 'TTJets_TuneCP5_v2_UL16.txt'
-with open(ttbarfilename) as f:
-    ttbarfiles = [xrootdstr2 + s.strip() for s in f.readlines()]
-    
-ttbar1000toInffilename = 'TTbarAllHadUproot/TTJets_Mtt-1000toInf_UL16.txt'
-with open(ttbar1000toInffilename) as f:
-    ttbar1000toInffiles = [xrootdstr2 + s.strip() for s in f.readlines()]
-    
-ttbar700to1000filename = 'TTbarAllHadUproot/TTJets_Mtt-700to1000_UL16.txt'
+ttbar700to1000filename = filedir + 'TT/TT_Mtt-700to1000_NanoAODv9_UL16_postVFP.txt'
 with open(ttbar700to1000filename) as f:
     ttbar700to1000files = [xrootdstr2 + s.strip() for s in f.readlines()]
     
-ZprimeDMfilename = 'TTbarAllHadUproot/ZprimeDMToTTbar_UL16.txt'
-#ZprimeDMfilename = 'ZprimeDMToTTbar_UL16.txt'
+ttbar1000toInffilename = filedir + 'TT/TT_Mtt-1000toInf_NanoAODv9_UL16_postVFP.txt'
+with open(ttbar1000toInffilename) as f:
+    ttbar1000toInffiles = [xrootdstr2 + s.strip() for s in f.readlines()]
+    
+ttbarfiles = ttbar700to1000files + ttbar1000toInffiles # inclusion of both biased samples
+    
+ZprimeDMfilename = filedir + 'ZprimeDMToTTbar/ZprimeDMToTTbar_NanoAODv9_postVFP.txt'
 with open(ZprimeDMfilename) as f:
     DM1000files = [xrootdstr2 + s.strip() for s in f.readlines() if "ResoIncl_MZp1000" in s]
 with open(ZprimeDMfilename) as f:
@@ -69,8 +67,7 @@ with open(ZprimeDMfilename) as f:
 with open(ZprimeDMfilename) as f:
     DM5000files = [xrootdstr2 + s.strip() for s in f.readlines() if "ResoIncl_MZp5000" in s]
 
-RSGluonfilename = 'TTbarAllHadUproot/RSGluonToTT.txt'
-#RSGluonfilename = 'RSGluonToTT.txt'
+RSGluonfilename = filedir + 'RSGluonToTT/RSGluonToTT_NanoAODv9_UL16_postVFP.txt'
 with open(RSGluonfilename) as f:
     RSGluon1000files = [xrootdstr2 + s.strip() for s in f.readlines() if "RSGluonToTT_M-1000" in s]
 with open(RSGluonfilename) as f:
@@ -90,15 +87,19 @@ with open(RSGluonfilename) as f:
 with open(RSGluonfilename) as f:
     RSGluon5000files = [xrootdstr2 + s.strip() for s in f.readlines() if "RSGluonToTT_M-5000" in s]
 
-jetdatafilename = 'TTbarAllHadUproot/JetHT_Data.txt'
-with open(jetdatafilename) as f:
-    jetdatafiles = [xrootdstr2 + s.strip() for s in f.readlines()[::3]] # Every third datafile
-with open(jetdatafilename) as g:
-    jetdatafiles2016 = [xrootdstr2 + s.strip() for s in g.readlines() if "/store/data/Run2016" in s]
-with open(jetdatafilename) as h:
-    jetdatafiles2017 = [xrootdstr2 + s.strip() for s in h.readlines()[::3] if "/store/data/Run2017" in s]
-with open(jetdatafilename) as i:
-    jetdatafiles2018 = [xrootdstr2 + s.strip() for s in i.readlines()[::3] if "/store/data/Run2018" in s]
+datafilelist = os.listdir(filedir + 'JetHT/')
+for filename in datafilelist:
+    if 'Run2016' in filename:
+        with open(filedir + 'JetHT/' + filename) as f:
+            jetdatafiles2016 = [xrootdstr2 + s.strip() for s in f.readlines()[::3]] # Every third datafile
+    elif 'Run2017' in filename:
+        with open(filedir + 'JetHT/' + filename) as g:
+            jetdatafiles2017 = [xrootdstr2 + s.strip() for s in g.readlines()[::3]]
+    else:
+        with open(filedir + 'JetHT/' + filename) as h:
+            jetdatafiles2018 = [xrootdstr2 + s.strip() for s in h.readlines()[::3]] 
+            
+jetdatafiles = jetdatafiles2016 + jetdatafiles2017 + jetdatafiles2018 # All data after unblinding
 
 """ Comment out whichever files you wish to not be included """
 
