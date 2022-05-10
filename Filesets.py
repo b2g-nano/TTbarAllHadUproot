@@ -94,7 +94,7 @@ jetdatafilename = 'TTbarAllHadUproot/JetHT_Data.txt'
 with open(jetdatafilename) as f:
     jetdatafiles = [xrootdstr2 + s.strip() for s in f.readlines()[::3]] # Every third datafile
 with open(jetdatafilename) as g:
-    jetdatafiles2016 = [xrootdstr2 + s.strip() for s in g.readlines()[::3] if "/store/data/Run2016" in s]
+    jetdatafiles2016 = [xrootdstr2 + s.strip() for s in g.readlines() if "/store/data/Run2016" in s]
 with open(jetdatafilename) as h:
     jetdatafiles2017 = [xrootdstr2 + s.strip() for s in h.readlines()[::3] if "/store/data/Run2017" in s]
 with open(jetdatafilename) as i:
@@ -103,7 +103,7 @@ with open(jetdatafilename) as i:
 """ Comment out whichever files you wish to not be included """
 
 filesets = {
-    'QCD':qcdfiles,
+    # 'QCD':qcdfiles,
     # 'DM1000':DM1000files,
     # 'DM1500':DM1500files,
     # 'DM2000':DM2000files,
@@ -126,13 +126,13 @@ filesets = {
     # 'TTbar_biased_700to1000': ttbar700to1000files,
     # 'TTbar_biased_1000toInf': ttbar1000toInffiles,
     # 'JetHT':jetdatafiles,
-    # 'JetHT2016_Data':jetdatafiles2016,
+    'JetHT2016_Data':jetdatafiles2016,
     # 'JetHT2017_Data':jetdatafiles2017,
     # 'JetHT2018_Data':jetdatafiles2018
 }
 
 filesets_forweights = {
-    'QCD':qcdfiles,
+    # 'QCD':qcdfiles,
     # 'DM1000':DM1000files,
     # 'DM1500':DM1500files,
     # 'DM2000':DM2000files,
@@ -152,11 +152,11 @@ filesets_forweights = {
     # 'RSGluon4500':RSGluon4500files,
     # 'RSGluon5000':RSGluon5000files,
     # 'TTbar':ttbarfiles, # ttbarfiles to be subtracted from all years of JetHT data
-    # 'TTbar_2016':ttbarfiles, # ttbarfiles to be subtracted from JetHT2016 data
+    'TTbar_2016':ttbarfiles, # ttbarfiles to be subtracted from JetHT2016 data
     # 'TTbar_2017':ttbarfiles, # ttbarfiles to be subtracted from JetHT2017 data
     # 'TTbar_2018':ttbarfiles, # ttbarfiles to be subtracted from JetHT2018 data
     # 'JetHT':jetdatafiles, # all years
-    # 'JetHT2016_Data':jetdatafiles2016,
+    'JetHT2016_Data':jetdatafiles2016,
     # 'JetHT2017_Data':jetdatafiles2017,
     # 'JetHT2018_Data':jetdatafiles2018
 }
