@@ -27,8 +27,8 @@ manual_bins = [400, 500, 600, 800, 1000, 1500, 2000, 3000, 7000, 10000]
 # --- Define 'Manual pT bins' to use for mc flavor efficiency plots for higher stats per bin--- #
 #manual_subjetpt_bins = [0, 250, 500, 750, 1000, 1500, 2000]
 # manual_subjetpt_bins = [0, 200, 400, 600, 800, 1000, 1500, 2000, 3000] # Used before 2/21/22 on Biased TTbar samples (8 bins) 
-manual_subjetpt_bins = [0, 200, 400, 800, 1600, 3200] # Used on 2/21/22 for QCD and RSGluon1000 (5 bins)
-manual_subjeteta_bins = [-2.4, -1.8, -1.2, -0.6, 0., 0.6, 1.2, 1.8, 2.4]
+manual_subjetpt_bins = [0, 200, 400, 800, 3200] # Used on 3/30/22 for ttbar (4 bins)
+manual_subjeteta_bins = [-2.4, -1.2, -0.6, 0., 0.6, 1.2, 2.4] # Used on 3/30/22 for ttbar (6 bins)
 #manual_etabins = []
 
 """@TTbarResAnaHadronic Package to perform the data-driven mistag-rate-based ttbar hadronic analysis. 
@@ -398,7 +398,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         BSF = btag_sf.eval(OperatingPoint, subjet.hadronFlavour, abs(subjet.eta), subjet.pt, ignore_missing=True) # List of Scale Factors
 
         f_less = 1. - BSF # fraction of subjets to be downgraded
-        f_greater = np.where(eff_val > 0., f_less/(1. - 1./eff_val), np.abs(f_less)) # fraction of subjets to be upgraded 
+        f_greater = np.where(eff_val > 0., f_less/(1. - 1./eff_val), 0.) # fraction of subjets to be upgraded 
         
         """
 *******************************************************************************************************************        
@@ -441,7 +441,101 @@ class TTbarResProcessor(processor.ProcessorABC):
         
         # ---- Define dataset ---- #
         dataset = events.metadata['dataset']
+
+#    ===========================================================================================    
+#    N     N    A    N     N   OOO      A      OOO   DDDD          OOO   BBBBBB  JJJJJJJ   SSSSS     
+#    NN    N   A A   NN    N  O   O    A A    O   O  D   D        O   O  B     B    J     S          
+#    N N   N  A   A  N N   N O     O  A   A  O     O D    D      O     O B     B    J    S           
+#    N  N  N  AAAAA  N  N  N O     O  AAAAA  O     O D     D     O     O BBBBBB     J     SSSSS      
+#    N   N N A     A N   N N O     O A     A O     O D    D      O     O B     B J  J          S     
+#    N    NN A     A N    NN  O   O  A     A  O   O  D   D        O   O  B     B J  J         S      
+#    N     N A     A N     N   OOO   A     A   OOO   DDDD          OOO   BBBBBB   JJ     SSSSS 
+#    =========================================================================================== 
         
+        # ---- Define AK8 Jets as FatJets ---- #
+        #FatJets = events.FatJet # Everything should already be defined in here.  example) df['FatJet_pt] -> events.FatJet.pt
+        FatJets = ak.zip({
+            "run": events.run,
+            "nFatJet": events.nFatJet,
+            "pt": events.FatJet_pt,
+            "eta": events.FatJet_eta,
+            "phi": events.FatJet_phi,
+            "mass": events.FatJet_mass,
+            "area": events.FatJet_area,
+            "msoftdrop": events.FatJet_msoftdrop,
+            "jetId": events.FatJet_jetId,
+            "tau1": events.FatJet_tau1,
+            "tau2": events.FatJet_tau2,
+            "tau3": events.FatJet_tau3,
+            "tau4": events.FatJet_tau4,
+            "n3b1": events.FatJet_n3b1,
+            "btagDeepB": events.FatJet_btagDeepB,
+            "btagCSVV2": events.FatJet_btagCSVV2, # Use as a prior probability of containing a bjet?
+            "deepTag_TvsQCD": events.FatJet_deepTag_TvsQCD,
+            "deepTagMD_TvsQCD": events.FatJet_deepTagMD_TvsQCD,
+            "subJetIdx1": events.FatJet_subJetIdx1,
+            "subJetIdx2": events.FatJet_subJetIdx2,
+            "p4": ak.zip({
+                "pt": events.FatJet_pt,
+                "eta": events.FatJet_eta,
+                "phi": events.FatJet_phi,
+                "mass": events.FatJet_mass,
+                }, with_name="PtEtaPhiMLorentzVector"),
+            })
+
+        # ---- Define AK4 jets as Jets ---- #
+        Jets = ak.zip({
+            "run": events.run,
+            "pt": events.Jet_pt,
+            "eta": events.Jet_eta,
+            "phi": events.Jet_phi,
+            "mass": events.Jet_mass,
+            "area": events.Jet_area,
+            "p4": ak.zip({
+                "pt": events.Jet_pt,
+                "eta": events.Jet_eta,
+                "phi": events.Jet_phi,
+                "mass": events.Jet_mass,
+                }, with_name="PtEtaPhiMLorentzVector"),
+            })
+
+        # ---- Define SubJets ---- #
+        SubJets = ak.zip({
+            "run": events.run,
+            "pt": events.SubJet_pt,
+            "eta": events.SubJet_eta,
+            "phi": events.SubJet_phi,
+            "mass": events.SubJet_mass,
+            "btagDeepB": events.SubJet_btagDeepB,
+            "btagCSVV2": events.SubJet_btagCSVV2,
+            "p4": ak.zip({
+                "pt": events.SubJet_pt,
+                "eta": events.SubJet_eta,
+                "phi": events.SubJet_phi,
+                "mass": events.SubJet_mass,
+                }, with_name="PtEtaPhiMLorentzVector"),
+            })
+        
+        # ---- Define Generator Particles and other needed event properties for MC ---- #
+        if 'JetHT' not in dataset: # If MC is used...
+            GenParts = ak.zip({
+                "run": events.run,
+                "pdgId": events.GenPart_pdgId,
+                "pt": events.GenPart_pt,
+                "eta": events.GenPart_eta,
+                "phi": events.GenPart_phi,
+                "mass": events.GenPart_mass,
+                "p4": ak.zip({
+                    "pt": events.GenPart_pt,
+                    "eta": events.GenPart_eta,
+                    "phi": events.GenPart_phi,
+                    "mass": events.GenPart_mass,
+                    }, with_name="Vector3D"),
+                })
+            
+            Jets['hadronFlavour'] = events.Jet_hadronFlavour
+            SubJets['hadronFlavour'] = events.SubJet_hadronFlavour
+            
 #    ================================================================
 #    TTTTTTT RRRRRR  IIIIIII GGGGGGG GGGGGGG EEEEEEE RRRRRR    SSSSS     
 #       T    R     R    I    G       G       E       R     R  S          
@@ -451,6 +545,20 @@ class TTbarResProcessor(processor.ProcessorABC):
 #       T    R    R     I    G     G G     G E       R    R       S      
 #       T    R     R IIIIIII  GGGGG   GGGGG  EEEEEEE R     R SSSSS  
 #    ================================================================
+        
+        Dataset_info = events.fields # All nanoaod events
+        listOfTriggers = np.array([name for name in Dataset_info if 'HLT' in name]) # Find event name info that have HLT to find all relevant triggers
+        
+        isHLT_PF = np.array(['HLT_PF' in i for i in listOfTriggers])
+        isHLT_AK8 = np.array(['HLT_AK8' in i for i in listOfTriggers])
+        
+        HLT_PF_triggers = listOfTriggers[isHLT_PF]
+        HLT_AK8_triggers = listOfTriggers[isHLT_AK8]
+        
+        print("HLT_PF Triggers: \n", HLT_PF_triggers)
+        print("")
+        print("HLT_AK8 Triggers: \n", HLT_AK8_triggers)
+        print("")
         
         # ---- Get triggers from Dataset_info ---- #
         #triggers = [itrig for itrig in Dataset_info if 'HLT_PFHT' in itrig]
@@ -489,96 +597,6 @@ class TTbarResProcessor(processor.ProcessorABC):
         #HLT_trig2 = df[HLT_trig2_str]
         #HLT_AK8_trig1 = df[HLT_AK8_trig1_str]
         #HLT_AK8_trig2 = df[HLT_AK8_trig2_str]
-
-#    ===========================================================================================    
-#    N     N    A    N     N   OOO      A      OOO   DDDD          OOO   BBBBBB  JJJJJJJ   SSSSS     
-#    NN    N   A A   NN    N  O   O    A A    O   O  D   D        O   O  B     B    J     S          
-#    N N   N  A   A  N N   N O     O  A   A  O     O D    D      O     O B     B    J    S           
-#    N  N  N  AAAAA  N  N  N O     O  AAAAA  O     O D     D     O     O BBBBBB     J     SSSSS      
-#    N   N N A     A N   N N O     O A     A O     O D    D      O     O B     B J  J          S     
-#    N    NN A     A N    NN  O   O  A     A  O   O  D   D        O   O  B     B J  J         S      
-#    N     N A     A N     N   OOO   A     A   OOO   DDDD          OOO   BBBBBB   JJ     SSSSS 
-#    =========================================================================================== 
-        
-        # ---- Define AK8 Jets as FatJets ---- #
-        #FatJets = events.FatJet # Everything should already be defined in here.  example) df['FatJet_pt] -> events.FatJet.pt
-        FatJets = ak.zip({
-            "nFatJet": events.nFatJet,
-            "pt": events.FatJet_pt,
-            "eta": events.FatJet_eta,
-            "phi": events.FatJet_phi,
-            "mass": events.FatJet_mass,
-            "area": events.FatJet_area,
-            "msoftdrop": events.FatJet_msoftdrop,
-            "jetId": events.FatJet_jetId,
-            "tau1": events.FatJet_tau1,
-            "tau2": events.FatJet_tau2,
-            "tau3": events.FatJet_tau3,
-            "tau4": events.FatJet_tau4,
-            "n3b1": events.FatJet_n3b1,
-            "btagDeepB": events.FatJet_btagDeepB,
-            "btagCSVV2": events.FatJet_btagCSVV2, # Use as a prior probability of containing a bjet?
-            "deepTag_TvsQCD": events.FatJet_deepTag_TvsQCD,
-            "deepTagMD_TvsQCD": events.FatJet_deepTagMD_TvsQCD,
-            "subJetIdx1": events.FatJet_subJetIdx1,
-            "subJetIdx2": events.FatJet_subJetIdx2,
-            "p4": ak.zip({
-                "pt": events.FatJet_pt,
-                "eta": events.FatJet_eta,
-                "phi": events.FatJet_phi,
-                "mass": events.FatJet_mass,
-                }, with_name="PtEtaPhiMLorentzVector"),
-            })
-
-        # ---- Define AK4 jets as Jets ---- #
-        Jets = ak.zip({
-            "pt": events.Jet_pt,
-            "eta": events.Jet_eta,
-            "phi": events.Jet_phi,
-            "mass": events.Jet_mass,
-            "area": events.Jet_area,
-            "p4": ak.zip({
-                "pt": events.Jet_pt,
-                "eta": events.Jet_eta,
-                "phi": events.Jet_phi,
-                "mass": events.Jet_mass,
-                }, with_name="PtEtaPhiMLorentzVector"),
-            })
-
-        # ---- Define SubJets ---- #
-        SubJets = ak.zip({
-            "pt": events.SubJet_pt,
-            "eta": events.SubJet_eta,
-            "phi": events.SubJet_phi,
-            "mass": events.SubJet_mass,
-            "btagDeepB": events.SubJet_btagDeepB,
-            "btagCSVV2": events.SubJet_btagCSVV2,
-            "p4": ak.zip({
-                "pt": events.SubJet_pt,
-                "eta": events.SubJet_eta,
-                "phi": events.SubJet_phi,
-                "mass": events.SubJet_mass,
-                }, with_name="PtEtaPhiMLorentzVector"),
-            })
-        
-        # ---- Define Generator Particles and other needed event properties for MC ---- #
-        if 'JetHT' not in dataset: # If MC is used...
-            GenParts = ak.zip({
-                "pdgId": events.GenPart_pdgId,
-                "pt": events.GenPart_pt,
-                "eta": events.GenPart_eta,
-                "phi": events.GenPart_phi,
-                "mass": events.GenPart_mass,
-                "p4": ak.zip({
-                    "pt": events.GenPart_pt,
-                    "eta": events.GenPart_eta,
-                    "phi": events.GenPart_phi,
-                    "mass": events.GenPart_mass,
-                    }, with_name="Vector3D"),
-                })
-            
-            Jets['hadronFlavour'] = events.Jet_hadronFlavour
-            SubJets['hadronFlavour'] = events.SubJet_hadronFlavour
 
 
 #    ===================================================================================

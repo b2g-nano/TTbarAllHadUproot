@@ -21,11 +21,11 @@ from lpcjobqueue import LPCCondorCluster
 ak.behavior.update(candidate.behavior)
 
 Testing = False
-LoadingUnweightedFiles = True # don't run processor the first time; just run the processor with the systematics and corrections 
+LoadingUnweightedFiles = False # don't run processor the first time; just run the processor with the systematics and corrections 
 RunAllRootFiles = False # if not, processor will only run over the number of chunks defined by the user
 UsingDaskExecutor = False
 SaveFirstRun = False # Make a coffea output file of the first uproot job (without the systematics and corrections)
-OnlyCreateLookupTables = False # don't run processor the second time; just run the processor the first time without systematics and corrections
+OnlyCreateLookupTables = True # don't run processor the second time; just run the processor the first time without systematics and corrections
 systemType = "central" # string for btag SF evaluator --> "central", "up", or "down"
 #%------------------------------------------------------------------------------------------------------------------------------------
 SaveSecondRun = False # Make a coffea output file of the second uproot job (with the systematics and corrections)
@@ -48,7 +48,7 @@ else:
 # print(filesets)
 
 
-Chunk = [10000, 5] # [chunksize, maxchunks]
+Chunk = [10, 1] # [chunksize, maxchunks]
 
 # class TextFileReaderPlugin(SchedulerPlugin):
 #     def __init__(self, filename):
@@ -110,7 +110,7 @@ for name,files in filesets.items():
                                                   executor=processor.futures_executor,
                                                   executor_args={
                                                       #'client': client,
-                                                      'skipbadfiles':False,
+                                                      'skipbadfiles':True,
                                                       'schema': BaseSchema, #NanoAODSchema,
                                                       'workers': 2},
                                                   chunksize=Chunk[0], maxchunks=Chunk[1])
@@ -262,9 +262,9 @@ for name,files in filesets_forweights.items():
                                                                                        ModMass=True, 
                                                                                        RandomDebugMode=False,
                                                                                        CalcEff_MC=False,
-                                                                                       ApplySF=True,
+                                                                                       ApplySF=False,
                                                                                        sysType=systemType,
-                                                                                       UseEfficiencies=True,
+                                                                                       UseEfficiencies=False,
                                                                                        prng=prng),
                                                   #executor=processor.iterative_executor,
                                                   executor=processor.futures_executor,

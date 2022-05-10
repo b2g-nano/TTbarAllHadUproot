@@ -17,6 +17,7 @@ import matplotlib.pyplot as plt
 # -------------------------------------------------------------------------------------------------------------------------------- #
 
 runLUTS = False # Make separate Directory to place Look-Up Tables (and maybe perform ttbar subtraction for mistag weights)
+OldTTbar = True # Do you want to load in pre-existing TTbar output if it exists?  If false, use a new ttbar coffea output, fresh from CoffeaOutputs
 
 if not runLUTS:
     print("\n\nLoading Previously Made Look Up Tables for Mistag Rate\n\nDoes not Correspond to Test Files...\n\n")
@@ -57,8 +58,22 @@ from Filesets import filesets
 
 
 outputs_unweighted = {}
-for name,files in filesets.items():
-    outputs_unweighted[name] = util.load('TTbarAllHadUproot/CoffeaOutputs/UnweightedOutputs/TTbarResCoffea_' + name + '_unweighted_output.coffea')
+if OldTTbar:
+    # ---- Load in TTbar coffea output if it already exists ---- #
+    try:
+        outputs_unweighted['TTbar'] = util.load('TTbarAllHadUproot/CoffeaOutputs/UnweightedOutputs/TTbarResCoffea_TTbar_unweighted_output.coffea')
+        print('\n\nExisting TTbar unweighted coffea file is pre-loaded for use in TTbarResLookUpTables module...\n')
+    except OSError as e:
+        print('\n\nTTbar unweighted coffea file does not already exist.  Must be created first to perform ttbar contamination subtraction in mistag rate\n\n')
+    
+    for name,files in filesets.items():
+        if name != 'TTbar':
+            outputs_unweighted[name] = util.load('TTbarAllHadUproot/CoffeaOutputs/UnweightedOutputs/TTbarResCoffea_' + name + '_unweighted_output.coffea')
+            
+else: # Use everything that is in filesets,
+    for name,files in filesets.items():
+        outputs_unweighted[name] = util.load('TTbarAllHadUproot/CoffeaOutputs/UnweightedOutputs/TTbarResCoffea_' + name + '_unweighted_output.coffea')
+        
 outputs_unweighted
 
 
@@ -108,7 +123,7 @@ for iset in filesets:
 
 
 """ ---------------- Scale-Factors for JetHT Data According to Year---------------- """
-Nevts2016 = 625516390. # from dasgoclient
+Nevts2016 = 625502676. #625516390. # from dasgoclient
 Nevts2017 = 410461585. # from dasgoclient
 Nevts2018 = 676328827. # from dasgoclient
 Nevts = Nevts2016 + Nevts2017 + Nevts2018 # for all three years
@@ -136,10 +151,11 @@ Lum     = 137190. # total Luminosity of all years
 ttbar_BR = 0.457 # 0.442 from PDG 2018
 ttbar_xs = 1.0   # Monte Carlo already includes xs in event weight!! Otherwise, ttbar_xs = 831.76 * ttbar_BR  pb
 
-ttbar2016_sf = ttbar_xs*Lum2016/(142155064.)
-ttbar2017_sf = ttbar_xs*Lum2017/(142155064.)
-ttbar2018_sf = ttbar_xs*Lum2018/(142155064.)
-ttbar_sf = ttbar_xs*Lum/(142155064.)
+if 'TTbar' in outputs_unweighted.items():
+    ttbar2016_sf = ttbar_xs*ttbar_BR*Lum2016/outputs_unweighted['TTbar']['cutflow']['all events']
+    ttbar2017_sf = ttbar_xs*ttbar_BR*Lum2017/outputs_unweighted['TTbar']['cutflow']['all events']
+    ttbar2018_sf = ttbar_xs*ttbar_BR*Lum2018/outputs_unweighted['TTbar']['cutflow']['all events']
+    ttbar_sf = ttbar_xs*ttbar_BR*Lum/outputs_unweighted['TTbar']['cutflow']['all events']
 
 # print("ttbar 2016 scale factor = ", ttbar2016_sf)
 # print("ttbar 2017 scale factor = ", ttbar2017_sf)
@@ -175,7 +191,7 @@ if runLUTS :
         for iset in filesets:
             #if iset != 'TTbar' or iset != 'QCD': # if JetHT filesets are found...
             if 'JetHT' in iset:
-                print('\t\tfileset: ' + iset + 'Wtih Contamination Removed!\n*****************************************************\n')
+                print('\t\tfileset: ' + iset + 'With Contamination Removed!\n*****************************************************\n')
                 for icat in list_of_cats:
                     filename = 'mistag_' + iset + '_' + icat + '.' + 'csv'
                     title = iset + ' mistag ' + icat
