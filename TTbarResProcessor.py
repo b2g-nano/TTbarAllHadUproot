@@ -1986,18 +1986,18 @@ class TTbarResProcessor(processor.ProcessorABC):
             output['tau32'].fill(dataset = dataset, anacat = ilabel,
                                           tau32 = ak.to_numpy(Tau32[icat]),
                                           weight = ak.to_numpy(Weights[icat]))
-            output['tau32_2D'].fill(dataset = dataset, anacat = ilabel,
-                                          jetpt = ak.to_numpy(pT[icat]),
-                                          tau32 = ak.to_numpy(Tau32[icat]),
-                                          weight = ak.to_numpy(Weights[icat]))
-            output['deepTag_TvsQCD'].fill(dataset = dataset, anacat = ilabel,
-                                          jetpt = ak.to_numpy(pT[icat]),
-                                          tagger = ak.to_numpy(deepTag[icat]),
-                                          weight = ak.to_numpy(Weights[icat]))
-            output['deepTagMD_TvsQCD'].fill(dataset = dataset, anacat = ilabel,
-                                            jetpt = ak.to_numpy(pT[icat]),
-                                            tagger = ak.to_numpy(deepTagMD[icat]),
-                                            weight = ak.to_numpy(Weights[icat]))
+#             output['tau32_2D'].fill(dataset = dataset, anacat = ilabel,
+#                                           jetpt = ak.to_numpy(pT[icat]),
+#                                           tau32 = ak.to_numpy(Tau32[icat]),
+#                                           weight = ak.to_numpy(Weights[icat]))
+#             output['deepTag_TvsQCD'].fill(dataset = dataset, anacat = ilabel,
+#                                           jetpt = ak.to_numpy(pT[icat]),
+#                                           tagger = ak.to_numpy(deepTag[icat]),
+#                                           weight = ak.to_numpy(Weights[icat]))
+#             output['deepTagMD_TvsQCD'].fill(dataset = dataset, anacat = ilabel,
+#                                             jetpt = ak.to_numpy(pT[icat]),
+#                                             tagger = ak.to_numpy(deepTagMD[icat]),
+#                                             weight = ak.to_numpy(Weights[icat]))
             
 # ************************************************************************************************************ #            
             
