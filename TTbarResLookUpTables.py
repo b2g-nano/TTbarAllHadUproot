@@ -16,8 +16,8 @@ import matplotlib.pyplot as plt
 # ---------- if 'runLUTS' is false, read in [previously made] Look Up Table csv's [and don't overwrite or make new ones] --------- #
 # -------------------------------------------------------------------------------------------------------------------------------- #
 
-runLUTS = False # Make separate Directory to place Look-Up Tables (and maybe perform ttbar subtraction for mistag weights)
-OldTTbar = True # Do you want to load in pre-existing TTbar output if it exists?  If false, use a new ttbar coffea output, fresh from CoffeaOutputs
+runLUTS = True # Make separate Directory to place Look-Up Tables (and maybe perform ttbar subtraction for mistag weights)
+OldTTbar = False # Do you want to load in pre-existing TTbar output if it exists?  If false, use a new ttbar coffea output, fresh from CoffeaOutputs
 
 if not runLUTS:
     print("\n\nLoading Previously Made Look Up Tables for Mistag Rate\n\nDoes not Correspond to Test Files...\n\n")

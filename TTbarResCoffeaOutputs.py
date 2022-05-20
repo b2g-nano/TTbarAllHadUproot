@@ -23,8 +23,8 @@ ak.behavior.update(candidate.behavior)
 Testing = False
 LoadingUnweightedFiles = False # don't run processor the first time; just run the processor with the systematics and corrections 
 RunAllRootFiles = False # if not, processor will only run over the number of chunks defined by the user
-UsingDaskExecutor = False
-SaveFirstRun = False # Make a coffea output file of the first uproot job (without the systematics and corrections)
+UsingDaskExecutor = True
+SaveFirstRun = True # Make a coffea output file of the first uproot job (without the systematics and corrections)
 OnlyCreateLookupTables = True # don't run processor the second time; just run the processor the first time without systematics and corrections
 systemType = "central" # string for btag SF evaluator --> "central", "up", or "down"
 #%------------------------------------------------------------------------------------------------------------------------------------
