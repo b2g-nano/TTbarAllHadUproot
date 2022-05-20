@@ -86,7 +86,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         jety_axis = hist.Bin("jety", r"Jet $y$", 50, -3, 3)
         jetdy_axis = hist.Bin("jetdy", r"Jet $\Delta y$", 50, 0, 5)
         manual_axis = hist.Bin("jetp", r"Jet Momentum [GeV]", manual_bins)
-        tagger_axis = hist.Bin("tagger", r"deepTag", 50, 0, 1)
+#         tagger_axis = hist.Bin("tagger", r"deepTag", 50, 0, 1)
         tau32_axis = hist.Bin("tau32", r"$\tau_3/\tau_2$", 50, 0, 2)
         
         subjetmass_axis = hist.Bin("subjetmass", r"SubJet $m$ [GeV]", 50, 0, 500)
@@ -1836,8 +1836,8 @@ class TTbarResProcessor(processor.ProcessorABC):
         jetdy = np.abs(ak.flatten(ttbarcands_s0_rapidity) - ak.flatten(ttbarcands_s1_rapidity))
 
         # ---- Variables for Deep Tagger Analysis ---- #
-        deepTag = ak.flatten(ttbarcands.slot1.deepTag_TvsQCD)
-        deepTagMD = ak.flatten(ttbarcands.slot1.deepTagMD_TvsQCD)
+#         deepTag = ak.flatten(ttbarcands.slot1.deepTag_TvsQCD)
+#         deepTagMD = ak.flatten(ttbarcands.slot1.deepTagMD_TvsQCD)
         
         # ---- Weights ---- #
         weights = evtweights
