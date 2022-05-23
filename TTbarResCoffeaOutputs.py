@@ -11,6 +11,7 @@ import awkward as ak
 import numpy as np
 import glob as glob
 import pandas as pd
+import argparse as ap
 from coffea import hist, processor, nanoevents, util
 from coffea.nanoevents.methods import candidate
 from coffea.nanoevents import NanoAODSchema, BaseSchema
@@ -20,20 +21,118 @@ from lpcjobqueue import LPCCondorCluster
 
 ak.behavior.update(candidate.behavior)
 
-Testing = False
-LoadingUnweightedFiles = False # don't run processor the first time; just run the processor with the systematics and corrections 
-RunAllRootFiles = False # if not, processor will only run over the number of chunks defined by the user
-UsingDaskExecutor = False
-SaveFirstRun = False # Make a coffea output file of the first uproot job (without the systematics and corrections)
-OnlyCreateLookupTables = True # don't run processor the second time; just run the processor the first time without systematics and corrections
-systemType = "central" # string for btag SF evaluator --> "central", "up", or "down"
-#%------------------------------------------------------------------------------------------------------------------------------------
-SaveSecondRun = False # Make a coffea output file of the second uproot job (with the systematics and corrections)
+#    -----------------------------------------------
+#    PPPPPP     A    RRRRRR    SSSSS EEEEEEE RRRRRR      
+#    P     P   A A   R     R  S      E       R     R     
+#    P     P  A   A  R     R S       E       R     R     
+#    PPPPPP   AAAAA  RRRRRR   SSSSS  EEEEEEE RRRRRR      
+#    P       A     A R   R         S E       R   R       
+#    P       A     A R    R       S  E       R    R      
+#    P       A     A R     R SSSSS   EEEEEEE R     R 
+#    -----------------------------------------------
+
+# Parser = ap.ArgumentParser(prog='TTbarResCoffeaOutputs.py', description='something')
+Parser = ap.ArgumentParser(prog='TTbarResCoffeaOutputs.py', formatter_class=ap.RawDescriptionHelpFormatter, description='''\
+-----------------------------------------------------------------------------
+Run the TTbarAllHadProcessor script.  
+All objects for each dataset ran can be saved as its own .coffea output file.
+-----------------------------------------------------------------------------''', 
+                                epilog='''\
+                                Available List of Dataset Strings:
+                                Key:
+                                -------------------------------------------------------------------------------
+                                <sim.year> = 16, 17, or 18
+                                <x> = integer from [1, 5]
+                                <y> = integer either 0 or 5 
+                                <x> = <y> = 5 is not an available string to be included in dataset string names
+                                <year> = 2016, 2017, or 2018
+                                -------------------------------------------------------------------------------
+                                UL<sim.year>_QCD
+                                UL<sim.year>_DM<x><y>00
+                                UL<sim.year>_RSGluon<x><y>00
+                                UL<sim.year>_TTbar
+                                JetHT<year>_Data
+                                JetHT
+                                NOTE** UL17 and UL18 TBA''')
+# ---- Necessary arguments ---- #
+Parser.add_argument('--dataset', type=str, required=True, nargs='+', help='List of datasets to be ran/loaded')
+
+# ---- Other arguments ---- #
+Parser.add_argument('--testing', type=bool, default=False, help='Only run a select few root files defined in the code')
+Parser.add_argument('--uproot', type=int, choices=[1, 2], help='1st run or 2nd run of uproot job.  Enter either 1 or 2 accordingly.  If not specified, both the 1st and 2nd job will be run one after the other.')
+Parser.add_argument('--chunks', type=int, help='Number of chunks of data to run for given dataset(s)')
+Parser.add_argument('--chunksize', type=int, help='Size of each chunk to run for given dataset(s)')
+Parser.add_argument('--save', type=bool, default=False, help='Choose to save the uproot job as a coffea output for later analysis')
+Parser.add_argument('--loadMistag', type=bool, default=False, help='Load mistag rate Look Up Tables instead of recreating them after 1st uproot job.')
+Parser.add_argument('--loadTTbar', type=bool, default=False, help='Load 1st uproot run ttbar coffea file while running 1st JetHT uproot job.  This ensures that ttbar contamination can be removed from JetHT mistag rate without needing to run the 1st uproot ttbar MC job a second time.  Note that you must already have a 1st run ttbar coffea file to use this option.')
+Parser.add_argument('--dask', type=bool, default=False, help='Try the dask executor (experimental) for some fast processing!')
+
+UncertaintyGroup = Parser.add_mutually_exclusive_group()
+UncertaintyGroup.add_argument('-b', '--bTagSyst', type=str, choices=['central', 'up', 'down'], help='Either \'central\', \'up\', \'down\'')
+UncertaintyGroup.add_argument('-t', '--tTagSyst', type=str, choices=['central', 'up', 'down'], help='Either \'central\', \'up\', \'down\'')
+UncertaintyGroup.add_argument('--jec', type=str, choices=['central', 'up', 'down'], help='Either \'central\', \'up\', \'down\'')
+UncertaintyGroup.add_argument('--jer', type=str, choices=['central', 'up', 'down'], help='Either \'central\', \'up\', \'down\'')
+UncertaintyGroup.add_argument('--pileup', type=str, choices=['central', 'up', 'down'], help='Either \'central\', \'up\', \'down\'')
+
+args = Parser.parse_args()
+
+if (args.chunks and not args.chunksize) or (args.chunksize and not args.chunks):
+    Parser.error('If either chunks or chunksize is specified, please specify both to run this program.')
+    quit()
+
+#    -------------------------------------------------------
+#      OOO   PPPPPP  TTTTTTT IIIIIII   OOO   N     N   SSSSS     
+#     O   O  P     P    T       I     O   O  NN    N  S          
+#    O     O P     P    T       I    O     O N N   N S           
+#    O     O PPPPPP     T       I    O     O N  N  N  SSSSS      
+#    O     O P          T       I    O     O N   N N       S     
+#     O   O  P          T       I     O   O  N    NN      S      
+#      OOO   P          T    IIIIIII   OOO   N     N SSSSS   
+#    -------------------------------------------------------
+    
+Testing = args.testing
+#    -------------------------------------------------------    #
+LoadingUnweightedFiles = False 
+OnlyCreateLookupTables = False 
+if args.uproot == 1:
+    OnlyCreateLookupTables = True # stop the code after LUTs are displayed on the terminal; after 1st uproot job
+elif args.uproot == 2:
+    LoadingUnweightedFiles = True # Load the 1st uproot job's coffea outputs if you only want to run the 2nd uproot job.
+else: # Default for running both 1st and 2nd uproot job
+    LoadingUnweightedFiles = False 
+    OnlyCreateLookupTables = False 
+#    -------------------------------------------------------    #    
+RunAllRootFiles = False 
+if not args.chunks:
+    RunAllRootFiles = True
+#    -------------------------------------------------------    #    
+UsingDaskExecutor = args.dask
+#    -------------------------------------------------------    #
+SaveFirstRun = False
+SaveSecondRun = False
+if args.save:
+    SaveFirstRun = True # Make a coffea output file of the first uproot job (without the systematics and corrections)
+    SaveSecondRun = True # Make a coffea output file of the second uproot job (with the systematics and corrections)
+#    -------------------------------------------------------    #    
+SystType = "central" 
+UncType = ""
+if args.bTagSyst:
+    UncType = "btagUnc"
+    SystType = args.bTagSyst # string for btag SF evaluator --> "central", "up", or "down"
+if args.tTagSyst:
+    UncType = "ttagUnc"
+    SystType = args.tTagSyst # string for ttag SF correction --> "central", "up", or "down"
+
+
 
 from TTbarResProcessor import TTbarResProcessor
 
 if not Testing:
-    from Filesets import filesets, filesets_forweights
+    filesets_to_run = {}
+    from Filesets import filesets # Filesets.py reads in .root file address locations and stores all in dictionary called 'filesets'
+    for a in args.dataset: # for any dataset included as user argument...
+        filesets_to_run[a] = filesets[a] # include that dataset read in from Filesets module
+    
 else:
     TestRootFiles = [#"TTbarAllHadUproot/SMttbar_nEvents10.root",
                      #"TTbarAllHadUproot/SMttbar_nEvents10000.root",
@@ -47,8 +146,7 @@ else:
     
 # print(filesets)
 
-
-Chunk = [10, 1] # [chunksize, maxchunks]
+Chunk = [args.chunksize, args.chunks] # [chunksize, maxchunks]
 
 # class TextFileReaderPlugin(SchedulerPlugin):
 #     def __init__(self, filename):
@@ -57,22 +155,22 @@ Chunk = [10, 1] # [chunksize, maxchunks]
 # plugin = TextFileReaderPlugin('TTbarAllHadUproot/QCD_UL16_APVv2.txt') 
 
 maindir = 'TTbarAllHadUproot/'
-textfiles = [
-    maindir+'QCD_UL16_APVv2.txt',
-    maindir+'TTJets_BiasedSamples.txt',
-    maindir+'TTJets_Mtt-1000toInf_UL16.txt',
-    maindir+'TTJets_Mtt-700to1000_UL16.txt',
-    maindir+'ZprimeDMToTTbar_UL16.txt',
-    maindir+'RSGluonToTT.txt',
-    maindir+'JetHT_Data.txt'
-]
+# textfiles = [
+#     maindir+'QCD_UL16_APVv2.txt',
+#     maindir+'TTJets_BiasedSamples.txt',
+#     maindir+'TTJets_Mtt-1000toInf_UL16.txt',
+#     maindir+'TTJets_Mtt-700to1000_UL16.txt',
+#     maindir+'ZprimeDMToTTbar_UL16.txt',
+#     maindir+'RSGluonToTT.txt',
+#     maindir+'JetHT_Data.txt'
+# ]
 
 if UsingDaskExecutor == True:
     if __name__ == "__main__":
         tic = time.time()
         cluster = LPCCondorCluster(
             ship_env = True,
-            transfer_input_files = textfiles
+#             transfer_input_files = textfiles
         )
         # minimum > 0: https://github.com/CoffeaTeam/coffea/issues/465
         cluster.adapt(minimum=1, maximum=10)
@@ -92,7 +190,11 @@ outputs_unweighted = {}
 seed = 1234577890
 prng = RandomState(seed)
 
-for name,files in filesets.items(): 
+print('Filesets to run should only be the datasets specified by the user:\n')
+print(filesets_to_run)
+print()
+
+for name,files in filesets_to_run.items(): 
     if not LoadingUnweightedFiles:
         print('Processing', name, '...')
         if not RunAllRootFiles:
@@ -104,8 +206,6 @@ for name,files in filesets.items():
                                                                                        ModMass=False, 
                                                                                        RandomDebugMode=False,
                                                                                        CalcEff_MC=True,
-                                                                                       ApplySF=False,
-                                                                                       UseEfficiencies=False,
                                                                                        prng=prng),
                                                   executor=processor.futures_executor,
                                                   executor_args={
@@ -123,8 +223,6 @@ for name,files in filesets.items():
                                                                                        ModMass=False, 
                                                                                        RandomDebugMode=False,
                                                                                        CalcEff_MC=True,
-                                                                                       ApplySF=False,
-                                                                                       UseEfficiencies=False,
                                                                                        prng=prng),
                                                   executor=processor.dask_executor,
                                                   executor_args={
@@ -140,8 +238,7 @@ for name,files in filesets.items():
             if SaveFirstRun:
                 util.save(output, 'TTbarAllHadUproot/CoffeaOutputs/UnweightedOutputs/TTbarResCoffea_' 
                           + name 
-                          + '_unweighted_output'  
-#                           + chosen_exec 
+                          + '_'   
                           + '.coffea')
             
             
@@ -154,8 +251,6 @@ for name,files in filesets.items():
                                                                                        ModMass=False, 
                                                                                        RandomDebugMode=False,
                                                                                        CalcEff_MC=True,
-                                                                                       ApplySF=False,
-                                                                                       UseEfficiencies=False,
                                                                                        prng=prng),
                                                   executor=processor.futures_executor,
                                                   executor_args={
@@ -173,8 +268,6 @@ for name,files in filesets.items():
                                                                                        ModMass=False, 
                                                                                        RandomDebugMode=False,
                                                                                        CalcEff_MC=True,
-                                                                                       ApplySF=False,
-                                                                                       UseEfficiencies=False,
                                                                                        prng=prng),
                                                   executor=processor.dask_executor,
                                                   executor_args={
@@ -189,8 +282,7 @@ for name,files in filesets.items():
             if SaveFirstRun:
                 util.save(output, 'TTbarAllHadUproot/CoffeaOutputs/UnweightedOutputs/TTbarResCoffea_' 
                           + name 
-                          + '_unweighted_output' 
-#                           + chosen_exec 
+                          + '_'  
                           + '.coffea')
             
 
@@ -218,7 +310,9 @@ import TTbarResLookUpTables
 
 # Next, import that multi-dictionary `luts`, as it is needed for the processor to create output files.  These new output files will have the necessary datasets weighted by their corresponding mistag rate
 
-from TTbarResLookUpTables import luts
+from TTbarResLookUpTables import CreateLUTS
+
+mistag_luts = CreateLUTS(filesets_to_run, outputs_unweighted, args.loadMistag, args.loadTTbar)
 
 #from Filesets import filesets_forweights
 
@@ -233,23 +327,9 @@ outputs_weighted = {}
 seed = 1234577890
 prng = RandomState(seed)
 
-#UsingDaskExecutor = False
-
-# if UsingDaskExecutor == True:
-#     if __name__ == "__main__":
-#         tic = time.time()
-#         cluster = LPCCondorCluster()
-#         # minimum > 0: https://github.com/CoffeaTeam/coffea/issues/465
-#         cluster.adapt(minimum=1, maximum=10)
-#         client = Client(cluster)
-#         client.restart()
-#         client.upload_file('TTbarAllHadUproot/TTbarResProcessor.py')
-#         client.upload_file('TTbarAllHadUproot/TTbarResLookUpTables.py')
-#         client.upload_file('TTbarAllHadUproot/Filesets.py')
-
 outputs_weighted = {}
 
-for name,files in filesets_forweights.items(): 
+for name,files in filesets_to_run.items(): 
     if not OnlyCreateLookupTables:
         print('Processing', name)
         if not RunAllRootFiles:
@@ -258,13 +338,12 @@ for name,files in filesets_forweights.items():
                 output = processor.run_uproot_job({name:files},
                                                   treename='Events',
                                                   processor_instance=TTbarResProcessor(UseLookUpTables=True,
-                                                                                       lu=luts,
+                                                                                       lu=mistag_luts,
                                                                                        ModMass=True, 
                                                                                        RandomDebugMode=False,
-                                                                                       CalcEff_MC=False,
-                                                                                       ApplySF=False,
-                                                                                       sysType=systemType,
-                                                                                       UseEfficiencies=False,
+                                                                                       ApplybtagSF=False,
+                                                                                       sysType=SystType,
+                                                                                       UseEfficiencies=True,
                                                                                        prng=prng),
                                                   #executor=processor.iterative_executor,
                                                   executor=processor.futures_executor,
@@ -279,13 +358,12 @@ for name,files in filesets_forweights.items():
                 output = processor.run_uproot_job({name:files},
                                                   treename='Events',
                                                   processor_instance=TTbarResProcessor(UseLookUpTables=True,
-                                                                                       lu=luts,
+                                                                                       lu=mistag_luts,
                                                                                        ModMass=True, 
                                                                                        RandomDebugMode=False,
-                                                                                       CalcEff_MC=False,
-                                                                                       ApplySF=True,
-                                                                                       sysType=systemType,
-                                                                                       UseEfficiencies=False,
+                                                                                       ApplybtagSF=True,
+                                                                                       sysType=SystType,
+                                                                                       UseEfficiencies=True,
                                                                                        prng=prng),
                                                   executor=processor.dask_executor,
                                                   executor_args={
@@ -293,17 +371,16 @@ for name,files in filesets_forweights.items():
                                                       'skipbadfiles':False,
                                                       'schema': BaseSchema},
                                                   chunksize=Chunk[0], maxchunks=Chunk[1])
-#                 client.restart()
+                client.restart()
             elapsed = time.time() - tstart
             outputs_weighted[name] = output
             print(output)
             if SaveSecondRun:
                 util.save(output, 'TTbarAllHadUproot/CoffeaOutputs/WeightedModMassOutputs/TTbarResCoffea_' 
                           + name 
-                          + '_weighted_output'
-                          + '_BTagSysType_' 
-                          + systemType
-#                           + chosen_exec
+                          + '_weighted_'
+                          + UncType + '_' 
+                          + SystType
                           + '.coffea')
             
             
@@ -313,12 +390,11 @@ for name,files in filesets_forweights.items():
                 output = processor.run_uproot_job({name:files},
                                                   treename='Events',
                                                   processor_instance=TTbarResProcessor(UseLookUpTables=True,
-                                                                                       lu=luts,
+                                                                                       lu=mistag_luts,
                                                                                        ModMass=True, 
                                                                                        RandomDebugMode=False,
-                                                                                       CalcEff_MC=False,
-                                                                                       ApplySF=True,
-                                                                                       sysType=systemType,
+                                                                                       ApplybtagSF=True,
+                                                                                       sysType=SystType,
                                                                                        UseEfficiencies=False,
                                                                                        prng=prng),
                                                   #executor=processor.iterative_executor,
@@ -331,35 +407,31 @@ for name,files in filesets_forweights.items():
             else:
                 chosen_exec = 'dask'
                 client.wait_for_workers(1)
-#                 client.register_worker_plugin(plugin)
-#                 scheduler.add_client(client)
                 output = processor.run_uproot_job({name:files},
                                                   treename='Events',
                                                   processor_instance=TTbarResProcessor(UseLookUpTables=True,
-                                                                                       lu=luts,
+                                                                                       lu=mistag_luts,
                                                                                        ModMass=True, 
                                                                                        RandomDebugMode=False,
-                                                                                       CalcEff_MC=False,
-                                                                                       ApplySF=True,
-                                                                                       sysType=systemType,
-                                                                                       UseEfficiencies=False,
+                                                                                       ApplybtagSF=True,
+                                                                                       sysType=SystType,
+                                                                                       UseEfficiencies=True,
                                                                                        prng=prng),
                                                   executor=processor.dask_executor,
                                                   executor_args={
                                                       'client': client,
                                                       'skipbadfiles':False,
                                                       'schema': BaseSchema})
-#                 client.restart()
+                client.restart()
             elapsed = time.time() - tstart
             outputs_weighted[name] = output
             print(output)
             if SaveSecondRun:
                 util.save(output, 'TTbarAllHadUproot/CoffeaOutputs/WeightedModMassOutputs/TTbarResCoffea_' 
                           + name 
-                          + '_weighted_output'
-                          + '_BTagSysType_' 
-                          + systemType
-#                           + chosen_exec
+                          + '_weighted_'
+                          + UncType + '_' 
+                          + SystType
                           + '.coffea')
     else:
         continue
