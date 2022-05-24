@@ -47,7 +47,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         self.tau32Cut = tau32Cut
         self.ak8PtMin = ak8PtMin
         self.bdisc = bdisc
-        self.year=year
+        self.year = year
         self.UseLookUpTables = UseLookUpTables
         self.ModMass = ModMass
         self.RandomDebugMode = RandomDebugMode
@@ -1833,8 +1833,8 @@ class TTbarResProcessor(processor.ProcessorABC):
         jetdy = np.abs(ak.flatten(ttbarcands_s0_rapidity) - ak.flatten(ttbarcands_s1_rapidity))
 
         # ---- Variables for Deep Tagger Analysis ---- #
-        deepTag = ak.flatten(ttbarcands.slot1.deepTag_TvsQCD)
-        deepTagMD = ak.flatten(ttbarcands.slot1.deepTagMD_TvsQCD)
+#         deepTag = ak.flatten(ttbarcands.slot1.deepTag_TvsQCD)
+#         deepTagMD = ak.flatten(ttbarcands.slot1.deepTagMD_TvsQCD)
         
         # ---- Weights ---- #
         weights = evtweights
@@ -1863,17 +1863,16 @@ class TTbarResProcessor(processor.ProcessorABC):
             ### ------------------------------------ Mistag Scaling ------------------------------------ ###
             ###------------------------------------------------------------------------------------------###
             if self.UseLookUpTables == True:
-                # ---- Weight ttbar M.C. and data by mistag from data (corresponding to its year) ---- #
-                # -- Pick out proper JetHT year mistag for TTbar sim. -- #
+                # ---- Weight dataset by mistag from data (corresponding to its year) ---- #
+                # ---- Pick out proper JetHT year mistag for TTbar sim. ---- #
                 
-                if 'TTbar_' in dataset:
-                    file_df = self.lu['JetHT' + dataset[-4:] + '_Data']['at' + str(ilabel[-5:])] 
-                    
-                elif dataset == 'TTbar':
-                    file_df = self.lu['JetHT']['at' + str(ilabel[-5:])] # All JetHT years mistag for TTbar sim.
-                    
+                if 'UL' in dataset: # this UL string should only appear in MC dataset name when year is either 2016, 2017 or 2018
+                    file_df = self.lu['JetHT' + str(self.year) + '_Data']['at' + str(ilabel[-5:])] # Only the corresponding JetHT year mistag rate
+                elif self.year == 0: # all years; not just 2016, 17 or 18 alone
+                    file_df = self.lu['JetHT_Data']['at' + str(ilabel[-5:])] # All JetHT years mistag rate
                 else:
-                    file_df = self.lu[dataset]['at' + str(ilabel[-5:])] # get mistag (lookup) filename for 'at' only
+                    print('Something is wrong...\n\nNecessary JetHT LUT(s) not found')
+                    quit()
                 
                 bin_widths = file_df['p'].values # collect bins as written in .csv file
                 mtr = file_df['M(p)'].values # collect mistag rate as function of p as written in file

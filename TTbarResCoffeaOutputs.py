@@ -41,35 +41,34 @@ All objects for each dataset ran can be saved as its own .coffea output file.
                                 Available List of Dataset Strings:
                                 Key:
                                 -------------------------------------------------------------------------------
-                                <sim.year> = 16, 17, or 18
                                 <x> = integer from [1, 5]
                                 <y> = integer either 0 or 5 
                                 <x> = <y> = 5 is not an available string to be included in dataset string names
-                                <year> = 2016, 2017, or 2018
                                 -------------------------------------------------------------------------------
-                                UL<sim.year>_QCD
-                                UL<sim.year>_DM<x><y>00
-                                UL<sim.year>_RSGluon<x><y>00
-                                UL<sim.year>_TTbar
-                                JetHT<year>_Data
+                                QCD
+                                DM<x><y>00
+                                RSGluon<x><y>00
+                                TTbar
                                 JetHT
-                                NOTE** UL17 and UL18 TBA''')
+                                NOTE** UL17 and UL18 samples TBA''')
 # ---- Necessary arguments ---- #
-Parser.add_argument('--dataset', type=str, required=True, nargs='+', help='List of datasets to be ran/loaded')
+Parser.add_argument('-d', '--dataset', type=str, required=True, nargs='+', help='List of datasets to be ran/loaded')
+Parser.add_argument('-a', '--APV', type=str, required=True, choices=['yes', 'no'], help='Do datasets have APV: True or False')
+Parser.add_argument('-y', '--year', type=int, required=True, choices=[2016, 2017, 2018, 0], help='Year(s) of data/MC of the datasets you want to run uproot with.  Choose 0 for all years simultaneously.')
 
 # ---- Other arguments ---- #
-Parser.add_argument('--testing', type=bool, default=False, help='Only run a select few root files defined in the code')
+Parser.add_argument('--testing', type=bool, default=False, help='Only run a select few root files defined in the code: True or False')
 Parser.add_argument('--uproot', type=int, choices=[1, 2], help='1st run or 2nd run of uproot job.  Enter either 1 or 2 accordingly.  If not specified, both the 1st and 2nd job will be run one after the other.')
 Parser.add_argument('--chunks', type=int, help='Number of chunks of data to run for given dataset(s)')
 Parser.add_argument('--chunksize', type=int, help='Size of each chunk to run for given dataset(s)')
-Parser.add_argument('--save', type=bool, default=False, help='Choose to save the uproot job as a coffea output for later analysis')
-Parser.add_argument('--loadMistag', type=bool, default=False, help='Load mistag rate Look Up Tables instead of recreating them after 1st uproot job.')
-Parser.add_argument('--loadTTbar', type=bool, default=False, help='Load 1st uproot run ttbar coffea file while running 1st JetHT uproot job.  This ensures that ttbar contamination can be removed from JetHT mistag rate without needing to run the 1st uproot ttbar MC job a second time.  Note that you must already have a 1st run ttbar coffea file to use this option.')
-Parser.add_argument('--dask', type=bool, default=False, help='Try the dask executor (experimental) for some fast processing!')
+Parser.add_argument('--save', type=bool, default=False, help='Choose to save the uproot job as a coffea output for later analysis: True or False')
+Parser.add_argument('--loadMistag', type=bool, default=False, help='Load mistag rate Look Up Tables instead of recreating them after 1st uproot job: True or False')
+Parser.add_argument('--loadTTbar', type=bool, default=False, help='Load 1st uproot run ttbar coffea file while running 1st JetHT uproot job.  This ensures that ttbar contamination can be removed from JetHT mistag rate without needing to run the 1st uproot ttbar MC job a second time.  Note that you must already have a 1st run ttbar coffea file to use this option: True or False')
+Parser.add_argument('--dask', type=bool, default=False, help='Try the dask executor (experimental) for some fast processing!: True or False')
 
 UncertaintyGroup = Parser.add_mutually_exclusive_group()
-UncertaintyGroup.add_argument('-b', '--bTagSyst', type=str, choices=['central', 'up', 'down'], help='Either \'central\', \'up\', \'down\'')
-UncertaintyGroup.add_argument('-t', '--tTagSyst', type=str, choices=['central', 'up', 'down'], help='Either \'central\', \'up\', \'down\'')
+UncertaintyGroup.add_argument('--bTagSyst', type=str, choices=['central', 'up', 'down'], help='Either \'central\', \'up\', \'down\'')
+UncertaintyGroup.add_argument('--tTagSyst', type=str, choices=['central', 'up', 'down'], help='Either \'central\', \'up\', \'down\'')
 UncertaintyGroup.add_argument('--jec', type=str, choices=['central', 'up', 'down'], help='Either \'central\', \'up\', \'down\'')
 UncertaintyGroup.add_argument('--jer', type=str, choices=['central', 'up', 'down'], help='Either \'central\', \'up\', \'down\'')
 UncertaintyGroup.add_argument('--pileup', type=str, choices=['central', 'up', 'down'], help='Either \'central\', \'up\', \'down\'')
@@ -79,7 +78,10 @@ args = Parser.parse_args()
 if (args.chunks and not args.chunksize) or (args.chunksize and not args.chunks):
     Parser.error('If either chunks or chunksize is specified, please specify both to run this program.')
     quit()
-
+if args.year != 2016: # This will be removed once other years are ready
+    Parser.error('Currently, 2017 and 2018 datasets are not ready for use.  Please stick to 2016 for now.  Thanks!')
+    quit()
+    
 #    -------------------------------------------------------
 #      OOO   PPPPPP  TTTTTTT IIIIIII   OOO   N     N   SSSSS     
 #     O   O  P     P    T       I     O   O  NN    N  S          
@@ -89,7 +91,13 @@ if (args.chunks and not args.chunksize) or (args.chunksize and not args.chunks):
 #     O   O  P          T       I     O   O  N    NN      S      
 #      OOO   P          T    IIIIIII   OOO   N     N SSSSS   
 #    -------------------------------------------------------
-    
+
+VFP = ''
+if args.APV == 'yes':
+    VFP = 'preVFP'
+else:
+    VFP = 'postVFP'
+#    -------------------------------------------------------    #
 Testing = args.testing
 #    -------------------------------------------------------    #
 LoadingUnweightedFiles = False 
@@ -123,15 +131,18 @@ if args.tTagSyst:
     UncType = "ttagUnc"
     SystType = args.tTagSyst # string for ttag SF correction --> "central", "up", or "down"
 
-
-
 from TTbarResProcessor import TTbarResProcessor
 
 if not Testing:
     filesets_to_run = {}
     from Filesets import filesets # Filesets.py reads in .root file address locations and stores all in dictionary called 'filesets'
     for a in args.dataset: # for any dataset included as user argument...
-        filesets_to_run[a] = filesets[a] # include that dataset read in from Filesets module
+        if ('JetHT' in a) and (args.year != 0): 
+            filesets_to_run['JetHT'+str(args.year)+'_Data'] = filesets['JetHT'+str(args.year)+'_Data'] # include JetHT dataset read in from Filesets module
+        elif args.year != 0:
+            filesets_to_run['UL'+str(args.year-2000)+VFP+'_'+a] = filesets['UL'+str(args.year-2000)+VFP+'_'+a] # include MC dataset read in from Filesets module
+        else: # all years...
+            filesets_to_run[a] = filesets[a]
     
 else:
     TestRootFiles = [#"TTbarAllHadUproot/SMttbar_nEvents10.root",
@@ -190,9 +201,9 @@ outputs_unweighted = {}
 seed = 1234577890
 prng = RandomState(seed)
 
-print('Filesets to run should only be the datasets specified by the user:\n')
-print(filesets_to_run)
-print()
+# print('Filesets to run should only be the datasets specified by the user:\n')
+# print(filesets_to_run)
+# print()
 
 for name,files in filesets_to_run.items(): 
     if not LoadingUnweightedFiles:
@@ -206,6 +217,7 @@ for name,files in filesets_to_run.items():
                                                                                        ModMass=False, 
                                                                                        RandomDebugMode=False,
                                                                                        CalcEff_MC=True,
+                                                                                       year=args.year,
                                                                                        prng=prng),
                                                   executor=processor.futures_executor,
                                                   executor_args={
@@ -223,6 +235,7 @@ for name,files in filesets_to_run.items():
                                                                                        ModMass=False, 
                                                                                        RandomDebugMode=False,
                                                                                        CalcEff_MC=True,
+                                                                                       year=args.year,
                                                                                        prng=prng),
                                                   executor=processor.dask_executor,
                                                   executor_args={
@@ -251,6 +264,7 @@ for name,files in filesets_to_run.items():
                                                                                        ModMass=False, 
                                                                                        RandomDebugMode=False,
                                                                                        CalcEff_MC=True,
+                                                                                       year=args.year,
                                                                                        prng=prng),
                                                   executor=processor.futures_executor,
                                                   executor_args={
@@ -268,6 +282,7 @@ for name,files in filesets_to_run.items():
                                                                                        ModMass=False, 
                                                                                        RandomDebugMode=False,
                                                                                        CalcEff_MC=True,
+                                                                                       year=args.year,
                                                                                        prng=prng),
                                                   executor=processor.dask_executor,
                                                   executor_args={
@@ -304,19 +319,12 @@ for name,output in outputs_unweighted.items():
     for i,j in output['cutflow'].items():        
         print( '%20s : %12d' % (i,j) )
 
-# First, run the `TTbarResLookUpTables` module by simply importing it.  If it works, it will print out varies pandas dataframes with information about the mistag rates and finally print the `luts` multi-dictionary
 
 import TTbarResLookUpTables
 
-# Next, import that multi-dictionary `luts`, as it is needed for the processor to create output files.  These new output files will have the necessary datasets weighted by their corresponding mistag rate
-
 from TTbarResLookUpTables import CreateLUTS
 
-mistag_luts = CreateLUTS(filesets_to_run, outputs_unweighted, args.loadMistag, args.loadTTbar)
-
-#from Filesets import filesets_forweights
-
-# Ensure that the necessary files have been included in the `TTbarResLookUpTables` process before running the next processor, as the mistag procedure is found within that module.  For details about the categories used to write the mistag procedure, refer to the `TTbarResProcessor` module.
+mistag_luts = CreateLUTS(filesets_to_run, outputs_unweighted, args.year, VFP, args.loadMistag, args.loadTTbar)
 
 """ Runs Processor, Weights Datasets with Corresponding Mistag Weight, Implements Mass Modification Procedure """
 
@@ -344,6 +352,7 @@ for name,files in filesets_to_run.items():
                                                                                        ApplybtagSF=False,
                                                                                        sysType=SystType,
                                                                                        UseEfficiencies=True,
+                                                                                       year=args.year,
                                                                                        prng=prng),
                                                   #executor=processor.iterative_executor,
                                                   executor=processor.futures_executor,
@@ -364,6 +373,7 @@ for name,files in filesets_to_run.items():
                                                                                        ApplybtagSF=True,
                                                                                        sysType=SystType,
                                                                                        UseEfficiencies=True,
+                                                                                       year=args.year,
                                                                                        prng=prng),
                                                   executor=processor.dask_executor,
                                                   executor_args={
@@ -396,6 +406,7 @@ for name,files in filesets_to_run.items():
                                                                                        ApplybtagSF=True,
                                                                                        sysType=SystType,
                                                                                        UseEfficiencies=False,
+                                                                                       year=args.year,
                                                                                        prng=prng),
                                                   #executor=processor.iterative_executor,
                                                   executor=processor.futures_executor,
@@ -416,6 +427,7 @@ for name,files in filesets_to_run.items():
                                                                                        ApplybtagSF=True,
                                                                                        sysType=SystType,
                                                                                        UseEfficiencies=True,
+                                                                                       year=args.year,
                                                                                        prng=prng),
                                                   executor=processor.dask_executor,
                                                   executor_args={

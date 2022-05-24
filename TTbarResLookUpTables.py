@@ -74,10 +74,12 @@ def multi_dict(K, type): # definition from https://www.geeksforgeeks.org/python-
 luts = {}
 luts = multi_dict(2, str) #Annoying, but necessary definition of the dictionary
 
-def CreateLUTS(Filesets, Outputs, loadAllFiles, loadTTbarFiles):
+def CreateLUTS(Filesets, Outputs, Year, VFP, loadAllFiles, loadTTbarFiles):
     '''
     Filesets --> Dictionary of datasets
     Outputs --> Dictionary of uproot outputs from 1st run
+    Year --> Integer for the year of datasets used in the 1st uproot run
+    VFP --> string; either preVFP or postVFP
     loadAllFiles --> bool; If True, load the mistag rates of the datasets specified.  Else, make new ones from the datasets given
     loadTTbarFiles --> bool; If True, load the mistag rates of TTbar while still being able to create new JetHT mistag rate (for ttbar subtraction)
     '''
@@ -91,12 +93,19 @@ def CreateLUTS(Filesets, Outputs, loadAllFiles, loadTTbarFiles):
 #     G     G E          T        F          I    L       E            S      
 #      GGGGG  EEEEEEE    T        F       IIIIIII LLLLLLL EEEEEEE SSSSS
 #     -------------------------------------------------------------------
+        
     
     outputs_unweighted = {}
+    if Year != 0:
+        filestring_prefix = 'UL' + str(Year-2000) + VFP + '_'
+        filestring_prefix_data = str(Year)
+    else:
+        filestring_prefix = ''
+        filestring_prefix_data = ''
     if loadTTbarFiles:
         # ---- Load in TTbar coffea output if it already exists ---- #
         try:
-            outputs_unweighted['TTbar'] = util.load('TTbarAllHadUproot/CoffeaOutputs/UnweightedOutputs/TTbarResCoffea_TTbar_unweighted_output.coffea')
+            outputs_unweighted[filestring_prefix+'TTbar'] = util.load('TTbarAllHadUproot/CoffeaOutputs/UnweightedOutputs/TTbarResCoffea_TTbar_unweighted_output.coffea')
             print('\n\nExisting TTbar unweighted coffea file is pre-loaded for use in TTbarResLookUpTables module...\n')
         except OSError as e:
             print('\n\nTTbar unweighted coffea file does not already exist.  Must be created first to perform ttbar contamination subtraction in mistag rate\n\n')
@@ -148,7 +157,7 @@ def CreateLUTS(Filesets, Outputs, loadAllFiles, loadTTbarFiles):
             #plt.savefig(SaveDirectory+filename, bbox_inches="tight")
             #print(filename + ' saved')
 
-    outputs_unweighted
+#     outputs_unweighted
     
 #     -------------------------------------------------------    
 #       SSSSS   CCCC     A    L       IIIIIII N     N GGGGGGG     
@@ -165,7 +174,12 @@ def CreateLUTS(Filesets, Outputs, loadAllFiles, loadTTbarFiles):
     Nevts2017 = 410461585. # from dasgoclient
     Nevts2018 = 676328827. # from dasgoclient
     Nevts = Nevts2016 + Nevts2017 + Nevts2018 # for all three years
-
+    
+    Nevts2016_sf = 0.
+    Nevts2017_sf = 0.
+    Nevts2018_sf = 0.
+    Nevts_sf = 0.
+    
     if 'JetHT2016_Data' in Filesets:
         Nevts2016_sf = Nevts2016/Outputs['JetHT2016_Data']['cutflow']['all events']
     if 'JetHT2017_Data' in Filesets:
@@ -183,15 +197,20 @@ def CreateLUTS(Filesets, Outputs, loadAllFiles, loadTTbarFiles):
 
     ttbar_BR = 0.457 # 0.442 from PDG 2018
     ttbar_xs = 1.0   # Monte Carlo already includes xs in event weight!! Otherwise, ttbar_xs = 831.76 * ttbar_BR  pb
+    
+    ttbar2016_sf = 0.
+    ttbar2017_sf = 0.
+    ttbar2018_sf = 0.
+    ttbar_sf = 0.
 
-    if 'UL16_TTbar' in Outputs.items():
-        ttbar2016_sf = ttbar_xs*ttbar_BR*Lum2016/Outputs['UL16_TTbar']['cutflow']['all events']
-    if 'UL17_TTbar' in Outputs.items():
-        ttbar2017_sf = ttbar_xs*ttbar_BR*Lum2017/Outputs['UL17_TTbar']['cutflow']['all events']
-    if 'UL18_TTbar' in Outputs.items():
-        ttbar2018_sf = ttbar_xs*ttbar_BR*Lum2018/Outputs['UL18_TTbar']['cutflow']['all events']
-    if 'TTbar' in Outputs.items():
-        ttbar_sf = ttbar_xs*ttbar_BR*Lum/Outputs['TTbar']['cutflow']['all events']
+    if 'UL16' and 'TTbar' in Outputs.items():
+        ttbar2016_sf = ttbar_xs*ttbar_BR*Lum2016/Outputs['UL16'+VFP+'_TTbar']['cutflow']['all events']
+    if 'UL17' and 'TTbar' in Outputs.items():
+        ttbar2017_sf = ttbar_xs*ttbar_BR*Lum2017/Outputs['UL17'+VFP+'_TTbar']['cutflow']['all events']
+    if 'UL18' and 'TTbar' in Outputs.items():
+        ttbar2018_sf = ttbar_xs*ttbar_BR*Lum2018/Outputs['UL18'+VFP+'_TTbar']['cutflow']['all events']
+    if ('TTbar' in Outputs.items()) and (Year == 0):
+        ttbar_sf = ttbar_xs*ttbar_BR*Lum/Outputs[VFP+'_TTbar']['cutflow']['all events']
 
     qcd_xs = 1370000000.0 #pb From https://cms-gen-dev.cern.ch/xsdb
     #qcd_sf = qcd_xs*Lum/18455107.
@@ -212,116 +231,82 @@ def CreateLUTS(Filesets, Outputs, loadAllFiles, loadTTbarFiles):
         DoesDirectoryExist(SaveDirectory)
 
         # ---- Check if TTbar simulation was used in previous processor ---- #
-        if 'TTbar' in Filesets:
-            for iset in Filesets:
-                #if iset != 'TTbar' or iset != 'QCD': # if JetHT filesets are found...
-                if 'JetHT' in iset:
-                    print('\t\tfileset: ' + iset + 'With Contamination Removed!\n*****************************************************\n')
-                    for icat in list_of_cats:
-                        filename = 'mistag_' + iset + '_' + icat + '.' + 'csv'
-                        title = iset + ' mistag ' + icat
+        for iset in Filesets: 
+#             print(any('TTbar' in i for i in Outputs))
+            if ('JetHT' in iset) and any('TTbar' in i for i in Outputs):
+                print('\t\tfileset: ' + iset + 'With Contamination Removed!\n*****************************************************\n')
+                for icat in list_of_cats:
+                    filename = 'mistag_' + iset + '_ttContaminationRemoved_' + icat + '.' + 'csv'
+                    title = iset + ' mistag ' + icat
 
-                        # ---- Info from TTbar ---- #
-                        Numerator_tt = Outputs['UL16_TTbar']['numerator'].integrate('anacat',icat).integrate('dataset','UL16_TTbar')
-                        Denominator_tt = Outputs['UL16_TTbar']['denominator'].integrate('anacat',icat).integrate('dataset','UL16_TTbar')
-                        N_vals_tt = Numerator_tt.values()[()] 
-                        D_vals_tt = Denominator_tt.values()[()] 
+                    # ---- Info from TTbar ---- #
+                    Numerator_tt = Outputs[filestring_prefix+'TTbar']['numerator'].integrate('anacat',icat).integrate('dataset',filestring_prefix+'TTbar')
+                    Denominator_tt = Outputs[filestring_prefix+'TTbar']['denominator'].integrate('anacat',icat).integrate('dataset',filestring_prefix+'TTbar')
+                    N_vals_tt = Numerator_tt.values()[()] 
+                    D_vals_tt = Denominator_tt.values()[()] 
 
-                        # ---- Info from JetHT datasets ---- #
-                        Numerator = Outputs[iset]['numerator'].integrate('anacat',icat).integrate('dataset',iset)
-                        Denominator = Outputs[iset]['denominator'].integrate('anacat',icat).integrate('dataset',iset)
-                        N_vals = Numerator.values()[()]
-                        D_vals = Denominator.values()[()]
+                    # ---- Info from JetHT datasets ---- #
+                    Numerator = Outputs[iset]['numerator'].integrate('anacat',icat).integrate('dataset',iset)
+                    Denominator = Outputs[iset]['denominator'].integrate('anacat',icat).integrate('dataset',iset)
+                    N_vals = Numerator.values()[()]
+                    D_vals = Denominator.values()[()]
 
-                        # ---- Properly scale chunks of data and ttbar MC according to year of dataset used---- #
-                        if '2016' in iset:
-                            N_vals *= Nevts2016_sf 
-                            D_vals *= Nevts2016_sf
-                            N_vals_tt *= ttbar2016_sf
-                            D_vals_tt *= ttbar2016_sf
-                        elif '2017' in iset:
-                            N_vals *= Nevts2017_sf 
-                            D_vals *= Nevts2017_sf
-                            N_vals_tt *= ttbar2017_sf
-                            D_vals_tt *= ttbar2017_sf
-                        elif '2018' in iset:
-                            N_vals *= Nevts2018_sf 
-                            D_vals *= Nevts2018_sf
-                            N_vals_tt *= ttbar2018_sf
-                            D_vals_tt *= ttbar2018_sf
-                        else: # all years
-                            N_vals *= Nevts_sf 
-                            D_vals *= Nevts_sf
-                            N_vals_tt *= ttbar_sf
-                            D_vals_tt *= ttbar_sf
+                    # ---- Properly scale chunks of data and ttbar MC according to year of dataset used---- #
+                    if '2016' in iset:
+                        N_vals *= Nevts2016_sf 
+                        D_vals *= Nevts2016_sf
+                        N_vals_tt *= ttbar2016_sf
+                        D_vals_tt *= ttbar2016_sf
+                    elif '2017' in iset:
+                        N_vals *= Nevts2017_sf 
+                        D_vals *= Nevts2017_sf
+                        N_vals_tt *= ttbar2017_sf
+                        D_vals_tt *= ttbar2017_sf
+                    elif '2018' in iset:
+                        N_vals *= Nevts2018_sf 
+                        D_vals *= Nevts2018_sf
+                        N_vals_tt *= ttbar2018_sf
+                        D_vals_tt *= ttbar2018_sf
+                    else: # all years
+                        N_vals *= Nevts_sf 
+                        D_vals *= Nevts_sf
+                        N_vals_tt *= ttbar_sf
+                        D_vals_tt *= ttbar_sf
 
-                        # ---- Subtract ttbar MC probe momenta from datasets' ---- #
-                        N_vals_diff = np.abs(N_vals-N_vals_tt)
-                        D_vals_diff = np.abs(D_vals-D_vals_tt)
+                    # ---- Subtract ttbar MC probe momenta from datasets' ---- #
+                    N_vals_diff = np.abs(N_vals-N_vals_tt)
+                    D_vals_diff = np.abs(D_vals-D_vals_tt)
 
-                        print(N_vals_diff)
-                        print(D_vals_diff)
-                        print()
+                    print(N_vals_diff)
+                    print(D_vals_diff)
+                    print()
 
-                        # ---- Define Mistag values ---- #
-                        mistag_vals = np.where(D_vals_diff > 0, N_vals_diff/D_vals_diff, 0)
+                    # ---- Define Mistag values ---- #
+                    mistag_vals = np.where(D_vals_diff > 0, N_vals_diff/D_vals_diff, 0)
 
-                        # ---- Define Momentum values ---- #
-                        p_vals = []
-                        for iden in Numerator.identifiers('jetp'):
-                            p_vals.append(iden)
+                    # ---- Define Momentum values ---- #
+                    p_vals = []
+                    for iden in Numerator.identifiers('jetp'):
+                        p_vals.append(iden)
 
-                        # ---- Display and Save Dataframe, df, as Look-up Table ---- #
-                        print('fileset:  ' + iset)
-                        print('category: ' + icat)
-                        print('________________________________________________\n')
+                    # ---- Display and Save Dataframe, df, as Look-up Table ---- #
+                    print('fileset:  ' + iset + '_ttContaminationRemoved')
+                    print('category: ' + icat)
+                    print('________________________________________________\n')
 
-                        d = {'p': p_vals, 'M(p)': mistag_vals} # 'data'
+                    d = {'p': p_vals, 'M(p)': mistag_vals} # 'data'
 
-                        print("d vals = ", d)
-                        print()
-                        df = pd.DataFrame(data=d)
-                        luts[iset][icat] = df
+                    print("d vals = ", d)
+                    print()
+                    df = pd.DataFrame(data=d)
+                    luts[iset][icat] = df
 
-                        with pd.option_context('display.max_rows', None, 'display.max_columns', None): 
-                            print(df)
-                        print('\n')
+                    with pd.option_context('display.max_rows', None, 'display.max_columns', None): 
+                        print(df)
+                    print('\n')
 
-                        df.to_csv(SaveDirectory+filename) # use later to collect bins and weights for re-scaling
-                else: # If iset is not JetHT...
-                    print('\t\tfileset: ' + iset + '\n*****************************************************\n')
-                    for icat in list_of_cats:
-                        filename = 'mistag_' + iset + '_' + icat + '.' + 'csv'
-                        Numerator = Outputs[iset]['numerator'].integrate('anacat',icat).integrate('dataset',iset)
-                        Denominator = Outputs[iset]['denominator'].integrate('anacat',icat).integrate('dataset',iset)
-                        N_vals = Numerator.values()[()]
-                        D_vals = Denominator.values()[()]
-                        print(N_vals)
-                        print(D_vals)
-                        print()
-                        mistag_vals = np.where(D_vals > 0, N_vals/D_vals, 0)
-
-                        p_vals = [] # Momentum values
-                        for iden in Numerator.identifiers('jetp'):
-                            p_vals.append(iden)
-                        print('fileset:  ' + iset)
-                        print('category: ' + icat)
-                        print('________________________________________________\n')
-                        d = {'p': p_vals, 'M(p)': mistag_vals}
-
-                        print("d vals = ", d)
-                        print()
-                        df = pd.DataFrame(data=d)
-                        luts[iset][icat] = df
-
-                        with pd.option_context('display.max_rows', None, 'display.max_columns', None): 
-                            print(df)
-                        print('\n')
-
-                        df.to_csv(SaveDirectory+filename) # use later to collect bins and weights for re-scaling
-
-        else: # If iset did not run over 'TTbar' Simulation...
-            for iset in Filesets:
+                    df.to_csv(SaveDirectory+filename) # use later to collect bins and weights for re-scaling
+            else: # If the contamination cannot be removed...
                 print('\t\tfileset: ' + iset + '\n*****************************************************\n')
                 for icat in list_of_cats:
                     filename = 'mistag_' + iset + '_' + icat + '.' + 'csv'
@@ -332,13 +317,11 @@ def CreateLUTS(Filesets, Outputs, loadAllFiles, loadTTbarFiles):
                     print(N_vals)
                     print(D_vals)
                     print()
-
                     mistag_vals = np.where(D_vals > 0, N_vals/D_vals, 0)
 
-                    p_vals = []
+                    p_vals = [] # Momentum values
                     for iden in Numerator.identifiers('jetp'):
                         p_vals.append(iden)
-
                     print('fileset:  ' + iset)
                     print('category: ' + icat)
                     print('________________________________________________\n')
@@ -357,6 +340,12 @@ def CreateLUTS(Filesets, Outputs, loadAllFiles, loadTTbarFiles):
 
     else : # If runLUTS = False, read in [previously made] Look Up Table csv's
         print("\n\nLoading Previously Made Look Up Tables for Mistag Rate\n\nDoes not Correspond to Test Files...\n\n")
+        if path.exists('TTbarAllHadUproot/LookupTables/JetHT'+filestring_prefix_data+'_Data_ttContaminationRemoved_at*'):
+            datafile = 'JetHT' + filestring_prefix_data + '_Data_ttContaminationRemoved'
+            for icat in list_of_cats:
+                title = datafile + ' mistag ' + icat
+                filename = 'mistag_' + datafile + '_' + icat + '.' + 'csv'
+                luts[iset][icat] = pd.read_csv('TTbarAllHadUproot/LookupTables/'+filename)
         for iset in Filesets:
             print('\t\tfileset: ' + iset + '\n*****************************************************\n')
             for icat in list_of_cats:
