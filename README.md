@@ -18,22 +18,92 @@ bash bootstrap.sh
 ```
 
 After the initial setup steps of the coffea-dask environment (stated above) you can enter the singularity shell with the following command (wherever you saved your bootstrap.sh)
-```
-./shell
-```
+
+> ./shell
 
 # How to run
-From your working directory (and one layer outside of this repo), you can run the uproot job that will produce coffea output files by entering this in the terminal: 
-```python TTbarAllHadUproot/TTbarResCoffeaOutputs.py```
+From within this repo, you can run the uproot job that will produce coffea output files.  To see a list of arguments needed to run this program please enter the following in the terminal: 
+
+> python TTbarResCoffeaOutputs.py --help
+
+The output should look something like this:
+```
+usage: TTbarResCoffeaOutputs.py [-h] (-t | -m | -d RUNDATASET [RUNDATASET ...]) -a {yes,no} -y {2016,2017,2018,0}
+                                [--uproot {1,2}] [--chunks CHUNKS] [--chunksize CHUNKSIZE] [--save] [--saveMistag] [--dask]
+                                [--bTagSyst {central,up,down} | --tTagSyst {central,up,down} | --jec {central,up,down} | --jer {cen
+tral,up,down} | --pileup {central,up,down}]
+
+-----------------------------------------------------------------------------
+Run the TTbarAllHadProcessor script.  
+All objects for each dataset ran can be saved as its own .coffea output file.
+-----------------------------------------------------------------------------
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -t, --runtesting      Only run a select few root files defined in the code.
+  -m, --runmistag       Make data mistag rate where ttbar contamination is removed (as well as ttbar mistag rate)
+  -d RUNDATASET [RUNDATASET ...], --rundataset RUNDATASET [RUNDATASET ...]
+                        List of datasets to be ran/loaded
+  -a {yes,no}, --APV {yes,no}
+                        Do datasets have APV?
+  -y {2016,2017,2018,0}, --year {2016,2017,2018,0}
+                        Year(s) of data/MC of the datasets you want to run uproot with. Choose 0 for all years simultaneously.
+  --uproot {1,2}        1st run or 2nd run of uproot job. If not specified, both the 1st and 2nd job will be run one after the
+                        other.
+  --chunks CHUNKS       Number of chunks of data to run for given dataset(s)
+  --chunksize CHUNKSIZE
+                        Size of each chunk to run for given dataset(s)
+  --save                Choose to save the uproot job as a coffea output for later analysis
+  --saveMistag          Save mistag rate calculated from running either --uproot 1 or --mistag
+  --dask                Try the dask executor (experimental) for some fast processing!
+  --bTagSyst {central,up,down}
+                        Choose Unc.
+  --tTagSyst {central,up,down}
+                        Choose Unc.
+  --jec {central,up,down}
+                        Choose Unc.
+  --jer {central,up,down}
+                        Choose Unc.
+  --pileup {central,up,down}
+                        Choose Unc.
+
+                                Available List of Dataset Strings:
+                                Key:
+                                -------------------------------------------------------------------------------
+                                <x> = integer from [1, 5]
+                                <y> = integer either 0 or 5 
+                                <x> = <y> = 5 is not an available string to be included in dataset string names
+                                -------------------------------------------------------------------------------
+                                QCD
+                                DM<x><y>00
+                                RSGluon<x><y>00
+                                TTbar
+                                JetHT
+                                NOTE** UL17 and UL18 samples TBA
+```
 
 # How it works
 The processor is where all of the analysis is defined.  The processor is aptly named `TTbarResProcessor.py`.  
 
-The file `TTbarResCoffeaOutputs.py` runs the file according to the selected options at the beginning of the file.  When this is run, the analysis is performed and the outputs defined in the processor are stored in a `.coffea` file, which can be found in the corresponding directory `CoffeaOutputs` or `CoffeaOutputsForCombine`.  The first directory `CoffeaOutputs` has outputs that were made while doing numerous tests to ensure the processor was giving what is expected.
+The file `TTbarResCoffeaOutputs.py` runs the file according to the selected options at the beginning of the file.  When this is run, the analysis is performed and the outputs defined in the processor can be stored in a `.coffea` file, which can be found in the corresponding directory `CoffeaOutputs` or `CoffeaOutputsForCombine`.  The first directory `CoffeaOutputs` has outputs that were made while doing numerous tests to ensure the processor was giving what is expected.
 
-You can choose the datasets you want for the first and second uproot run by uncommenting the dataset names in the corresponding dictionaries in the file `Filesets.py`.  
-(*NOTE* A better, more elogent way of doing this may be implemented soon.  Stay tuned for this upate)
+You can choose the datasets you want for the first and second uproot run by specifying `--rundataset` or `-d` followed by the names of the datasets you'd like to run.  When running the code with this `-d` option (selecting the datasets you want from the terminal) it is mandatory to give the names of the dataset according to the key listed in the help message's epilogue.  For any run option selected to run the program (`-d`, `-m` or `-t`) you must also specify the year, `---year` or `-y`, and whether or not the datasets have APV or not, `--APV` or `-a`.  All other arguments are optional, but should still be carefully considered depending on what you want to do.
 
-The mistag rates are stored in lookup tables (or LUTs for short).  The file `TTbarResCoffeaOutpts` creates the LUTs after the first run by importing the module `TTbarResLookUpTables.py`.  In this module, you can define whether you want to create new mistag LUTs with the given datasets from `Filesets.py`.  If you choose to create new LUTs (runLUTS == True), you need to also specify whether or not you would like to create new LUTs from the TTbar MC dataset.  For example: if you only run JetHT and create LUTs from this dataset alone, you would have to load a pre-existing TTbar `.coffea` output to gaurantee that the correction for TTbar subtraction is implemented.  If OldTTbar == False in the module, then no TTbar contamination will be corrected for JetHT (if you are also making new JetHT LUTs) and the TTbar MC LUTs will not be created, unless you have included the TTbar datasets to be run in the first uproot job.
+## Example 1:
+Suppose you would like to run the 1.5 TeV Zprime to DM and 2.0 TeV RS Gluon Ultra Legacy 16 files with no APV included.  You just want an idea of the order of magnitude of events that goes into each analysis category.  For this run, let's assume you don't need/want to save this coffea output to either avoid clutter in the directory or overwriting a preexisting coffea output with better stats.  Also, there is no need to apply mistag/mod-mass/systematic corrections to this run, as this is just a run out of curiosity; you only want to see the output of the cutflow onto the terminal.  In this case, you only need to run the first uproot job and you can ignore the second run to save time.
 
-In `TTbarResCoffeaOutputs.py` the processor is ran a second time, where the second run applies the mistag weights stored as LUTs from the first run.  
+For such a task, the code can be ran with the following arguments like this:
+
+> python TTbarResCoffeaOutputs.py -d DM1500 RSGluon2000 -a no -y 2016 --uproot 1 --chunks 10 --chunksize 1000
+
+This runs the first uproot job with the two desired datasets according to the APV status and year (and also mass in this example).  The choice of chunks and chunksize gives roughly 10<sup>1</sup> times 10<sup>3</sup> (10,000) events
+
+## Other Examples:
+***
+TBA soon :)
+***
+
+# Workflow
+***
+Also TBA soon
+***
