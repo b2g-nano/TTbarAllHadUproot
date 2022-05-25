@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+import os
 import copy
 import scipy.stats as ss
 from coffea import hist, processor, nanoevents
@@ -11,6 +12,8 @@ import itertools
 import pandas as pd
 from numpy.random import RandomState
 # from correctionlib.schemav2 import Correction
+
+#os.chdir('../') # Runs the code from within the working directory without manually changing all directory paths!
 
 import awkward as ak
 #from coffea.nanoevents.methods import nanoaod
@@ -36,7 +39,7 @@ manual_subjeteta_bins = [-2.4, -1.2, -0.6, 0., 0.6, 1.2, 2.4] # Used on 3/30/22 
 class TTbarResProcessor(processor.ProcessorABC):
     def __init__(self, prng=RandomState(1234567890), htCut=950., minMSD=105., maxMSD=210.,
                  tau32Cut=0.65, ak8PtMin=400., bdisc=0.8484,
-                 year=2016, UseLookUpTables=False, lu=None, 
+                 year=None, apv='', vfp='', UseLookUpTables=False, lu=None, 
                  ModMass=False, RandomDebugMode=False, CalcEff_MC=True, UseEfficiencies=False, 
                  ApplybtagSF=False, ApplyttagSF=False, ApplyJER=False, ApplyJEC=False, sysType=None):
         
@@ -48,6 +51,8 @@ class TTbarResProcessor(processor.ProcessorABC):
         self.ak8PtMin = ak8PtMin
         self.bdisc = bdisc
         self.year = year
+        self.apv = apv
+        self.vfp = vfp
         self.UseLookUpTables = UseLookUpTables
         self.ModMass = ModMass
         self.RandomDebugMode = RandomDebugMode
@@ -258,55 +263,55 @@ class TTbarResProcessor(processor.ProcessorABC):
 #        T    EEEEEEE SSSSS      T         H     H IIIIIII SSSSS      T    SSSSS 
 #    =============================================================================  
             
-            # ---- 4 Subjet's pt independant of category (testing purposes only) ---- #
-            'subjet01_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
-            'subjet02_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
-            'subjet11_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
-            'subjet12_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+#             # ---- 4 Subjet's pt independant of category (testing purposes only) ---- #
+#             'subjet01_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+#             'subjet02_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+#             'subjet11_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+#             'subjet12_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
             
-            # ---- Distance between subjet and Gen level quark ---- #
-            'subjet01_bquark_distance': hist.Hist("Counts", dataset_axis, distance_axis),
-            'subjet02_bquark_distance': hist.Hist("Counts", dataset_axis, distance_axis),
-            'subjet11_bquark_distance': hist.Hist("Counts", dataset_axis, distance_axis),
-            'subjet12_bquark_distance': hist.Hist("Counts", dataset_axis, distance_axis),
+#             # ---- Distance between subjet and Gen level quark ---- #
+#             'subjet01_bquark_distance': hist.Hist("Counts", dataset_axis, distance_axis),
+#             'subjet02_bquark_distance': hist.Hist("Counts", dataset_axis, distance_axis),
+#             'subjet11_bquark_distance': hist.Hist("Counts", dataset_axis, distance_axis),
+#             'subjet12_bquark_distance': hist.Hist("Counts", dataset_axis, distance_axis),
             
-            'subjet01_cquark_distance': hist.Hist("Counts", dataset_axis, distance_axis),
-            'subjet02_cquark_distance': hist.Hist("Counts", dataset_axis, distance_axis),
-            'subjet11_cquark_distance': hist.Hist("Counts", dataset_axis, distance_axis),
-            'subjet12_cquark_distance': hist.Hist("Counts", dataset_axis, distance_axis),
+#             'subjet01_cquark_distance': hist.Hist("Counts", dataset_axis, distance_axis),
+#             'subjet02_cquark_distance': hist.Hist("Counts", dataset_axis, distance_axis),
+#             'subjet11_cquark_distance': hist.Hist("Counts", dataset_axis, distance_axis),
+#             'subjet12_cquark_distance': hist.Hist("Counts", dataset_axis, distance_axis),
             
-            'subjet01_lightquark_distance': hist.Hist("Counts", dataset_axis, distance_axis),
-            'subjet02_lightquark_distance': hist.Hist("Counts", dataset_axis, distance_axis),
-            'subjet11_lightquark_distance': hist.Hist("Counts", dataset_axis, distance_axis),
-            'subjet12_lightquark_distance': hist.Hist("Counts", dataset_axis, distance_axis),
+#             'subjet01_lightquark_distance': hist.Hist("Counts", dataset_axis, distance_axis),
+#             'subjet02_lightquark_distance': hist.Hist("Counts", dataset_axis, distance_axis),
+#             'subjet11_lightquark_distance': hist.Hist("Counts", dataset_axis, distance_axis),
+#             'subjet12_lightquark_distance': hist.Hist("Counts", dataset_axis, distance_axis),
             
-            # pt of subjet defined with 'hadronFlavour' and subjet defined with nearest flavoured genpart #
-            'subjet01_bflavor_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
-            'subjet01_with_bquark_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
-            'subjet02_bflavor_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
-            'subjet02_with_bquark_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
-            'subjet11_bflavor_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
-            'subjet11_with_bquark_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
-            'subjet12_bflavor_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
-            'subjet12_with_bquark_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+#             # pt of subjet defined with 'hadronFlavour' and subjet defined with nearest flavoured genpart #
+#             'subjet01_bflavor_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+#             'subjet01_with_bquark_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+#             'subjet02_bflavor_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+#             'subjet02_with_bquark_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+#             'subjet11_bflavor_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+#             'subjet11_with_bquark_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+#             'subjet12_bflavor_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+#             'subjet12_with_bquark_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
             
-            'subjet01_cflavor_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
-            'subjet01_with_cquark_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
-            'subjet02_cflavor_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
-            'subjet02_with_cquark_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
-            'subjet11_cflavor_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
-            'subjet11_with_cquark_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
-            'subjet12_cflavor_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
-            'subjet12_with_cquark_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+#             'subjet01_cflavor_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+#             'subjet01_with_cquark_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+#             'subjet02_cflavor_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+#             'subjet02_with_cquark_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+#             'subjet11_cflavor_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+#             'subjet11_with_cquark_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+#             'subjet12_cflavor_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+#             'subjet12_with_cquark_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
             
-            'subjet01_lightflavor_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
-            'subjet01_with_lightquark_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
-            'subjet02_lightflavor_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
-            'subjet02_with_lightquark_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
-            'subjet11_lightflavor_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
-            'subjet11_with_lightquark_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
-            'subjet12_lightflavor_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
-            'subjet12_with_lightquark_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+#             'subjet01_lightflavor_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+#             'subjet01_with_lightquark_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+#             'subjet02_lightflavor_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+#             'subjet02_with_lightquark_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+#             'subjet11_lightflavor_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+#             'subjet11_with_lightquark_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+#             'subjet12_lightflavor_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+#             'subjet12_with_lightquark_pt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
             
             'cutflow': processor.defaultdict_accumulator(int),
             
@@ -331,9 +336,6 @@ class TTbarResProcessor(processor.ProcessorABC):
             arr[...,i] = a
         return arr.reshape(-1, la)
     
-#     def LoadFiles(self, filename_list, index_array):
-#         yield [ pd.read_csv(filename_list[i], usecols=['efficiency']) for i in index_array ]
-    
     def BtagUpdater(self, subjet, Eff_filename_list, ScaleFactorFilename, FittingPoint, OperatingPoint):  
         """
         subjet (Flattened Awkward Array)       ---> One of the Four preselected subjet awkward arrays (e.g. SubJet01)
@@ -348,12 +350,8 @@ class TTbarResProcessor(processor.ProcessorABC):
         
         # ---- Import Flavor Efficiency Tables as Dataframes ---- #
         subjet_flav_index = np.arange(ak.to_numpy(subjet.hadronFlavour).size)
-#         df_list = [ l for l in self.LoadFiles(Eff_filename_list, subjet_flav_index) ]
-#         print("New:\n", df_list, "\n\n")
         df_list = [ pd.read_csv(Eff_filename_list[i]) for i in subjet_flav_index ] # List of efficiency dataframes; imported to extract list of eff_vals
-#         print("Old:\n", Df_list, "\n**********************************************\n")
         eff_vals_list = [ df_list.values for i in subjet_flav_index ] # 40 efficiency values for each file read in; one file per element of subjet array
-#         eff_vals_list = [ vals for vals in df_list ]
         
         # ---- Match subjet pt and eta to appropriate bins ---- #
         pt_BinKeys = np.arange(np.array(manual_subjetpt_bins).size - 1) # the -1 ensures proper size for bin labeling
@@ -365,7 +363,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         pt_indices = np.digitize(pT, pt_Bins, right=True) - 1 # minus one because digitize labels first element as 1 instead of 0
         eta_indices = np.digitize(Eta, eta_Bins, right=True) - 1
         
-        pt_indices = np.where(pt_indices == pt_BinKeys.size, pt_indices-1, pt_indices) # if value is larger than largest bin, bin number will be defaulted to largest 
+        pt_indices = np.where(pt_indices == pt_BinKeys.size, pt_indices-1, pt_indices) # if value is larger than largest bin, bin number will be defaulted to largest bin
         eta_indices = np.where(eta_indices == eta_BinKeys.size, eta_indices-1, eta_indices)
         
         pt_indices = np.where(pt_indices < 0, 0, pt_indices) # if value is less than smallest bin, bin number will be defaulted to smallest bin (zeroth)
@@ -385,7 +383,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         
         """
                                     !! NOTE !!
-                Some efficiency values (eff_val array elements) are zero
+                Some efficiency values (eff_val array elements) may be zero
                 and must be taken into account when dividing by the efficiency
         """
 
@@ -748,7 +746,8 @@ class TTbarResProcessor(processor.ProcessorABC):
 #       T           T    A     A  GGGGG   GGGGG  EEEEEEE R     R
 #    ============================================================
 
-        # ---- CMS Top Tagger Version 2 (SD and Tau32 Cuts) ---- #
+        # ----------- CMS Top Tagger Version 2 (SD and Tau32 Cuts) ----------- #
+        # ---- NOTE: Must Change This to DeepAK8 Top Tag Discriminator Cut ----#
         tau32_s0 = np.where(ttbarcands.slot0.tau2>0,ttbarcands.slot0.tau3/ttbarcands.slot0.tau2, 0 )
         tau32_s1 = np.where(ttbarcands.slot1.tau2>0,ttbarcands.slot1.tau3/ttbarcands.slot1.tau2, 0 )
         taucut_s0 = tau32_s0 < self.tau32Cut
@@ -780,6 +779,7 @@ class TTbarResProcessor(processor.ProcessorABC):
 #    ============================================================
         
         # ---- Pick FatJet that passes btag discriminator cut based on its subjet with the highest btag value ---- #
+        # -------------- NOTE: B-discriminator cut must be changed to match BTV POG Recommendations -------------- #
         btag_s0 = ( np.maximum(SubJet01.btagCSVV2 , SubJet02.btagCSVV2) > self.bdisc )
         btag_s1 = ( np.maximum(SubJet11.btagCSVV2 , SubJet12.btagCSVV2) > self.bdisc )
         
@@ -1313,7 +1313,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                     LeadingSubjet_s1 = np.where(SubJet11.btagCSVV2>SubJet12.btagCSVV2, SubJet11, SubJet12)
 
                     # ---- Define the BSF for each of the two fatjets ---- #
-                    SF_filename = "TTbarAllHadUproot/DeepCSV_106XUL17SF_V2.csv"    
+                    SF_filename = "TTbarAllHadUproot/CorrectionFiles/SFs/bquark/subjet_deepCSV_106XUL16postVFP_v1.csv"    
                     Fitting = "medium"
 
                     btag_sf = BTagScaleFactor(SF_filename, Fitting, )
@@ -1363,7 +1363,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                                 # ---- Import MC 'flavor' efficiencies ---- #
 
                     # -- Scale Factor File -- #
-                    SF_filename = "TTbarAllHadUproot/DeepCSV_106XUL17SF_V2.csv"    
+                    SF_filename = "TTbarAllHadUproot/CorrectionFiles/SFs/bquark/subjet_deepCSV_106XUL16postVFP_v1.csv"    
                     Fitting = "medium"
                     
                     # -- Get Efficiency .csv Files -- #
@@ -1897,7 +1897,8 @@ class TTbarResProcessor(processor.ProcessorABC):
             ### ----------------------------------- Mod-mass Procedure ------------------------------------ ###
             ###---------------------------------------------------------------------------------------------###
             if self.ModMass == True:
-                QCD_unweighted = util.load('TTbarAllHadUproot/CoffeaOutputs/UnweightedOutputs/TTbarResCoffea_QCD_unweighted_output.coffea') 
+                QCD_unweighted = util.load('TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/QCD/'
+                                           +str(self.year)+'/'+self.apv+'/TTbarRes_0l_UL'+str(self.year-2000)+self.vfp+'_QCD.coffea') 
     
                 # ---- Extract event counts from QCD MC hist in signal region ---- #
                 QCD_hist = QCD_unweighted['jetmass'].integrate('anacat', '2t' + str(ilabel[-5:])).integrate('dataset', 'QCD')
@@ -1995,172 +1996,9 @@ class TTbarResProcessor(processor.ProcessorABC):
 #                                             tagger = ak.to_numpy(deepTagMD[icat]),
 #                                             weight = ak.to_numpy(Weights[icat]))
             
-# ************************************************************************************************************ #            
-            
-            
-#             # ---- 1-D B-tagging Efficiencies ---- #
-#             output['b_eff_numerator_pt_s01'].fill(dataset = dataset, anacat = ilabel,
-#                                               subjetpt = ak.to_numpy(Eff_b_Num_pT_s01[icat]),
-#                                               weight = ak.to_numpy(Weights[icat]))
-#             output['b_eff_numerator_pt_s02'].fill(dataset = dataset, anacat = ilabel,
-#                                               subjetpt = ak.to_numpy(Eff_b_Num_pT_s02[icat]),
-#                                               weight = ak.to_numpy(Weights[icat]))
-#             output['b_eff_numerator_pt_s11'].fill(dataset = dataset, anacat = ilabel,
-#                                               subjetpt = ak.to_numpy(Eff_b_Num_pT_s11[icat]),
-#                                               weight = ak.to_numpy(Weights[icat]))
-#             output['b_eff_numerator_pt_s12'].fill(dataset = dataset, anacat = ilabel,
-#                                               subjetpt = ak.to_numpy(Eff_b_Num_pT_s12[icat]),
-#                                               weight = ak.to_numpy(Weights[icat]))
-            
-#             output['b_eff_denominator_pt_s01'].fill(dataset = dataset, anacat = ilabel,
-#                                               subjetpt = ak.to_numpy(Eff_b_Denom_pT_s01[icat]),
-#                                               weight = ak.to_numpy(Weights[icat]))
-#             output['b_eff_denominator_pt_s02'].fill(dataset = dataset, anacat = ilabel,
-#                                               subjetpt = ak.to_numpy(Eff_b_Denom_pT_s02[icat]),
-#                                               weight = ak.to_numpy(Weights[icat]))
-#             output['b_eff_denominator_pt_s11'].fill(dataset = dataset, anacat = ilabel,
-#                                               subjetpt = ak.to_numpy(Eff_b_Denom_pT_s11[icat]),
-#                                               weight = ak.to_numpy(Weights[icat]))
-#             output['b_eff_denominator_pt_s12'].fill(dataset = dataset, anacat = ilabel,
-#                                               subjetpt = ak.to_numpy(Eff_b_Denom_pT_s12[icat]),
-#                                               weight = ak.to_numpy(Weights[icat]))
-            
-#             output['b_eff_numerator_eta_s01'].fill(dataset = dataset, anacat = ilabel,
-#                                               subjeteta = ak.to_numpy(Eff_b_Num_eta_s01[icat]),
-#                                               weight = ak.to_numpy(Weights[icat]))
-#             output['b_eff_numerator_eta_s02'].fill(dataset = dataset, anacat = ilabel,
-#                                               subjeteta = ak.to_numpy(Eff_b_Num_eta_s02[icat]),
-#                                               weight = ak.to_numpy(Weights[icat]))
-#             output['b_eff_numerator_eta_s11'].fill(dataset = dataset, anacat = ilabel,
-#                                               subjeteta = ak.to_numpy(Eff_b_Num_eta_s11[icat]),
-#                                               weight = ak.to_numpy(Weights[icat]))
-#             output['b_eff_numerator_eta_s12'].fill(dataset = dataset, anacat = ilabel,
-#                                               subjeteta = ak.to_numpy(Eff_b_Num_eta_s12[icat]),
-#                                               weight = ak.to_numpy(Weights[icat]))
-            
-#             output['b_eff_denominator_eta_s01'].fill(dataset = dataset, anacat = ilabel,
-#                                               subjeteta = ak.to_numpy(Eff_b_Denom_eta_s01[icat]),
-#                                               weight = ak.to_numpy(Weights[icat]))
-#             output['b_eff_denominator_eta_s02'].fill(dataset = dataset, anacat = ilabel,
-#                                               subjeteta = ak.to_numpy(Eff_b_Denom_eta_s02[icat]),
-#                                               weight = ak.to_numpy(Weights[icat]))
-#             output['b_eff_denominator_eta_s11'].fill(dataset = dataset, anacat = ilabel,
-#                                               subjeteta = ak.to_numpy(Eff_b_Denom_eta_s11[icat]),
-#                                               weight = ak.to_numpy(Weights[icat]))
-#             output['b_eff_denominator_eta_s12'].fill(dataset = dataset, anacat = ilabel,
-#                                               subjeteta = ak.to_numpy(Eff_b_Denom_eta_s12[icat]),
-#                                               weight = ak.to_numpy(Weights[icat]))
-            
-#             # ---- 1-D C-tagging Efficiencies ---- #
-#             output['c_eff_numerator_pt_s01'].fill(dataset = dataset, anacat = ilabel,
-#                                               subjetpt = ak.to_numpy(Eff_c_Num_pT_s01[icat]),
-#                                               weight = ak.to_numpy(Weights[icat]))
-#             output['c_eff_numerator_pt_s02'].fill(dataset = dataset, anacat = ilabel,
-#                                               subjetpt = ak.to_numpy(Eff_c_Num_pT_s02[icat]),
-#                                               weight = ak.to_numpy(Weights[icat]))
-#             output['c_eff_numerator_pt_s11'].fill(dataset = dataset, anacat = ilabel,
-#                                               subjetpt = ak.to_numpy(Eff_c_Num_pT_s11[icat]),
-#                                               weight = ak.to_numpy(Weights[icat]))
-#             output['c_eff_numerator_pt_s12'].fill(dataset = dataset, anacat = ilabel,
-#                                               subjetpt = ak.to_numpy(Eff_c_Num_pT_s12[icat]),
-#                                               weight = ak.to_numpy(Weights[icat]))
-            
-#             output['c_eff_denominator_pt_s01'].fill(dataset = dataset, anacat = ilabel,
-#                                               subjetpt = ak.to_numpy(Eff_c_Denom_pT_s01[icat]),
-#                                               weight = ak.to_numpy(Weights[icat]))
-#             output['c_eff_denominator_pt_s02'].fill(dataset = dataset, anacat = ilabel,
-#                                               subjetpt = ak.to_numpy(Eff_c_Denom_pT_s02[icat]),
-#                                               weight = ak.to_numpy(Weights[icat]))
-#             output['c_eff_denominator_pt_s11'].fill(dataset = dataset, anacat = ilabel,
-#                                               subjetpt = ak.to_numpy(Eff_c_Denom_pT_s11[icat]),
-#                                               weight = ak.to_numpy(Weights[icat]))
-#             output['c_eff_denominator_pt_s12'].fill(dataset = dataset, anacat = ilabel,
-#                                               subjetpt = ak.to_numpy(Eff_c_Denom_pT_s12[icat]),
-#                                               weight = ak.to_numpy(Weights[icat]))
-            
-#             output['c_eff_numerator_eta_s01'].fill(dataset = dataset, anacat = ilabel,
-#                                               subjeteta = ak.to_numpy(Eff_c_Num_eta_s01[icat]),
-#                                               weight = ak.to_numpy(Weights[icat]))
-#             output['c_eff_numerator_eta_s02'].fill(dataset = dataset, anacat = ilabel,
-#                                               subjeteta = ak.to_numpy(Eff_c_Num_eta_s02[icat]),
-#                                               weight = ak.to_numpy(Weights[icat]))
-#             output['c_eff_numerator_eta_s11'].fill(dataset = dataset, anacat = ilabel,
-#                                               subjeteta = ak.to_numpy(Eff_c_Num_eta_s11[icat]),
-#                                               weight = ak.to_numpy(Weights[icat]))
-#             output['c_eff_numerator_eta_s12'].fill(dataset = dataset, anacat = ilabel,
-#                                               subjeteta = ak.to_numpy(Eff_c_Num_eta_s12[icat]),
-#                                               weight = ak.to_numpy(Weights[icat]))
-            
-#             output['c_eff_denominator_eta_s01'].fill(dataset = dataset, anacat = ilabel,
-#                                               subjeteta = ak.to_numpy(Eff_c_Denom_eta_s01[icat]),
-#                                               weight = ak.to_numpy(Weights[icat]))
-#             output['c_eff_denominator_eta_s02'].fill(dataset = dataset, anacat = ilabel,
-#                                               subjeteta = ak.to_numpy(Eff_c_Denom_eta_s02[icat]),
-#                                               weight = ak.to_numpy(Weights[icat]))
-#             output['c_eff_denominator_eta_s11'].fill(dataset = dataset, anacat = ilabel,
-#                                               subjeteta = ak.to_numpy(Eff_c_Denom_eta_s11[icat]),
-#                                               weight = ak.to_numpy(Weights[icat]))
-#             output['c_eff_denominator_eta_s12'].fill(dataset = dataset, anacat = ilabel,
-#                                               subjeteta = ak.to_numpy(Eff_c_Denom_eta_s12[icat]),
-#                                               weight = ak.to_numpy(Weights[icat]))
-            
-#             # ---- 1-D Light Parton-tagging Efficiencies ---- #
-#             output['udsg_eff_numerator_pt_s01'].fill(dataset = dataset, anacat = ilabel,
-#                                               subjetpt = ak.to_numpy(Eff_udsg_Num_pT_s01[icat]),
-#                                               weight = ak.to_numpy(Weights[icat]))
-#             output['udsg_eff_numerator_pt_s02'].fill(dataset = dataset, anacat = ilabel,
-#                                               subjetpt = ak.to_numpy(Eff_udsg_Num_pT_s02[icat]),
-#                                               weight = ak.to_numpy(Weights[icat]))
-#             output['udsg_eff_numerator_pt_s11'].fill(dataset = dataset, anacat = ilabel,
-#                                               subjetpt = ak.to_numpy(Eff_udsg_Num_pT_s11[icat]),
-#                                               weight = ak.to_numpy(Weights[icat]))
-#             output['udsg_eff_numerator_pt_s12'].fill(dataset = dataset, anacat = ilabel,
-#                                               subjetpt = ak.to_numpy(Eff_udsg_Num_pT_s12[icat]),
-#                                               weight = ak.to_numpy(Weights[icat]))
-            
-#             output['udsg_eff_denominator_pt_s01'].fill(dataset = dataset, anacat = ilabel,
-#                                               subjetpt = ak.to_numpy(Eff_udsg_Denom_pT_s01[icat]),
-#                                               weight = ak.to_numpy(Weights[icat]))
-#             output['udsg_eff_denominator_pt_s02'].fill(dataset = dataset, anacat = ilabel,
-#                                               subjetpt = ak.to_numpy(Eff_udsg_Denom_pT_s02[icat]),
-#                                               weight = ak.to_numpy(Weights[icat]))
-#             output['udsg_eff_denominator_pt_s11'].fill(dataset = dataset, anacat = ilabel,
-#                                               subjetpt = ak.to_numpy(Eff_udsg_Denom_pT_s11[icat]),
-#                                               weight = ak.to_numpy(Weights[icat]))
-#             output['udsg_eff_denominator_pt_s12'].fill(dataset = dataset, anacat = ilabel,
-#                                               subjetpt = ak.to_numpy(Eff_udsg_Denom_pT_s12[icat]),
-#                                               weight = ak.to_numpy(Weights[icat]))
-            
-#             output['udsg_eff_numerator_eta_s01'].fill(dataset = dataset, anacat = ilabel,
-#                                               subjeteta = ak.to_numpy(Eff_udsg_Num_eta_s01[icat]),
-#                                               weight = ak.to_numpy(Weights[icat]))
-#             output['udsg_eff_numerator_eta_s02'].fill(dataset = dataset, anacat = ilabel,
-#                                               subjeteta = ak.to_numpy(Eff_udsg_Num_eta_s02[icat]),
-#                                               weight = ak.to_numpy(Weights[icat]))
-#             output['udsg_eff_numerator_eta_s11'].fill(dataset = dataset, anacat = ilabel,
-#                                               subjeteta = ak.to_numpy(Eff_udsg_Num_eta_s11[icat]),
-#                                               weight = ak.to_numpy(Weights[icat]))
-#             output['udsg_eff_numerator_eta_s12'].fill(dataset = dataset, anacat = ilabel,
-#                                               subjeteta = ak.to_numpy(Eff_udsg_Num_eta_s12[icat]),
-#                                               weight = ak.to_numpy(Weights[icat]))
-            
-#             output['udsg_eff_denominator_eta_s01'].fill(dataset = dataset, anacat = ilabel,
-#                                               subjeteta = ak.to_numpy(Eff_udsg_Denom_eta_s01[icat]),
-#                                               weight = ak.to_numpy(Weights[icat]))
-#             output['udsg_eff_denominator_eta_s02'].fill(dataset = dataset, anacat = ilabel,
-#                                               subjeteta = ak.to_numpy(Eff_udsg_Denom_eta_s02[icat]),
-#                                               weight = ak.to_numpy(Weights[icat]))
-#             output['udsg_eff_denominator_eta_s11'].fill(dataset = dataset, anacat = ilabel,
-#                                               subjeteta = ak.to_numpy(Eff_udsg_Denom_eta_s11[icat]),
-#                                               weight = ak.to_numpy(Weights[icat]))
-#             output['udsg_eff_denominator_eta_s12'].fill(dataset = dataset, anacat = ilabel,
-#                                               subjeteta = ak.to_numpy(Eff_udsg_Denom_eta_s12[icat]),
-#                                               weight = ak.to_numpy(Weights[icat]))
-            
-            
-        
+# ************************************************************************************************************ # 
         return output
 
     def postprocess(self, accumulator):
         return accumulator
-
+    

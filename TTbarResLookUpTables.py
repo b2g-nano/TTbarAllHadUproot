@@ -36,6 +36,7 @@ def DoesDirectoryExist(mypath): #extra precaution (Probably overkill...)
     else:
         mkdir_p(mypath)
 
+#os.chdir('../') # Runs the code from within the working directory without manually changing all directory paths!
 maindirectory = os.getcwd() # changes accordingly
 
 # ---- Reiterate categories ---- #
@@ -103,11 +104,6 @@ def CreateLUTS(Filesets, Outputs, Year, VFP, RemoveContam, Save):
         filestring_prefix = ''
         filestring_prefix_data = ''
 
-#     if loadAllFiles: # Use everything that is in filesets,
-#         for name,files in Filesets.items():
-#             outputs_unweighted[name] = util.load('TTbarAllHadUproot/CoffeaOutputs/UnweightedOutputs/TTbarResCoffea_' + name + '_unweighted_output.coffea')
-#         Outputs = outputs_unweighted
-
 #     ---------------------------------------
 #     PPPPPP  L         OOO   TTTTTTT   SSSSS     
 #     P     P L        O   O     T     S          
@@ -136,16 +132,15 @@ def CreateLUTS(Filesets, Outputs, Year, VFP, RemoveContam, Save):
             plt.ylim(bottom = 0, top = 0.12)
             plt.xlim(left = 100, right = 2500)
 
-            # ---- Better mistag plots are made in 'TTbarResCoffea_MistagAnalysis-BkgEst' python script ---- #
+            # ----- Better mistag plots are made in 'TTbarResCoffea_MistagAnalysis-BkgEst' python script ------ #
             # ---- However, if one wants to save these raw plots, they may uncomment the following 5 lines ---- #
+            # ------------- NOTE: MAYBE THINK OF MAKING A SWITCH FOR PLOTTING/SAVING THESE LATER? ------------- # 
 
             #plt.xticks(np.array([0, 500, 600, 700]))
             #mistag.set_xscale('function', functions=(forward, inverse))
             #mistag.set_xscale('log')
             #plt.savefig(SaveDirectory+filename, bbox_inches="tight")
             #print(filename + ' saved')
-
-#     outputs_unweighted
     
 #     -------------------------------------------------------    
 #       SSSSS   CCCC     A    L       IIIIIII N     N GGGGGGG     
@@ -158,9 +153,9 @@ def CreateLUTS(Filesets, Outputs, Year, VFP, RemoveContam, Save):
 #     -------------------------------------------------------   
     
     """ ---------------- Scale-Factors for JetHT Data According to Year---------------- """
-    Nevts2016 = 625502676. #625516390. # from dasgoclient
-    Nevts2017 = 410461585. # from dasgoclient
-    Nevts2018 = 676328827. # from dasgoclient
+    Nevts2016 = 583876623. # from dasgoclient
+    Nevts2017 = 410461585. # from dasgoclient MUST BE UPDATED AFTER MOVING TO NANOv9
+    Nevts2018 = 676328827. # from dasgoclient MUST BE UPDATED AFTER MOVING TO NANOv9
     Nevts = Nevts2016 + Nevts2017 + Nevts2018 # for all three years
     
     Nevts2016_sf = 0.
@@ -199,9 +194,6 @@ def CreateLUTS(Filesets, Outputs, Year, VFP, RemoveContam, Save):
         ttbar2018_sf = ttbar_xs*ttbar_BR*Lum2018/Outputs['UL18'+VFP+'_TTbar']['cutflow']['all events']
     if ('TTbar' in Outputs.items()) and (Year == 0):
         ttbar_sf = ttbar_xs*ttbar_BR*Lum/Outputs[VFP+'_TTbar']['cutflow']['all events']
-
-    qcd_xs = 1370000000.0 #pb From https://cms-gen-dev.cern.ch/xsdb
-    #qcd_sf = qcd_xs*Lum/18455107.
     
 #     -------------------------------------------------------------------------------------------
 #     M     M IIIIIII   SSSSS TTTTTTT    A    GGGGGGG     RRRRRR     A    TTTTTTT EEEEEEE   SSSSS     
@@ -323,20 +315,6 @@ def CreateLUTS(Filesets, Outputs, Year, VFP, RemoveContam, Save):
                 if Save:
                     df.to_csv(SaveDirectory+filename) # use later to collect bins and weights for re-scaling
 
-# else : # If runLUTS = False, read in [previously made] Look Up Table csv's
-#     print("\n\nLoading Previously Made Look Up Tables for Mistag Rate\n\nDoes not Correspond to Test Files...\n\n")
-#     if path.exists('TTbarAllHadUproot/LookupTables/JetHT'+filestring_prefix_data+'_Data_ttContaminationRemoved_at*'):
-#         datafile = 'JetHT' + filestring_prefix_data + '_Data_ttContaminationRemoved'
-#         for icat in list_of_cats:
-#             title = datafile + ' mistag ' + icat
-#             filename = 'mistag_' + datafile + '_' + icat + '.' + 'csv'
-#             luts[iset][icat] = pd.read_csv('TTbarAllHadUproot/LookupTables/'+filename)
-#     for iset in Filesets:
-#         print('\t\tfileset: ' + iset + '\n*****************************************************\n')
-#         for icat in list_of_cats:
-#             title = iset + ' mistag ' + icat
-#             filename = 'mistag_' + iset + '_' + icat + '.' + 'csv'
-#             luts[iset][icat] = pd.read_csv('TTbarAllHadUproot/LookupTables/'+filename)
     print(luts)
     return(luts)
 

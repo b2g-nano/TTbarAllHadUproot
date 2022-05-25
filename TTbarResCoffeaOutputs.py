@@ -3,6 +3,7 @@
 
 # `TTbarResCoffeaOutputs` Notebook to produce Coffea output files for an all hadronic $t\bar{t}$ analysis.  The outputs will be found in the corresponding **CoffeaOutputs** directory.
 
+import os
 import time
 import copy
 import itertools
@@ -20,6 +21,8 @@ from dask.distributed import Client#, Scheduler, SchedulerPlugin
 from lpcjobqueue import LPCCondorCluster
 
 ak.behavior.update(candidate.behavior)
+
+os.chdir('../') # Runs the code from within the working directory without manually changing all directory paths!
 
 #    -----------------------------------------------
 #    PPPPPP     A    RRRRRR    SSSSS EEEEEEE RRRRRR      
@@ -102,6 +105,10 @@ if args.APV == 'yes':
     VFP = 'preVFP'
 else:
     VFP = 'postVFP'
+convertLabel = {
+    'preVFP': 'APV',
+    'postVFP': 'noAPV'
+}
 #    -------------------------------------------------------    #
 Testing = args.runtesting
 #    -------------------------------------------------------    #
@@ -137,6 +144,7 @@ if args.tTagSyst:
     SystType = args.tTagSyst # string for ttag SF correction --> "central", "up", or "down"
 #    -------------------------------------------------------    # 
 Chunk = [args.chunksize, args.chunks] # [chunksize, maxchunks]
+#    -------------------------------------------------------    # 
 
 from TTbarResProcessor import TTbarResProcessor
 
@@ -149,7 +157,12 @@ from TTbarResProcessor import TTbarResProcessor
 #       I    M     M P        O   O  R    R     T        D   D   A     A    T    A     A      S  E          T         S      
 #    IIIIIII M     M P         OOO   R     R    T        DDDD    A     A    T    A     A SSSSS   EEEEEEE    T    SSSSS  
 #    -------------------------------------------------------------------------------------------------------------------
-
+namingConvention = 'UL'+str(args.year-2000)+VFP # prefix to help name every MC coffea output according to the selected options
+fileConvention = str(args.year) + '/' + convertLabel[VFP] + '/TTbarRes_0l_' # direct the saved coffea output to the appropriate directory
+SaveLocation={ # Fill this dictionary with each type of dataset; use this dictionary when saving uproot jobs below
+    namingConvention+'_TTbar': 'TT/' + fileConvention,
+    namingConvention+'_QCD': 'QCD/' + fileConvention
+}
 if not Testing:
     filesets_to_run = {}
     from Filesets import filesets # Filesets.py reads in .root file address locations and stores all in dictionary called 'filesets'
@@ -157,12 +170,17 @@ if not Testing:
         for a in args.rundataset: # for any dataset included as user argument...
             if ('JetHT' in a) and (args.year != 0): 
                 filesets_to_run['JetHT'+str(args.year)+'_Data'] = filesets['JetHT'+str(args.year)+'_Data'] # include JetHT dataset read in from Filesets
+                SaveLocation['JetHT'+str(args.year)+'_Data'] = 'JetHT/' + fileConvention # file where output will be saved
             elif args.year != 0:
-                filesets_to_run['UL'+str(args.year-2000)+VFP+'_'+a] = filesets['UL'+str(args.year-2000)+VFP+'_'+a] # include MC dataset read in from Filesets
-        else: # all years...
-            filesets_to_run[a] = filesets[a]
+                filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a] # include MC dataset read in from Filesets
+                if 'RSGluon' in a :
+                    SaveLocation[namingConvention+'_'+a] = 'RSGluonToTT/' + fileConvention
+                elif 'DM' in a :
+                    SaveLocation[namingConvention+'_'+a] = 'ZprimeDMToTTbar/' + fileConvention
+            else: # all years...
+                filesets_to_run[a] = filesets[a]
     else: # if args.mistag: Only run 1st uproot job for ttbar and data to get mistag rate with tt contamination removed
-        filesets_to_run['UL'+str(args.year-2000)+VFP+'_TTbar'] = filesets['UL'+str(args.year-2000)+VFP+'_TTbar']
+        filesets_to_run[namingConvention+'_TTbar'] = filesets[namingConvention+'_TTbar']
         filesets_to_run['JetHT'+str(args.year)+'_Data'] = filesets['JetHT'+str(args.year)+'_Data']
     
 else:
@@ -186,17 +204,7 @@ else:
 #    DDDD    A     A SSSSS   K   K       SSSSS   EEEEEEE    T      UUU   P    
 #    ---------------------------------------------------------------------------
 
-ImportFiles = 'TTbarAllHadUproot/nanoAODv9Files/*'
-# maindir = 'TTbarAllHadUproot/'
-# textfiles = [
-#     maindir+'QCD_UL16_APVv2.txt',
-#     maindir+'TTJets_BiasedSamples.txt',
-#     maindir+'TTJets_Mtt-1000toInf_UL16.txt',
-#     maindir+'TTJets_Mtt-700to1000_UL16.txt',
-#     maindir+'ZprimeDMToTTbar_UL16.txt',
-#     maindir+'RSGluonToTT.txt',
-#     maindir+'JetHT_Data.txt'
-# ]
+ImportFiles = 'TTbarAllHadUproot/nanoAODv9Files/'
 
 if UsingDaskExecutor == True:
     if __name__ == "__main__":
@@ -210,8 +218,6 @@ if UsingDaskExecutor == True:
         client = Client(cluster)
         client.restart()
 #         client.upload_file('TTbarAllHadUproot/Filesets.py')
-#         client.upload_file('TTbarAllHadUproot/TTbarResLookUpTables.py')
-#         client.upload_file('TTbarAllHadUproot/TTbarResProcessor.py')
 
 #    ---------------------------------------------------------------------------
 #    U     U PPPPPP  RRRRRR    OOO     OOO   TTTTTTT       OOO   N     N EEEEEEE     
@@ -243,6 +249,8 @@ for name,files in filesets_to_run.items():
                                                                                        RandomDebugMode=False,
                                                                                        CalcEff_MC=True,
                                                                                        year=args.year,
+                                                                                       apv=convertLabel[VFP],
+                                                                                       vfp=VFP,
                                                                                        prng=prng),
                                                   executor=processor.futures_executor,
                                                   executor_args={
@@ -261,6 +269,8 @@ for name,files in filesets_to_run.items():
                                                                                        RandomDebugMode=False,
                                                                                        CalcEff_MC=True,
                                                                                        year=args.year,
+                                                                                       apv=convertLabel[VFP],
+                                                                                       vfp=VFP,
                                                                                        prng=prng),
                                                   executor=processor.dask_executor,
                                                   executor_args={
@@ -274,9 +284,9 @@ for name,files in filesets_to_run.items():
             outputs_unweighted[name] = output
             print(output)
             if SaveFirstRun:
-                util.save(output, 'TTbarAllHadUproot/CoffeaOutputs/UnweightedOutputs/TTbarResCoffea_' 
-                          + name 
-                          + '_'   
+                util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/'
+                          + SaveLocation[name]
+                          + name    
                           + '.coffea')
             
             
@@ -290,6 +300,8 @@ for name,files in filesets_to_run.items():
                                                                                        RandomDebugMode=False,
                                                                                        CalcEff_MC=True,
                                                                                        year=args.year,
+                                                                                       apv=convertLabel[VFP],
+                                                                                       vfp=VFP,
                                                                                        prng=prng),
                                                   executor=processor.futures_executor,
                                                   executor_args={
@@ -308,6 +320,8 @@ for name,files in filesets_to_run.items():
                                                                                        RandomDebugMode=False,
                                                                                        CalcEff_MC=True,
                                                                                        year=args.year,
+                                                                                       apv=convertLabel[VFP],
+                                                                                       vfp=VFP,
                                                                                        prng=prng),
                                                   executor=processor.dask_executor,
                                                   executor_args={
@@ -320,16 +334,17 @@ for name,files in filesets_to_run.items():
             outputs_unweighted[name] = output
             print(output)
             if SaveFirstRun:
-                util.save(output, 'TTbarAllHadUproot/CoffeaOutputs/UnweightedOutputs/TTbarResCoffea_' 
-                          + name 
-                          + '_'  
+                util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/'
+                          + SaveLocation[name]
+                          + name   
                           + '.coffea')
             
 
     else: # Load files
-        output = util.load('TTbarAllHadUproot/CoffeaOutputs/UnweightedOutputs/TTbarResCoffea_' 
+        output = util.load('TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/'
+                           + SaveLocation[name]
                            + name 
-                           + '_unweighted_output.coffea')
+                           + '.coffea')
 
         outputs_unweighted[name] = output
         print(name + ' unweighted output loaded')
@@ -362,6 +377,16 @@ mistag_luts = CreateLUTS(filesets_to_run, outputs_unweighted, args.year, VFP, ar
 
 """ Second uproot job runs the processor with the mistag rates (and flavor effs if desired) and Mass-Modification Procedure """
 
+#    ---------------------------------------------------------------------------
+#    U     U PPPPPP  RRRRRR    OOO     OOO   TTTTTTT     TTTTTTT W     W   OOO       
+#    U     U P     P R     R  O   O   O   O     T           T    W     W  O   O      
+#    U     U P     P R     R O     O O     O    T           T    W     W O     O     
+#    U     U PPPPPP  RRRRRR  O     O O     O    T           T    W  W  W O     O     
+#    U     U P       R   R   O     O O     O    T           T    W W W W O     O     
+#     U   U  P       R    R   O   O   O   O     T           T    WW   WW  O   O      
+#      UUU   P       R     R   OOO     OOO      T           T    W     W   OOO    
+#    ---------------------------------------------------------------------------
+
 tstart = time.time()
 
 outputs_weighted = {}
@@ -387,6 +412,8 @@ for name,files in filesets_to_run.items():
                                                                                        sysType=SystType,
                                                                                        UseEfficiencies=True,
                                                                                        year=args.year,
+                                                                                       apv=convertLabel[VFP],
+                                                                                       vfp=VFP,
                                                                                        prng=prng),
                                                   #executor=processor.iterative_executor,
                                                   executor=processor.futures_executor,
@@ -408,6 +435,8 @@ for name,files in filesets_to_run.items():
                                                                                        sysType=SystType,
                                                                                        UseEfficiencies=True,
                                                                                        year=args.year,
+                                                                                       apv=convertLabel[VFP],
+                                                                                       vfp=VFP,
                                                                                        prng=prng),
                                                   executor=processor.dask_executor,
                                                   executor_args={
@@ -420,7 +449,8 @@ for name,files in filesets_to_run.items():
             outputs_weighted[name] = output
             print(output)
             if SaveSecondRun:
-                util.save(output, 'TTbarAllHadUproot/CoffeaOutputs/WeightedModMassOutputs/TTbarResCoffea_' 
+                util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/'
+                          + SaveLocation[name]
                           + name 
                           + '_weighted_'
                           + UncType + '_' 
@@ -441,6 +471,8 @@ for name,files in filesets_to_run.items():
                                                                                        sysType=SystType,
                                                                                        UseEfficiencies=False,
                                                                                        year=args.year,
+                                                                                       apv=convertLabel[VFP],
+                                                                                       vfp=VFP,
                                                                                        prng=prng),
                                                   #executor=processor.iterative_executor,
                                                   executor=processor.futures_executor,
@@ -462,6 +494,8 @@ for name,files in filesets_to_run.items():
                                                                                        sysType=SystType,
                                                                                        UseEfficiencies=True,
                                                                                        year=args.year,
+                                                                                       apv=convertLabel[VFP],
+                                                                                       vfp=VFP,
                                                                                        prng=prng),
                                                   executor=processor.dask_executor,
                                                   executor_args={
@@ -473,7 +507,8 @@ for name,files in filesets_to_run.items():
             outputs_weighted[name] = output
             print(output)
             if SaveSecondRun:
-                util.save(output, 'TTbarAllHadUproot/CoffeaOutputs/WeightedModMassOutputs/TTbarResCoffea_' 
+                util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/'
+                          + SaveLocation[name]
                           + name 
                           + '_weighted_'
                           + UncType + '_' 
