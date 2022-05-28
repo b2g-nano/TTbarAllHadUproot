@@ -1857,6 +1857,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         denominator = ak.flatten(denominator)
         
         df = pd.DataFrame({"momentum":p}) # DataFrame used for finding values in LookUp Tables
+        file_df = None # Initial Declaration
         
         for ilabel,icat in labels_and_categories.items():
             ###------------------------------------------------------------------------------------------###
@@ -1866,7 +1867,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                 # ---- Weight dataset by mistag from data (corresponding to its year) ---- #
                 # ---- Pick out proper JetHT year mistag for TTbar sim. ---- #
                 
-                if 'UL' in dataset: # this UL string should only appear in MC dataset name when year is either 2016, 2017 or 2018
+                if self.year > 0: # this UL string should only appear in MC dataset name when year is either 2016, 2017 or 2018
                     file_df = self.lu['JetHT' + str(self.year) + '_Data']['at' + str(ilabel[-5:])] # Only the corresponding JetHT year mistag rate
                 elif self.year == 0: # all years; not just 2016, 17 or 18 alone
                     file_df = self.lu['JetHT_Data']['at' + str(ilabel[-5:])] # All JetHT years mistag rate
@@ -1901,8 +1902,12 @@ class TTbarResProcessor(processor.ProcessorABC):
                                            +str(self.year)+'/'+self.apv+'/TTbarRes_0l_UL'+str(self.year-2000)+self.vfp+'_QCD.coffea') 
     
                 # ---- Extract event counts from QCD MC hist in signal region ---- #
+                print('Category:\n')
+                print('2t' + str(ilabel[-5:]))
                 QCD_hist = QCD_unweighted['jetmass'].integrate('anacat', '2t' + str(ilabel[-5:])).integrate('dataset', 'QCD')
                 data = QCD_hist.values() # Dictionary of values
+                print('this is a test...\nhist values:\n')
+                print(data) # temporary test...
                 QCD_data = [i for i in data.values()][0] # place every element of the dictionary into a numpy array
 
                 # ---- Re-create Bins from QCD_hist as Numpy Array ---- #
