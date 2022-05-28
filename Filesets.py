@@ -21,9 +21,9 @@
 import os
 #os.chdir('../') # Runs the code from within the working directory without manually changing all directory paths!
 
-xrootdstr1 = 'root://cmseos.fnal.gov/'
+xrootdstr1 = 'root://cmseos.fnal.gov//eos/uscms'
 xrootdstr2 = 'root://cmsxrootd.fnal.gov/'
-xrootdstr3 = 'root://cmsxrootd-site.fnal.gov/'
+xrootdstr3 = 'root://cmsxrootd-site.fnal.gov/' #If 2nd redirector fails, file is probably here
 
 filedir = 'TTbarAllHadUproot/nanoAODv9Files/'
 Years = ['UL16']#, 'UL17', 'UL18']
