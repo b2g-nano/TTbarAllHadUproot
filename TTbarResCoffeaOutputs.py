@@ -182,6 +182,7 @@ if not Testing:
     else: # if args.mistag: Only run 1st uproot job for ttbar and data to get mistag rate with tt contamination removed
         filesets_to_run[namingConvention+'_TTbar'] = filesets[namingConvention+'_TTbar']
         filesets_to_run['JetHT'+str(args.year)+'_Data'] = filesets['JetHT'+str(args.year)+'_Data']
+        SaveLocation['JetHT'+str(args.year)+'_Data'] = 'JetHT/' + fileConvention
     
 else:
     TestRootFiles = [#"TTbarAllHadUproot/SMttbar_nEvents10.root",
@@ -255,7 +256,7 @@ for name,files in filesets_to_run.items():
                                                   executor=processor.futures_executor,
                                                   executor_args={
                                                       #'client': client,
-                                                      'skipbadfiles':True,
+                                                      'skipbadfiles':False,
                                                       'schema': BaseSchema, #NanoAODSchema,
                                                       'workers': 2},
                                                   chunksize=Chunk[0], maxchunks=Chunk[1])
