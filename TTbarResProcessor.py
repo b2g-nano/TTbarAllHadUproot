@@ -1821,6 +1821,11 @@ class TTbarResProcessor(processor.ProcessorABC):
         jeteta = ak.flatten(ttbarcands.slot1.eta)
         jetphi = ak.flatten(ttbarcands.slot1.phi)
         jetmass = ak.flatten(ttbarcands.slot1.mass)
+        # -- simple test -- #
+        print("jetmass = ", ak.to_numpy(jetmass))
+        print("jetmass size = ", ak.to_numpy(jetmass).size)
+        print("events = ", ak.to_numpy(evtweights))
+        print("events size = ", ak.to_numpy(evtweights).size)
         SDmass = ak.flatten(ttbarcands.slot1.msoftdrop)
         Tau32 = ak.flatten((ttbarcands.slot1.tau3/ttbarcands.slot1.tau2))
 
