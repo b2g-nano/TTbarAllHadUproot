@@ -22,8 +22,9 @@ import os
 #os.chdir('../') # Runs the code from within the working directory without manually changing all directory paths!
 
 xrootdstr1 = 'root://cmseos.fnal.gov//eos/uscms'
-xrootdstr2 = 'root://cmsxrootd.fnal.gov/'
+xrootdstr2 = 'root://xcache/' # Only works in Coffea-Casa Environment
 xrootdstr3 = 'root://cmsxrootd-site.fnal.gov/' #If 2nd redirector fails, file is probably here
+xrootdstr4 = 'root://cmsxrootd.fnal.gov/'
 
 filedir = 'TTbarAllHadUproot/nanoAODv9Files/'
 Years = ['UL16']#, 'UL17', 'UL18']
