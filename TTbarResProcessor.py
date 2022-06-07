@@ -544,17 +544,18 @@ class TTbarResProcessor(processor.ProcessorABC):
         condition2 = None
         condition3 = None
         condition4 = None
+        firstCondition = None
         
         # ---- Apply Trigger(s) ---- # 
         if self.year == 2016: # Include other years later...
             applyTrigs = (triggers2016_1 ^ triggers2016_2) ^ (triggers2016_3 ^ triggers2016_4)
-            firstCondition = (triggers2016_1 ^ trigDenom) # WHY?! Figure out later...
+            firstCondition = (triggers2016_1 | trigDenom) # WHY?! Figure out later...
         if self.triggerAnalysisObjects: # These conditions must be shaped properly along every step of the workflow
             # ---- Defining Trigger Analysis Conditions ---- #
-            condition1 = firstCondition
-            condition2 = condition1 ^ trigDenom
-            condition3 = condition2 ^ trigDenom
-            condition4 = condition3 ^ trigDenom
+            condition1 = triggers2016_1
+            condition2 = (triggers2016_2) | condition1
+            condition3 = (triggers2016_3) | condition2
+            condition4 = (triggers2016_4) | condition3
         if not self.triggerAnalysisObjects: # apply all necessary triggers as a first step if not performing trigger analysis
             FatJets = FatJets[applyTrigs]
             Jets = Jets[applyTrigs]
@@ -1402,12 +1403,13 @@ class TTbarResProcessor(processor.ProcessorABC):
                 '3': condition3,
                 '4': condition4
             }
+            
             # ---- Defining Jet Collections for Trigger Analysis Numerator and Denominator ---- #
             Jets_NumCondition1 = Jets[condition1] # contains jets to be used as numerator for trigger eff
             Jets_NumCondition2 = Jets[condition2]
             Jets_NumCondition3 = Jets[condition3]
             Jets_NumCondition4 = Jets[condition4]
-            Jets_DenomCondition = Jets[trigDenom] # contains jets to be used as denominator for trigger eff
+            Jets_DenomCondition = Jets#[trigDenom] # contains jets to be used as denominator for trigger eff
             # ---- Must pass this cut before calculating HT variables for analysis ---- #
             passAK4_num1 = (Jets_NumCondition1.pt > 30.) & (np.abs(Jets_NumCondition1.eta) < 3.0) 
             passAK4_num2 = (Jets_NumCondition2.pt > 30.) & (np.abs(Jets_NumCondition2.eta) < 3.0)
@@ -1430,7 +1432,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                 '3': Num3Wgt,
                 '4': Num4Wgt
             }
-            DenomWgt = evtweights[trigDenom]
+            DenomWgt = evtweights#[trigDenom]
             # ---- Defining Trigger Analysis Numerator(s) and Denominator ---- #
             jet_HT_numerator1 = ak.sum(Jets_NumCondition1[passAK4_num1].pt, axis=-1) # Sum over each AK4 Jet per event
             jet_HT_numerator2 = ak.sum(Jets_NumCondition2[passAK4_num2].pt, axis=-1)
@@ -1444,9 +1446,9 @@ class TTbarResProcessor(processor.ProcessorABC):
             }
             jet_HT_denominator = ak.sum(Jets_DenomCondition[passAK4_denom].pt, axis=-1) # Sum over each AK4 Jet per event
             # ---- Define Categories for Trigger Analysis Denominator and Fill Hists ---- #
-            regs = [cen[trigDenom],fwd[trigDenom]]
-            btags = [btag0[trigDenom],btag1[trigDenom],btag2[trigDenom]]
-            ttags = [ttagI[trigDenom],Alltags[trigDenom]]
+            regs = [cen,fwd] #[trigDenom]
+            btags = [btag0,btag1,btag2]
+            ttags = [ttagI,Alltags]
             cats = [ ak.to_awkward0(ak.flatten(t&b&y)) for t,b,y in itertools.product( ttags, btags, regs) ]
             labels_and_categories = dict(zip( self.anacats_forTriggerAnalysis, cats ))
             for ilabel,icat in labels_and_categories.items():

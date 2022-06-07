@@ -18,7 +18,7 @@ from coffea.nanoevents.methods import candidate
 from coffea.nanoevents import NanoAODSchema, BaseSchema
 from numpy.random import RandomState
 from dask.distributed import Client#, Scheduler, SchedulerPlugin
-from lpcjobqueue import LPCCondorCluster
+# from lpcjobqueue import LPCCondorCluster
 
 ak.behavior.update(candidate.behavior)
 
