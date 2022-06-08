@@ -61,6 +61,10 @@ StartGroup.add_argument('-m', '--runmistag', action='store_true',help='Make data
 StartGroup.add_argument('-T', '--runtrigeff', action='store_true', help='Create trigger efficiency hist objects for chosen condition') 
 StartGroup.add_argument('-d', '--rundataset', type=str, nargs='+', help='List of datasets to be ran/loaded')
 
+RedirectorGroup = Parser.add_mutually_exclusive_group(required=True)
+RedirectorGroup.add_argument('-C', '--casa', action='store_true', help='Use Coffea-Casa redirector: root://xcache/')
+RedirectorGroup.add_argument('-L', '--lpc', action='store_true', help='Use CMSLPC redirector: root://cmsxrootd.fnal.gov/')
+
 Parser.add_argument('-a', '--APV', type=str, required=True, choices=['yes', 'no'], help='Do datasets have APV?')
 Parser.add_argument('-y', '--year', type=int, required=True, choices=[2016, 2017, 2018, 0], help='Year(s) of data/MC of the datasets you want to run uproot with.  Choose 0 for all years simultaneously.')
 
@@ -109,6 +113,15 @@ if isTrigEffArg == False and args.saveTrig:
 #      OOO   P          T    IIIIIII   OOO   N     N SSSSS   
 #    -------------------------------------------------------
 
+Redirector = None
+if args.casa:
+    Redirector = 'root://xcache/'
+elif args.lpc:
+    Redirector = 'root://cmsxrootd.fnal.gov/'
+else:
+    print('Redirector not selected properly; code should have terminated earlier!  Terminating now!')
+    quit()
+#    -------------------------------------------------------    #
 VFP = ''
 if args.APV == 'yes':
     VFP = 'preVFP'
@@ -174,7 +187,8 @@ SaveLocation={ # Fill this dictionary with each type of dataset; use this dictio
 }
 if not Testing:
     filesets_to_run = {}
-    from Filesets import filesets # Filesets.py reads in .root file address locations and stores all in dictionary called 'filesets'
+    from Filesets import CollectDatasets # Filesets.py reads in .root file address locations and stores all in dictionary called 'filesets'
+    filesets = CollectDatasets(Redirector)
     if args.rundataset:
         for a in args.rundataset: # for any dataset included as user argument...
             if ('JetHT' in a) and (args.year != 0): 
