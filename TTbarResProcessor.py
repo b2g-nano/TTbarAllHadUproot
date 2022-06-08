@@ -723,6 +723,7 @@ class TTbarResProcessor(processor.ProcessorABC):
 
         # ----------- CMS Top Tagger Version 2 (SD and Tau32 Cuts) ----------- #
         # ---- NOTE: Must Change This to DeepAK8 Top Tag Discriminator Cut ----#
+        # ---- Maybe we should ignore tau32 cut(s) when performing trigger analysis ---- #
         tau32_s0 = np.where(ttbarcands.slot0.tau2>0,ttbarcands.slot0.tau3/ttbarcands.slot0.tau2, 0 )
         tau32_s1 = np.where(ttbarcands.slot1.tau2>0,ttbarcands.slot1.tau3/ttbarcands.slot1.tau2, 0 )
         taucut_s0 = tau32_s0 < self.tau32Cut
