@@ -53,6 +53,7 @@ All objects for each dataset ran can be saved as its own .coffea output file.
                                 RSGluon<x><y>00
                                 TTbar
                                 JetHT
+                                SingleMu
                                 NOTE** UL17 and UL18 samples TBA''')
 # ---- Necessary arguments ---- #
 StartGroup = Parser.add_mutually_exclusive_group(required=True)
@@ -194,6 +195,9 @@ if not Testing:
             if ('JetHT' in a) and (args.year != 0): 
                 filesets_to_run['JetHT'+str(args.year)+'_Data'] = filesets['JetHT'+str(args.year)+'_Data'] # include JetHT dataset read in from Filesets
                 SaveLocation['JetHT'+str(args.year)+'_Data'] = 'JetHT/' + str(args.year) + '/TTbarRes_0l_' # file where output will be saved
+            elif ('SingleMu' in a) and (args.year != 0): 
+                filesets_to_run['SingleMu'+str(args.year)+'_Data'] = filesets['SingleMu'+str(args.year)+'_Data'] # include JetHT dataset read in from Filesets
+                SaveLocation['SingleMu'+str(args.year)+'_Data'] = 'SingleMu/' + str(args.year) + '/TTbarRes_0l_' # file where output will be saved
             elif args.year != 0:
                 filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a] # include MC dataset read in from Filesets
                 if 'RSGluon' in a :
@@ -205,8 +209,8 @@ if not Testing:
         filesets_to_run['JetHT'+str(args.year)+'_Data'] = filesets['JetHT'+str(args.year)+'_Data']
         SaveLocation['JetHT'+str(args.year)+'_Data'] = 'JetHT/' + str(args.year) + '/TTbarRes_0l_'
     elif isTrigEffArg: # 1, 2, 3, or 4; just run over data
-        filesets_to_run['JetHT'+str(args.year)+'_Data'] = filesets['JetHT'+str(args.year)+'_Data']
-        SaveLocation['JetHT'+str(args.year)+'_Data'] = 'JetHT/' + str(args.year) + '/TTbarRes_0l_'
+        filesets_to_run['SingleMu'+str(args.year)+'_Data'] = filesets['SingleMu'+str(args.year)+'_Data']
+        SaveLocation['SingleMu'+str(args.year)+'_Data'] = 'SingleMu/' + str(args.year) + '/TTbarRes_0l_'
     else: # if somehow, the initial needed arguments are not used
         print("Something is wrong.  Please come and infestigate what the problem could be")
 else:

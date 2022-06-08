@@ -68,7 +68,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         
         # --- anti-tag+probe, anti-tag, pre-tag, 0, 1, >=1, 2 ttags, any t-tag (>=0t) --- #
         self.ttagcats = ["AT&Pt", "at", "pret", "0t", "1t", ">=1t", "2t", ">=0t"] 
-        self.ttagcats_forTriggerAnalysis = [">=0t", ">=1t"]
+        self.ttagcats_forTriggerAnalysis = ["0t", ">=1t"]
         
         # --- 0, 1, or 2 b-tags --- #
         self.btagcats = ["0b", "1b", "2b"]
@@ -409,6 +409,8 @@ class TTbarResProcessor(processor.ProcessorABC):
 #    N    NN A     A N    NN  O   O  A     A  O   O  D   D        O   O  B     B J  J         S      
 #    N     N A     A N     N   OOO   A     A   OOO   DDDD          OOO   BBBBBB   JJ     SSSSS 
 #    =========================================================================================== 
+
+        isData = ('JetHT' in dataset) or ('SingleMu' in dataset)
         
         # ---- Define AK8 Jets as FatJets ---- #
         #FatJets = events.FatJet # Everything should already be defined in here.  example) df['FatJet_pt] -> events.FatJet.pt
@@ -475,7 +477,7 @@ class TTbarResProcessor(processor.ProcessorABC):
             })
         
         # ---- Define Generator Particles and other needed event properties for MC ---- #
-        if 'JetHT' not in dataset: # If MC is used...
+        if isData == False: # If MC is used...
             GenParts = ak.zip({
                 "run": events.run,
                 "pdgId": events.GenPart_pdgId,
@@ -513,7 +515,12 @@ class TTbarResProcessor(processor.ProcessorABC):
 #         HLT_PF_triggers = listOfTriggers[isHLT_PF]
 #         HLT_AK8_triggers = listOfTriggers[isHLT_AK8]
         
-        trigDenom = events.HLT_Mu50 ^ events.HLT_IsoMu24 # WHY!!!!!????
+        
+        trigDenom = events.HLT_Mu50 | events.HLT_IsoMu24 # WHY!!!!!????
+        # print(events.HLT_Mu50)
+        # print(events.HLT_IsoMu24)
+        # print(trigDenom)
+        # print('-----------------------------------------------')
         
         if self.year == 2016:
             triggers2016_1 = events.HLT_PFHT900
@@ -532,7 +539,8 @@ class TTbarResProcessor(processor.ProcessorABC):
 #    ===================================================================================
         
         # ---- Get event weights from dataset ---- #
-        if 'JetHT' in dataset: # If data is used...
+        if isData: # If data is used...
+            # print('if isData command works')
             evtweights = np.ones(ak.to_awkward0(FatJets).size) # set all "data weights" to one
         else: # if Monte Carlo dataset is used...
             evtweights = events.Generator_weight
@@ -563,21 +571,24 @@ class TTbarResProcessor(processor.ProcessorABC):
             evtweights = evtweights[applyTrigs]
 
         # ---- Apply HT Cut ---- #
-        # ---- This gives the analysis 99.8% efficiency (see 2016 AN) ---- #
-        hT = ak.to_awkward0(Jets.pt).sum()
-        passhT = (hT > self.htCut)
-        FatJets = FatJets[passhT]
-        Jets = Jets[passhT] # this used to not be here
-        SubJets = SubJets[passhT]
-        evtweights = evtweights[passhT]
-        if self.triggerAnalysisObjects:
-            condition1 = condition1[passhT]
-            condition2 = condition2[passhT]
-            condition3 = condition3[passhT]
-            condition4 = condition4[passhT]
-            trigDenom = trigDenom[passhT]
-        if 'JetHT' not in dataset: # If MC is used...
-            GenParts = GenParts[passhT]
+        if not self.triggerAnalysisObjects:
+            # ---- This gives the analysis 99.8% efficiency (see 2016 AN) ---- #
+            hT = ak.to_awkward0(Jets.pt).sum()
+            passhT = (hT > self.htCut)
+            FatJets = FatJets[passhT]
+            Jets = Jets[passhT] # this used to not be here
+            SubJets = SubJets[passhT]
+            evtweights = evtweights[passhT]
+            if isData == False: # If MC is used...
+                # print('if not isData command works')
+                GenParts = GenParts[passhT]
+        # if self.triggerAnalysisObjects:
+        #     condition1 = condition1[passhT]
+        #     condition2 = condition2[passhT]
+        #     condition3 = condition3[passhT]
+        #     condition4 = condition4[passhT]
+        #     trigDenom = trigDenom[passhT]
+        
             
         # ---- Jets that satisfy Jet ID ---- #
         jet_id = (FatJets.jetId > 0) # Loose jet ID
@@ -602,7 +613,7 @@ class TTbarResProcessor(processor.ProcessorABC):
             condition4 = condition4[twoFatJetsKin]
             trigDenom = trigDenom[twoFatJetsKin]
         evtweights = evtweights[twoFatJetsKin]
-        if 'JetHT' not in dataset: # If MC is used...
+        if not isData: # If MC is used...
             GenParts = GenParts[twoFatJetsKin]
         output['cutflow']['two FatJets and jet kin'] += ak.to_awkward0(twoFatJetsKin).sum()
         
@@ -654,7 +665,7 @@ class TTbarResProcessor(processor.ProcessorABC):
             trigDenom = trigDenom[oneTTbar]
         SubJets = SubJets[oneTTbar]
         evtweights = evtweights[oneTTbar]
-        if 'JetHT' not in dataset: # If MC is used...
+        if not isData: # If MC is used...
             GenParts = GenParts[oneTTbar]
             
         # ---- Apply Delta Phi Cut for Back to Back Topology ---- #
@@ -673,7 +684,7 @@ class TTbarResProcessor(processor.ProcessorABC):
             trigDenom = trigDenom[dPhiCut]
         SubJets = SubJets[dPhiCut] 
         evtweights = evtweights[dPhiCut]
-        if 'JetHT' not in dataset: # If MC is used...
+        if not isData: # If MC is used...
             GenParts = GenParts[dPhiCut]
         
         # ---- Identify subjets according to subjet ID ---- #
@@ -690,7 +701,7 @@ class TTbarResProcessor(processor.ProcessorABC):
             condition3 = condition3[GoodSubjets]
             condition4 = condition4[GoodSubjets]
             trigDenom = trigDenom[GoodSubjets]
-        if 'JetHT' not in dataset: # If MC is used...
+        if not isData: # If MC is used...
             GenParts = GenParts[GoodSubjets]
         evtweights = evtweights[GoodSubjets]
         
@@ -724,15 +735,22 @@ class TTbarResProcessor(processor.ProcessorABC):
         # ----------- CMS Top Tagger Version 2 (SD and Tau32 Cuts) ----------- #
         # ---- NOTE: Must Change This to DeepAK8 Top Tag Discriminator Cut ----#
         # ---- Maybe we should ignore tau32 cut(s) when performing trigger analysis ---- #
+        
         tau32_s0 = np.where(ttbarcands.slot0.tau2>0,ttbarcands.slot0.tau3/ttbarcands.slot0.tau2, 0 )
         tau32_s1 = np.where(ttbarcands.slot1.tau2>0,ttbarcands.slot1.tau3/ttbarcands.slot1.tau2, 0 )
+        
         taucut_s0 = tau32_s0 < self.tau32Cut
         taucut_s1 = tau32_s1 < self.tau32Cut
+        
         mcut_s0 = (self.minMSD < ttbarcands.slot0.msoftdrop) & (ttbarcands.slot0.msoftdrop < self.maxMSD) 
         mcut_s1 = (self.minMSD < ttbarcands.slot1.msoftdrop) & (ttbarcands.slot1.msoftdrop < self.maxMSD) 
-
+        
         ttag_s0 = (taucut_s0) & (mcut_s0)
         ttag_s1 = (taucut_s1) & (mcut_s1)
+        
+        if self.triggerAnalysisObjects:
+            ttag_s0 = mcut_s0
+            ttag_s1 = mcut_s1
         
         # ---- Define "Top Tag" Regions ---- #
         antitag = (~taucut_s0) & (mcut_s0) # The Probe jet will always be ttbarcands.slot1 (at)
@@ -764,7 +782,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         btag1 = btag_s0 ^ btag_s1 #(1b)
         btag2 = btag_s0 & btag_s1 #(2b)
         
-        if 'JetHT' not in dataset:
+        if not isData:
         
             # --- Define pT and Eta for Both Candidates' Subjets (for simplicity) --- #
             pT_s01 = ak.flatten(SubJet01.pt) # pT of 1st subjet in ttbarcand 0
@@ -1608,7 +1626,7 @@ class TTbarResProcessor(processor.ProcessorABC):
             ###---------------------------------------------------------------------------------------------###
             ### ------------------------------ B-Tag Weighting (S.F. Only) -------------------------------- ###
             ###---------------------------------------------------------------------------------------------###
-            if 'JetHT' not in dataset:
+            if not isData:
                 if (self.ApplybtagSF == True) and (self.UseEfficiencies == False):
                     Weights = Weights*Btag_wgts[str(ilabel[-5:-3])]
 
