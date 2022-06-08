@@ -18,7 +18,7 @@ from coffea.nanoevents.methods import candidate
 from coffea.nanoevents import NanoAODSchema, BaseSchema
 from numpy.random import RandomState
 from dask.distributed import Client#, Scheduler, SchedulerPlugin
-from lpcjobqueue import LPCCondorCluster
+# from lpcjobqueue import LPCCondorCluster
 
 ak.behavior.update(candidate.behavior)
 
@@ -58,7 +58,12 @@ All objects for each dataset ran can be saved as its own .coffea output file.
 StartGroup = Parser.add_mutually_exclusive_group(required=True)
 StartGroup.add_argument('-t', '--runtesting', action='store_true', help='Only run a select few root files defined in the code.')
 StartGroup.add_argument('-m', '--runmistag', action='store_true',help='Make data mistag rate where ttbar contamination is removed (as well as ttbar mistag rate)')
+StartGroup.add_argument('-T', '--runtrigeff', action='store_true', help='Create trigger efficiency hist objects for chosen condition') 
 StartGroup.add_argument('-d', '--rundataset', type=str, nargs='+', help='List of datasets to be ran/loaded')
+
+RedirectorGroup = Parser.add_mutually_exclusive_group(required=True)
+RedirectorGroup.add_argument('-C', '--casa', action='store_true', help='Use Coffea-Casa redirector: root://xcache/')
+RedirectorGroup.add_argument('-L', '--lpc', action='store_true', help='Use CMSLPC redirector: root://cmsxrootd.fnal.gov/')
 
 Parser.add_argument('-a', '--APV', type=str, required=True, choices=['yes', 'no'], help='Do datasets have APV?')
 Parser.add_argument('-y', '--year', type=int, required=True, choices=[2016, 2017, 2018, 0], help='Year(s) of data/MC of the datasets you want to run uproot with.  Choose 0 for all years simultaneously.')
@@ -69,6 +74,7 @@ Parser.add_argument('--chunks', type=int, help='Number of chunks of data to run 
 Parser.add_argument('--chunksize', type=int, help='Size of each chunk to run for given dataset(s)')
 Parser.add_argument('--save', action='store_true', help='Choose to save the uproot job as a coffea output for later analysis')
 Parser.add_argument('--saveMistag', action='store_true', help='Save mistag rate calculated from running either --uproot 1 or --mistag')
+Parser.add_argument('--saveTrig', action='store_true', help='Save uproot job with trigger analysis outputs (Only if -T selected)')
 Parser.add_argument('--dask', action='store_true', help='Try the dask executor (experimental) for some fast processing!')
 
 UncertaintyGroup = Parser.add_mutually_exclusive_group()
@@ -87,7 +93,14 @@ if args.year != 2016: # This will be removed once other years are ready
     Parser.error('Currently, 2017 and 2018 datasets are not ready for use.  Please stick to 2016 for now.  Thanks!')
     quit()
 if args.runmistag and args.uproot:
-    Parser.error('When running the --mistag option do not specify --uproot.')
+    Parser.error('When running the --runmistag option do not specify --uproot.')
+    quit()
+isTrigEffArg = args.runtrigeff
+if isTrigEffArg and args.uproot:
+    Parser.error('When running any --runtrigeff option do not specify --uproot.')
+    quit()
+if isTrigEffArg == False and args.saveTrig:
+    Parser.error('When not running some --runtrigeff option do not specify --saveTrig.')
     quit()
     
 #    -------------------------------------------------------
@@ -100,6 +113,15 @@ if args.runmistag and args.uproot:
 #      OOO   P          T    IIIIIII   OOO   N     N SSSSS   
 #    -------------------------------------------------------
 
+Redirector = None
+if args.casa:
+    Redirector = 'root://xcache/'
+elif args.lpc:
+    Redirector = 'root://cmsxrootd.fnal.gov/'
+else:
+    print('Redirector not selected properly; code should have terminated earlier!  Terminating now!')
+    quit()
+#    -------------------------------------------------------    #
 VFP = ''
 if args.APV == 'yes':
     VFP = 'preVFP'
@@ -114,7 +136,7 @@ Testing = args.runtesting
 #    -------------------------------------------------------    #
 LoadingUnweightedFiles = False 
 OnlyCreateLookupTables = False 
-if (args.uproot == 1) or (args.runmistag):
+if (args.uproot == 1 or args.runmistag) or isTrigEffArg:
     OnlyCreateLookupTables = True # stop the code after LUTs are displayed on the terminal; after 1st uproot job
 elif args.uproot == 2:
     LoadingUnweightedFiles = True # Load the 1st uproot job's coffea outputs if you only want to run the 2nd uproot job.
@@ -165,25 +187,28 @@ SaveLocation={ # Fill this dictionary with each type of dataset; use this dictio
 }
 if not Testing:
     filesets_to_run = {}
-    from Filesets import filesets # Filesets.py reads in .root file address locations and stores all in dictionary called 'filesets'
+    from Filesets import CollectDatasets # Filesets.py reads in .root file address locations and stores all in dictionary called 'filesets'
+    filesets = CollectDatasets(Redirector)
     if args.rundataset:
         for a in args.rundataset: # for any dataset included as user argument...
             if ('JetHT' in a) and (args.year != 0): 
                 filesets_to_run['JetHT'+str(args.year)+'_Data'] = filesets['JetHT'+str(args.year)+'_Data'] # include JetHT dataset read in from Filesets
-                SaveLocation['JetHT'+str(args.year)+'_Data'] = 'JetHT/' + fileConvention # file where output will be saved
+                SaveLocation['JetHT'+str(args.year)+'_Data'] = 'JetHT/' + str(args.year) + '/TTbarRes_0l_' # file where output will be saved
             elif args.year != 0:
                 filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a] # include MC dataset read in from Filesets
                 if 'RSGluon' in a :
                     SaveLocation[namingConvention+'_'+a] = 'RSGluonToTT/' + fileConvention
                 elif 'DM' in a :
                     SaveLocation[namingConvention+'_'+a] = 'ZprimeDMToTTbar/' + fileConvention
-            else: # all years...
-                filesets_to_run[a] = filesets[a]
-    else: # if args.mistag: Only run 1st uproot job for ttbar and data to get mistag rate with tt contamination removed
+    elif args.runmistag: # if args.mistag: Only run 1st uproot job for ttbar and data to get mistag rate with tt contamination removed
         filesets_to_run[namingConvention+'_TTbar'] = filesets[namingConvention+'_TTbar']
         filesets_to_run['JetHT'+str(args.year)+'_Data'] = filesets['JetHT'+str(args.year)+'_Data']
-        SaveLocation['JetHT'+str(args.year)+'_Data'] = 'JetHT/' + fileConvention
-    
+        SaveLocation['JetHT'+str(args.year)+'_Data'] = 'JetHT/' + str(args.year) + '/TTbarRes_0l_'
+    elif isTrigEffArg: # 1, 2, 3, or 4; just run over data
+        filesets_to_run['JetHT'+str(args.year)+'_Data'] = filesets['JetHT'+str(args.year)+'_Data']
+        SaveLocation['JetHT'+str(args.year)+'_Data'] = 'JetHT/' + str(args.year) + '/TTbarRes_0l_'
+    else: # if somehow, the initial needed arguments are not used
+        print("Something is wrong.  Please come and infestigate what the problem could be")
 else:
     TestRootFiles = [#"TTbarAllHadUproot/SMttbar_nEvents10.root",
                      #"TTbarAllHadUproot/SMttbar_nEvents10000.root",
@@ -252,6 +277,7 @@ for name,files in filesets_to_run.items():
                                                                                        year=args.year,
                                                                                        apv=convertLabel[VFP],
                                                                                        vfp=VFP,
+                                                                                       triggerAnalysisObjects = isTrigEffArg,
                                                                                        prng=prng),
                                                   executor=processor.futures_executor,
                                                   executor_args={
@@ -272,6 +298,7 @@ for name,files in filesets_to_run.items():
                                                                                        year=args.year,
                                                                                        apv=convertLabel[VFP],
                                                                                        vfp=VFP,
+                                                                                       triggerAnalysisObjects = isTrigEffArg,
                                                                                        prng=prng),
                                                   executor=processor.dask_executor,
                                                   executor_args={
@@ -289,6 +316,12 @@ for name,files in filesets_to_run.items():
                           + SaveLocation[name]
                           + name    
                           + '.coffea')
+            if isTrigEffArg and args.saveTrig:
+                util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForTriggerAnalysis/'
+                      + SaveLocation[name]
+                      + name    
+                      + '_TriggerAnalysis' 
+                      + '.coffea')
             
             
         else: # Run all Root Files
@@ -303,6 +336,7 @@ for name,files in filesets_to_run.items():
                                                                                        year=args.year,
                                                                                        apv=convertLabel[VFP],
                                                                                        vfp=VFP,
+                                                                                       triggerAnalysisObjects = isTrigEffArg,
                                                                                        prng=prng),
                                                   executor=processor.futures_executor,
                                                   executor_args={
@@ -323,6 +357,7 @@ for name,files in filesets_to_run.items():
                                                                                        year=args.year,
                                                                                        apv=convertLabel[VFP],
                                                                                        vfp=VFP,
+                                                                                       triggerAnalysisObjects = isTrigEffArg,
                                                                                        prng=prng),
                                                   executor=processor.dask_executor,
                                                   executor_args={
@@ -339,6 +374,12 @@ for name,files in filesets_to_run.items():
                           + SaveLocation[name]
                           + name   
                           + '.coffea')
+            if isTrigEffArg and args.saveTrig:
+                util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForTriggerAnalysis/'
+                      + SaveLocation[name]
+                      + name    
+                      + '_TriggerAnalysis' 
+                      + '.coffea')
             
 
     else: # Load files
