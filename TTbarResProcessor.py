@@ -1465,11 +1465,9 @@ class TTbarResProcessor(processor.ProcessorABC):
             }
             jet_HT_denominator = ak.sum(Jets_DenomCondition[passAK4_denom].pt, axis=-1) # Sum over each AK4 Jet per event
             # ---- Define Categories for Trigger Analysis Denominator and Fill Hists ---- #
-            regs = [cen[trigDenom],fwd[trigDenom]]
-            btags = [btag0[trigDenom],btag1[trigDenom],btag2[trigDenom]]
             ttags = [ttagI[trigDenom],Alltags[trigDenom]]
-            cats = [ ak.to_awkward0(ak.flatten(t&b&y)) for t,b,y in itertools.product( ttags, btags, regs) ]
-            labels_and_categories = dict(zip( self.anacats_forTriggerAnalysis, cats ))
+            cats = [ ak.to_awkward0(ak.flatten(t)) for t in ttags ]
+            labels_and_categories = dict(zip( self.ttagcats_forTriggerAnalysis, cats ))
             for ilabel,icat in labels_and_categories.items():
                 output['condition_denominator'].fill(dataset = dataset, anacat = ilabel, 
                                                     Jet_HT = ak.to_numpy(jet_HT_denominator[icat]),
@@ -1479,11 +1477,9 @@ class TTbarResProcessor(processor.ProcessorABC):
                 c = ConditionsDict[str(i)]
                 n = jet_HT_numeratorDict[str(i)]
                 w = NumWgtDict[str(i)]
-                regs = [cen[c],fwd[c]]
-                btags = [btag0[c],btag1[c],btag2[c]]
                 ttags = [ttagI[c],Alltags[c]]
-                cats = [ ak.to_awkward0(ak.flatten(t&b&y)) for t,b,y in itertools.product( ttags, btags, regs) ]
-                labels_and_categories = dict(zip( self.anacats_forTriggerAnalysis, cats ))
+                cats = [ ak.to_awkward0(ak.flatten(t)) for t in ttags ]
+                labels_and_categories = dict(zip( self.ttagcats_forTriggerAnalysis, cats))
                 for ilabel,icat in labels_and_categories.items():
                     output['condition' + str(i) + '_numerator'].fill(dataset = dataset, anacat = ilabel, 
                                                                     Jet_HT = ak.to_numpy(n[icat]),
