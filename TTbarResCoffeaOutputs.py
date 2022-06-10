@@ -17,7 +17,6 @@ from coffea import hist, processor, nanoevents, util
 from coffea.nanoevents.methods import candidate
 from coffea.nanoevents import NanoAODSchema, BaseSchema
 from numpy.random import RandomState
-from dask.distributed import Client#, Scheduler, SchedulerPlugin
 # from lpcjobqueue import LPCCondorCluster
 
 ak.behavior.update(candidate.behavior)
@@ -53,6 +52,7 @@ All objects for each dataset ran can be saved as its own .coffea output file.
                                 RSGluon<x><y>00
                                 TTbar
                                 JetHT
+                                SingleMu
                                 NOTE** UL17 and UL18 samples TBA''')
 # ---- Necessary arguments ---- #
 StartGroup = Parser.add_mutually_exclusive_group(required=True)
@@ -194,6 +194,9 @@ if not Testing:
             if ('JetHT' in a) and (args.year != 0): 
                 filesets_to_run['JetHT'+str(args.year)+'_Data'] = filesets['JetHT'+str(args.year)+'_Data'] # include JetHT dataset read in from Filesets
                 SaveLocation['JetHT'+str(args.year)+'_Data'] = 'JetHT/' + str(args.year) + '/TTbarRes_0l_' # file where output will be saved
+            elif ('SingleMu' in a) and (args.year != 0): 
+                filesets_to_run['SingleMu'+str(args.year)+'_Data'] = filesets['SingleMu'+str(args.year)+'_Data'] # include JetHT dataset read in from Filesets
+                SaveLocation['SingleMu'+str(args.year)+'_Data'] = 'SingleMu/' + str(args.year) + '/TTbarRes_0l_' # file where output will be saved
             elif args.year != 0:
                 filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a] # include MC dataset read in from Filesets
                 if 'RSGluon' in a :
@@ -205,8 +208,8 @@ if not Testing:
         filesets_to_run['JetHT'+str(args.year)+'_Data'] = filesets['JetHT'+str(args.year)+'_Data']
         SaveLocation['JetHT'+str(args.year)+'_Data'] = 'JetHT/' + str(args.year) + '/TTbarRes_0l_'
     elif isTrigEffArg: # 1, 2, 3, or 4; just run over data
-        filesets_to_run['JetHT'+str(args.year)+'_Data'] = filesets['JetHT'+str(args.year)+'_Data']
-        SaveLocation['JetHT'+str(args.year)+'_Data'] = 'JetHT/' + str(args.year) + '/TTbarRes_0l_'
+        filesets_to_run['SingleMu'+str(args.year)+'_Data'] = filesets['SingleMu'+str(args.year)+'_Data']
+        SaveLocation['SingleMu'+str(args.year)+'_Data'] = 'SingleMu/' + str(args.year) + '/TTbarRes_0l_'
     else: # if somehow, the initial needed arguments are not used
         print("Something is wrong.  Please come and infestigate what the problem could be")
 else:
@@ -230,20 +233,26 @@ else:
 #    DDDD    A     A SSSSS   K   K       SSSSS   EEEEEEE    T      UUU   P    
 #    ---------------------------------------------------------------------------
 
+from dask.distributed import Client#, Scheduler, SchedulerPlugin
 ImportFiles = 'TTbarAllHadUproot/nanoAODv9Files/'
 
 if UsingDaskExecutor == True:
     if __name__ == "__main__":
-        tic = time.time()
-        cluster = LPCCondorCluster(
-            ship_env = True,
-            transfer_input_files = ImportFiles
-        )
-        # minimum > 0: https://github.com/CoffeaTeam/coffea/issues/465
-        cluster.adapt(minimum=1, maximum=10)
-        client = Client(cluster)
+        client = Client("tls://ac-2emalik-2ewilliams-40cern-2ech.dask.coffea.casa:8786")
+#         tic = time.time()
+#         cluster = LPCCondorCluster(
+#             ship_env = True,
+#             transfer_input_files = ImportFiles
+#         )
+#         # minimum > 0: https://github.com/CoffeaTeam/coffea/issues/465
+#         cluster.adapt(minimum=1, maximum=10)
+#         client = Client(cluster)
         client.restart()
-#         client.upload_file('TTbarAllHadUproot/Filesets.py')
+        client.upload_file('TTbarAllHadUproot/Filesets.py')
+        client.upload_file('TTbarAllHadUproot/TTbarResProcessor.py')
+        client.upload_file('TTbarAllHadUproot/TTbarResLookUpTables.py')
+
+
 
 #    ---------------------------------------------------------------------------
 #    U     U PPPPPP  RRRRRR    OOO     OOO   TTTTTTT       OOO   N     N EEEEEEE     
