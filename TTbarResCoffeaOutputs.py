@@ -17,7 +17,6 @@ from coffea import hist, processor, nanoevents, util
 from coffea.nanoevents.methods import candidate
 from coffea.nanoevents import NanoAODSchema, BaseSchema
 from numpy.random import RandomState
-from dask.distributed import Client#, Scheduler, SchedulerPlugin
 # from lpcjobqueue import LPCCondorCluster
 
 ak.behavior.update(candidate.behavior)
@@ -234,20 +233,26 @@ else:
 #    DDDD    A     A SSSSS   K   K       SSSSS   EEEEEEE    T      UUU   P    
 #    ---------------------------------------------------------------------------
 
+from dask.distributed import Client#, Scheduler, SchedulerPlugin
 ImportFiles = 'TTbarAllHadUproot/nanoAODv9Files/'
 
 if UsingDaskExecutor == True:
     if __name__ == "__main__":
-        tic = time.time()
-        cluster = LPCCondorCluster(
-            ship_env = True,
-            transfer_input_files = ImportFiles
-        )
-        # minimum > 0: https://github.com/CoffeaTeam/coffea/issues/465
-        cluster.adapt(minimum=1, maximum=10)
-        client = Client(cluster)
+        client = Client("tls://ac-2emalik-2ewilliams-40cern-2ech.dask.coffea.casa:8786")
+#         tic = time.time()
+#         cluster = LPCCondorCluster(
+#             ship_env = True,
+#             transfer_input_files = ImportFiles
+#         )
+#         # minimum > 0: https://github.com/CoffeaTeam/coffea/issues/465
+#         cluster.adapt(minimum=1, maximum=10)
+#         client = Client(cluster)
         client.restart()
-#         client.upload_file('TTbarAllHadUproot/Filesets.py')
+        client.upload_file('TTbarAllHadUproot/Filesets.py')
+        client.upload_file('TTbarAllHadUproot/TTbarResProcessor.py')
+        client.upload_file('TTbarAllHadUproot/TTbarResLookUpTables.py')
+
+
 
 #    ---------------------------------------------------------------------------
 #    U     U PPPPPP  RRRRRR    OOO     OOO   TTTTTTT       OOO   N     N EEEEEEE     
