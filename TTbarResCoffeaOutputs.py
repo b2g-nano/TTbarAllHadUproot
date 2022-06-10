@@ -23,6 +23,19 @@ ak.behavior.update(candidate.behavior)
 
 os.chdir('../') # Runs the code from within the working directory without manually changing all directory paths!
 
+def mkdir_p(mypath):
+    '''Creates a directory. equivalent to using mkdir -p on the command line'''
+
+    from errno import EEXIST
+
+    try:
+        os.makedirs(mypath)
+    except OSError as exc: # Python >2.5
+        if exc.errno == EEXIST and os.path.isdir(mypath):
+            pass
+        else: raise
+        
+
 #    -----------------------------------------------
 #    PPPPPP     A    RRRRRR    SSSSS EEEEEEE RRRRRR      
 #    P     P   A A   R     R  S      E       R     R     
@@ -321,11 +334,15 @@ for name,files in filesets_to_run.items():
             outputs_unweighted[name] = output
             print(output)
             if SaveFirstRun:
+                mkdir_p('TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/'
+                          + SaveLocation[name])
                 util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/'
                           + SaveLocation[name]
                           + name    
                           + '.coffea')
             if isTrigEffArg and args.saveTrig:
+                mkdir_p('TTbarAllHadUproot/CoffeaOutputsForTriggerAnalysis/'
+                          + SaveLocation[name])
                 util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForTriggerAnalysis/'
                       + SaveLocation[name]
                       + name    
@@ -379,11 +396,15 @@ for name,files in filesets_to_run.items():
             outputs_unweighted[name] = output
             print(output)
             if SaveFirstRun:
+                mkdir_p('TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/'
+                          + SaveLocation[name])
                 util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/'
                           + SaveLocation[name]
                           + name   
                           + '.coffea')
             if isTrigEffArg and args.saveTrig:
+                mkdir_p('TTbarAllHadUproot/CoffeaOutputsForTriggerAnalysis/'
+                          + SaveLocation[name])
                 util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForTriggerAnalysis/'
                       + SaveLocation[name]
                       + name    
@@ -422,9 +443,10 @@ for name,output in outputs_unweighted.items():
 
 import TTbarResLookUpTables
 
-from TTbarResLookUpTables import CreateLUTS
+from TTbarResLookUpTables import CreateLUTS, LoadDataLUTS
 
-mistag_luts = CreateLUTS(filesets_to_run, outputs_unweighted, args.year, VFP, args.runmistag, args.saveMistag)
+each_mistag_luts = CreateLUTS(filesets_to_run, outputs_unweighted, args.year, VFP, args.runmistag, args.saveMistag)
+mistag_luts = LoadDataLUTS(args.year) # Specifically get data mistag rates with ttContam. corrections
 
 """ Second uproot job runs the processor with the mistag rates (and flavor effs if desired) and Mass-Modification Procedure """
 
@@ -500,6 +522,8 @@ for name,files in filesets_to_run.items():
             outputs_weighted[name] = output
             print(output)
             if SaveSecondRun:
+                mkdir_p('TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/'
+                          + SaveLocation[name])
                 util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/'
                           + SaveLocation[name]
                           + name 
@@ -558,6 +582,8 @@ for name,files in filesets_to_run.items():
             outputs_weighted[name] = output
             print(output)
             if SaveSecondRun:
+                mkdir_p('TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/'
+                          + SaveLocation[name])
                 util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/'
                           + SaveLocation[name]
                           + name 

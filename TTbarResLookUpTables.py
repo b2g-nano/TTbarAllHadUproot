@@ -75,6 +75,12 @@ def multi_dict(K, type): # definition from https://www.geeksforgeeks.org/python-
 luts = {}
 luts = multi_dict(2, str) #Annoying, but necessary definition of the dictionary
 
+def LoadDataLUTS(Year):
+    for icat in list_of_cats:
+        df = pd.read_csv('TTbarAllHadUproot/LookupTables/mistag_JetHT' + str(Year) + '_Data_ttContaminationRemoved_' + icat + '.csv')
+        luts['JetHT' + str(Year) + '_Data'][icat] = df
+    return(luts)
+
 def CreateLUTS(Filesets, Outputs, Year, VFP, RemoveContam, Save):
     '''
     Filesets     --> Dictionary of datasets

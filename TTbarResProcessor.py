@@ -1545,6 +1545,8 @@ class TTbarResProcessor(processor.ProcessorABC):
         df = pd.DataFrame({"momentum":p}) # DataFrame used for finding values in LookUp Tables
         file_df = None # Initial Declaration
         
+        # print(self.lu[])
+        
         for ilabel,icat in labels_and_categories.items():
             ###------------------------------------------------------------------------------------------###
             ### ------------------------------------ Mistag Scaling ------------------------------------ ###
@@ -1560,7 +1562,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                 else:
                     print('Something is wrong...\n\nNecessary JetHT LUT(s) not found')
                     quit()
-                
+               
                 bin_widths = file_df['p'].values # collect bins as written in .csv file
                 mtr = file_df['M(p)'].values # collect mistag rate as function of p as written in file
                 wgts = mtr # Define weights based on mistag rates
