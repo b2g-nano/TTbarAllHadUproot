@@ -1465,7 +1465,7 @@ class TTbarResProcessor(processor.ProcessorABC):
             }
             jet_HT_denominator = ak.sum(Jets_DenomCondition[passAK4_denom].pt, axis=-1) # Sum over each AK4 Jet per event
             # ---- Define Categories for Trigger Analysis Denominator and Fill Hists ---- #
-            ttags = [ttagI[trigDenom],Alltags[trigDenom]]
+            ttags = [ttag0[trigDenom],ttagI[trigDenom]]
             cats = [ ak.to_awkward0(ak.flatten(t)) for t in ttags ]
             labels_and_categories = dict(zip( self.ttagcats_forTriggerAnalysis, cats ))
             for ilabel,icat in labels_and_categories.items():
@@ -1477,7 +1477,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                 c = ConditionsDict[str(i)]
                 n = jet_HT_numeratorDict[str(i)]
                 w = NumWgtDict[str(i)]
-                ttags = [ttagI[c],Alltags[c]]
+                ttags = [ttag0[c],ttagI[c]]
                 cats = [ ak.to_awkward0(ak.flatten(t)) for t in ttags ]
                 labels_and_categories = dict(zip( self.ttagcats_forTriggerAnalysis, cats))
                 for ilabel,icat in labels_and_categories.items():
