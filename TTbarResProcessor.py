@@ -564,11 +564,12 @@ class TTbarResProcessor(processor.ProcessorABC):
             condition2 = (firstCondition | triggers2016_2) & trigDenom
             condition3 = ((firstCondition | triggers2016_2) | triggers2016_3) & trigDenom
             condition4 = ((firstCondition | triggers2016_2) | (triggers2016_3 | triggers2016_4)) & trigDenom
-        if not self.triggerAnalysisObjects: # apply all necessary triggers as a first step if not performing trigger analysis
-            FatJets = FatJets[applyTrigs]
-            Jets = Jets[applyTrigs]
-            SubJets = SubJets[applyTrigs] 
-            evtweights = evtweights[applyTrigs]
+        # Do NOT apply triggers yet...
+        # if not self.triggerAnalysisObjects: # apply all necessary triggers as a first step if not performing trigger analysis
+        #     FatJets = FatJets[applyTrigs]
+        #     Jets = Jets[applyTrigs]
+        #     SubJets = SubJets[applyTrigs] 
+        #     evtweights = evtweights[applyTrigs]
 
         # ---- Apply HT Cut ---- #
         if not self.triggerAnalysisObjects:
@@ -579,27 +580,22 @@ class TTbarResProcessor(processor.ProcessorABC):
             Jets = Jets[passhT] # this used to not be here
             SubJets = SubJets[passhT]
             evtweights = evtweights[passhT]
+            output['cutflow']['HT Cut'] += ak.to_awkward0(passhT).sum()
             if isData == False: # If MC is used...
                 # print('if not isData command works')
                 GenParts = GenParts[passhT]
-        # if self.triggerAnalysisObjects:
-        #     condition1 = condition1[passhT]
-        #     condition2 = condition2[passhT]
-        #     condition3 = condition3[passhT]
-        #     condition4 = condition4[passhT]
-        #     trigDenom = trigDenom[passhT]
         
             
         # ---- Jets that satisfy Jet ID ---- #
         jet_id = (FatJets.jetId > 0) # Loose jet ID
         FatJets = FatJets[jet_id]
-        output['cutflow']['jet id'] += ak.to_awkward0(jet_id).any().sum()
+        output['cutflow']['Loose Jet ID'] += ak.to_awkward0(jet_id).any().sum()
         
         # ---- Apply pT Cut and Rapidity Window ---- #
         FatJets_rapidity = .5*np.log( (FatJets.p4.energy + FatJets.p4.pz)/(FatJets.p4.energy - FatJets.p4.pz) )
         jetkincut_index = (FatJets.pt > self.ak8PtMin) & (np.abs(FatJets_rapidity) < 2.4)
         FatJets = FatJets[ jetkincut_index ]
-        output['cutflow']['jet kin'] += ak.to_awkward0(jetkincut_index).any().sum()
+        output['cutflow']['pT,y Cut'] += ak.to_awkward0(jetkincut_index).any().sum()
         
         # ---- Find two AK8 Jets ---- #
         twoFatJetsKin = (ak.num(FatJets, axis=-1) == 2)
@@ -615,7 +611,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         evtweights = evtweights[twoFatJetsKin]
         if not isData: # If MC is used...
             GenParts = GenParts[twoFatJetsKin]
-        output['cutflow']['two FatJets and jet kin'] += ak.to_awkward0(twoFatJetsKin).sum()
+        output['cutflow']['two FatJets'] += ak.to_awkward0(twoFatJetsKin).sum()
         
         # ---- Randomly Assign AK8 Jets as TTbar Candidates 0 and 1 --- #
         Counts = np.ones(len(FatJets), dtype='i') # Number 1 for each FatJet
@@ -653,7 +649,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         """ NOTE that ak.cartesian gives a shape with one more layer than FatJets """
         # ---- Make sure we have at least 1 TTbar candidate pair and re-broadcast releveant arrays  ---- #
         oneTTbar = (ak.num(ttbarcands, axis=-1) >= 1)
-        output['cutflow']['>= one oneTTbar'] += ak.to_awkward0(oneTTbar).sum()
+        output['cutflow']['>= oneTTbar'] += ak.to_awkward0(oneTTbar).sum()
         ttbarcands = ttbarcands[oneTTbar]
         FatJets = FatJets[oneTTbar]
         Jets = Jets[oneTTbar] # this used to not be here
@@ -672,7 +668,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         """ NOTE: Should find function for this; avoids 2pi problem """
         dPhiCut = ttbarcands.slot0.p4.delta_phi(ttbarcands.slot1.p4) > 2.1
         dPhiCut = ak.flatten(dPhiCut)
-        output['cutflow']['dPhi > 2.1'] += ak.to_awkward0(dPhiCut).sum()
+        output['cutflow']['dPhi Cut'] += ak.to_awkward0(dPhiCut).sum()
         ttbarcands = ttbarcands[dPhiCut]
         FatJets = FatJets[dPhiCut] 
         Jets = Jets[dPhiCut] # this used to not be here
@@ -691,7 +687,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         hasSubjets0 = ((ttbarcands.slot0.subJetIdx1 > -1) & (ttbarcands.slot0.subJetIdx2 > -1)) # 1st candidate has two subjets
         hasSubjets1 = ((ttbarcands.slot1.subJetIdx1 > -1) & (ttbarcands.slot1.subJetIdx2 > -1)) # 2nd candidate has two subjets
         GoodSubjets = ak.flatten(((hasSubjets0) & (hasSubjets1))) # Selection of 4 (leading) subjects
-        
+        output['cutflow']['Good Subjets'] += ak.to_awkward0(GoodSubjets).sum()
         ttbarcands = ttbarcands[GoodSubjets] # Choose only ttbar candidates with this selection of subjets
         SubJets = SubJets[GoodSubjets]
         Jets = Jets[GoodSubjets] # this used to not be here
@@ -1590,9 +1586,11 @@ class TTbarResProcessor(processor.ProcessorABC):
                                            +str(self.year)+'/'+self.apv+'/TTbarRes_0l_UL'+str(self.year-2000)+self.vfp+'_QCD.coffea') 
     
                 # ---- Extract event counts from QCD MC hist in signal region ---- #
+                # print(QCD_unweighted)
                 print('Category:\n')
                 print('2t' + str(ilabel[-5:]))
-                QCD_hist = QCD_unweighted['jetmass'].integrate('anacat', '2t' + str(ilabel[-5:])).integrate('dataset', 'QCD')
+                print(QCD_unweighted['jetmass'])
+                QCD_hist = QCD_unweighted['jetmass'].integrate('anacat', '2t' + str(ilabel[-5:]))#.integrate('dataset', 'QCD')
                 data = QCD_hist.values() # Dictionary of values
                 print('this is a test...\nhist values:\n')
                 print(data) # temporary test...

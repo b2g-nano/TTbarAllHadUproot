@@ -429,7 +429,7 @@ for name,files in filesets_to_run.items():
 for name,output in outputs_unweighted.items(): 
     print("-------Unweighted " + name + "--------")
     for i,j in output['cutflow'].items():        
-        print( '%20s : %12d' % (i,j) )
+        print( '%20s : %1s' % (i,j) )
 
 #    -----------------------------------------------------------------------------------
 #    GGGGGGG EEEEEEE TTTTTTT     M     M IIIIIII   SSSSS TTTTTTT    A    GGGGGGG   SSSSS     
@@ -602,7 +602,7 @@ if not OnlyCreateLookupTables:
     for name,output in outputs_weighted.items(): 
         print("-------Weighted " + name + "--------")
         for i,j in output['cutflow'].items():        
-            print( '%20s : %12d' % (i,j) )
+            print( '%20s : %1s' % (i,j) )
     print("\n\nWe\'re done here!!")
 else:
     print('\n\nWe\'re done here!!')
