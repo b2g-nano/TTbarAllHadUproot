@@ -31,7 +31,7 @@ manual_bins = [400, 500, 600, 800, 1000, 1500, 2000, 3000, 7000, 10000]
 #manual_subjetpt_bins = [0, 250, 500, 750, 1000, 1500, 2000]
 # manual_subjetpt_bins = [0, 200, 400, 600, 800, 1000, 1500, 2000, 3000] # Used before 2/21/22 on Biased TTbar samples (8 bins) 
 manual_subjetpt_bins = [0, 200, 400, 800, 3200] # Used on 3/30/22 for ttbar (4 bins)
-manual_subjeteta_bins = [-2.4, -1.2, -0.6, 0., 0.6, 1.2, 2.4] # Used on 3/30/22 for ttbar (6 bins)
+manual_subjeteta_bins = [-2.4, -0.6, 0., 0.6, 2.4] # Used on 6/14/22 for ttbar (4 bins)
 #manual_etabins = []
 
 """@TTbarResAnaHadronic Package to perform the data-driven mistag-rate-based ttbar hadronic analysis. 
@@ -102,6 +102,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         subjetpt_maxis = hist.Bin("subjetpt", r"SubJet $p_T$ [GeV]", manual_subjetpt_bins) #Manually defined bins for better statistics per bin
         subjeteta_axis = hist.Bin("subjeteta", r"SubJet $\eta$", 50, -2.4, 2.4)
         subjeteta_laxis = hist.Bin("subjeteta", r"SubJet $\eta$", 8, -2.4, 2.4) #Larger bins
+        subjeteta_maxis = hist.Bin("subjeteta", r"SubJet $\eta$", manual_subjeteta_bins) #Manually defined bins for better statistics per bin
         
         subjetphi_axis = hist.Bin("subjetphi", r"SubJet $\phi$", 50, -np.pi, np.pi)
 
@@ -198,15 +199,15 @@ class TTbarResProcessor(processor.ProcessorABC):
             'b_eff_denominator_s11_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
             'b_eff_denominator_s12_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
             
-            'b_eff_numerator_s01_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_laxis),
-            'b_eff_numerator_s02_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_laxis),
-            'b_eff_numerator_s11_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_laxis),
-            'b_eff_numerator_s12_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_laxis),
+            'b_eff_numerator_s01_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_maxis),
+            'b_eff_numerator_s02_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_maxis),
+            'b_eff_numerator_s11_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_maxis),
+            'b_eff_numerator_s12_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_maxis),
             
-            'b_eff_denominator_s01_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_laxis),
-            'b_eff_denominator_s02_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_laxis),
-            'b_eff_denominator_s11_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_laxis),
-            'b_eff_denominator_s12_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_laxis),
+            'b_eff_denominator_s01_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_maxis),
+            'b_eff_denominator_s02_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_maxis),
+            'b_eff_denominator_s11_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_maxis),
+            'b_eff_denominator_s12_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_maxis),
             
             # ---- 2D SubJet c-tag Efficiency ---- #
             'c_eff_numerator_s01': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
@@ -229,15 +230,15 @@ class TTbarResProcessor(processor.ProcessorABC):
             'c_eff_denominator_s11_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
             'c_eff_denominator_s12_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
             
-            'c_eff_numerator_s01_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_laxis),
-            'c_eff_numerator_s02_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_laxis),
-            'c_eff_numerator_s11_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_laxis),
-            'c_eff_numerator_s12_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_laxis),
+            'c_eff_numerator_s01_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_maxis),
+            'c_eff_numerator_s02_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_maxis),
+            'c_eff_numerator_s11_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_maxis),
+            'c_eff_numerator_s12_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_maxis),
             
-            'c_eff_denominator_s01_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_laxis),
-            'c_eff_denominator_s02_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_laxis),
-            'c_eff_denominator_s11_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_laxis),
-            'c_eff_denominator_s12_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_laxis),
+            'c_eff_denominator_s01_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_maxis),
+            'c_eff_denominator_s02_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_maxis),
+            'c_eff_denominator_s11_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_maxis),
+            'c_eff_denominator_s12_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_maxis),
             
             # ---- 2D SubJet light quark-tag Efficiency ---- #
             'udsg_eff_numerator_s01': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
@@ -260,15 +261,15 @@ class TTbarResProcessor(processor.ProcessorABC):
             'udsg_eff_denominator_s11_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
             'udsg_eff_denominator_s12_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
             
-            'udsg_eff_numerator_s01_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_laxis),
-            'udsg_eff_numerator_s02_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_laxis),
-            'udsg_eff_numerator_s11_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_laxis),
-            'udsg_eff_numerator_s12_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_laxis),
+            'udsg_eff_numerator_s01_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_maxis),
+            'udsg_eff_numerator_s02_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_maxis),
+            'udsg_eff_numerator_s11_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_maxis),
+            'udsg_eff_numerator_s12_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_maxis),
             
-            'udsg_eff_denominator_s01_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_laxis),
-            'udsg_eff_denominator_s02_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_laxis),
-            'udsg_eff_denominator_s11_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_laxis),
-            'udsg_eff_denominator_s12_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_laxis),
+            'udsg_eff_denominator_s01_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_maxis),
+            'udsg_eff_denominator_s02_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_maxis),
+            'udsg_eff_denominator_s11_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_maxis),
+            'udsg_eff_denominator_s12_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_maxis),
             
             #********************************************************************************************************************#
             

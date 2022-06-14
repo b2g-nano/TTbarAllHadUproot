@@ -78,6 +78,10 @@ RedirectorGroup = Parser.add_mutually_exclusive_group(required=True)
 RedirectorGroup.add_argument('-C', '--casa', action='store_true', help='Use Coffea-Casa redirector: root://xcache/')
 RedirectorGroup.add_argument('-L', '--lpc', action='store_true', help='Use CMSLPC redirector: root://cmsxrootd.fnal.gov/')
 
+BDiscriminatorGroup = Parser.add_mutually_exclusive_group(required=True)
+BDiscriminatorGroup.add_argument('-l', '--loose', action='store_true', help='Apply loose bTag discriminant cut')
+BDiscriminatorGroup.add_argument('-med', '--medium', action='store_true', help='Apply loose bTag discriminant cut')
+
 Parser.add_argument('-a', '--APV', type=str, required=True, choices=['yes', 'no'], help='Do datasets have APV?')
 Parser.add_argument('-y', '--year', type=int, required=True, choices=[2016, 2017, 2018, 0], help='Year(s) of data/MC of the datasets you want to run uproot with.  Choose 0 for all years simultaneously.')
 
@@ -89,6 +93,7 @@ Parser.add_argument('--save', action='store_true', help='Choose to save the upro
 Parser.add_argument('--saveMistag', action='store_true', help='Save mistag rate calculated from running either --uproot 1 or --mistag')
 Parser.add_argument('--saveTrig', action='store_true', help='Save uproot job with trigger analysis outputs (Only if -T selected)')
 Parser.add_argument('--dask', action='store_true', help='Try the dask executor (experimental) for some fast processing!')
+Parser.add_argument('--useEff', action='store_true', help='Use MC bTag efficiencies for bTagging systematics')
 
 UncertaintyGroup = Parser.add_mutually_exclusive_group()
 UncertaintyGroup.add_argument('--bTagSyst', type=str, choices=['central', 'up', 'down'], help='Choose Unc.')
@@ -145,6 +150,12 @@ convertLabel = {
     'postVFP': 'noAPV'
 }
 #    -------------------------------------------------------    #
+BDisc = 0.
+if args.loose:
+    BDisc = 0.1918
+else: # args.medium
+    BDisc = 0.5847
+#    -------------------------------------------------------    #
 Testing = args.runtesting
 #    -------------------------------------------------------    #
 LoadingUnweightedFiles = False 
@@ -169,14 +180,27 @@ if args.save:
     SaveFirstRun = True # Make a coffea output file of the first uproot job (without the systematics and corrections)
     SaveSecondRun = True # Make a coffea output file of the second uproot job (with the systematics and corrections)
 #    -------------------------------------------------------    #    
+method=''
+if not args.useEff:
+    method='_method2' # Use bTagging systematic method without MC efficiencies and label output accordingly
+#    -------------------------------------------------------    #   
 SystType = "central" 
 UncType = ""
 if args.bTagSyst:
     UncType = "btagUnc"
     SystType = args.bTagSyst # string for btag SF evaluator --> "central", "up", or "down"
-if args.tTagSyst:
+elif args.tTagSyst:
     UncType = "ttagUnc"
     SystType = args.tTagSyst # string for ttag SF correction --> "central", "up", or "down"
+elif args.jec:
+    UncType = "jec"
+    SystType = args.jec # string for ttag SF correction --> "central", "up", or "down"
+elif args.jer:
+    UncType = "jer"
+    SystType = args.jer # string for ttag SF correction --> "central", "up", or "down"
+elif args.pileup:
+    UncType = "pileup"
+    SystType = args.pileup # string for ttag SF correction --> "central", "up", or "down"
 #    -------------------------------------------------------    # 
 Chunk = [args.chunksize, args.chunks] # [chunksize, maxchunks]
 #    -------------------------------------------------------    # 
@@ -296,6 +320,7 @@ for name,files in filesets_to_run.items():
                                                                                        ModMass=False, 
                                                                                        RandomDebugMode=False,
                                                                                        CalcEff_MC=True,
+                                                                                       bdisc = BDisc,
                                                                                        year=args.year,
                                                                                        apv=convertLabel[VFP],
                                                                                        vfp=VFP,
@@ -317,6 +342,7 @@ for name,files in filesets_to_run.items():
                                                                                        ModMass=False, 
                                                                                        RandomDebugMode=False,
                                                                                        CalcEff_MC=True,
+                                                                                       bdisc = BDisc,
                                                                                        year=args.year,
                                                                                        apv=convertLabel[VFP],
                                                                                        vfp=VFP,
@@ -359,6 +385,7 @@ for name,files in filesets_to_run.items():
                                                                                        ModMass=False, 
                                                                                        RandomDebugMode=False,
                                                                                        CalcEff_MC=True,
+                                                                                       bdisc = BDisc,
                                                                                        year=args.year,
                                                                                        apv=convertLabel[VFP],
                                                                                        vfp=VFP,
@@ -380,6 +407,7 @@ for name,files in filesets_to_run.items():
                                                                                        ModMass=False, 
                                                                                        RandomDebugMode=False,
                                                                                        CalcEff_MC=True,
+                                                                                       bdisc = BDisc,
                                                                                        year=args.year,
                                                                                        apv=convertLabel[VFP],
                                                                                        vfp=VFP,
@@ -483,7 +511,8 @@ for name,files in filesets_to_run.items():
                                                                                        RandomDebugMode=False,
                                                                                        ApplybtagSF=False,
                                                                                        sysType=SystType,
-                                                                                       UseEfficiencies=True,
+                                                                                       UseEfficiencies=args.useEff,
+                                                                                       bdisc = BDisc,
                                                                                        year=args.year,
                                                                                        apv=convertLabel[VFP],
                                                                                        vfp=VFP,
@@ -506,7 +535,8 @@ for name,files in filesets_to_run.items():
                                                                                        RandomDebugMode=False,
                                                                                        ApplybtagSF=True,
                                                                                        sysType=SystType,
-                                                                                       UseEfficiencies=True,
+                                                                                       UseEfficiencies=args.useEff,
+                                                                                       bdisc = BDisc,
                                                                                        year=args.year,
                                                                                        apv=convertLabel[VFP],
                                                                                        vfp=VFP,
@@ -530,6 +560,7 @@ for name,files in filesets_to_run.items():
                           + '_weighted_'
                           + UncType + '_' 
                           + SystType
+                          + method
                           + '.coffea')
             
             
@@ -544,7 +575,8 @@ for name,files in filesets_to_run.items():
                                                                                        RandomDebugMode=False,
                                                                                        ApplybtagSF=True,
                                                                                        sysType=SystType,
-                                                                                       UseEfficiencies=False,
+                                                                                       UseEfficiencies=args.useEff,
+                                                                                       bdisc = BDisc,
                                                                                        year=args.year,
                                                                                        apv=convertLabel[VFP],
                                                                                        vfp=VFP,
@@ -567,7 +599,8 @@ for name,files in filesets_to_run.items():
                                                                                        RandomDebugMode=False,
                                                                                        ApplybtagSF=True,
                                                                                        sysType=SystType,
-                                                                                       UseEfficiencies=True,
+                                                                                       UseEfficiencies=args.useEff,
+                                                                                       bdisc = BDisc,
                                                                                        year=args.year,
                                                                                        apv=convertLabel[VFP],
                                                                                        vfp=VFP,
@@ -590,6 +623,7 @@ for name,files in filesets_to_run.items():
                           + '_weighted_'
                           + UncType + '_' 
                           + SystType
+                          + method
                           + '.coffea')
     else:
         continue
