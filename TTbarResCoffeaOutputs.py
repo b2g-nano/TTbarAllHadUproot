@@ -80,7 +80,7 @@ RedirectorGroup.add_argument('-L', '--lpc', action='store_true', help='Use CMSLP
 
 BDiscriminatorGroup = Parser.add_mutually_exclusive_group(required=True)
 BDiscriminatorGroup.add_argument('-l', '--loose', action='store_true', help='Apply loose bTag discriminant cut')
-BDiscriminatorGroup.add_argument('-med', '--medium', action='store_true', help='Apply loose bTag discriminant cut')
+BDiscriminatorGroup.add_argument('-med', '--medium', action='store_true', help='Apply medium bTag discriminant cut')
 
 Parser.add_argument('-a', '--APV', type=str, required=True, choices=['yes', 'no'], help='Do datasets have APV?')
 Parser.add_argument('-y', '--year', type=int, required=True, choices=[2016, 2017, 2018, 0], help='Year(s) of data/MC of the datasets you want to run uproot with.  Choose 0 for all years simultaneously.')
@@ -186,9 +186,11 @@ if not args.useEff:
 #    -------------------------------------------------------    #   
 SystType = "central" 
 UncType = ""
+SFfile = ""
 if args.bTagSyst:
     UncType = "btagUnc"
     SystType = args.bTagSyst # string for btag SF evaluator --> "central", "up", or "down"
+    SFfile = "TTbarAllHadUproot/CorrectionFiles/SFs/bquark/subjet_deepCSV_106XUL16postVFP_v1.csv"
 elif args.tTagSyst:
     UncType = "ttagUnc"
     SystType = args.tTagSyst # string for ttag SF correction --> "central", "up", or "down"
@@ -201,6 +203,10 @@ elif args.jer:
 elif args.pileup:
     UncType = "pileup"
     SystType = args.pileup # string for ttag SF correction --> "central", "up", or "down"
+SystOpts = ((args.bTagSyst or args.tTagSyst) or (args.jec or args.jer)) or args.pileup
+if (not OnlyCreateLookupTables) and (not SystOpts):
+    Parser.error('Only run second uproot job with a Systematic application (like --bTagSyst, --jer, etc.)')
+    quit()
 #    -------------------------------------------------------    # 
 Chunk = [args.chunksize, args.chunks] # [chunksize, maxchunks]
 #    -------------------------------------------------------    # 
@@ -288,6 +294,7 @@ if UsingDaskExecutor == True:
         client.upload_file('TTbarAllHadUproot/Filesets.py')
         client.upload_file('TTbarAllHadUproot/TTbarResProcessor.py')
         client.upload_file('TTbarAllHadUproot/TTbarResLookUpTables.py')
+        client.upload_file('TTbarAllHadUproot/CorrectionFiles/SFs/bquark/subjet_deepCSV_106XUL16postVFP_v1.csv')
 
 
 
@@ -511,6 +518,7 @@ for name,files in filesets_to_run.items():
                                                                                        RandomDebugMode=False,
                                                                                        ApplybtagSF=False,
                                                                                        sysType=SystType,
+                                                                                       ScaleFactorFile=SFfile,
                                                                                        UseEfficiencies=args.useEff,
                                                                                        bdisc = BDisc,
                                                                                        year=args.year,
@@ -535,6 +543,7 @@ for name,files in filesets_to_run.items():
                                                                                        RandomDebugMode=False,
                                                                                        ApplybtagSF=True,
                                                                                        sysType=SystType,
+                                                                                       ScaleFactorFile=SFfile,
                                                                                        UseEfficiencies=args.useEff,
                                                                                        bdisc = BDisc,
                                                                                        year=args.year,
@@ -575,6 +584,7 @@ for name,files in filesets_to_run.items():
                                                                                        RandomDebugMode=False,
                                                                                        ApplybtagSF=True,
                                                                                        sysType=SystType,
+                                                                                       ScaleFactorFile=SFfile,
                                                                                        UseEfficiencies=args.useEff,
                                                                                        bdisc = BDisc,
                                                                                        year=args.year,
@@ -599,6 +609,7 @@ for name,files in filesets_to_run.items():
                                                                                        RandomDebugMode=False,
                                                                                        ApplybtagSF=True,
                                                                                        sysType=SystType,
+                                                                                       ScaleFactorFile=SFfile,
                                                                                        UseEfficiencies=args.useEff,
                                                                                        bdisc = BDisc,
                                                                                        year=args.year,
