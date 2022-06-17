@@ -1,7 +1,7 @@
 #!/usr/bin/env python 
 # coding: utf-8
 
-import os
+import os 
 import copy
 import scipy.stats as ss
 from coffea import hist, processor, nanoevents
@@ -30,8 +30,8 @@ manual_bins = [400, 500, 600, 800, 1000, 1500, 2000, 3000, 7000, 10000]
 # --- Define 'Manual pT bins' to use for mc flavor efficiency plots for higher stats per bin--- #
 #manual_subjetpt_bins = [0, 250, 500, 750, 1000, 1500, 2000]
 # manual_subjetpt_bins = [0, 200, 400, 600, 800, 1000, 1500, 2000, 3000] # Used before 2/21/22 on Biased TTbar samples (8 bins) 
-manual_subjetpt_bins = [0, 200, 400, 800, 3200] # Used on 3/30/22 for ttbar (4 bins)
-manual_subjeteta_bins = [0., 0.6, 1.2, 2.4] # Used on 6/14/22 for ttbar (3 bins)
+manual_subjetpt_bins = [0, 300, 600, 1200] # Used on 6/17/22 for ttbar (3 bins)
+manual_subjeteta_bins = [0., 0.6, 1.2, 2.4] # Used on 6/17/22 for ttbar (3 bins)
 #manual_etabins = []
 
 """@TTbarResAnaHadronic Package to perform the data-driven mistag-rate-based ttbar hadronic analysis. 
@@ -1258,6 +1258,8 @@ class TTbarResProcessor(processor.ProcessorABC):
                     # -- Scale Factor File -- #
                     SF_filename = self.ScaleFactorFile    
                     Fitting = "medium"
+                    if self.bdisc < 0.5:
+                        Fitting = "loose"
                     
                     # -- Get Efficiency .csv Files -- #
                     FlavorTagsDict = {
