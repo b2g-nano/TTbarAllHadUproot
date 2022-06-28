@@ -117,7 +117,9 @@ def CollectDatasets(redirector_str):
         else:
             with open(filedir + 'JetHT/' + filename) as h:
                 jetdatafiles2018 = [redirector_str + s.strip() for s in h.readlines()[::3]] 
-    filesets['JetHT2016_Data'] = jetdatafiles2016            
+    filesets['JetHT2016_Data'] = jetdatafiles2016 
+    filesets['JetHT2017_Data'] = jetdatafiles2017
+    filesets['JetHT2018_Data'] = jetdatafiles2018
     jetdatafiles = jetdatafiles2016 + jetdatafiles2017 + jetdatafiles2018 # All data after unblinding
     
     return filesets

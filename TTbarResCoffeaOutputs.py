@@ -276,25 +276,37 @@ else:
 #    DDDD    A     A SSSSS   K   K       SSSSS   EEEEEEE    T      UUU   P    
 #    ---------------------------------------------------------------------------
 
-from dask.distributed import Client#, Scheduler, SchedulerPlugin
-ImportFiles = 'TTbarAllHadUproot/nanoAODv9Files/'
+# from coffea_casa import CoffeaCasaCluster
+from dask.distributed import Client #, Scheduler, SchedulerPlugin
+ImportFiles = 'TTbarAllHadUproot/'
+client = None
 
-if UsingDaskExecutor == True:
-    if __name__ == "__main__":
-        client = Client("tls://ac-2emalik-2ewilliams-40cern-2ech.dask.coffea.casa:8786")
-#         tic = time.time()
-#         cluster = LPCCondorCluster(
-#             ship_env = True,
-#             transfer_input_files = ImportFiles
+if UsingDaskExecutor == True and args.casa:
+    if __name__ == "__main__":       
+#         cluster = CoffeaCasaCluster(
+#             scheduler_options = {
+#                 'dashboard_address': 8889
+#             },
+#             job_extra = {
+#                 'transfer_input_files': ImportFiles
+#             }
+
 #         )
-#         # minimum > 0: https://github.com/CoffeaTeam/coffea/issues/465
-#         cluster.adapt(minimum=1, maximum=10)
-#         client = Client(cluster)
-        client.restart()
-        client.upload_file('TTbarAllHadUproot/Filesets.py')
-        client.upload_file('TTbarAllHadUproot/TTbarResProcessor.py')
-        client.upload_file('TTbarAllHadUproot/TTbarResLookUpTables.py')
-        client.upload_file('TTbarAllHadUproot/CorrectionFiles/SFs/bquark/subjet_deepCSV_106XUL16postVFP_v1.csv')
+        client = Client('tls://ac-2emalik-2ewilliams-40cern-2ech.dask.coffea.casa:8786')
+        # client = Client(cluster)
+        
+        
+elif UsingDaskExecutor == True and args.lpc:
+    if __name__ == "__main__":  
+        tic = time.time()
+        cluster = LPCCondorCluster(
+            ship_env = True,
+            transfer_input_files = ImportFiles
+        )
+        # minimum > 0: https://github.com/CoffeaTeam/coffea/issues/465
+        cluster.adapt(minimum=1, maximum=10)
+        client = Client(cluster)
+        # client.restart()
 
 
 
