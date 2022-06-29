@@ -190,7 +190,7 @@ SFfile = ""
 if args.bTagSyst:
     UncType = "btagUnc"
     SystType = args.bTagSyst # string for btag SF evaluator --> "central", "up", or "down"
-    SFfile = "TTbarAllHadUproot/CorrectionFiles/SFs/bquark/subjet_deepCSV_106XUL16postVFP_v1.csv"
+    SFfile = 'TTbarAllHadUproot/CorrectionFiles/SFs/bquark/subjet_deepCSV_106XUL16postVFP_v1_converted_spaced.csv'
 elif args.tTagSyst:
     UncType = "ttagUnc"
     SystType = args.tTagSyst # string for ttag SF correction --> "central", "up", or "down"
@@ -278,7 +278,7 @@ else:
 
 from coffea_casa import CoffeaCasaCluster
 from dask.distributed import Client #, Scheduler, SchedulerPlugin
-ImportFiles = ['TTbarAllHadUproot/CorrectionFiles/SFs/bquark/subjet_deepCSV_106XUL16postVFP_v1.csv']
+ImportFiles = ['TTbarAllHadUproot/CorrectionFiles']
 client = None
 
 if UsingDaskExecutor == True and args.casa:
@@ -293,6 +293,7 @@ if UsingDaskExecutor == True and args.casa:
         client.upload_file('TTbarAllHadUproot/Filesets.py')
         client.upload_file('TTbarAllHadUproot/TTbarResProcessor.py')
         client.upload_file('TTbarAllHadUproot/TTbarResLookUpTables.py')
+        client.upload_file('TTbarAllHadUproot/CorrectionFiles/SFs/bquark/subjet_deepCSV_106XUL16postVFP_v1.csv')
         
         
 elif UsingDaskExecutor == True and args.lpc:
@@ -530,7 +531,7 @@ for name,files in filesets_to_run.items():
                                                                                        lu=mistag_luts,
                                                                                        ModMass=True, 
                                                                                        RandomDebugMode=False,
-                                                                                       ApplybtagSF=False,
+                                                                                       ApplybtagSF=True,
                                                                                        sysType=SystType,
                                                                                        ScaleFactorFile=SFfile,
                                                                                        UseEfficiencies=args.useEff,

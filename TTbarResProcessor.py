@@ -1208,8 +1208,10 @@ class TTbarResProcessor(processor.ProcessorABC):
                     Fitting = "medium"
                     if self.bdisc < 0.5:
                         Fitting = "loose"
+                        
+                    # os.listdir()
 
-                    btag_sf = BTagScaleFactor(SF_filename, Fitting)
+                    btag_sf = BTagScaleFactor(SF_filename, Fitting, "lt,lt,incl")
 
                     BSF_s0 = btag_sf.eval(self.sysType, 
                                           LeadingSubjet_s0.hadronFlavour, abs(LeadingSubjet_s0.eta), LeadingSubjet_s0.pt,
