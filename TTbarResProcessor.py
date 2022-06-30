@@ -39,7 +39,7 @@ manual_subjeteta_bins = [0., 0.6, 1.2, 2.4] # Used on 6/17/22 for ttbar (3 bins)
 class TTbarResProcessor(processor.ProcessorABC):
     def __init__(self, prng=RandomState(1234567890), htCut=950., minMSD=105., maxMSD=210.,
                  tau32Cut=0.65, ak8PtMin=400., bdisc=0.8484, deepAK8Cut=0.435,
-                 year=None, apv='', vfp='', triggerAnalysisObjects=False, UseLookUpTables=False, lu=None, 
+                 year=None, apv='', vfp='', UseLookUpTables=False, lu=None, 
                  ModMass=False, RandomDebugMode=False, CalcEff_MC=True, UseEfficiencies=False, 
                  ApplybtagSF=False, ScaleFactorFile='', ApplyttagSF=False, ApplyJER=False, ApplyJEC=False, sysType=None):
         
@@ -54,7 +54,6 @@ class TTbarResProcessor(processor.ProcessorABC):
         self.year = year
         self.apv = apv
         self.vfp = vfp
-        self.triggerAnalysisObjects = triggerAnalysisObjects
         self.UseLookUpTables = UseLookUpTables
         self.ModMass = ModMass
         self.RandomDebugMode = RandomDebugMode
@@ -70,7 +69,6 @@ class TTbarResProcessor(processor.ProcessorABC):
         
         # --- anti-tag+probe, anti-tag, pre-tag, 0, 1, >=1, 2 ttags, any t-tag (>=0t) --- #
         self.ttagcats = ["AT&Pt", "at", "pret", "0t", "1t", ">=1t", "2t", ">=0t"] 
-        self.ttagcats_forTriggerAnalysis = ["0t", ">=1t"]
         
         # --- 0, 1, or 2 b-tags --- #
         self.btagcats = ["0b", "1b", "2b"]
@@ -80,7 +78,6 @@ class TTbarResProcessor(processor.ProcessorABC):
         
         # --- Combine categories like "0bcen", "0bfwd", etc: --- #
         self.anacats = [ t+b+y for t,b,y in itertools.product( self.ttagcats, self.btagcats, self.ycats) ]
-        self.anacats_forTriggerAnalysis = [ t+b+y for t,b,y in itertools.product( self.ttagcats_forTriggerAnalysis, self.btagcats, self.ycats) ]
         #print(self.anacats)
         
         dataset_axis = hist.Cat("dataset", "Primary dataset")
@@ -153,22 +150,6 @@ class TTbarResProcessor(processor.ProcessorABC):
             
             'numerator':   hist.Hist("Counts", dataset_axis, cats_axis, manual_axis),
             'denominator': hist.Hist("Counts", dataset_axis, cats_axis, manual_axis),
-
-#    ===================================================================================================
-#    TTTTTTT RRRRRR  IIIIIII GGGGGGG GGGGGGG EEEEEEE RRRRRR      H     H IIIIIII   SSSSS TTTTTTT   SSSSS     
-#       T    R     R    I    G       G       E       R     R     H     H    I     S         T     S          
-#       T    R     R    I    G       G       E       R     R     H     H    I    S          T    S           
-#       T    RRRRRR     I    G  GGGG G  GGGG EEEEEEE RRRRRR      HHHHHHH    I     SSSSS     T     SSSSS      
-#       T    R   R      I    G     G G     G E       R   R       H     H    I          S    T          S     
-#       T    R    R     I    G     G G     G E       R    R      H     H    I         S     T         S      
-#       T    R     R IIIIIII  GGGGG   GGGGG  EEEEEEE R     R     H     H IIIIIII SSSSS      T    SSSSS
-#    ===================================================================================================
-            
-           'condition1_numerator': hist.Hist("Counts", dataset_axis, cats_axis, jetht_axis),
-           'condition2_numerator': hist.Hist("Counts", dataset_axis, cats_axis, jetht_axis),
-           'condition3_numerator': hist.Hist("Counts", dataset_axis, cats_axis, jetht_axis),
-           'condition4_numerator': hist.Hist("Counts", dataset_axis, cats_axis, jetht_axis),
-           'condition_denominator': hist.Hist("Counts", dataset_axis, cats_axis, jetht_axis),
                     
 #    ====================================================================
 #    EEEEEEE FFFFFFF FFFFFFF      H     H IIIIIII   SSSSS TTTTTTT   SSSSS     
@@ -549,17 +530,17 @@ class TTbarResProcessor(processor.ProcessorABC):
 #         HLT_AK8_triggers = listOfTriggers[isHLT_AK8]
         
         
-        trigDenom = events.HLT_Mu50 | events.HLT_IsoMu24 # WHY!!!!!????
+        # trigDenom = events.HLT_Mu50 | events.HLT_IsoMu24 # WHY!!!!!????
         # print(events.HLT_Mu50)
         # print(events.HLT_IsoMu24)
         # print(trigDenom)
         # print('-----------------------------------------------')
         
-        if self.year == 2016:
-            triggers2016_1 = events.HLT_PFHT900
-            triggers2016_2 = events.HLT_AK8PFHT700_TrimR0p1PT0p03Mass50
-            triggers2016_3 = events.HLT_AK8PFJet450
-            triggers2016_4 = events.HLT_AK8PFJet360_TrimMass30
+        # if self.year == 2016:
+        #     triggers2016_1 = events.HLT_PFHT900
+        #     triggers2016_2 = events.HLT_AK8PFHT700_TrimR0p1PT0p03Mass50
+        #     triggers2016_3 = events.HLT_AK8PFJet450
+        #     triggers2016_4 = events.HLT_AK8PFJet360_TrimMass30
 
 #    ===================================================================================
 #    PPPPPP  RRRRRR  EEEEEEE L       IIIIIII M     M       CCCC  U     U TTTTTTT   SSSSS     
@@ -581,22 +562,23 @@ class TTbarResProcessor(processor.ProcessorABC):
         output['cutflow']['all events'] += ak.to_awkward0(FatJets).size
         
         # ---- Setup Trigger Analysis Conditions in higher scope ---- #
-        condition1 = None
-        condition2 = None
-        condition3 = None
-        condition4 = None
-        firstCondition = None
+        # condition1 = None
+        # condition2 = None
+        # condition3 = None
+        # condition4 = None
+        # firstCondition = None
         
         # ---- Apply Trigger(s) ---- # 
-        if self.year == 2016: # Include other years later...
-            applyTrigs = (triggers2016_1 ^ triggers2016_2) ^ (triggers2016_3 ^ triggers2016_4)
-            firstCondition = (triggers2016_1) 
-        if self.triggerAnalysisObjects: # These conditions must be shaped properly along every step of the workflow
-            # ---- Defining Trigger Analysis Conditions ---- #
-            condition1 = firstCondition & trigDenom # WHY?! Figure out later...
-            condition2 = (firstCondition | triggers2016_2) & trigDenom
-            condition3 = ((firstCondition | triggers2016_2) | triggers2016_3) & trigDenom
-            condition4 = ((firstCondition | triggers2016_2) | (triggers2016_3 | triggers2016_4)) & trigDenom
+        # if self.year == 2016: # Include other years later...
+        #     applyTrigs = (triggers2016_1 ^ triggers2016_2) ^ (triggers2016_3 ^ triggers2016_4)
+        #     firstCondition = (triggers2016_1) 
+
+        # ---- Defining Trigger Analysis Conditions ---- #
+        # condition1 = firstCondition & trigDenom # WHY?! Figure out later...
+        # condition2 = (firstCondition | triggers2016_2) & trigDenom
+        # condition3 = ((firstCondition | triggers2016_2) | triggers2016_3) & trigDenom
+        # condition4 = ((firstCondition | triggers2016_2) | (triggers2016_3 | triggers2016_4)) & trigDenom
+            
         # Do NOT apply triggers yet...
         # if not self.triggerAnalysisObjects: # apply all necessary triggers as a first step if not performing trigger analysis
         #     FatJets = FatJets[applyTrigs]
@@ -605,18 +587,17 @@ class TTbarResProcessor(processor.ProcessorABC):
         #     evtweights = evtweights[applyTrigs]
 
         # ---- Apply HT Cut ---- #
-        if not self.triggerAnalysisObjects:
-            # ---- This gives the analysis 99.8% efficiency (see 2016 AN) ---- #
-            hT = ak.to_awkward0(Jets.pt).sum()
-            passhT = (hT > self.htCut)
-            FatJets = FatJets[passhT]
-            Jets = Jets[passhT] # this used to not be here
-            SubJets = SubJets[passhT]
-            evtweights = evtweights[passhT]
-            output['cutflow']['HT Cut'] += ak.to_awkward0(passhT).sum()
-            if isData == False: # If MC is used...
-                # print('if not isData command works')
-                GenParts = GenParts[passhT]
+        # ---- This gives the analysis 99.8% efficiency (see 2016 AN) ---- #
+        hT = ak.to_awkward0(Jets.pt).sum()
+        passhT = (hT > self.htCut)
+        FatJets = FatJets[passhT]
+        Jets = Jets[passhT] # this used to not be here
+        SubJets = SubJets[passhT]
+        evtweights = evtweights[passhT]
+        output['cutflow']['HT Cut'] += ak.to_awkward0(passhT).sum()
+        if isData == False: # If MC is used...
+            # print('if not isData command works')
+            GenParts = GenParts[passhT]
         
             
         # ---- Jets that satisfy Jet ID ---- #
@@ -635,12 +616,6 @@ class TTbarResProcessor(processor.ProcessorABC):
         FatJets = FatJets[twoFatJetsKin]
         SubJets = SubJets[twoFatJetsKin]
         Jets = Jets[twoFatJetsKin] # this used to not be here
-        if self.triggerAnalysisObjects:
-            condition1 = condition1[twoFatJetsKin]
-            condition2 = condition2[twoFatJetsKin]
-            condition3 = condition3[twoFatJetsKin]
-            condition4 = condition4[twoFatJetsKin]
-            trigDenom = trigDenom[twoFatJetsKin]
         evtweights = evtweights[twoFatJetsKin]
         if not isData: # If MC is used...
             GenParts = GenParts[twoFatJetsKin]
@@ -686,12 +661,6 @@ class TTbarResProcessor(processor.ProcessorABC):
         ttbarcands = ttbarcands[oneTTbar]
         FatJets = FatJets[oneTTbar]
         Jets = Jets[oneTTbar] # this used to not be here
-        if self.triggerAnalysisObjects:
-            condition1 = condition1[oneTTbar]
-            condition2 = condition2[oneTTbar]
-            condition3 = condition3[oneTTbar]
-            condition4 = condition4[oneTTbar]
-            trigDenom = trigDenom[oneTTbar]
         SubJets = SubJets[oneTTbar]
         evtweights = evtweights[oneTTbar]
         if not isData: # If MC is used...
@@ -705,12 +674,6 @@ class TTbarResProcessor(processor.ProcessorABC):
         ttbarcands = ttbarcands[dPhiCut]
         FatJets = FatJets[dPhiCut] 
         Jets = Jets[dPhiCut] # this used to not be here
-        if self.triggerAnalysisObjects:
-            condition1 = condition1[dPhiCut]
-            condition2 = condition2[dPhiCut]
-            condition3 = condition3[dPhiCut]
-            condition4 = condition4[dPhiCut]
-            trigDenom = trigDenom[dPhiCut]
         SubJets = SubJets[dPhiCut] 
         evtweights = evtweights[dPhiCut]
         if not isData: # If MC is used...
@@ -724,12 +687,6 @@ class TTbarResProcessor(processor.ProcessorABC):
         ttbarcands = ttbarcands[GoodSubjets] # Choose only ttbar candidates with this selection of subjets
         SubJets = SubJets[GoodSubjets]
         Jets = Jets[GoodSubjets] # this used to not be here
-        if self.triggerAnalysisObjects:
-            condition1 = condition1[GoodSubjets]
-            condition2 = condition2[GoodSubjets]
-            condition3 = condition3[GoodSubjets]
-            condition4 = condition4[GoodSubjets]
-            trigDenom = trigDenom[GoodSubjets]
         if not isData: # If MC is used...
             GenParts = GenParts[GoodSubjets]
         evtweights = evtweights[GoodSubjets]
@@ -779,10 +736,6 @@ class TTbarResProcessor(processor.ProcessorABC):
         
         # ttag_s0 = (taucut_s0) & (mcut_s0)
         # ttag_s1 = (taucut_s1) & (mcut_s1)
-        
-        if self.triggerAnalysisObjects:
-            ttag_s0 = mcut_s0
-            ttag_s1 = mcut_s1
         
         # ---- Define "Top Tag" Regions ---- #
         # antitag = (~taucut_s0) & (mcut_s0) # The Probe jet will always be ttbarcands.slot1 (at)
@@ -1312,87 +1265,6 @@ class TTbarResProcessor(processor.ProcessorABC):
                     btag1 = btag_s0 ^ btag_s1 #(1b)
                     btag2 = btag_s0 & btag_s1 #(2b)
                     
-
-#    ===========================================================================================================================        
-#    TTTTTTT RRRRRR  IIIIIII GGGGGGG GGGGGGG EEEEEEE RRRRRR         A    N     N    A    L       Y     Y   SSSSS IIIIIII   SSSSS     
-#       T    R     R    I    G       G       E       R     R       A A   NN    N   A A   L        Y   Y   S         I     S          
-#       T    R     R    I    G       G       E       R     R      A   A  N N   N  A   A  L         Y Y   S          I    S           
-#       T    RRRRRR     I    G  GGGG G  GGGG EEEEEEE RRRRRR       AAAAA  N  N  N  AAAAA  L          Y     SSSSS     I     SSSSS      
-#       T    R   R      I    G     G G     G E       R   R       A     A N   N N A     A L          Y          S    I          S     
-#       T    R    R     I    G     G G     G E       R    R      A     A N    NN A     A L          Y         S     I         S      
-#       T    R     R IIIIIII  GGGGG   GGGGG  EEEEEEE R     R     A     A N     N A     A LLLLLLL    Y    SSSSS   IIIIIII SSSSS
-#    ===========================================================================================================================  
-        
-        if self.triggerAnalysisObjects:
-            ConditionsDict = {
-                '1': condition1,
-                '2': condition2,
-                '3': condition3,
-                '4': condition4
-            }
-            
-            # ---- Defining Jet Collections for Trigger Analysis Numerator and Denominator ---- #
-            Jets_NumCondition1 = Jets[condition1] # contains jets to be used as numerator for trigger eff
-            Jets_NumCondition2 = Jets[condition2]
-            Jets_NumCondition3 = Jets[condition3]
-            Jets_NumCondition4 = Jets[condition4]
-            Jets_DenomCondition = Jets[trigDenom] # contains jets to be used as denominator for trigger eff
-            # ---- Must pass this cut before calculating HT variables for analysis ---- #
-            passAK4_num1 = (Jets_NumCondition1.pt > 30.) & (np.abs(Jets_NumCondition1.eta) < 3.0) 
-            passAK4_num2 = (Jets_NumCondition2.pt > 30.) & (np.abs(Jets_NumCondition2.eta) < 3.0)
-            passAK4_num3 = (Jets_NumCondition3.pt > 30.) & (np.abs(Jets_NumCondition3.eta) < 3.0)
-            passAK4_num4 = (Jets_NumCondition4.pt > 30.) & (np.abs(Jets_NumCondition4.eta) < 3.0)
-            passAK4_denom = (Jets_DenomCondition.pt > 30.) & (np.abs(Jets_DenomCondition.eta) < 3.0) 
-            # ---------------------------------------------------------------------------------------------#
-            # ---- Remember to have weights array that is consistently the same size as num and denom ---- #
-            # --------- This is only because input later in the code expects an array of weights --------- #
-            # ------------- despite this array being simply an array of ones for the sake of ------------- #
-            # ----------------------------------- not altering the data ---------------------------------- #
-            # ---------------------------------------------------------------------------------------------#
-            Num1Wgt = evtweights[condition1]
-            Num2Wgt = evtweights[condition2]
-            Num3Wgt = evtweights[condition3]
-            Num4Wgt = evtweights[condition4]
-            NumWgtDict = {
-                '1': Num1Wgt,
-                '2': Num2Wgt,
-                '3': Num3Wgt,
-                '4': Num4Wgt
-            }
-            DenomWgt = evtweights[trigDenom]
-            # ---- Defining Trigger Analysis Numerator(s) and Denominator ---- #
-            jet_HT_numerator1 = ak.sum(Jets_NumCondition1[passAK4_num1].pt, axis=-1) # Sum over each AK4 Jet per event
-            jet_HT_numerator2 = ak.sum(Jets_NumCondition2[passAK4_num2].pt, axis=-1)
-            jet_HT_numerator3 = ak.sum(Jets_NumCondition3[passAK4_num3].pt, axis=-1)
-            jet_HT_numerator4 = ak.sum(Jets_NumCondition4[passAK4_num4].pt, axis=-1)
-            jet_HT_numeratorDict = {
-                '1': jet_HT_numerator1,
-                '2': jet_HT_numerator2,
-                '3': jet_HT_numerator3,
-                '4': jet_HT_numerator4
-            }
-            jet_HT_denominator = ak.sum(Jets_DenomCondition[passAK4_denom].pt, axis=-1) # Sum over each AK4 Jet per event
-            # ---- Define Categories for Trigger Analysis Denominator and Fill Hists ---- #
-            ttags = [ttag0[trigDenom],ttagI[trigDenom]]
-            cats = [ ak.to_awkward0(ak.flatten(t)) for t in ttags ]
-            labels_and_categories = dict(zip( self.ttagcats_forTriggerAnalysis, cats ))
-            for ilabel,icat in labels_and_categories.items():
-                output['condition_denominator'].fill(dataset = dataset, anacat = ilabel, 
-                                                    Jet_HT = ak.to_numpy(jet_HT_denominator[icat]),
-                                                    weight = ak.to_numpy(DenomWgt[icat]))
-            # ---- Define Categories for Trigger Analysis Numerators and Fill Hists---- #
-            for i in range(1, len(ConditionsDict)+1):
-                c = ConditionsDict[str(i)]
-                n = jet_HT_numeratorDict[str(i)]
-                w = NumWgtDict[str(i)]
-                ttags = [ttag0[c],ttagI[c]]
-                cats = [ ak.to_awkward0(ak.flatten(t)) for t in ttags ]
-                labels_and_categories = dict(zip( self.ttagcats_forTriggerAnalysis, cats))
-                for ilabel,icat in labels_and_categories.items():
-                    output['condition' + str(i) + '_numerator'].fill(dataset = dataset, anacat = ilabel, 
-                                                                    Jet_HT = ak.to_numpy(n[icat]),
-                                                                    weight = ak.to_numpy(w[icat]))
-                    
 #    ================================================================
 #       A    N     N    A    L       Y     Y   SSSSS IIIIIII   SSSSS 
 #      A A   NN    N   A A   L        Y   Y   S         I     S      
@@ -1604,3 +1476,423 @@ class TTbarResProcessor(processor.ProcessorABC):
     def postprocess(self, accumulator):
         return accumulator
     
+
+       
+class TriggerAnalysisProcessor(processor.ProcessorABC):
+    def __init__(self, prng=RandomState(1234567890), htCut=950., minMSD=105., maxMSD=210.,
+                 tau32Cut=0.65, ak8PtMin=400., bdisc=0.8484, deepAK8Cut=0.435,
+                 year=None, apv='', vfp='', RandomDebugMode=False):
+        
+        self.prng = prng
+        self.htCut = htCut
+        self.minMSD = minMSD
+        self.maxMSD = maxMSD
+        self.tau32Cut = tau32Cut
+        self.ak8PtMin = ak8PtMin
+        self.bdisc = bdisc
+        self.deepAK8Cut = deepAK8Cut
+        self.year = year
+        self.apv = apv
+        self.vfp = vfp
+        self.RandomDebugMode = RandomDebugMode
+
+        
+        # --- 0, >=1 ttags --- #
+        self.ttagcats_forTriggerAnalysis = ["0t", ">=1t"]
+        
+        dataset_axis = hist.Cat("dataset", "Primary dataset")
+        cats_axis = hist.Cat("anacat", "Analysis Category")
+        jetht_axis = hist.Bin("Jet_HT", r'$AK4\ Jet\ HT$', 50, 200, 2200) # Used for Trigger Analysis
+        
+#    ===================================================================================================
+#    TTTTTTT RRRRRR  IIIIIII GGGGGGG GGGGGGG EEEEEEE RRRRRR      H     H IIIIIII   SSSSS TTTTTTT   SSSSS     
+#       T    R     R    I    G       G       E       R     R     H     H    I     S         T     S          
+#       T    R     R    I    G       G       E       R     R     H     H    I    S          T    S           
+#       T    RRRRRR     I    G  GGGG G  GGGG EEEEEEE RRRRRR      HHHHHHH    I     SSSSS     T     SSSSS      
+#       T    R   R      I    G     G G     G E       R   R       H     H    I          S    T          S     
+#       T    R    R     I    G     G G     G E       R    R      H     H    I         S     T         S      
+#       T    R     R IIIIIII  GGGGG   GGGGG  EEEEEEE R     R     H     H IIIIIII SSSSS      T    SSSSS
+#    ===================================================================================================
+
+        self._accumulator = processor.dict_accumulator({
+           'condition1_numerator': hist.Hist("Counts", dataset_axis, cats_axis, jetht_axis),
+           'condition2_numerator': hist.Hist("Counts", dataset_axis, cats_axis, jetht_axis),
+           'condition3_numerator': hist.Hist("Counts", dataset_axis, cats_axis, jetht_axis),
+           'condition4_numerator': hist.Hist("Counts", dataset_axis, cats_axis, jetht_axis),
+           'condition_denominator': hist.Hist("Counts", dataset_axis, cats_axis, jetht_axis),
+            
+            'cutflow': processor.defaultdict_accumulator(int),
+        })
+        
+            
+    @property
+    def accumulator(self):
+        return self._accumulator
+
+    def process(self, events):
+        output = self.accumulator.identity()
+        
+        # ---- Define dataset ---- #
+        dataset = events.metadata['dataset']
+
+#    ===========================================================================================    
+#    N     N    A    N     N   OOO      A      OOO   DDDD          OOO   BBBBBB  JJJJJJJ   SSSSS     
+#    NN    N   A A   NN    N  O   O    A A    O   O  D   D        O   O  B     B    J     S          
+#    N N   N  A   A  N N   N O     O  A   A  O     O D    D      O     O B     B    J    S           
+#    N  N  N  AAAAA  N  N  N O     O  AAAAA  O     O D     D     O     O BBBBBB     J     SSSSS      
+#    N   N N A     A N   N N O     O A     A O     O D    D      O     O B     B J  J          S     
+#    N    NN A     A N    NN  O   O  A     A  O   O  D   D        O   O  B     B J  J         S      
+#    N     N A     A N     N   OOO   A     A   OOO   DDDD          OOO   BBBBBB   JJ     SSSSS 
+#    =========================================================================================== 
+
+        isData = ('JetHT' in dataset) or ('SingleMu' in dataset)
+        
+        # ---- Define AK8 Jets as FatJets ---- #
+        #FatJets = events.FatJet # Everything should already be defined in here.  example) df['FatJet_pt] -> events.FatJet.pt
+        FatJets = ak.zip({
+            "run": events.run,
+            "nFatJet": events.nFatJet,
+            "pt": events.FatJet_pt,
+            "eta": events.FatJet_eta,
+            "phi": events.FatJet_phi,
+            "mass": events.FatJet_mass,
+            "msoftdrop": events.FatJet_msoftdrop,
+            "jetId": events.FatJet_jetId,
+            "deepTag_TvsQCD": events.FatJet_deepTag_TvsQCD,
+            "deepTagMD_TvsQCD": events.FatJet_deepTagMD_TvsQCD,
+            "subJetIdx1": events.FatJet_subJetIdx1,
+            "subJetIdx2": events.FatJet_subJetIdx2,
+            "p4": ak.zip({
+                "pt": events.FatJet_pt,
+                "eta": events.FatJet_eta,
+                "phi": events.FatJet_phi,
+                "mass": events.FatJet_mass,
+                }, with_name="PtEtaPhiMLorentzVector"),
+            })
+
+        # ---- Define AK4 jets as Jets ---- #
+        Jets = ak.zip({
+            "run": events.run,
+            "pt": events.Jet_pt,
+            "eta": events.Jet_eta,
+            "phi": events.Jet_phi,
+            "mass": events.Jet_mass,
+            "area": events.Jet_area,
+            "p4": ak.zip({
+                "pt": events.Jet_pt,
+                "eta": events.Jet_eta,
+                "phi": events.Jet_phi,
+                "mass": events.Jet_mass,
+                }, with_name="PtEtaPhiMLorentzVector"),
+            })
+
+        # ---- Define SubJets ---- #
+        SubJets = ak.zip({
+            "run": events.run,
+            "pt": events.SubJet_pt,
+            "eta": events.SubJet_eta,
+            "phi": events.SubJet_phi,
+            "mass": events.SubJet_mass,
+            "btagDeepB": events.SubJet_btagDeepB,
+            "btagCSVV2": events.SubJet_btagCSVV2,
+            "p4": ak.zip({
+                "pt": events.SubJet_pt,
+                "eta": events.SubJet_eta,
+                "phi": events.SubJet_phi,
+                "mass": events.SubJet_mass,
+                }, with_name="PtEtaPhiMLorentzVector"),
+            })
+            
+            
+#    ================================================================
+#    TTTTTTT RRRRRR  IIIIIII GGGGGGG GGGGGGG EEEEEEE RRRRRR    SSSSS     
+#       T    R     R    I    G       G       E       R     R  S          
+#       T    R     R    I    G       G       E       R     R S           
+#       T    RRRRRR     I    G  GGGG G  GGGG EEEEEEE RRRRRR   SSSSS      
+#       T    R   R      I    G     G G     G E       R   R         S     
+#       T    R    R     I    G     G G     G E       R    R       S      
+#       T    R     R IIIIIII  GGGGG   GGGGG  EEEEEEE R     R SSSSS  
+#    ================================================================
+        
+#         Dataset_info = events.fields # All nanoaod events
+#         listOfTriggers = np.array([name for name in Dataset_info if 'HLT' in name]) # Find event name info that have HLT to find all relevant triggers
+        
+#         isHLT_PF = np.array(['HLT_PF' in i for i in listOfTriggers])
+#         isHLT_AK8 = np.array(['HLT_AK8' in i for i in listOfTriggers])
+        
+#         HLT_PF_triggers = listOfTriggers[isHLT_PF]
+#         HLT_AK8_triggers = listOfTriggers[isHLT_AK8]
+        
+        
+        trigDenom = events.HLT_Mu50 | events.HLT_IsoMu24 # WHY!!!!!????
+        # print(events.HLT_Mu50)
+        # print(events.HLT_IsoMu24)
+        # print(trigDenom)
+        # print('-----------------------------------------------')
+        
+        if self.year == 2016:
+            triggers2016_1 = events.HLT_PFHT900
+            triggers2016_2 = events.HLT_AK8PFHT700_TrimR0p1PT0p03Mass50
+            triggers2016_3 = events.HLT_AK8PFJet450
+            triggers2016_4 = events.HLT_AK8PFJet360_TrimMass30
+
+#    ===================================================================================
+#    PPPPPP  RRRRRR  EEEEEEE L       IIIIIII M     M       CCCC  U     U TTTTTTT   SSSSS     
+#    P     P R     R E       L          I    MM   MM      C      U     U    T     S          
+#    P     P R     R E       L          I    M M M M     C       U     U    T    S           
+#    PPPPPP  RRRRRR  EEEEEEE L          I    M  M  M     C       U     U    T     SSSSS      
+#    P       R   R   E       L          I    M     M     C       U     U    T          S     
+#    P       R    R  E       L          I    M     M      C       U   U     T         S      
+#    P       R     R EEEEEEE LLLLLLL IIIIIII M     M       CCCC    UUU      T    SSSSS
+#    ===================================================================================
+        
+        # ---- Get event weights from dataset ---- #
+        if isData: # If data is used...
+            # print('if isData command works')
+            evtweights = np.ones(ak.to_awkward0(FatJets).size) # set all "data weights" to one
+        else: # if Monte Carlo dataset is used...
+            evtweights = events.Generator_weight
+        # ---- Show all events ---- #
+        output['cutflow']['all events'] += ak.to_awkward0(FatJets).size
+        
+        # ---- Setup Trigger Analysis Conditions in higher scope ---- #
+        condition1 = None
+        condition2 = None
+        condition3 = None
+        condition4 = None
+        firstCondition = None
+        
+        # ---- Apply Trigger(s) ---- # 
+        if self.year == 2016: # Include other years later...
+            firstCondition = (triggers2016_1) 
+            
+        # ---- Defining Trigger Analysis Conditions ---- #
+        condition1 = firstCondition & trigDenom # WHY?! Figure out later...
+        condition2 = (firstCondition | triggers2016_2) & trigDenom
+        condition3 = ((firstCondition | triggers2016_2) | triggers2016_3) & trigDenom
+        condition4 = ((firstCondition | triggers2016_2) | (triggers2016_3 | triggers2016_4)) & trigDenom
+        
+            
+        # ---- Jets that satisfy Jet ID ---- #
+        jet_id = (FatJets.jetId > 0) # Loose jet ID
+        FatJets = FatJets[jet_id]
+        output['cutflow']['Loose Jet ID'] += ak.to_awkward0(jet_id).any().sum()
+        
+        # ---- Apply pT Cut and Rapidity Window ---- #
+        FatJets_rapidity = .5*np.log( (FatJets.p4.energy + FatJets.p4.pz)/(FatJets.p4.energy - FatJets.p4.pz) )
+        jetkincut_index = (FatJets.pt > self.ak8PtMin) & (np.abs(FatJets_rapidity) < 2.4)
+        FatJets = FatJets[ jetkincut_index ]
+        output['cutflow']['pT,y Cut'] += ak.to_awkward0(jetkincut_index).any().sum()
+        
+        # ---- Find two AK8 Jets ---- #
+        twoFatJetsKin = (ak.num(FatJets, axis=-1) == 2)
+        FatJets = FatJets[twoFatJetsKin]
+        SubJets = SubJets[twoFatJetsKin]
+        Jets = Jets[twoFatJetsKin] # this used to not be here
+
+        condition1 = condition1[twoFatJetsKin]
+        condition2 = condition2[twoFatJetsKin]
+        condition3 = condition3[twoFatJetsKin]
+        condition4 = condition4[twoFatJetsKin]
+        trigDenom = trigDenom[twoFatJetsKin]
+        evtweights = evtweights[twoFatJetsKin]
+        output['cutflow']['two FatJets'] += ak.to_awkward0(twoFatJetsKin).sum()
+        
+        # ---- Randomly Assign AK8 Jets as TTbar Candidates 0 and 1 --- #
+        Counts = np.ones(len(FatJets), dtype='i') # Number 1 for each FatJet
+        
+        if self.RandomDebugMode == True: # 'Sudo' randomizer to test for consistent results
+            highPhi = FatJets.phi[:,0] > FatJets.phi[:,1]
+            highRandIndex = np.where(highPhi, 0, 1) # 1D array of 0's and 1's
+            index = ak.unflatten( highRandIndex, Counts ) # Subtly confusing logic of what this does is shown below
+            """
+                For example:
+                
+                    FatJets = [[FatJet0, FatJet1], [AnotherFatJet0, AnotherFatJet1], ..., [LastFatJet0, LastFatJet1]]
+                    Counts = [1, 1, 1, 1, 1, 1]
+                    highRandIndex = [1, 1, 0, 1, 0, 0]
+                    
+                unflattening highRandIndex with Counts will group "Counts" number of highRandIndex elements together 
+                in a new higher order array:
+                
+                    index = [[1], [1], [0], [1], [0], [0]]
+                    1 - index = [[0], [0], [1], [0], [1], [1]]
+                    
+               where the index is used to slice (select) either the first FatJet (FatJets[:,0]) or the second (FatJets[:,1]):
+        
+                    FatJets[index] = [FatJet1, AnotherFatJet1, ..., LastFatJet0]
+                    FatJets[1-index] = [FatJet0, AnotherFatJet0, ..., LastFatJet1]
+            """
+        else: # Truly randomize
+            index = ak.unflatten( self.prng.randint(2, size=len(FatJets)), Counts )
+        
+        jet0 = FatJets[index] #J0
+        jet1 = FatJets[1 - index] #J1
+        
+        ttbarcands = ak.cartesian([jet0, jet1]) # Re-group the randomized pairs in a similar fashion to how they were
+        
+        """ NOTE that ak.cartesian gives a shape with one more layer than FatJets """
+        # ---- Make sure we have at least 1 TTbar candidate pair and re-broadcast releveant arrays  ---- #
+        oneTTbar = (ak.num(ttbarcands, axis=-1) >= 1)
+        output['cutflow']['>= oneTTbar'] += ak.to_awkward0(oneTTbar).sum()
+        ttbarcands = ttbarcands[oneTTbar]
+        FatJets = FatJets[oneTTbar]
+        Jets = Jets[oneTTbar] # this used to not be here
+        
+        condition1 = condition1[oneTTbar]
+        condition2 = condition2[oneTTbar]
+        condition3 = condition3[oneTTbar]
+        condition4 = condition4[oneTTbar]
+        trigDenom = trigDenom[oneTTbar]
+        SubJets = SubJets[oneTTbar]
+        evtweights = evtweights[oneTTbar]
+            
+        # ---- Apply Delta Phi Cut for Back to Back Topology ---- #
+        """ NOTE: Should find function for this; avoids 2pi problem """
+        dPhiCut = ttbarcands.slot0.p4.delta_phi(ttbarcands.slot1.p4) > 2.1
+        dPhiCut = ak.flatten(dPhiCut)
+        output['cutflow']['dPhi Cut'] += ak.to_awkward0(dPhiCut).sum()
+        ttbarcands = ttbarcands[dPhiCut]
+        FatJets = FatJets[dPhiCut] 
+        Jets = Jets[dPhiCut] # this used to not be here
+        
+        condition1 = condition1[dPhiCut]
+        condition2 = condition2[dPhiCut]
+        condition3 = condition3[dPhiCut]
+        condition4 = condition4[dPhiCut]
+        trigDenom = trigDenom[dPhiCut]
+        SubJets = SubJets[dPhiCut] 
+        evtweights = evtweights[dPhiCut]
+        
+        # ---- Identify subjets according to subjet ID ---- #
+        hasSubjets0 = ((ttbarcands.slot0.subJetIdx1 > -1) & (ttbarcands.slot0.subJetIdx2 > -1)) # 1st candidate has two subjets
+        hasSubjets1 = ((ttbarcands.slot1.subJetIdx1 > -1) & (ttbarcands.slot1.subJetIdx2 > -1)) # 2nd candidate has two subjets
+        GoodSubjets = ak.flatten(((hasSubjets0) & (hasSubjets1))) # Selection of 4 (leading) subjects
+        output['cutflow']['Good Subjets'] += ak.to_awkward0(GoodSubjets).sum()
+        ttbarcands = ttbarcands[GoodSubjets] # Choose only ttbar candidates with this selection of subjets
+        SubJets = SubJets[GoodSubjets]
+        Jets = Jets[GoodSubjets] # this used to not be here
+        
+        condition1 = condition1[GoodSubjets]
+        condition2 = condition2[GoodSubjets]
+        condition3 = condition3[GoodSubjets]
+        condition4 = condition4[GoodSubjets]
+        trigDenom = trigDenom[GoodSubjets]
+        evtweights = evtweights[GoodSubjets]
+        
+        SubJet01 = SubJets[ttbarcands.slot0.subJetIdx1] # ttbarcandidate 0's first subjet 
+        SubJet02 = SubJets[ttbarcands.slot0.subJetIdx2] # ttbarcandidate 0's second subjet
+        SubJet11 = SubJets[ttbarcands.slot1.subJetIdx1] # ttbarcandidate 1's first subjet 
+        SubJet12 = SubJets[ttbarcands.slot1.subJetIdx2] # ttbarcandidate 1's second subjet
+        
+        
+
+#    ============================================================
+#    TTTTTTT     TTTTTTT    A    GGGGGGG GGGGGGG EEEEEEE RRRRRR  
+#       T           T      A A   G       G       E       R     R 
+#       T           T     A   A  G       G       E       R     R 
+#       T           T     AAAAA  G  GGGG G  GGGG EEEEEEE RRRRRR  
+#       T           T    A     A G     G G     G E       R   R   
+#       T           T    A     A G     G G     G E       R    R   
+#       T           T    A     A  GGGGG   GGGGG  EEEEEEE R     R
+#    ============================================================
+
+        # ----------- CMS Top Tagger Version 2 (SD and Tau32 Cuts) ----------- #
+        # ---- NOTE: Must Change This to DeepAK8 Top Tag Discriminator Cut ----#
+        # ---- Maybe we should ignore tau32 cut(s) when performing trigger analysis ---- #
+        
+        mcut_s0 = (self.minMSD < ttbarcands.slot0.msoftdrop) & (ttbarcands.slot0.msoftdrop < self.maxMSD) 
+        mcut_s1 = (self.minMSD < ttbarcands.slot1.msoftdrop) & (ttbarcands.slot1.msoftdrop < self.maxMSD) 
+        
+        ttag_s0 = mcut_s0
+        ttag_s1 = mcut_s1
+        
+        # ---- Define "Top Tag" Regions ---- #
+        ttag0 =   (~ttag_s0) & (~ttag_s1) # No tops tagged (0t)
+        ttagI =   ttag_s0 | ttag_s1 # At least one top tagged ('I' for 'inclusive' tagger; >=1t; 1t+2t)
+
+                    
+
+#    ===========================================================================================================================        
+#    TTTTTTT RRRRRR  IIIIIII GGGGGGG GGGGGGG EEEEEEE RRRRRR         A    N     N    A    L       Y     Y   SSSSS IIIIIII   SSSSS     
+#       T    R     R    I    G       G       E       R     R       A A   NN    N   A A   L        Y   Y   S         I     S          
+#       T    R     R    I    G       G       E       R     R      A   A  N N   N  A   A  L         Y Y   S          I    S           
+#       T    RRRRRR     I    G  GGGG G  GGGG EEEEEEE RRRRRR       AAAAA  N  N  N  AAAAA  L          Y     SSSSS     I     SSSSS      
+#       T    R   R      I    G     G G     G E       R   R       A     A N   N N A     A L          Y          S    I          S     
+#       T    R    R     I    G     G G     G E       R    R      A     A N    NN A     A L          Y         S     I         S      
+#       T    R     R IIIIIII  GGGGG   GGGGG  EEEEEEE R     R     A     A N     N A     A LLLLLLL    Y    SSSSS   IIIIIII SSSSS
+#    ===========================================================================================================================  
+        
+        ConditionsDict = {
+            '1': condition1,
+            '2': condition2,
+            '3': condition3,
+            '4': condition4
+        }
+
+        # ---- Defining Jet Collections for Trigger Analysis Numerator and Denominator ---- #
+        Jets_NumCondition1 = Jets[condition1] # contains jets to be used as numerator for trigger eff
+        Jets_NumCondition2 = Jets[condition2]
+        Jets_NumCondition3 = Jets[condition3]
+        Jets_NumCondition4 = Jets[condition4]
+        Jets_DenomCondition = Jets[trigDenom] # contains jets to be used as denominator for trigger eff
+        # ---- Must pass this cut before calculating HT variables for analysis ---- #
+        passAK4_num1 = (Jets_NumCondition1.pt > 30.) & (np.abs(Jets_NumCondition1.eta) < 3.0) 
+        passAK4_num2 = (Jets_NumCondition2.pt > 30.) & (np.abs(Jets_NumCondition2.eta) < 3.0)
+        passAK4_num3 = (Jets_NumCondition3.pt > 30.) & (np.abs(Jets_NumCondition3.eta) < 3.0)
+        passAK4_num4 = (Jets_NumCondition4.pt > 30.) & (np.abs(Jets_NumCondition4.eta) < 3.0)
+        passAK4_denom = (Jets_DenomCondition.pt > 30.) & (np.abs(Jets_DenomCondition.eta) < 3.0) 
+        # ---------------------------------------------------------------------------------------------#
+        # ---- Remember to have weights array that is consistently the same size as num and denom ---- #
+        # --------- This is only because input later in the code expects an array of weights --------- #
+        # ------------- despite this array being simply an array of ones for the sake of ------------- #
+        # ----------------------------------- not altering the data ---------------------------------- #
+        # ---------------------------------------------------------------------------------------------#
+        Num1Wgt = evtweights[condition1]
+        Num2Wgt = evtweights[condition2]
+        Num3Wgt = evtweights[condition3]
+        Num4Wgt = evtweights[condition4]
+        NumWgtDict = {
+            '1': Num1Wgt,
+            '2': Num2Wgt,
+            '3': Num3Wgt,
+            '4': Num4Wgt
+        }
+        DenomWgt = evtweights[trigDenom]
+        # ---- Defining Trigger Analysis Numerator(s) and Denominator ---- #
+        jet_HT_numerator1 = ak.sum(Jets_NumCondition1[passAK4_num1].pt, axis=-1) # Sum over each AK4 Jet per event
+        jet_HT_numerator2 = ak.sum(Jets_NumCondition2[passAK4_num2].pt, axis=-1)
+        jet_HT_numerator3 = ak.sum(Jets_NumCondition3[passAK4_num3].pt, axis=-1)
+        jet_HT_numerator4 = ak.sum(Jets_NumCondition4[passAK4_num4].pt, axis=-1)
+        jet_HT_numeratorDict = {
+            '1': jet_HT_numerator1,
+            '2': jet_HT_numerator2,
+            '3': jet_HT_numerator3,
+            '4': jet_HT_numerator4
+        }
+        jet_HT_denominator = ak.sum(Jets_DenomCondition[passAK4_denom].pt, axis=-1) # Sum over each AK4 Jet per event
+        # ---- Define Categories for Trigger Analysis Denominator and Fill Hists ---- #
+        ttags = [ttag0[trigDenom],ttagI[trigDenom]]
+        cats = [ ak.to_awkward0(ak.flatten(t)) for t in ttags ]
+        labels_and_categories = dict(zip( self.ttagcats_forTriggerAnalysis, cats ))
+        for ilabel,icat in labels_and_categories.items():
+            output['condition_denominator'].fill(dataset = dataset, anacat = ilabel, 
+                                                Jet_HT = ak.to_numpy(jet_HT_denominator[icat]),
+                                                weight = ak.to_numpy(DenomWgt[icat]))
+        # ---- Define Categories for Trigger Analysis Numerators and Fill Hists---- #
+        for i in range(1, len(ConditionsDict)+1):
+            c = ConditionsDict[str(i)]
+            n = jet_HT_numeratorDict[str(i)]
+            w = NumWgtDict[str(i)]
+            ttags = [ttag0[c],ttagI[c]]
+            cats = [ ak.to_awkward0(ak.flatten(t)) for t in ttags ]
+            labels_and_categories = dict(zip( self.ttagcats_forTriggerAnalysis, cats))
+            for ilabel,icat in labels_and_categories.items():
+                output['condition' + str(i) + '_numerator'].fill(dataset = dataset, anacat = ilabel, 
+                                                                Jet_HT = ak.to_numpy(n[icat]),
+                                                                weight = ak.to_numpy(w[icat]))
+ 
+        return output
+
+    def postprocess(self, accumulator):
+        return accumulator

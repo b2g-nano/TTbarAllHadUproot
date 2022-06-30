@@ -115,7 +115,7 @@ if args.runmistag and args.uproot:
     quit()
 isTrigEffArg = args.runtrigeff
 if isTrigEffArg and args.uproot:
-    Parser.error('When running any --runtrigeff option do not specify --uproot.')
+    Parser.error('When running --runtrigeff option do not specify --uproot.')
     quit()
 if isTrigEffArg == False and args.saveTrig:
     Parser.error('When not running some --runtrigeff option do not specify --saveTrig.')
@@ -212,6 +212,7 @@ Chunk = [args.chunksize, args.chunks] # [chunksize, maxchunks]
 #    -------------------------------------------------------    # 
 
 from TTbarResProcessor import TTbarResProcessor
+from TTbarResProcessor import TriggerAnalysisProcessor
 
 #    -------------------------------------------------------------------------------------------------------------------
 #    IIIIIII M     M PPPPPP    OOO   RRRRRR  TTTTTTT     DDDD       A    TTTTTTT    A      SSSSS EEEEEEE TTTTTTT   SSSSS     
@@ -250,7 +251,7 @@ if not Testing:
         filesets_to_run[namingConvention+'_TTbar'] = filesets[namingConvention+'_TTbar']
         filesets_to_run['JetHT'+str(args.year)+'_Data'] = filesets['JetHT'+str(args.year)+'_Data']
         SaveLocation['JetHT'+str(args.year)+'_Data'] = 'JetHT/' + str(args.year) + '/TTbarRes_0l_'
-    elif isTrigEffArg: # 1, 2, 3, or 4; just run over data
+    elif isTrigEffArg: # just run over data
         filesets_to_run['SingleMu'+str(args.year)+'_Data'] = filesets['SingleMu'+str(args.year)+'_Data']
         SaveLocation['SingleMu'+str(args.year)+'_Data'] = 'SingleMu/' + str(args.year) + '/TTbarRes_0l_'
     else: # if somehow, the initial needed arguments are not used
@@ -276,25 +277,24 @@ else:
 #    DDDD    A     A SSSSS   K   K       SSSSS   EEEEEEE    T      UUU   P    
 #    ---------------------------------------------------------------------------
 
-from coffea_casa import CoffeaCasaCluster
+# from coffea_casa import CoffeaCasaCluster
 from dask.distributed import Client #, Scheduler, SchedulerPlugin
-ImportFiles = ['TTbarAllHadUproot/CorrectionFiles']
+# ImportFiles = ['TTbarAllHadUproot/CorrectionFiles']
 client = None
 
 if UsingDaskExecutor == True and args.casa:
     if __name__ == "__main__":       
-        cluster = CoffeaCasaCluster(
-            job_extra = {
-                'transfer_input_files': ImportFiles
-            }
-        )
-        # client = Client('tls://ac-2emalik-2ewilliams-40cern-2ech.dask.coffea.casa:8786')
-        client = Client(cluster)
+        # cluster = CoffeaCasaCluster(
+        #     job_extra = {
+        #         'transfer_input_files': ImportFiles
+        #     }
+        # )
+        client = Client('tls://ac-2emalik-2ewilliams-40cern-2ech.dask.coffea.casa:8786')
+        # client = Client(cluster)
         client.restart()
         client.upload_file('TTbarAllHadUproot/Filesets.py')
         client.upload_file('TTbarAllHadUproot/TTbarResProcessor.py')
         client.upload_file('TTbarAllHadUproot/TTbarResLookUpTables.py')
-        client.upload_file('TTbarAllHadUproot/CorrectionFiles/SFs/bquark/subjet_deepCSV_106XUL16postVFP_v1.csv')
         
         
 elif UsingDaskExecutor == True and args.lpc:
@@ -313,7 +313,139 @@ elif UsingDaskExecutor == True and args.lpc:
         client.upload_file('TTbarAllHadUproot/TTbarResLookUpTables.py')
 
 
+#    -----------------------------------------------------------------------------------------------------------
+#    U     U PPPPPP  RRRRRR    OOO     OOO   TTTTTTT     TTTTTTT RRRRRR  IIIIIII GGGGGGG GGGGGGG EEEEEEE RRRRRR      
+#    U     U P     P R     R  O   O   O   O     T           T    R     R    I    G       G       E       R     R     
+#    U     U P     P R     R O     O O     O    T           T    R     R    I    G       G       E       R     R     
+#    U     U PPPPPP  RRRRRR  O     O O     O    T           T    RRRRRR     I    G  GGGG G  GGGG EEEEEEE RRRRRR      
+#    U     U P       R   R   O     O O     O    T           T    R   R      I    G     G G     G E       R   R       
+#     U   U  P       R    R   O   O   O   O     T           T    R    R     I    G     G G     G E       R    R      
+#      UUU   P       R     R   OOO     OOO      T           T    R     R IIIIIII  GGGGG   GGGGG  EEEEEEE R     R       
+#    -----------------------------------------------------------------------------------------------------------
+        
+                      
+if isTrigEffArg:
+    tstart = time.time()
 
+    outputs_unweighted = {}
+
+    seed = 1234577890
+    prng = RandomState(seed)
+
+    for name,files in filesets_to_run.items(): 
+        print('Processing', name, '...')
+        if not RunAllRootFiles:
+            if not UsingDaskExecutor:
+                chosen_exec = 'futures'
+                output = processor.run_uproot_job({name:files},
+                                                  treename='Events',
+                                                  processor_instance=TriggerAnalysisProcessor(RandomDebugMode=False,
+                                                                                       bdisc = BDisc,
+                                                                                       year=args.year,
+                                                                                       apv=convertLabel[VFP],
+                                                                                       vfp=VFP,
+                                                                                       prng=prng),
+                                                  executor=processor.futures_executor,
+                                                  executor_args={
+                                                      #'client': client,
+                                                      'skipbadfiles':False,
+                                                      'schema': BaseSchema, #NanoAODSchema,
+                                                      'workers': 2},
+                                                  chunksize=Chunk[0], maxchunks=Chunk[1])
+            else: # use dask
+                chosen_exec = 'dask'
+                client.wait_for_workers(1)
+                output = processor.run_uproot_job({name:files},
+                                                  treename='Events',
+                                                  processor_instance=TriggerAnalysisProcessor(RandomDebugMode=False,
+                                                                                       bdisc = BDisc,
+                                                                                       year=args.year,
+                                                                                       apv=convertLabel[VFP],
+                                                                                       vfp=VFP,
+                                                                                       prng=prng),
+                                                  executor=processor.dask_executor,
+                                                  executor_args={
+                                                      'client': client,
+                                                      'skipbadfiles':False,
+                                                      'schema': BaseSchema},
+                                                  chunksize=Chunk[0], maxchunks=Chunk[1])
+                client.restart()
+
+            elapsed = time.time() - tstart
+            outputs_unweighted[name] = output
+            print(output)
+
+            if args.saveTrig:
+                mkdir_p('TTbarAllHadUproot/CoffeaOutputsForTriggerAnalysis/'
+                          + SaveLocation[name])
+                util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForTriggerAnalysis/'
+                      + SaveLocation[name]
+                      + name    
+                      + '_TriggerAnalysis' 
+                      + '.coffea')
+
+
+        else: # Run all Root Files
+            if not UsingDaskExecutor:
+                chosen_exec = 'futures'
+                output = processor.run_uproot_job({name:files},
+                                                  treename='Events',
+                                                  processor_instance=TriggerAnalysisProcessor(RandomDebugMode=False,
+                                                                                       bdisc = BDisc,
+                                                                                       year=args.year,
+                                                                                       apv=convertLabel[VFP],
+                                                                                       vfp=VFP,
+                                                                                       prng=prng),
+                                                  executor=processor.futures_executor,
+                                                  executor_args={
+                                                      #'client': client,
+                                                      'skipbadfiles':False,
+                                                      'schema': BaseSchema, #NanoAODSchema,
+                                                      'workers': 2})
+
+            else: # use dask
+                chosen_exec = 'dask'
+                client.wait_for_workers(1)
+                output = processor.run_uproot_job({name:files},
+                                                  treename='Events',
+                                                  processor_instance=TriggerAnalysisProcessor(RandomDebugMode=False,
+                                                                                       bdisc = BDisc,
+                                                                                       year=args.year,
+                                                                                       apv=convertLabel[VFP],
+                                                                                       vfp=VFP,
+                                                                                       prng=prng),
+                                                  executor=processor.dask_executor,
+                                                  executor_args={
+                                                      'client': client,
+                                                      'skipbadfiles':False,
+                                                      'schema': BaseSchema})
+                client.restart()
+
+            elapsed = time.time() - tstart
+            outputs_unweighted[name] = output
+            print(output)
+
+            if args.saveTrig:
+                mkdir_p('TTbarAllHadUproot/CoffeaOutputsForTriggerAnalysis/'
+                          + SaveLocation[name])
+                util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForTriggerAnalysis/'
+                      + SaveLocation[name]
+                      + name    
+                      + '_TriggerAnalysis' 
+                      + '.coffea')
+
+
+        print('Elapsed time = ', elapsed, ' sec.')
+        print('Elapsed time = ', elapsed/60., ' min.')
+        print('Elapsed time = ', elapsed/3600., ' hrs.') 
+
+    for name,output in outputs_unweighted.items(): 
+        print("-------Unweighted " + name + "--------")
+        for i,j in output['cutflow'].items():        
+            print( '%20s : %1s' % (i,j) )        
+        
+    exit() # No need to go further if performing trigger analysis
+    
 #    ---------------------------------------------------------------------------
 #    U     U PPPPPP  RRRRRR    OOO     OOO   TTTTTTT       OOO   N     N EEEEEEE     
 #    U     U P     P R     R  O   O   O   O     T         O   O  NN    N E           
@@ -347,7 +479,6 @@ for name,files in filesets_to_run.items():
                                                                                        year=args.year,
                                                                                        apv=convertLabel[VFP],
                                                                                        vfp=VFP,
-                                                                                       triggerAnalysisObjects = isTrigEffArg,
                                                                                        prng=prng),
                                                   executor=processor.futures_executor,
                                                   executor_args={
@@ -369,7 +500,6 @@ for name,files in filesets_to_run.items():
                                                                                        year=args.year,
                                                                                        apv=convertLabel[VFP],
                                                                                        vfp=VFP,
-                                                                                       triggerAnalysisObjects = isTrigEffArg,
                                                                                        prng=prng),
                                                   executor=processor.dask_executor,
                                                   executor_args={
@@ -389,14 +519,6 @@ for name,files in filesets_to_run.items():
                           + SaveLocation[name]
                           + name    
                           + '.coffea')
-            if isTrigEffArg and args.saveTrig:
-                mkdir_p('TTbarAllHadUproot/CoffeaOutputsForTriggerAnalysis/'
-                          + SaveLocation[name])
-                util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForTriggerAnalysis/'
-                      + SaveLocation[name]
-                      + name    
-                      + '_TriggerAnalysis' 
-                      + '.coffea')
             
             
         else: # Run all Root Files
@@ -412,7 +534,6 @@ for name,files in filesets_to_run.items():
                                                                                        year=args.year,
                                                                                        apv=convertLabel[VFP],
                                                                                        vfp=VFP,
-                                                                                       triggerAnalysisObjects = isTrigEffArg,
                                                                                        prng=prng),
                                                   executor=processor.futures_executor,
                                                   executor_args={
@@ -434,7 +555,6 @@ for name,files in filesets_to_run.items():
                                                                                        year=args.year,
                                                                                        apv=convertLabel[VFP],
                                                                                        vfp=VFP,
-                                                                                       triggerAnalysisObjects = isTrigEffArg,
                                                                                        prng=prng),
                                                   executor=processor.dask_executor,
                                                   executor_args={
@@ -453,14 +573,6 @@ for name,files in filesets_to_run.items():
                           + SaveLocation[name]
                           + name   
                           + '.coffea')
-            if isTrigEffArg and args.saveTrig:
-                mkdir_p('TTbarAllHadUproot/CoffeaOutputsForTriggerAnalysis/'
-                          + SaveLocation[name])
-                util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForTriggerAnalysis/'
-                      + SaveLocation[name]
-                      + name    
-                      + '_TriggerAnalysis' 
-                      + '.coffea')
             
 
     else: # Load files
