@@ -38,7 +38,7 @@ manual_subjeteta_bins = [0., 0.6, 1.2, 2.4] # Used on 6/17/22 for ttbar (3 bins)
 """
 class TTbarResProcessor(processor.ProcessorABC):
     def __init__(self, prng=RandomState(1234567890), htCut=950., minMSD=105., maxMSD=210.,
-                 tau32Cut=0.65, ak8PtMin=400., bdisc=0.8484,
+                 tau32Cut=0.65, ak8PtMin=400., bdisc=0.8484, deepAK8Cut=0.435,
                  year=None, apv='', vfp='', triggerAnalysisObjects=False, UseLookUpTables=False, lu=None, 
                  ModMass=False, RandomDebugMode=False, CalcEff_MC=True, UseEfficiencies=False, 
                  ApplybtagSF=False, ScaleFactorFile='', ApplyttagSF=False, ApplyJER=False, ApplyJEC=False, sysType=None):
@@ -50,6 +50,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         self.tau32Cut = tau32Cut
         self.ak8PtMin = ak8PtMin
         self.bdisc = bdisc
+        self.deepAK8Cut = deepAK8Cut
         self.year = year
         self.apv = apv
         self.vfp = vfp
@@ -764,24 +765,28 @@ class TTbarResProcessor(processor.ProcessorABC):
         # ---- NOTE: Must Change This to DeepAK8 Top Tag Discriminator Cut ----#
         # ---- Maybe we should ignore tau32 cut(s) when performing trigger analysis ---- #
         
-        tau32_s0 = np.where(ttbarcands.slot0.tau2>0,ttbarcands.slot0.tau3/ttbarcands.slot0.tau2, 0 )
-        tau32_s1 = np.where(ttbarcands.slot1.tau2>0,ttbarcands.slot1.tau3/ttbarcands.slot1.tau2, 0 )
+#         tau32_s0 = np.where(ttbarcands.slot0.tau2>0,ttbarcands.slot0.tau3/ttbarcands.slot0.tau2, 0 )
+#         tau32_s1 = np.where(ttbarcands.slot1.tau2>0,ttbarcands.slot1.tau3/ttbarcands.slot1.tau2, 0 )
         
-        taucut_s0 = tau32_s0 < self.tau32Cut
-        taucut_s1 = tau32_s1 < self.tau32Cut
+#         taucut_s0 = tau32_s0 < self.tau32Cut
+#         taucut_s1 = tau32_s1 < self.tau32Cut
         
-        mcut_s0 = (self.minMSD < ttbarcands.slot0.msoftdrop) & (ttbarcands.slot0.msoftdrop < self.maxMSD) 
-        mcut_s1 = (self.minMSD < ttbarcands.slot1.msoftdrop) & (ttbarcands.slot1.msoftdrop < self.maxMSD) 
+#         mcut_s0 = (self.minMSD < ttbarcands.slot0.msoftdrop) & (ttbarcands.slot0.msoftdrop < self.maxMSD) 
+#         mcut_s1 = (self.minMSD < ttbarcands.slot1.msoftdrop) & (ttbarcands.slot1.msoftdrop < self.maxMSD) 
         
-        ttag_s0 = (taucut_s0) & (mcut_s0)
-        ttag_s1 = (taucut_s1) & (mcut_s1)
+        ttag_s0 = ttbarcands.slot0.deepTag_TvsQCD > self.deepAK8Cut
+        ttag_s1 = ttbarcands.slot1.deepTag_TvsQCD > self.deepAK8Cut
+        
+        # ttag_s0 = (taucut_s0) & (mcut_s0)
+        # ttag_s1 = (taucut_s1) & (mcut_s1)
         
         if self.triggerAnalysisObjects:
             ttag_s0 = mcut_s0
             ttag_s1 = mcut_s1
         
         # ---- Define "Top Tag" Regions ---- #
-        antitag = (~taucut_s0) & (mcut_s0) # The Probe jet will always be ttbarcands.slot1 (at)
+        # antitag = (~taucut_s0) & (mcut_s0) # The Probe jet will always be ttbarcands.slot1 (at)
+        antitag = ttbarcands.slot0.deepTag_TvsQCD < self.deepAK8Cut # The Probe jet will always be ttbarcands.slot1 (at)
         antitag_probe = np.logical_and(antitag, ttag_s1) # Found an antitag and ttagged probe pair for mistag rate (Probet)
         pretag =  ttag_s0 # Only jet0 (pret)
         ttag0 =   (~ttag_s0) & (~ttag_s1) # No tops tagged (0t)
@@ -789,6 +794,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         ttagI =   ttag_s0 | ttag_s1 # At least one top tagged ('I' for 'inclusive' tagger; >=1t; 1t+2t)
         ttag2 =   ttag_s0 & ttag_s1 # Both jets top tagged (2t)
         Alltags = ttag0 | ttagI #Either no tag or at least one tag (0t+1t+2t)
+        
         
 #    ============================================================        
 #    BBBBBB      TTTTTTT    A    GGGGGGG GGGGGGG EEEEEEE RRRRRR  
