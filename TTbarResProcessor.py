@@ -772,8 +772,8 @@ class TTbarResProcessor(processor.ProcessorABC):
 #         taucut_s0 = tau32_s0 < self.tau32Cut
 #         taucut_s1 = tau32_s1 < self.tau32Cut
         
-#         mcut_s0 = (self.minMSD < ttbarcands.slot0.msoftdrop) & (ttbarcands.slot0.msoftdrop < self.maxMSD) 
-#         mcut_s1 = (self.minMSD < ttbarcands.slot1.msoftdrop) & (ttbarcands.slot1.msoftdrop < self.maxMSD) 
+        mcut_s0 = (self.minMSD < ttbarcands.slot0.msoftdrop) & (ttbarcands.slot0.msoftdrop < self.maxMSD) 
+        mcut_s1 = (self.minMSD < ttbarcands.slot1.msoftdrop) & (ttbarcands.slot1.msoftdrop < self.maxMSD) 
         
         ttag_s0 = ttbarcands.slot0.deepTag_TvsQCD > self.deepAK8Cut
         ttag_s1 = ttbarcands.slot1.deepTag_TvsQCD > self.deepAK8Cut
