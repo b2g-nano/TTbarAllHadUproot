@@ -11,6 +11,7 @@ import numpy as np
 import itertools
 import pandas as pd
 from numpy.random import RandomState
+import correctionlib
 # from correctionlib.schemav2 import Correction
 
 import awkward as ak
@@ -217,8 +218,9 @@ class TTbarResProcessor(processor.ProcessorABC):
         
         coin = np.random.uniform(0,1,len(subjet)) # used for randomly deciding which jets' btag status to update or not
         subjet_btag_status = np.asarray((subjet.btagCSVV2 > self.bdisc)) # do subjets pass the btagger requirement
-        btag_sf = BTagScaleFactor(ScaleFactorFilename, FittingPoint)
-        BSF = btag_sf.eval(OperatingPoint, subjet.hadronFlavour, abs(subjet.eta), subjet.pt, ignore_missing=True) # List of Scale Factors
+        
+        btag_sf = correctionlib.CorrectionSet.from_file(ScaleFactorFilename)
+        BSF = btag_sf['deepCSV_subjet'].evaluate(sOperatingPoint, FittingPoint, subjet.hadronFlavour, abs(subjet.eta), subjet.pt) # List of Scale Factors 
 
         f_less = 1. - BSF # fraction of subjets to be downgraded
         f_greater = np.where(eff_val > 0., f_less/(1. - 1./eff_val), 0.) # fraction of subjets to be upgraded 
@@ -674,15 +676,10 @@ class TTbarResProcessor(processor.ProcessorABC):
                         Fitting = "loose"
                         
                     # os.listdir()
-
-                    btag_sf = BTagScaleFactor(SF_filename, Fitting, "lt,lt,incl")
-
-                    BSF_s0 = btag_sf.eval(self.sysType, 
-                                          LeadingSubjet_s0.hadronFlavour, abs(LeadingSubjet_s0.eta), LeadingSubjet_s0.pt,
-                                          ignore_missing=True)
-                    BSF_s1 = btag_sf.eval(self.sysType, 
-                                          LeadingSubjet_s1.hadronFlavour, abs(LeadingSubjet_s1.eta), LeadingSubjet_s1.pt,
-                                          ignore_missing=True)
+                    btag_sf = correctionlib.CorrectionSet.from_file(SF_filename)
+                    
+                    BSF_s0 = btag_sf['deepCSV_subjet'].evaluate(self.sysType, Fitting, LeadingSubjet_s0.hadronFlavour, abs(LeadingSubjet_s0.eta), LeadingSubjet_s0.pt)
+                    BSF_s1 = btag_sf['deepCSV_subjet'].evaluate(self.sysType, Fitting, LeadingSubjet_s1.hadronFlavour, abs(LeadingSubjet_s1.eta), LeadingSubjet_s1.pt)
 
                     # ---- w(0|0) ---- #
                     btag_wgts['0b'][0] = np.where(btag0, np.ones_like(BSF_s0), 0.)

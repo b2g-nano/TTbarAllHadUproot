@@ -196,7 +196,7 @@ SFfile = ""
 if args.bTagSyst:
     UncType = "btagUnc"
     SystType = args.bTagSyst # string for btag SF evaluator --> "central", "up", or "down"
-    SFfile = 'TTbarAllHadUproot/CorrectionFiles/SFs/bquark/subjet_deepCSV_106XUL16postVFP_v1_converted_spaced.csv'
+    SFfile = 'TTbarAllHadUproot/CorrectionFiles/SFs/bquark/subjet_btagging.json.gz'
 elif args.tTagSyst:
     UncType = "ttagUnc"
     SystType = args.tTagSyst # string for ttag SF correction --> "central", "up", or "down"
