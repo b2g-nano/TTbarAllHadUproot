@@ -219,11 +219,80 @@ class TTbarResProcessor(processor.ProcessorABC):
         coin = np.random.uniform(0,1,len(subjet)) # used for randomly deciding which jets' btag status to update or not
         subjet_btag_status = np.asarray((subjet.btagCSVV2 > self.bdisc)) # do subjets pass the btagger requirement
         
-        btag_sf = correctionlib.CorrectionSet.from_file(ScaleFactorFilename)
-        BSF = btag_sf['deepCSV_subjet'].evaluate(sOperatingPoint, FittingPoint, subjet.hadronFlavour, abs(subjet.eta), subjet.pt) # List of Scale Factors 
+        '''
+*******************************************************************************************************************
+                    Correction Library Logic for Applying Subjet Scale Factors
+                    -----------------------------------------------------------
+            1.) Declare CorrectionSet object by importing the desired JSON file
+                    CorrectionlibObject = correctionlib.CorrectionSet.from_file(<name and/or path of file (.json.gz)>)
+            2.) Flatten the subjet's flavor, pt and eta arrays
+            3.) Convert these arrays to Numpy arrays (as Correctionlib hates Awkward Arrays)
+            4.) Split flavor array into two arrays of the same length:
+                i.) Pretend the entire array were only heavy quarks (b and c) by replacing light quraks with c quarks
+                    [4 4 0 5 4 0 0 5 5] ---> [4 4 4 5 4 4 4 5 5]
+                ii.) Pretend the entire array were only light quarks by replacing b and c with light quarks
+                    [4 4 0 5 4 0 0 5 5] ---> [0 0 0 0 0 0 0 0 0]
+            5.) Check the "name" of the tagging corrections at the beginning of the JSON file
+                    {
+                      "schema_version": 2,
+                      "description": "This json file contains the corrections for deepCSV subjet tagging. ",
+                      "corrections": [
+                        {
+                          "name": "deepCSV_subjet",
+            6.) Fill in the required "inputs" in the order shown in the JSON file
+                    "inputs": [
+                        {
+                          "name": "systematic",
+                          "type": "string"
+                        },
+                        {
+                          "name": "method",
+                          "type": "string",
+                          "description": "incl for light jets, lt for b/c jets"
+                        },
+                        {
+                          "name": "working_point",
+                          "type": "string",
+                          "description": "L/M"
+                        },
+                        {
+                          "name": "flavor",
+                          "type": "int",
+                          "description": "hadron flavor definition: 5=b, 4=c, 0=udsg"
+                        },
+                        {
+                          "name": "abseta",
+                          "type": "real"
+                        },
+                        {
+                          "name": "pt",
+                          "type": "real"
+                        }
+                      ],
+            7.) Create one Scale Factor array by comparing both 'pretend' arrays with the original flavor array
+                if flavor array is 0, use scale factors evaluated with 'pretend' light quark array
+                otherwise, use scale factors evaluated with 'pretend' heavy quark array
+                    For Original Flavor Array [4 4 0 5 4 0 0 5 5]:
+                    0 ---> use scale factor element made from [0 0 0 0 0 0 0 0 0]
+                    4 ---> use scale factor element made from [4 4 4 5 4 4 4 5 5]
+                    5 ---> use scale factor element made from [4 4 4 5 4 4 4 5 5]
 
-        f_less = 1. - BSF # fraction of subjets to be downgraded
-        f_greater = np.where(eff_val > 0., f_less/(1. - 1./eff_val), 0.) # fraction of subjets to be upgraded 
+*******************************************************************************************************************
+        ''' 
+        # Step 1.)
+        btag_sf = correctionlib.CorrectionSet.from_file(ScaleFactorFilename)
+        # Step 2.) and 3.)
+        hadronFlavour = ak.to_numpy(ak.flatten(subjet.hadronFlavour))
+        eta = ak.to_numpy(ak.flatten(subjet.eta))
+        pt = ak.to_numpy(ak.flatten(subjet.pt))
+        # Step 4.)
+        allHeavy = np.where(hadronFlavour == 0, 4, hadronFlavour)
+        allLight = np.zeros_like(allHeavy) 
+        # Step 5.) and 6.)
+        BSF_allHeavy = btag_sf['deepCSV_subjet'].evaluate(OperatingPoint, 'lt', Fitting, allHeavy, abs(eta), pt)
+        BSF_allLight = btag_sf['deepCSV_subjet'].evaluate(OperatingPoint, 'incl', Fitting, allLight, abs(eta), pt)
+        # Step 7.)
+        BSF = np.where(hadronFlavour == 0, BSF_allLight, BSF_allHeavy) # btag scale factors
         
         """
 *******************************************************************************************************************        
@@ -248,6 +317,10 @@ class TTbarResProcessor(processor.ProcessorABC):
         Track all conditions where elements of 'btag_update' will be true (4 conditions marked with 'O')
 *******************************************************************************************************************        
         """ 
+        
+        f_less = 1. - BSF # fraction of subjets to be downgraded
+        f_greater = np.where(eff_val > 0., f_less/(1. - 1./eff_val), 0.) # fraction of subjets to be upgraded 
+        
         condition1 = (subjet_btag_status == True) & (BSF == 1.)
         condition2 = (subjet_btag_status == True) & ((BSF < 1.0) & (coin < BSF)) 
         condition3 = (subjet_btag_status == True) & (BSF > 1.)
@@ -671,16 +744,36 @@ class TTbarResProcessor(processor.ProcessorABC):
 
                     # ---- Define the BSF for each of the two fatjets ---- #
                     SF_filename = self.ScaleFactorFile    
-                    Fitting = "medium"
+                    Fitting = "M"
                     if self.bdisc < 0.5:
-                        Fitting = "loose"
-                        
-                    # os.listdir()
+                        Fitting = "L"
+                     
                     btag_sf = correctionlib.CorrectionSet.from_file(SF_filename)
                     
-                    BSF_s0 = btag_sf['deepCSV_subjet'].evaluate(self.sysType, Fitting, LeadingSubjet_s0.hadronFlavour, abs(LeadingSubjet_s0.eta), LeadingSubjet_s0.pt)
-                    BSF_s1 = btag_sf['deepCSV_subjet'].evaluate(self.sysType, Fitting, LeadingSubjet_s1.hadronFlavour, abs(LeadingSubjet_s1.eta), LeadingSubjet_s1.pt)
-
+                    s0_hadronFlavour = ak.to_numpy(ak.flatten(LeadingSubjet_s0.hadronFlavour))
+                    s1_hadronFlavour = ak.to_numpy(ak.flatten(LeadingSubjet_s1.hadronFlavour))
+                    
+                    s0_eta = ak.to_numpy(ak.flatten(LeadingSubjet_s0.eta))
+                    s1_eta = ak.to_numpy(ak.flatten(LeadingSubjet_s1.eta))
+                    
+                    s0_pt = ak.to_numpy(ak.flatten(LeadingSubjet_s0.pt))
+                    s1_pt = ak.to_numpy(ak.flatten(LeadingSubjet_s1.pt))
+                    
+                    s0_allHeavy = np.where(s0_hadronFlavour == 0, 4, s0_hadronFlavour)
+                    s0_allLight = np.zeros_like(s0_allHeavy) 
+                    
+                    s1_allHeavy = np.where(s1_hadronFlavour == 0, 4, s1_hadronFlavour)
+                    s1_allLight = np.zeros_like(s1_allHeavy) 
+                    
+                    BSF_s0_allHeavy = btag_sf['deepCSV_subjet'].evaluate(self.sysType, 'lt', Fitting, s0_allHeavy, abs(s0_eta), s0_pt)
+                    BSF_s1_allHeavy = btag_sf['deepCSV_subjet'].evaluate(self.sysType, 'lt', Fitting, s1_allHeavy, abs(s1_eta), s1_pt)
+                    
+                    BSF_s0_allLight = btag_sf['deepCSV_subjet'].evaluate(self.sysType, 'incl', Fitting, s0_allLight, abs(s0_eta), s0_pt)
+                    BSF_s1_allLight = btag_sf['deepCSV_subjet'].evaluate(self.sysType, 'incl', Fitting, s1_allLight, abs(s1_eta), s1_pt)
+                    
+                    BSF_s0 = np.where(s0_hadronFlavour == 0, BSF_s0_allLight, BSF_s0_allHeavy)
+                    BSF_s1 = np.where(s1_hadronFlavour == 0, BSF_s1_allLight, BSF_s1_allHeavy)
+                    
                     # ---- w(0|0) ---- #
                     btag_wgts['0b'][0] = np.where(btag0, np.ones_like(BSF_s0), 0.)
 
@@ -720,9 +813,9 @@ class TTbarResProcessor(processor.ProcessorABC):
 
                     # -- Scale Factor File -- #
                     SF_filename = self.ScaleFactorFile    
-                    Fitting = "medium"
+                    Fitting = "M"
                     if self.bdisc < 0.5:
-                        Fitting = "loose"
+                        Fitting = "L"
                     
                     # -- Get Efficiency .csv Files -- #
                     FlavorTagsDict = {
@@ -753,10 +846,10 @@ class TTbarResProcessor(processor.ProcessorABC):
                                                                            + '_' + flav_tag + 'eff_large_bins.csv')
                             
                     # -- Does Subjet pass the discriminator cut and is it updated -- #
-                    SubJet01_isBtagged = self.BtagUpdater(SubJet01, EffFileDict['Eff_File_s01'], SF_filename, Fitting, "central")
-                    SubJet02_isBtagged = self.BtagUpdater(SubJet02, EffFileDict['Eff_File_s02'], SF_filename, Fitting, "central")
-                    SubJet11_isBtagged = self.BtagUpdater(SubJet11, EffFileDict['Eff_File_s11'], SF_filename, Fitting, "central")
-                    SubJet12_isBtagged = self.BtagUpdater(SubJet12, EffFileDict['Eff_File_s12'], SF_filename, Fitting, "central")
+                    SubJet01_isBtagged = self.BtagUpdater(SubJet01, EffFileDict['Eff_File_s01'], SF_filename, Fitting, self.sysType)
+                    SubJet02_isBtagged = self.BtagUpdater(SubJet02, EffFileDict['Eff_File_s02'], SF_filename, Fitting, self.sysType)
+                    SubJet11_isBtagged = self.BtagUpdater(SubJet11, EffFileDict['Eff_File_s11'], SF_filename, Fitting, self.sysType)
+                    SubJet12_isBtagged = self.BtagUpdater(SubJet12, EffFileDict['Eff_File_s12'], SF_filename, Fitting, self.sysType)
 
                     # If either subjet 1 or 2 in FatJet 0 and 1 is btagged after update, then that FatJet is considered btagged #
                     btag_s0 = (SubJet01_isBtagged) ^ (SubJet02_isBtagged)  
