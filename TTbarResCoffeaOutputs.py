@@ -292,20 +292,21 @@ else:
 #    DDDD    A     A SSSSS   K   K       SSSSS   EEEEEEE    T      UUU   P    
 #    ---------------------------------------------------------------------------
 
-# from coffea_casa import CoffeaCasaCluster
+from coffea_casa import CoffeaCasaCluster
 from dask.distributed import Client #, Scheduler, SchedulerPlugin
-# ImportFiles = ['TTbarAllHadUproot/CorrectionFiles']
 client = None
 
 if UsingDaskExecutor == True and args.casa:
+    ImportFiles = ["/home/cms-jovyan/TTbarAllHadUproot/CorrectionFiles"]
     if __name__ == "__main__":       
-        # cluster = CoffeaCasaCluster(
-        #     job_extra = {
-        #         'transfer_input_files': ImportFiles
-        #     }
-        # )
-        client = Client('tls://ac-2emalik-2ewilliams-40cern-2ech.dask.coffea.casa:8786')
-        # client = Client(cluster)
+        cluster = CoffeaCasaCluster(
+            job_extra = {
+                'ship_env': True,
+                'transfer_input_files': ImportFiles
+            }
+        )
+        # client = Client('tls://ac-2emalik-2ewilliams-40cern-2ech.dask.coffea.casa:8786')
+        client = Client(cluster)
         client.restart()
         client.upload_file('TTbarAllHadUproot/Filesets.py')
         client.upload_file('TTbarAllHadUproot/TTbarResProcessor.py')
