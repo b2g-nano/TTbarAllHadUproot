@@ -17,10 +17,12 @@ from coffea import hist, processor, nanoevents, util
 from coffea.nanoevents.methods import candidate
 from coffea.nanoevents import NanoAODSchema, BaseSchema
 from numpy.random import RandomState
-# from lpcjobqueue import LPCCondorCluster
+import mplhep as hep
+import matplotlib.colors as colors
+# from hist.intervals import ratio_uncertainty
 
 ak.behavior.update(candidate.behavior)
-
+maindirectory = os.getcwd()
 os.chdir('../') # Runs the code from within the working directory without manually changing all directory paths!
 
 def mkdir_p(mypath):
@@ -34,6 +36,67 @@ def mkdir_p(mypath):
         if exc.errno == EEXIST and os.path.isdir(mypath):
             pass
         else: raise
+        
+def plotratio2d(numerator, denominator, ax=None, cmap='Blues', cbar=True):
+    NumeratorAxes = numerator.axes()
+    DenominatorAxes = denominator.axes()
+    
+    # integer number of bins in this axis #
+    NumeratorAxis1_BinNumber = NumeratorAxes[0].size - 3 # Subtract 3 to remove overflow
+    NumeratorAxis2_BinNumber = NumeratorAxes[1].size - 3
+    
+    DenominatorAxis1_BinNumber = DenominatorAxes[0].size - 3 
+    DenominatorAxis2_BinNumber = DenominatorAxes[1].size - 3 
+    
+    if(NumeratorAxis1_BinNumber != DenominatorAxis1_BinNumber 
+       or NumeratorAxis2_BinNumber != DenominatorAxis2_BinNumber):
+        raise Exception('Numerator and Denominator axes are different sizes; Cannot perform division.')
+    else:
+        Numerator = numerator.to_hist()
+        Denominator = denominator.to_hist()
+
+        ratio = Numerator / Denominator.values()
+        
+        return hep.hist2dplot(ratio, ax=ax, cmap=cmap, norm=colors.Normalize(0.,1.), cbar=cbar)
+
+def FlavEffList(Flavor, Output, Dataset):
+    """
+    Flavor ---> string: either 'b', 'c', or 'udsg'
+    Output ---> Coffea Object: Output that is returned from running processor
+    Dataset ---> string: the dataset string (ex QCD, RSGluon1000, etc...) corresponding to Output
+    """
+    SaveDirectory = maindirectory + '/FlavorTagEfficiencies/' + Flavor + 'tagEfficiencyTables/'
+    mkdir_p(SaveDirectory)
+    for subjet in ['s01', 's02', 's11', 's12']:
+
+        eff_numerator = Output[Flavor + '_eff_numerator_' + subjet + '_manualbins'].integrate('dataset', Dataset)
+        eff_denominator = Output[Flavor + '_eff_denominator_' + subjet + '_manualbins'].integrate('dataset', Dataset)
+
+        eff = plotratio2d(eff_numerator, eff_denominator) #ColormeshArtists object
+        eff_data = eff[0].get_array().data # This is what goes into pandas dataframe
+        eff_data = np.nan_to_num(eff_data, nan=0.0) # If eff bin is empty, call it zero
+
+        # ---- Define pt and eta bins from the numerator or denominator hist objects ---- #
+        pt_bins = []
+        eta_bins = []
+
+        for iden in eff_numerator.identifiers('subjetpt'):
+            pt_bins.append(iden)
+        for iden in eff_numerator.identifiers('subjeteta'):
+            eta_bins.append(iden)
+
+        # ---- Define the Efficiency List as a Pandas Dataframe ---- #
+        pd.set_option("display.max_rows", None, "display.max_columns", None)
+        EfficiencyList = pd.DataFrame(
+                            eff_data,
+                            pd.MultiIndex.from_product( [pt_bins, eta_bins], names=['pt', 'eta'] ),
+                            ['efficiency']
+                        )
+
+        # ---- Save the Efficiency List as .csv ---- #
+        filename = dataset + '_' + subjet + '_' + Flavor + 'tageff_large_bins.csv'
+        EfficiencyList.to_csv(SaveDirectory+filename)
+        print('\nSaved ' + filename)
         
 #    -----------------------------------------------
 #    PPPPPP     A    RRRRRR    SSSSS EEEEEEE RRRRRR      
@@ -92,7 +155,7 @@ Parser.add_argument('--chunksize', type=int, help='Size of each chunk to run for
 Parser.add_argument('--save', action='store_true', help='Choose to save the uproot job as a coffea output for later analysis')
 Parser.add_argument('--saveMistag', action='store_true', help='Save mistag rate calculated from running either --uproot 1 or --mistag')
 Parser.add_argument('--saveTrig', action='store_true', help='Save uproot job with trigger analysis outputs (Only if -T selected)')
-Parser.add_argument('--saveFlav', action='store_true', help='Save uproot job with tflavor efficiency outputs (Only if -F selected)')
+Parser.add_argument('--saveFlav', action='store_true', help='Save uproot job with flavor efficiency outputs (Only if -F selected)')
 Parser.add_argument('--dask', action='store_true', help='Try the dask executor (experimental) for some fast processing!')
 Parser.add_argument('--useEff', action='store_true', help='Use MC bTag efficiencies for bTagging systematics')
 
@@ -105,11 +168,6 @@ UncertaintyGroup.add_argument('--pileup', type=str, choices=['central', 'up', 'd
 
 args = Parser.parse_args()
 
-Data = 'JetHT' or 'SingleMu'
-
-if args.runflavoreff == Data:
-    Parser.error('Data should not be ran when collecting flavor efficiency.  Please select MC datasets only with this run option.')
-    quit()
 if (args.chunks and not args.chunksize) or (args.chunksize and not args.chunks):
     Parser.error('If either chunks or chunksize is specified, please specify both to run this program.')
     quit()
@@ -306,13 +364,14 @@ if UsingDaskExecutor == True and args.casa:
         # )
         client = Client('tls://ac-2emalik-2ewilliams-40cern-2ech.dask.coffea.casa:8786')
         # client = Client(cluster)
-        client.restart()
+        # client.restart()
         client.upload_file('TTbarAllHadUproot/Filesets.py')
         client.upload_file('TTbarAllHadUproot/TTbarResProcessor.py')
         client.upload_file('TTbarAllHadUproot/TTbarResLookUpTables.py')
         
         
 elif UsingDaskExecutor == True and args.lpc:
+    # from lpcjobqueue import LPCCondorCluster
     if __name__ == "__main__":  
         tic = time.time()
         cluster = LPCCondorCluster(
@@ -385,7 +444,7 @@ if args.runflavoreff:
                                                       'skipbadfiles':False,
                                                       'schema': BaseSchema},
                                                   chunksize=Chunk[0], maxchunks=Chunk[1])
-                client.restart()
+                # client.restart()
 
             elapsed = time.time() - tstart
             outputs_unweighted[name] = output
@@ -435,7 +494,7 @@ if args.runflavoreff:
                                                       'client': client,
                                                       'skipbadfiles':False,
                                                       'schema': BaseSchema})
-                client.restart()
+                # client.restart()
 
             elapsed = time.time() - tstart
             outputs_unweighted[name] = output
@@ -455,11 +514,16 @@ if args.runflavoreff:
         print('Elapsed time = ', elapsed/60., ' min.')
         print('Elapsed time = ', elapsed/3600., ' hrs.') 
 
-    for name,output in outputs_unweighted.items(): 
-        print("-------Unweighted " + name + "--------")
+    for dataset,output in outputs_unweighted.items(): 
+        print("-------Unweighted " + dataset + "--------")
         for i,j in output['cutflow'].items():        
-            print( '%20s : %1s' % (i,j) )        
-        
+            print( '%20s : %1s' % (i,j) ) 
+            
+        if args.saveFlav:
+            FlavEffList('b', output, dataset)
+            FlavEffList('c', output, dataset)
+            FlavEffList('udsg', output, dataset)
+            
     exit() # No need to go further if performing trigger analysis
         
         
@@ -526,7 +590,7 @@ if isTrigEffArg:
                                                       'skipbadfiles':False,
                                                       'schema': BaseSchema},
                                                   chunksize=Chunk[0], maxchunks=Chunk[1])
-                client.restart()
+                # client.restart()
 
             elapsed = time.time() - tstart
             outputs_unweighted[name] = output
@@ -576,7 +640,7 @@ if isTrigEffArg:
                                                       'client': client,
                                                       'skipbadfiles':False,
                                                       'schema': BaseSchema})
-                client.restart()
+                # client.restart()
 
             elapsed = time.time() - tstart
             outputs_unweighted[name] = output
@@ -662,7 +726,7 @@ for name,files in filesets_to_run.items():
                                                       'skipbadfiles':False,
                                                       'schema': BaseSchema},
                                                   chunksize=Chunk[0], maxchunks=Chunk[1])
-                client.restart()
+                # client.restart()
 
             elapsed = time.time() - tstart
             outputs_unweighted[name] = output
@@ -714,7 +778,7 @@ for name,files in filesets_to_run.items():
                                                       'client': client,
                                                       'skipbadfiles':False,
                                                       'schema': BaseSchema})
-                client.restart()
+                # client.restart()
 
             elapsed = time.time() - tstart
             outputs_unweighted[name] = output
@@ -837,7 +901,7 @@ for name,files in filesets_to_run.items():
                                                       'skipbadfiles':False,
                                                       'schema': BaseSchema},
                                                   chunksize=Chunk[0], maxchunks=Chunk[1])
-                client.restart()
+                # client.restart()
             elapsed = time.time() - tstart
             outputs_weighted[name] = output
             print(output)
@@ -902,7 +966,7 @@ for name,files in filesets_to_run.items():
                                                       'client': client,
                                                       'skipbadfiles':False,
                                                       'schema': BaseSchema})
-                client.restart()
+                # client.restart()
             elapsed = time.time() - tstart
             outputs_weighted[name] = output
             print(output)
