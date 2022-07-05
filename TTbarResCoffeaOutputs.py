@@ -135,6 +135,7 @@ StartGroup.add_argument('-t', '--runtesting', action='store_true', help='Only ru
 StartGroup.add_argument('-m', '--runmistag', action='store_true',help='Make data mistag rate where ttbar contamination is removed (as well as ttbar mistag rate)')
 StartGroup.add_argument('-T', '--runtrigeff', action='store_true', help='Create trigger efficiency hist coffea output objects for chosen condition') 
 StartGroup.add_argument('-F', '--runflavoreff', type=str, nargs='+', help='Create flavor efficiency hist coffea output objects for chosen MC datasets')
+StartGroup.add_argument('-M', '--runMMO', type=str, nargs='+', help='Run Mistag-weight and Mass modification Only (no other systematics for uproot 2)')
 StartGroup.add_argument('-d', '--rundataset', type=str, nargs='+', help='List of datasets to be ran/loaded')
 
 RedirectorGroup = Parser.add_mutually_exclusive_group(required=True)
@@ -183,6 +184,9 @@ if isTrigEffArg and args.uproot:
     quit()
 if isTrigEffArg == False and args.saveTrig:
     Parser.error('When not running some --runtrigeff option do not specify --saveTrig.')
+    quit()
+if args.runMMO and args.uproot:
+    Parser.error('When running --runMMO option do not specify --uproot.')
     quit()
     
 #    -------------------------------------------------------
@@ -248,13 +252,13 @@ method=''
 if not args.useEff:
     method='_method2' # Use bTagging systematic method without MC efficiencies and label output accordingly
 #    -------------------------------------------------------    #   
-SystType = "central" 
+SystType = "" 
 UncType = ""
 SFfile = ""
 if args.bTagSyst:
     UncType = "btagUnc"
     SystType = args.bTagSyst # string for btag SF evaluator --> "central", "up", or "down"
-    SFfile = 'TTbarAllHadUproot/CorrectionFiles/SFs/bquark/subjet_btagging.json.gz'
+    SFfile = 'TTbarAllHadUproot/data/btagSF/UL2016/subjet_btagging.json.gz'
 elif args.tTagSyst:
     UncType = "ttagUnc"
     SystType = args.tTagSyst # string for ttag SF correction --> "central", "up", or "down"
@@ -268,7 +272,7 @@ elif args.pileup:
     UncType = "pileup"
     SystType = args.pileup # string for ttag SF correction --> "central", "up", or "down"
 SystOpts = ((args.bTagSyst or args.tTagSyst) or (args.jec or args.jer)) or args.pileup
-if (not OnlyCreateLookupTables) and (not SystOpts):
+if (not OnlyCreateLookupTables) and (not SystOpts and not args.runMMO) :
     Parser.error('Only run second uproot job with a Systematic application (like --bTagSyst, --jer, etc.)')
     quit()
 #    -------------------------------------------------------    # 
@@ -300,6 +304,20 @@ if not Testing:
     filesets = CollectDatasets(Redirector)
     if args.rundataset:
         for a in args.rundataset: # for any dataset included as user argument...
+            if ('JetHT' in a) and (args.year != 0): 
+                filesets_to_run['JetHT'+str(args.year)+'_Data'] = filesets['JetHT'+str(args.year)+'_Data'] # include JetHT dataset read in from Filesets
+                SaveLocation['JetHT'+str(args.year)+'_Data'] = 'JetHT/' + str(args.year) + '/TTbarRes_0l_' # file where output will be saved
+            elif ('SingleMu' in a) and (args.year != 0): 
+                filesets_to_run['SingleMu'+str(args.year)+'_Data'] = filesets['SingleMu'+str(args.year)+'_Data'] # include JetHT dataset read in from Filesets
+                SaveLocation['SingleMu'+str(args.year)+'_Data'] = 'SingleMu/' + str(args.year) + '/TTbarRes_0l_' # file where output will be saved
+            elif args.year != 0:
+                filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a] # include MC dataset read in from Filesets
+                if 'RSGluon' in a :
+                    SaveLocation[namingConvention+'_'+a] = 'RSGluonToTT/' + fileConvention
+                elif 'DM' in a :
+                    SaveLocation[namingConvention+'_'+a] = 'ZprimeDMToTTbar/' + fileConvention
+    elif args.runMMO:
+        for a in args.runMMO: # for any dataset included as user argument...
             if ('JetHT' in a) and (args.year != 0): 
                 filesets_to_run['JetHT'+str(args.year)+'_Data'] = filesets['JetHT'+str(args.year)+'_Data'] # include JetHT dataset read in from Filesets
                 SaveLocation['JetHT'+str(args.year)+'_Data'] = 'JetHT/' + str(args.year) + '/TTbarRes_0l_' # file where output will be saved
@@ -350,25 +368,38 @@ else:
 #    DDDD    A     A SSSSS   K   K       SSSSS   EEEEEEE    T      UUU   P    
 #    ---------------------------------------------------------------------------
 
-# from coffea_casa import CoffeaCasaCluster
+from coffea_casa import CoffeaCasaCluster
 from dask.distributed import Client #, Scheduler, SchedulerPlugin
-# ImportFiles = ['TTbarAllHadUproot/CorrectionFiles']
+ImportFiles = "TTbarAllHadUproot/CorrectionFiles"
 client = None
 
 if UsingDaskExecutor == True and args.casa:
     if __name__ == "__main__":       
-        # cluster = CoffeaCasaCluster(
-        #     job_extra = {
-        #         'transfer_input_files': ImportFiles
-        #     }
-        # )
-        client = Client('tls://ac-2emalik-2ewilliams-40cern-2ech.dask.coffea.casa:8786')
+        # cluster = CoffeaCasaCluster()
+        # cluster['job_extra']['transfer_input_files'] = ImportFiles
         # client = Client(cluster)
+        # # client.restart()
+        # client.upload_file('TTbarAllHadUproot/Filesets.py')
+        # client.upload_file('TTbarAllHadUproot/TTbarResProcessor.py')
+        # client.upload_file('TTbarAllHadUproot/TTbarResLookUpTables.py')
+        
+        
+        cluster = CoffeaCasaCluster(
+            job_extra = {
+                'transfer_input_files': "TTbarAllHadUproot/data",
+                'Stream_Error': 'True',
+                'direct_to_workers': 'True'
+            }
+        )
+        # client = Client('tls://ac-2emalik-2ewilliams-40cern-2ech.dask.coffea.casa:8786')
+        # with Client(cluster) as client:
+        client = Client(cluster)
         # client.restart()
         client.upload_file('TTbarAllHadUproot/Filesets.py')
         client.upload_file('TTbarAllHadUproot/TTbarResProcessor.py')
         client.upload_file('TTbarAllHadUproot/TTbarResLookUpTables.py')
-        
+        # client.upload_file('TTbarAllHadUproot/data/btagSF/UL2016/subjet_btagging.json.gz')
+
         
 elif UsingDaskExecutor == True and args.lpc:
     # from lpcjobqueue import LPCCondorCluster
@@ -899,7 +930,9 @@ for name,files in filesets_to_run.items():
                                                   executor_args={
                                                       'client': client,
                                                       'skipbadfiles':False,
-                                                      'schema': BaseSchema},
+                                                      'schema': BaseSchema,
+                                                      'heavy_input': 'TTbarResCoffea/data',
+                                                      'function_name': 'correctionlib.CorrectionSet.from_file'},
                                                   chunksize=Chunk[0], maxchunks=Chunk[1])
                 # client.restart()
             elapsed = time.time() - tstart
@@ -996,5 +1029,178 @@ if not OnlyCreateLookupTables:
     print("\n\nWe\'re done here!!")
 else:
     print('\n\nWe\'re done here!!')
+    
+
+    
+    
+    
+    
+#    ----------------------------------------------------------------------------    
+#     U     U PPPPPP  RRRRRR    OOO     OOO   TTTTTTT     M     M M     M   OOO       
+#     U     U P     P R     R  O   O   O   O     T        MM   MM MM   MM  O   O      
+#     U     U P     P R     R O     O O     O    T        M M M M M M M M O     O     
+#     U     U PPPPPP  RRRRRR  O     O O     O    T        M  M  M M  M  M O     O     
+#     U     U P       R   R   O     O O     O    T        M     M M     M O     O     
+#      U   U  P       R    R   O   O   O   O     T        M     M M     M  O   O      
+#       UUU   P       R     R   OOO     OOO      T        M     M M     M   OOO 
+#    ----------------------------------------------------------------------------
+
+if args.runMMO:
+    tstart = time.time()
+
+    outputs_weighted = {}
+
+    seed = 1234577890
+    prng = RandomState(seed)
+
+    outputs_weighted = {}
+
+    for name,files in filesets_to_run.items(): 
+        if not OnlyCreateLookupTables:
+            print('Processing', name)
+            if not RunAllRootFiles:
+                if not UsingDaskExecutor:
+                    chosen_exec = 'futures'
+                    output = processor.run_uproot_job({name:files},
+                                                      treename='Events',
+                                                      processor_instance=TTbarResProcessor(UseLookUpTables=True,
+                                                                                           lu=mistag_luts,
+                                                                                           ModMass=True, 
+                                                                                           RandomDebugMode=False,
+                                                                                           ApplybtagSF=False,
+                                                                                           sysType=SystType,
+                                                                                           ScaleFactorFile=SFfile,
+                                                                                           UseEfficiencies=args.useEff,
+                                                                                           bdisc = BDisc,
+                                                                                           year=args.year,
+                                                                                           apv=convertLabel[VFP],
+                                                                                           vfp=VFP,
+                                                                                           prng=prng),
+                                                      #executor=processor.iterative_executor,
+                                                      executor=processor.futures_executor,
+                                                      executor_args={
+                                                          'skipbadfiles':False,
+                                                          'schema': BaseSchema, #NanoAODSchema,
+                                                          'workers': 2},
+                                                      chunksize=Chunk[0], maxchunks=Chunk[1])
+                else:
+                    chosen_exec = 'dask'
+                    client.wait_for_workers(1)
+                    output = processor.run_uproot_job({name:files},
+                                                      treename='Events',
+                                                      processor_instance=TTbarResProcessor(UseLookUpTables=True,
+                                                                                           lu=mistag_luts,
+                                                                                           ModMass=False, #switch to true later after test! 
+                                                                                           RandomDebugMode=False,
+                                                                                           ApplybtagSF=False,
+                                                                                           sysType=SystType,
+                                                                                           ScaleFactorFile=SFfile,
+                                                                                           UseEfficiencies=args.useEff,
+                                                                                           bdisc = BDisc,
+                                                                                           year=args.year,
+                                                                                           apv=convertLabel[VFP],
+                                                                                           vfp=VFP,
+                                                                                           prng=prng),
+                                                      executor=processor.dask_executor,
+                                                      executor_args={
+                                                          'client': client,
+                                                          'skipbadfiles':False,
+                                                          'schema': BaseSchema},
+                                                      chunksize=Chunk[0], maxchunks=Chunk[1])
+                    # client.restart()
+                elapsed = time.time() - tstart
+                outputs_weighted[name] = output
+                print(output)
+                if SaveSecondRun:
+                    mkdir_p('TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/'
+                              + SaveLocation[name])
+                    util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/'
+                              + SaveLocation[name]
+                              + name 
+                              + '_weighted_'
+                              + UncType + '_' 
+                              + SystType
+                              + method
+                              + '.coffea')
+
+
+            else: # Run all Root Files
+                if not UsingDaskExecutor:
+                    chosen_exec = 'futures'
+                    output = processor.run_uproot_job({name:files},
+                                                      treename='Events',
+                                                      processor_instance=TTbarResProcessor(UseLookUpTables=True,
+                                                                                           lu=mistag_luts,
+                                                                                           ModMass=True, 
+                                                                                           RandomDebugMode=False,
+                                                                                           ApplybtagSF=False,
+                                                                                           sysType=SystType,
+                                                                                           ScaleFactorFile=SFfile,
+                                                                                           UseEfficiencies=args.useEff,
+                                                                                           bdisc = BDisc,
+                                                                                           year=args.year,
+                                                                                           apv=convertLabel[VFP],
+                                                                                           vfp=VFP,
+                                                                                           prng=prng),
+                                                      #executor=processor.iterative_executor,
+                                                      executor=processor.futures_executor,
+                                                      executor_args={
+                                                          'skipbadfiles':False,
+                                                          'schema': BaseSchema, #NanoAODSchema,
+                                                          'workers': 2})
+
+                else:
+                    chosen_exec = 'dask'
+                    client.wait_for_workers(1)
+                    output = processor.run_uproot_job({name:files},
+                                                      treename='Events',
+                                                      processor_instance=TTbarResProcessor(UseLookUpTables=True,
+                                                                                           lu=mistag_luts,
+                                                                                           ModMass=True, 
+                                                                                           RandomDebugMode=False,
+                                                                                           ApplybtagSF=False,
+                                                                                           sysType=SystType,
+                                                                                           ScaleFactorFile=SFfile,
+                                                                                           UseEfficiencies=args.useEff,
+                                                                                           bdisc = BDisc,
+                                                                                           year=args.year,
+                                                                                           apv=convertLabel[VFP],
+                                                                                           vfp=VFP,
+                                                                                           prng=prng),
+                                                      executor=processor.dask_executor,
+                                                      executor_args={
+                                                          'client': client,
+                                                          'skipbadfiles':False,
+                                                          'schema': BaseSchema})
+                    # client.restart()
+                elapsed = time.time() - tstart
+                outputs_weighted[name] = output
+                print(output)
+                if SaveSecondRun:
+                    mkdir_p('TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/'
+                              + SaveLocation[name])
+                    util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/'
+                              + SaveLocation[name]
+                              + name 
+                              + '_weighted_'
+                              + UncType + '_' 
+                              + SystType
+                              + method
+                              + '.coffea')
+        else:
+            continue
+
+        print('Elapsed time = ', elapsed, ' sec.')
+        print('Elapsed time = ', elapsed/60., ' min.')
+        print('Elapsed time = ', elapsed/3600., ' hrs.') 
+
+    if not OnlyCreateLookupTables:
+        for name,output in outputs_weighted.items(): 
+            print("-------Weighted " + name + "--------")
+            for i,j in output['cutflow'].items():        
+                print( '%20s : %1s' % (i,j) )
+        print("\n\nWe\'re done here!!")
+    else:
+        print('\n\nWe\'re done here!!')
 
 #quit()

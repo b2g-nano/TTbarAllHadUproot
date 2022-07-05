@@ -294,9 +294,9 @@ class TTbarResProcessor(processor.ProcessorABC):
         Min_ptval = 30.
         Max_ptval = 450.
 
-        eta = np.where(abs(eta)>Max_etaval, Max_etaval-0.01, eta)
-        pt = np.where(abs(pt)<Min_ptval, Min_ptval+0.01, pt)
-        pt = np.where(abs(pt)>Max_ptval, Max_ptval-0.01, pt)
+        eta = np.where(abs(eta)>=Max_etaval, Max_etaval-0.500, eta)
+        pt = np.where(pt<Min_ptval, Min_ptval+1.00, pt)
+        pt = np.where(pt>Max_ptval, Max_ptval-1.00, pt)
         
         # Step 4.)
         allHeavy = np.where(hadronFlavour == 0, 4, hadronFlavour)
@@ -661,25 +661,25 @@ class TTbarResProcessor(processor.ProcessorABC):
         # ----------- CMS Top Tagger Version 2 (SD and Tau32 Cuts) ----------- #
         # ---- NOTE: Must Change This to DeepAK8 Top Tag Discriminator Cut ----#
         # ---- Maybe we should ignore tau32 cut(s) when performing trigger analysis ---- #
+        tau32_s0 = np.where(ttbarcands.slot0.tau2>0,ttbarcands.slot0.tau3/ttbarcands.slot0.tau2, 0 )
+        tau32_s1 = np.where(ttbarcands.slot1.tau2>0,ttbarcands.slot1.tau3/ttbarcands.slot1.tau2, 0 )
         
-#         tau32_s0 = np.where(ttbarcands.slot0.tau2>0,ttbarcands.slot0.tau3/ttbarcands.slot0.tau2, 0 )
-#         tau32_s1 = np.where(ttbarcands.slot1.tau2>0,ttbarcands.slot1.tau3/ttbarcands.slot1.tau2, 0 )
+        taucut_s0 = tau32_s0 < self.tau32Cut
+        taucut_s1 = tau32_s1 < self.tau32Cut
         
-#         taucut_s0 = tau32_s0 < self.tau32Cut
-#         taucut_s1 = tau32_s1 < self.tau32Cut
-        
-#         mcut_s0 = (self.minMSD < ttbarcands.slot0.msoftdrop) & (ttbarcands.slot0.msoftdrop < self.maxMSD) 
-#         mcut_s1 = (self.minMSD < ttbarcands.slot1.msoftdrop) & (ttbarcands.slot1.msoftdrop < self.maxMSD) 
+        mcut_s0 = (self.minMSD < ttbarcands.slot0.msoftdrop) & (ttbarcands.slot0.msoftdrop < self.maxMSD) 
+        mcut_s1 = (self.minMSD < ttbarcands.slot1.msoftdrop) & (ttbarcands.slot1.msoftdrop < self.maxMSD) 
 
-#         ttag_s0 = (taucut_s0) & (mcut_s0)
-#         ttag_s1 = (taucut_s1) & (mcut_s1)
-        
-        ttag_s0 = ttbarcands.slot0.deepTag_TvsQCD > self.deepAK8Cut
-        ttag_s1 = ttbarcands.slot1.deepTag_TvsQCD > self.deepAK8Cut
+        ttag_s0 = (taucut_s0) & (mcut_s0)
+        ttag_s1 = (taucut_s1) & (mcut_s1)
+        antitag = (~taucut_s0) & (mcut_s0) # The Probe jet will always be ttbarcands.slot1 (at)
+
+        # ----------- DeepAK8 Tagger (Discriminator Cut) ----------- #
+        # ttag_s0 = ttbarcands.slot0.deepTag_TvsQCD > self.deepAK8Cut
+        # ttag_s1 = ttbarcands.slot1.deepTag_TvsQCD > self.deepAK8Cut
+        # antitag = ttbarcands.slot0.deepTag_TvsQCD < self.deepAK8Cut # The Probe jet will always be ttbarcands.slot1 (at)
         
         # ---- Define "Top Tag" Regions ---- #
-        # antitag = (~taucut_s0) & (mcut_s0) # The Probe jet will always be ttbarcands.slot1 (at)
-        antitag = ttbarcands.slot0.deepTag_TvsQCD < self.deepAK8Cut # The Probe jet will always be ttbarcands.slot1 (at)
         antitag_probe = np.logical_and(antitag, ttag_s1) # Found an antitag and ttagged probe pair for mistag rate (Probet)
         pretag =  ttag_s0 # Only jet0 (pret)
         ttag0 =   (~ttag_s0) & (~ttag_s1) # No tops tagged (0t)
@@ -788,10 +788,10 @@ class TTbarResProcessor(processor.ProcessorABC):
                     s0_eta = np.where(abs(s0_eta)>Max_etaval, Max_etaval-0.01, s0_eta)
                     s1_eta = np.where(abs(s1_eta)>Max_etaval, Max_etaval-0.01, s1_eta)
                     
-                    s0_pt = np.where(abs(s0_pt)<Min_ptval, Min_ptval+0.01, s0_pt)
-                    s1_pt = np.where(abs(s1_pt)<Min_ptval, Min_ptval+0.01, s1_pt)
-                    s0_pt = np.where(abs(s0_pt)>Max_ptval, Max_ptval-0.01, s0_pt)
-                    s1_pt = np.where(abs(s1_pt)>Max_ptval, Max_ptval-0.01, s1_pt)
+                    s0_pt = np.where(abs(s0_pt)<Min_ptval, Min_ptval+1.00, s0_pt)
+                    s1_pt = np.where(abs(s1_pt)<Min_ptval, Min_ptval+1.00, s1_pt)
+                    s0_pt = np.where(abs(s0_pt)>Max_ptval, Max_ptval-1.00, s0_pt)
+                    s1_pt = np.where(abs(s1_pt)>Max_ptval, Max_ptval-1.00, s1_pt)
                     
                     BSF_s0_allHeavy = btag_sf['deepCSV_subjet'].evaluate(self.sysType, 'lt', Fitting, s0_allHeavy, abs(s0_eta), s0_pt)
                     try:

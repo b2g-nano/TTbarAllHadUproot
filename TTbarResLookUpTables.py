@@ -122,15 +122,15 @@ def CreateLUTS(Filesets, Outputs, Year, VFP, RemoveContam, Save):
     
     for iset in Filesets:
         for icat in list_of_cats:
-            print(iset)
-            print(icat)
+            # print(iset)
+            # print(icat)
             title = iset + ' mistag ' + icat
             filename = 'mistag_' + iset + '_' + icat + '.' + 'png'
-            print(Outputs[iset]['numerator'])
+            # print(Outputs[iset]['numerator'])
             Numerator = Outputs[iset]['numerator'].integrate('anacat', icat).integrate('dataset', iset)
             Denominator = Outputs[iset]['denominator'].integrate('anacat', icat).integrate('dataset', iset)
-            print(Numerator)
-            print(Denominator)
+            # print(Numerator)
+            # print(Denominator)
             mistag = hist.plotratio(num = Numerator, denom = Denominator,
                                     error_opts={'marker': '.', 'markersize': 10., 'color': 'k', 'elinewidth': 1},
                                     unc = 'num')
@@ -217,7 +217,7 @@ def CreateLUTS(Filesets, Outputs, Year, VFP, RemoveContam, Save):
     # ---- Check if TTbar simulation was used in previous processor ---- #
     for iset in Filesets: 
         if ('JetHT' in iset) and any('TTbar' in i for i in Outputs) and RemoveContam:
-            print('\t\tfileset: ' + iset + 'With Contamination Removed!\n*****************************************************\n')
+            # print('\t\tfileset: ' + iset + 'With Contamination Removed!\n*****************************************************\n')
             for icat in list_of_cats:
                 filename = 'mistag_' + iset + '_ttContaminationRemoved_' + icat + '.' + 'csv'
                 title = iset + ' mistag ' + icat
@@ -260,9 +260,9 @@ def CreateLUTS(Filesets, Outputs, Year, VFP, RemoveContam, Save):
                 N_vals_diff = np.abs(N_vals-N_vals_tt)
                 D_vals_diff = np.abs(D_vals-D_vals_tt)
 
-                print(N_vals_diff)
-                print(D_vals_diff)
-                print()
+                # print(N_vals_diff)
+                # print(D_vals_diff)
+                # print()
 
                 # ---- Define Mistag values ---- #
                 mistag_vals = np.where(D_vals_diff > 0, N_vals_diff/D_vals_diff, 0)
@@ -273,55 +273,55 @@ def CreateLUTS(Filesets, Outputs, Year, VFP, RemoveContam, Save):
                     p_vals.append(iden)
 
                 # ---- Display and Save Dataframe, df, as Look-up Table ---- #
-                print('fileset:  ' + iset + '_ttContaminationRemoved')
-                print('category: ' + icat)
-                print('________________________________________________\n')
+                # print('fileset:  ' + iset + '_ttContaminationRemoved')
+                # print('category: ' + icat)
+                # print('________________________________________________\n')
 
                 d = {'p': p_vals, 'M(p)': mistag_vals} # 'data'
 
-                print("d vals = ", d)
-                print()
+                # print("d vals = ", d)
+                # print()
                 df = pd.DataFrame(data=d)
                 luts[iset][icat] = df
 
-                with pd.option_context('display.max_rows', None, 'display.max_columns', None): 
-                    print(df)
-                print('\n')
+                # with pd.option_context('display.max_rows', None, 'display.max_columns', None): 
+                #     print(df)
+                # print('\n')
                 if Save:
                     df.to_csv(SaveDirectory+filename) # use later to collect bins and weights for re-scaling
         else: # Make mistag rate of any dataset that was run in the 1st uproot job
-            print('\t\tfileset: ' + iset + '\n*****************************************************\n')
+            # print('\t\tfileset: ' + iset + '\n*****************************************************\n')
             for icat in list_of_cats:
                 filename = 'mistag_' + iset + '_' + icat + '.' + 'csv'
                 Numerator = Outputs[iset]['numerator'].integrate('anacat',icat).integrate('dataset',iset)
                 Denominator = Outputs[iset]['denominator'].integrate('anacat',icat).integrate('dataset',iset)
                 N_vals = Numerator.values()[()]
                 D_vals = Denominator.values()[()]
-                print(N_vals)
-                print(D_vals)
-                print()
+                # print(N_vals)
+                # print(D_vals)
+                # print()
                 mistag_vals = np.where(D_vals > 0, N_vals/D_vals, 0)
 
                 p_vals = [] # Momentum values
                 for iden in Numerator.identifiers('jetp'):
                     p_vals.append(iden)
-                print('fileset:  ' + iset)
-                print('category: ' + icat)
-                print('________________________________________________\n')
+                # print('fileset:  ' + iset)
+                # print('category: ' + icat)
+                # print('________________________________________________\n')
                 d = {'p': p_vals, 'M(p)': mistag_vals}
 
-                print("d vals = ", d)
-                print()
+                # print("d vals = ", d)
+                # print()
                 df = pd.DataFrame(data=d)
                 luts[iset][icat] = df
 
-                with pd.option_context('display.max_rows', None, 'display.max_columns', None): 
-                    print(df)
-                print('\n')
+                # with pd.option_context('display.max_rows', None, 'display.max_columns', None): 
+                #     print(df)
+                # print('\n')
                 if Save:
                     df.to_csv(SaveDirectory+filename) # use later to collect bins and weights for re-scaling
 
-    print(luts)
+    # print(luts)
     return(luts)
 
 #!jupyter nbconvert --to script TTbarResLookUpTables.ipynb
