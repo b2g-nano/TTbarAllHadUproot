@@ -28,10 +28,9 @@ From within this repo, you can run the uproot job that will produce coffea outpu
 
 The output should look something like this:
 ```
-usage: TTbarResCoffeaOutputs.py [-h] (-t | -m | -d RUNDATASET [RUNDATASET ...]) -a {yes,no} -y {2016,2017,2018,0}
-                                [--uproot {1,2}] [--chunks CHUNKS] [--chunksize CHUNKSIZE] [--save] [--saveMistag] [--dask]
-                                [--bTagSyst {central,up,down} | --tTagSyst {central,up,down} | --jec {central,up,down} | --jer {cen
-tral,up,down} | --pileup {central,up,down}]
+usage: TTbarResCoffeaOutputs.py [-h] (-t | -m | -T | -F RUNFLAVOREFF [RUNFLAVOREFF ...] | -M RUNMMO [RUNMMO ...] | -d RUNDATASET [RUNDATASET ...]) (-C | -L) (-l | -med) -a {yes,no} -y
+                                {2016,2017,2018,0} [--uproot {1,2}] [--chunks CHUNKS] [--chunksize CHUNKSIZE] [--save] [--saveMistag] [--saveTrig] [--saveFlav] [--dask] [--useEff] [--tpt]
+                                [--bTagSyst {central,up,down} | --tTagSyst {central,up,down} | --ttXSSyst {central,up,down} | --lumSyst {central,up,down} | --jec {central,up,down} | --jer {central,up,down} | --pileup {central,up,down}]
 
 -----------------------------------------------------------------------------
 Run the TTbarAllHadProcessor script.  
@@ -42,24 +41,40 @@ optional arguments:
   -h, --help            show this help message and exit
   -t, --runtesting      Only run a select few root files defined in the code.
   -m, --runmistag       Make data mistag rate where ttbar contamination is removed (as well as ttbar mistag rate)
+  -T, --runtrigeff      Create trigger efficiency hist coffea output objects for chosen condition
+  -F RUNFLAVOREFF [RUNFLAVOREFF ...], --runflavoreff RUNFLAVOREFF [RUNFLAVOREFF ...]
+                        Create flavor efficiency hist coffea output objects for chosen MC datasets
+  -M RUNMMO [RUNMMO ...], --runMMO RUNMMO [RUNMMO ...]
+                        Run Mistag-weight and Mass modification Only (no other systematics for uproot 2)
   -d RUNDATASET [RUNDATASET ...], --rundataset RUNDATASET [RUNDATASET ...]
                         List of datasets to be ran/loaded
+  -C, --casa            Use Coffea-Casa redirector: root://xcache/
+  -L, --lpc             Use CMSLPC redirector: root://cmsxrootd.fnal.gov/
+  -l, --loose           Apply loose bTag discriminant cut
+  -med, --medium        Apply medium bTag discriminant cut
   -a {yes,no}, --APV {yes,no}
                         Do datasets have APV?
   -y {2016,2017,2018,0}, --year {2016,2017,2018,0}
                         Year(s) of data/MC of the datasets you want to run uproot with. Choose 0 for all years simultaneously.
-  --uproot {1,2}        1st run or 2nd run of uproot job. If not specified, both the 1st and 2nd job will be run one after the
-                        other.
+  --uproot {1,2}        1st run or 2nd run of uproot job. If not specified, both the 1st and 2nd job will be run one after the other.
   --chunks CHUNKS       Number of chunks of data to run for given dataset(s)
   --chunksize CHUNKSIZE
                         Size of each chunk to run for given dataset(s)
   --save                Choose to save the uproot job as a coffea output for later analysis
   --saveMistag          Save mistag rate calculated from running either --uproot 1 or --mistag
+  --saveTrig            Save uproot job with trigger analysis outputs (Only if -T selected)
+  --saveFlav            Save uproot job with flavor efficiency outputs (Only if -F selected)
   --dask                Try the dask executor (experimental) for some fast processing!
+  --useEff              Use MC bTag efficiencies for bTagging systematics
+  --tpt                 Apply top pT re-weighting for uproot 2
   --bTagSyst {central,up,down}
                         Choose Unc.
   --tTagSyst {central,up,down}
                         Choose Unc.
+  --ttXSSyst {central,up,down}
+                        ttbar cross section systematics. Choose Unc.
+  --lumSyst {central,up,down}
+                        Luminosity systematics. Choose Unc.
   --jec {central,up,down}
                         Choose Unc.
   --jer {central,up,down}
@@ -79,6 +94,7 @@ optional arguments:
                                 RSGluon<x><y>00
                                 TTbar
                                 JetHT
+                                SingleMu
                                 NOTE** UL17 and UL18 samples TBA
 ```
 
