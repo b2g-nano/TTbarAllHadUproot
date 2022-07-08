@@ -35,9 +35,10 @@ manual_jetht_bins = [200, 400, 600, 800, 840, 880, 920, 960, 1000, 1200, 1400, 1
 class TTbarResProcessor(processor.ProcessorABC):
     def __init__(self, prng=RandomState(1234567890), htCut=950., minMSD=105., maxMSD=210.,
                  tau32Cut=0.65, ak8PtMin=400., bdisc=0.8484, deepAK8Cut=0.435,
-                 year=None, apv='', vfp='', UseLookUpTables=False, lu=None, 
-                 ModMass=False, RandomDebugMode=False, UseEfficiencies=False, 
-                 ApplybtagSF=False, ScaleFactorFile='', ApplyttagSF=False, ApplyJER=False, ApplyJEC=False, sysType=None):
+                 year=None, apv='', vfp='', UseLookUpTables=False, lu=None, extraDaskDirectory='',
+                 ModMass=False, RandomDebugMode=False, UseEfficiencies=False, xsSystematicWeight=1., lumSystematicWeight=1.,
+                 ApplybtagSF=False, ScaleFactorFile='', ApplyttagSF=False, ApplyTopReweight=False, 
+                 ApplyJER=False, ApplyJEC=False, sysType=None):
         
         self.prng = prng
         self.htCut = htCut
@@ -50,16 +51,20 @@ class TTbarResProcessor(processor.ProcessorABC):
         self.year = year
         self.apv = apv
         self.vfp = vfp
+        self.extraDaskDirectory = extraDaskDirectory
         self.UseLookUpTables = UseLookUpTables
         self.ModMass = ModMass
         self.RandomDebugMode = RandomDebugMode
         self.ScaleFactorFile = ScaleFactorFile
         self.ApplybtagSF = ApplybtagSF # Only apply scale factors when MC efficiencies are being imported in second run of processor
         self.ApplyttagSF = ApplyttagSF
+        self.ApplyTopReweight = ApplyTopReweight
         self.ApplyJEC = ApplyJEC
         self.ApplyJER = ApplyJER
         self.sysType = sysType # string for btag SF evaluator --> "central", "up", or "down"
         self.UseEfficiencies = UseEfficiencies
+        self.xsSystematicWeight = xsSystematicWeight
+        self.lumSystematicWeight = lumSystematicWeight
         self.lu = lu # Look Up Tables
         
         # --- anti-tag+probe, anti-tag, pre-tag, 0, 1, >=1, 2 ttags, any t-tag (>=0t) --- #
@@ -176,7 +181,9 @@ class TTbarResProcessor(processor.ProcessorABC):
         # ---- Import Flavor Efficiency Tables as Dataframes ---- #
         subjet_flav_index = np.arange(ak.to_numpy(subjet.hadronFlavour).size)
         df_list = [ pd.read_csv(Eff_filename_list[i]) for i in subjet_flav_index ] # List of efficiency dataframes; imported to extract list of eff_vals
-        eff_vals_list = [ df_list.values for i in subjet_flav_index ] # 40 efficiency values for each file read in; one file per element of subjet array
+        # print(df_list[0])
+        eff_vals_list = [ df_list[i]['efficiency'].values for i in subjet_flav_index ] # efficiency values for each file read in; one file per element of subjet array
+        # print(eff_vals_list[0])
         
         # ---- Match subjet pt and eta to appropriate bins ---- #
         pt_BinKeys = np.arange(np.array(manual_subjetpt_bins).size - 1) # the -1 ensures proper size for bin labeling
@@ -205,6 +212,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         Eff_indices = [EffKeys_Dict[index_pairs_tuples[i]] for i in range(pt_indices.size)] # Indices for selecting efficiency values from the lists for each subjet index
         
         eff_val = np.asarray([ eff_vals_list[i][Eff_indices[i]] for i in subjet_flav_index ])
+        # print(eff_val)
         
         """
                                     !! NOTE !!
@@ -285,14 +293,25 @@ class TTbarResProcessor(processor.ProcessorABC):
         hadronFlavour = ak.to_numpy(ak.flatten(subjet.hadronFlavour))
         eta = ak.to_numpy(ak.flatten(subjet.eta))
         pt = ak.to_numpy(ak.flatten(subjet.pt))
+        # ---- Ensure eta and pt fall within the allowed binning for corrections ---- #
+        Min_etaval = 0.
+        Max_etaval = 2.5
+        Min_ptval = 30.
+        Max_ptval = 450.
+
+        eta = np.where(abs(eta)>=Max_etaval, Max_etaval-0.500, eta)
+        pt = np.where(pt<=Min_ptval, Min_ptval+1.00, pt)
+        pt = np.where(pt>=Max_ptval, Max_ptval-1.00, pt)
+        
         # Step 4.)
         allHeavy = np.where(hadronFlavour == 0, 4, hadronFlavour)
         allLight = np.zeros_like(allHeavy) 
         # Step 5.) and 6.)
-        BSF_allHeavy = btag_sf['deepCSV_subjet'].evaluate(OperatingPoint, 'lt', Fitting, allHeavy, abs(eta), pt)
-        BSF_allLight = btag_sf['deepCSV_subjet'].evaluate(OperatingPoint, 'incl', Fitting, allLight, abs(eta), pt)
+        BSF_allHeavy = btag_sf['deepCSV_subjet'].evaluate(OperatingPoint, 'lt', FittingPoint, allHeavy, abs(eta), pt)
+        BSF_allLight = btag_sf['deepCSV_subjet'].evaluate(OperatingPoint, 'incl', FittingPoint, allLight, abs(eta), pt)
         # Step 7.)
         BSF = np.where(hadronFlavour == 0, BSF_allLight, BSF_allHeavy) # btag scale factors
+        # print(BSF)
         
         """
 *******************************************************************************************************************        
@@ -318,16 +337,16 @@ class TTbarResProcessor(processor.ProcessorABC):
 *******************************************************************************************************************        
         """ 
         
-        f_less = 1. - BSF # fraction of subjets to be downgraded
-        f_greater = np.where(eff_val > 0., f_less/(1. - 1./eff_val), 0.) # fraction of subjets to be upgraded 
+        f_less = abs(1. - BSF) # fraction of subjets to be downgraded
+        f_greater = np.where(eff_val > 0., abs(f_less/(1. - 1./eff_val)), 0.) # fraction of subjets to be upgraded  
+
+        condition1 = (ak.flatten(subjet_btag_status) == True) & (BSF == 1.)
+        condition2 = (ak.flatten(subjet_btag_status) == True) & ((BSF < 1.0) & (coin < BSF)) 
+        condition3 = (ak.flatten(subjet_btag_status) == True) & (BSF > 1.)
+        condition4 = (ak.flatten(subjet_btag_status) == False) & ((BSF > 1.) & (coin < f_greater))
+
+        subjet_new_btag_status = np.where((condition1 ^ condition2) ^ (condition3 ^ condition4), True, False)   
         
-        condition1 = (subjet_btag_status == True) & (BSF == 1.)
-        condition2 = (subjet_btag_status == True) & ((BSF < 1.0) & (coin < BSF)) 
-        condition3 = (subjet_btag_status == True) & (BSF > 1.)
-        condition4 = (subjet_btag_status == False) & ((BSF > 1.) & (coin < f_greater))
-
-        subjet_new_btag_status = np.where((condition1 ^ condition2) ^ (condition3 ^ condition4), True, False)
-
         return subjet_new_btag_status
             
     @property
@@ -647,25 +666,25 @@ class TTbarResProcessor(processor.ProcessorABC):
         # ----------- CMS Top Tagger Version 2 (SD and Tau32 Cuts) ----------- #
         # ---- NOTE: Must Change This to DeepAK8 Top Tag Discriminator Cut ----#
         # ---- Maybe we should ignore tau32 cut(s) when performing trigger analysis ---- #
+        tau32_s0 = np.where(ttbarcands.slot0.tau2>0,ttbarcands.slot0.tau3/ttbarcands.slot0.tau2, 0 )
+        tau32_s1 = np.where(ttbarcands.slot1.tau2>0,ttbarcands.slot1.tau3/ttbarcands.slot1.tau2, 0 )
         
-#         tau32_s0 = np.where(ttbarcands.slot0.tau2>0,ttbarcands.slot0.tau3/ttbarcands.slot0.tau2, 0 )
-#         tau32_s1 = np.where(ttbarcands.slot1.tau2>0,ttbarcands.slot1.tau3/ttbarcands.slot1.tau2, 0 )
+        taucut_s0 = tau32_s0 < self.tau32Cut
+        taucut_s1 = tau32_s1 < self.tau32Cut
         
-#         taucut_s0 = tau32_s0 < self.tau32Cut
-#         taucut_s1 = tau32_s1 < self.tau32Cut
-        
-#         mcut_s0 = (self.minMSD < ttbarcands.slot0.msoftdrop) & (ttbarcands.slot0.msoftdrop < self.maxMSD) 
-#         mcut_s1 = (self.minMSD < ttbarcands.slot1.msoftdrop) & (ttbarcands.slot1.msoftdrop < self.maxMSD) 
+        mcut_s0 = (self.minMSD < ttbarcands.slot0.msoftdrop) & (ttbarcands.slot0.msoftdrop < self.maxMSD) 
+        mcut_s1 = (self.minMSD < ttbarcands.slot1.msoftdrop) & (ttbarcands.slot1.msoftdrop < self.maxMSD) 
 
-#         ttag_s0 = (taucut_s0) & (mcut_s0)
-#         ttag_s1 = (taucut_s1) & (mcut_s1)
-        
-        ttag_s0 = ttbarcands.slot0.deepTag_TvsQCD > self.deepAK8Cut
-        ttag_s1 = ttbarcands.slot1.deepTag_TvsQCD > self.deepAK8Cut
+        ttag_s0 = (taucut_s0) & (mcut_s0)
+        ttag_s1 = (taucut_s1) & (mcut_s1)
+        antitag = (~taucut_s0) & (mcut_s0) # The Probe jet will always be ttbarcands.slot1 (at)
+
+        # ----------- DeepAK8 Tagger (Discriminator Cut) ----------- #
+        # ttag_s0 = ttbarcands.slot0.deepTag_TvsQCD > self.deepAK8Cut
+        # ttag_s1 = ttbarcands.slot1.deepTag_TvsQCD > self.deepAK8Cut
+        # antitag = ttbarcands.slot0.deepTag_TvsQCD < self.deepAK8Cut # The Probe jet will always be ttbarcands.slot1 (at)
         
         # ---- Define "Top Tag" Regions ---- #
-        # antitag = (~taucut_s0) & (mcut_s0) # The Probe jet will always be ttbarcands.slot1 (at)
-        antitag = ttbarcands.slot0.deepTag_TvsQCD < self.deepAK8Cut # The Probe jet will always be ttbarcands.slot1 (at)
         antitag_probe = np.logical_and(antitag, ttag_s1) # Found an antitag and ttagged probe pair for mistag rate (Probet)
         pretag =  ttag_s0 # Only jet0 (pret)
         ttag0 =   (~ttag_s0) & (~ttag_s1) # No tops tagged (0t)
@@ -765,8 +784,29 @@ class TTbarResProcessor(processor.ProcessorABC):
                     s1_allHeavy = np.where(s1_hadronFlavour == 0, 4, s1_hadronFlavour)
                     s1_allLight = np.zeros_like(s1_allHeavy) 
                     
+                    # ---- Ensure eta and pt fall within the allowed binning for corrections ---- #
+                    Min_etaval = 0.
+                    Max_etaval = 2.5
+                    Min_ptval = 30.
+                    Max_ptval = 450.
+                    
+                    s0_eta = np.where(abs(s0_eta)>=Max_etaval, Max_etaval-0.01, s0_eta)
+                    s1_eta = np.where(abs(s1_eta)>=Max_etaval, Max_etaval-0.01, s1_eta)
+                    
+                    s0_pt = np.where(abs(s0_pt)<=Min_ptval, Min_ptval+1.00, s0_pt)
+                    s1_pt = np.where(abs(s1_pt)<=Min_ptval, Min_ptval+1.00, s1_pt)
+                    s0_pt = np.where(abs(s0_pt)>=Max_ptval, Max_ptval-1.00, s0_pt)
+                    s1_pt = np.where(abs(s1_pt)>=Max_ptval, Max_ptval-1.00, s1_pt)
+                    
                     BSF_s0_allHeavy = btag_sf['deepCSV_subjet'].evaluate(self.sysType, 'lt', Fitting, s0_allHeavy, abs(s0_eta), s0_pt)
-                    BSF_s1_allHeavy = btag_sf['deepCSV_subjet'].evaluate(self.sysType, 'lt', Fitting, s1_allHeavy, abs(s1_eta), s1_pt)
+                    try:
+                        BSF_s1_allHeavy = btag_sf['deepCSV_subjet'].evaluate(self.sysType, 'lt', Fitting, s1_allHeavy, abs(s1_eta), s1_pt)
+                    except RuntimeError as RE:
+                        print('flavor (with light mask): \n', s1_allHeavy)
+                        print('eta: \n', s1_eta)
+                        print('pt: \n', s1_pt)
+                        print('These subjets\' all heavy SFs evaluation failed')
+                        print(RE)
                     
                     BSF_s0_allLight = btag_sf['deepCSV_subjet'].evaluate(self.sysType, 'incl', Fitting, s0_allLight, abs(s0_eta), s0_pt)
                     BSF_s1_allLight = btag_sf['deepCSV_subjet'].evaluate(self.sysType, 'incl', Fitting, s1_allLight, abs(s1_eta), s1_pt)
@@ -852,8 +892,8 @@ class TTbarResProcessor(processor.ProcessorABC):
                     SubJet12_isBtagged = self.BtagUpdater(SubJet12, EffFileDict['Eff_File_s12'], SF_filename, Fitting, self.sysType)
 
                     # If either subjet 1 or 2 in FatJet 0 and 1 is btagged after update, then that FatJet is considered btagged #
-                    btag_s0 = (SubJet01_isBtagged) ^ (SubJet02_isBtagged)  
-                    btag_s1 = (SubJet11_isBtagged) ^ (SubJet12_isBtagged)
+                    btag_s0 = (SubJet01_isBtagged) | (SubJet02_isBtagged)  
+                    btag_s1 = (SubJet11_isBtagged) | (SubJet12_isBtagged)
 
                     # --- Re-Define b-Tag Regions with "Updated" Tags ---- #
                     btag0 = (~btag_s0) & (~btag_s1) #(0b)
@@ -898,7 +938,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         jetdy = np.abs(ak.flatten(ttbarcands_s0_rapidity) - ak.flatten(ttbarcands_s1_rapidity))
         
         # ---- Weights ---- #
-        weights = evtweights
+        weights = evtweights*self.xsSystematicWeight*self.lumSystematicWeight
 
         # ---- Define the SumW2 for MC Datasets (Probably unnecessary now) ---- #
         output['cutflow']['sumw'] += np.sum(weights)
@@ -909,6 +949,21 @@ class TTbarResProcessor(processor.ProcessorABC):
         pT = ak.flatten(ttbarcands.slot1.pt)
         pz = ak.flatten(ttbarcands.slot1.p4.pz)
         p = np.absolute(np.sqrt(pT**2 + pz**2))
+        
+        # --------------------------------------------------------------------------------- #
+        # ----          Avoid momentum values greater than what's defined in           ---- #
+        # ---- manual_bins = [400, 500, 600, 800, 1000, 1500, 2000, 3000, 7000, 10000] ---- #
+        # ---- example: momentum                 BinWidth  BinNumber                   ---- #
+        # ----          13339.667                NaN       NaN                         ---- #
+        # --------------------------------------------------------------------------------- #
+        p = np.where(p >= 10000., 9999., p)
+        
+        # -------------------- Define pT of control jet ------------------ #
+        # ---- Use pT and pT0 to calculate ttbar pT weight used later ---- #
+        pT0 = ak.flatten(ttbarcands.slot0.pt)
+        topcand0_wgt = np.exp(0.0615 - 0.0005*ak.to_numpy(pT0))
+        topcand1_wgt = np.exp(0.0615 - 0.0005*ak.to_numpy(pT))
+        ttbar_wgt = np.sqrt(topcand0_wgt*topcand1_wgt) # used for re-weighting tttbar MC
         
         # ---- Define the Numerator and Denominator for Mistag Rate ---- #
         numerator = np.where(antitag_probe, p, -1) # If no antitag and tagged probe, move event to useless bin
@@ -948,18 +1003,26 @@ class TTbarResProcessor(processor.ProcessorABC):
                 df['BinNumber'] = pd.cut(np.asarray(p), bins=Bins, labels=BinKeys)
                 
                 BinNumber = df['BinNumber'].values # Collect the Bin Numbers into a numpy array
-                BinNumber = BinNumber.astype('int64') # Insures the bin numbers are integers
+                try:
+                    BinNumber = BinNumber.astype('int64') # Insures the bin numbers are integers
+                except ValueError as VE:
+                    with pd.option_context('display.max_rows', None,
+                                       'display.max_columns', None,
+                                       'display.precision', 3,
+                                       ):
+                        print(df)
+                    print(VE)
             
                 WeightMatching = wgts[BinNumber] # Match 'wgts' with corresponding p bin using the bin number
                 Weights = weights*WeightMatching # Include 'wgts' with the previously defined 'weights'
             else:
-                Weights = weights # No mistag rates, no change to weights
+                Weights = weights # No mistag rate changes to weights
                 
             ###---------------------------------------------------------------------------------------------###
             ### ----------------------------------- Mod-mass Procedure ------------------------------------ ###
             ###---------------------------------------------------------------------------------------------###
             if self.ModMass == True:
-                QCD_unweighted = util.load('TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/QCD/'
+                QCD_unweighted = util.load(self.extraDaskDirectory+'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/QCD/'
                                            +str(self.year)+'/'+self.apv+'/TTbarRes_0l_UL'+str(self.year-2000)+self.vfp+'_QCD.coffea') 
     
                 # ---- Extract event counts from QCD MC hist in signal region ---- #
@@ -997,6 +1060,12 @@ class TTbarResProcessor(processor.ProcessorABC):
             if not isData:
                 if (self.ApplybtagSF == True) and (self.UseEfficiencies == False):
                     Weights = Weights*Btag_wgts[str(ilabel[-5:-3])]
+                    
+            ###---------------------------------------------------------------------------------------------###
+            ### ----------------------- Top pT Reweighting (S.F. as function of pT) ----------------------- ###
+            ###---------------------------------------------------------------------------------------------###
+            if ('TTbar' in dataset) and (self.ApplyTopReweight):
+                Weights = Weights*ttbar_wgt
 
 # ************************************************************************************************************ #    
 
