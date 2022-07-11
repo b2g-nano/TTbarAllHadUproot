@@ -433,18 +433,6 @@ if UsingDaskExecutor == True and args.casa:
     from dask.distributed.diagnostics.plugin import UploadDirectory
     if __name__ == "__main__":       
         
-#         cluster = CoffeaCasaCluster(
-#             job_extra = {
-#                 'docker_image': 'coffeateam/coffea-casa-analysis:latest',
-#                 'transfer_input_files': 'dask-worker-space/TTbarAllHadUproot'
-#             }
-#         )
-        
-#         client = Client(cluster)
-#         client.register_worker_plugin(UploadDirectory('TTbarAllHadUproot',restart=True,update_path=True),nanny=True)
-#         print()
-#         print(client.run(os.listdir,"dask-worker-space/TTbarAllHadUproot"))
-        
         client = Client('tls://ac-2emalik-2ewilliams-40cern-2ech.dask.coffea.casa:8786')
         client.register_worker_plugin(UploadDirectory('TTbarAllHadUproot',restart=True,update_path=True),nanny=True)
         # client.upload_file('TTbarAllHadUproot/Filesets.py')
