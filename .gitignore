@@ -114,3 +114,4 @@ dask_client_cert.pem
 *.root
 
 
+**/*.tar
