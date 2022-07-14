@@ -432,9 +432,17 @@ if UsingDaskExecutor == True and args.casa:
     from dask.distributed import Client #, Scheduler, SchedulerPlugin
     from dask.distributed.diagnostics.plugin import UploadDirectory
     if __name__ == "__main__":       
-        
         client = Client('tls://ac-2emalik-2ewilliams-40cern-2ech.dask.coffea.casa:8786')
-        client.register_worker_plugin(UploadDirectory('TTbarAllHadUproot',restart=True,update_path=True),nanny=True)
+        tries = 10
+        while tries>0:
+            try:
+                client.register_worker_plugin(UploadDirectory('TTbarAllHadUproot',restart=True,update_path=True),nanny=True)
+                break
+            except OSError as ose:
+                print(ose)
+                print('\nTryingAgain\n')
+                tries -= 1
+            
         # client.upload_file('TTbarAllHadUproot/Filesets.py')
         # client.upload_file('TTbarAllHadUproot/TTbarResProcessor.py')
         # client.upload_file('TTbarAllHadUproot/TTbarResLookUpTables.py')
