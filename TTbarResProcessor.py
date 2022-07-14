@@ -1918,7 +1918,7 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         
         dataset_axis = hist.Cat("dataset", "Primary dataset")
         cats_axis = hist.Cat("anacat", "Analysis Category")
-        jetht_axis = hist.Bin("Jet_HT", r'$AK4\ Jet\ HT$', 50, 200, 2200) # Used for Trigger Analysis
+        jetht_axis = hist.Bin("Jet_HT", r'$AK4\ Jet\ HT$', manual_jetht_bins) # Used for Trigger Analysis
         
 #    ===================================================================================================
 #    TTTTTTT RRRRRR  IIIIIII GGGGGGG GGGGGGG EEEEEEE RRRRRR      H     H IIIIIII   SSSSS TTTTTTT   SSSSS     
