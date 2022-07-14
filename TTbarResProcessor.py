@@ -29,7 +29,7 @@ manual_bins = [400, 500, 600, 800, 1000, 1500, 2000, 3000, 7000, 10000]
 # --- Define 'Manual pT bins' to use for mc flavor efficiency plots for higher stats per bin--- # 
 manual_subjetpt_bins = [0, 300, 600, 1200] # Used on 6/17/22 for ttbar (3 bins)
 manual_subjeteta_bins = [0., 0.6, 1.2, 2.4] # Used on 6/17/22 for ttbar (3 bins)
-manual_jetht_bins = [200, 400, 600, 800, 840, 880, 920, 960, 1000, 1200, 1400, 1600, 1800]
+manual_jetht_bins = [200, 600, 800, 840, 880, 920, 960, 1000, 1200, 1400, 1600, 1800]
 
 """Package to perform the data-driven mistag-rate-based ttbar hadronic analysis. """
 class TTbarResProcessor(processor.ProcessorABC):
@@ -2092,13 +2092,13 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         # ---- Jets that satisfy Jet ID ---- #
         jet_id = (FatJets.jetId > 0) # Loose jet ID
         FatJets = FatJets[jet_id]
-        output['cutflow']['Loose Jet ID'] += ak.to_awkward0(jet_id).any().sum()
+        output['cutflow']['events with Loose Jet ID'] += ak.to_awkward0(jet_id).any().sum()
         
         # ---- Apply pT Cut and Rapidity Window ---- #
         FatJets_rapidity = .5*np.log( (FatJets.p4.energy + FatJets.p4.pz)/(FatJets.p4.energy - FatJets.p4.pz) )
         jetkincut_index = (FatJets.pt > self.ak8PtMin) & (np.abs(FatJets_rapidity) < 2.4)
         FatJets = FatJets[ jetkincut_index ]
-        output['cutflow']['pT,y Cut'] += ak.to_awkward0(jetkincut_index).any().sum()
+        output['cutflow']['events with pT,y Cut'] += ak.to_awkward0(jetkincut_index).any().sum()
         
         # ---- Find two AK8 Jets ---- #
         twoFatJetsKin = (ak.num(FatJets, axis=-1) == 2)
@@ -2112,7 +2112,7 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         condition4 = condition4[twoFatJetsKin]
         trigDenom = trigDenom[twoFatJetsKin]
         evtweights = evtweights[twoFatJetsKin]
-        output['cutflow']['two FatJets'] += ak.to_awkward0(twoFatJetsKin).sum()
+        output['cutflow']['events with two FatJets'] += ak.to_awkward0(twoFatJetsKin).sum()
         
         # ---- Randomly Assign AK8 Jets as TTbar Candidates 0 and 1 --- #
         Counts = np.ones(len(FatJets), dtype='i') # Number 1 for each FatJet
@@ -2150,7 +2150,7 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         """ NOTE that ak.cartesian gives a shape with one more layer than FatJets """
         # ---- Make sure we have at least 1 TTbar candidate pair and re-broadcast releveant arrays  ---- #
         oneTTbar = (ak.num(ttbarcands, axis=-1) >= 1)
-        output['cutflow']['>= oneTTbar'] += ak.to_awkward0(oneTTbar).sum()
+        output['cutflow']['events with >= oneTTbar'] += ak.to_awkward0(oneTTbar).sum()
         ttbarcands = ttbarcands[oneTTbar]
         FatJets = FatJets[oneTTbar]
         Jets = Jets[oneTTbar] # this used to not be here
@@ -2167,7 +2167,7 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         """ NOTE: Should find function for this; avoids 2pi problem """
         dPhiCut = ttbarcands.slot0.p4.delta_phi(ttbarcands.slot1.p4) > 2.1
         dPhiCut = ak.flatten(dPhiCut)
-        output['cutflow']['dPhi Cut'] += ak.to_awkward0(dPhiCut).sum()
+        output['cutflow']['events with dPhi Cut'] += ak.to_awkward0(dPhiCut).sum()
         ttbarcands = ttbarcands[dPhiCut]
         FatJets = FatJets[dPhiCut] 
         Jets = Jets[dPhiCut] # this used to not be here
@@ -2184,7 +2184,7 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         hasSubjets0 = ((ttbarcands.slot0.subJetIdx1 > -1) & (ttbarcands.slot0.subJetIdx2 > -1)) # 1st candidate has two subjets
         hasSubjets1 = ((ttbarcands.slot1.subJetIdx1 > -1) & (ttbarcands.slot1.subJetIdx2 > -1)) # 2nd candidate has two subjets
         GoodSubjets = ak.flatten(((hasSubjets0) & (hasSubjets1))) # Selection of 4 (leading) subjects
-        output['cutflow']['Good Subjets'] += ak.to_awkward0(GoodSubjets).sum()
+        output['cutflow']['events with Good Subjets'] += ak.to_awkward0(GoodSubjets).sum()
         ttbarcands = ttbarcands[GoodSubjets] # Choose only ttbar candidates with this selection of subjets
         SubJets = SubJets[GoodSubjets]
         Jets = Jets[GoodSubjets] # this used to not be here
@@ -2252,12 +2252,19 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         Jets_NumCondition3 = Jets[condition3]
         Jets_NumCondition4 = Jets[condition4]
         Jets_DenomCondition = Jets[trigDenom] # contains jets to be used as denominator for trigger eff
+        output['cutflow']['events with jets cond1'] +=  ak.to_awkward0(condition1).sum()
+        output['cutflow']['events with jets cond2'] +=  ak.to_awkward0(condition2).sum()
+        output['cutflow']['events with jets cond3'] +=  ak.to_awkward0(condition3).sum()
+        output['cutflow']['events with jets cond4'] +=  ak.to_awkward0(condition4).sum()
+        output['cutflow']['events with jets Denom cond'] +=  ak.to_awkward0(trigDenom).sum()
+        
         # ---- Must pass this cut before calculating HT variables for analysis ---- #
         passAK4_num1 = (Jets_NumCondition1.pt > 30.) & (np.abs(Jets_NumCondition1.eta) < 3.0) 
         passAK4_num2 = (Jets_NumCondition2.pt > 30.) & (np.abs(Jets_NumCondition2.eta) < 3.0)
         passAK4_num3 = (Jets_NumCondition3.pt > 30.) & (np.abs(Jets_NumCondition3.eta) < 3.0)
         passAK4_num4 = (Jets_NumCondition4.pt > 30.) & (np.abs(Jets_NumCondition4.eta) < 3.0)
         passAK4_denom = (Jets_DenomCondition.pt > 30.) & (np.abs(Jets_DenomCondition.eta) < 3.0) 
+        
         # ---------------------------------------------------------------------------------------------#
         # ---- Remember to have weights array that is consistently the same size as num and denom ---- #
         # --------- This is only because input later in the code expects an array of weights --------- #
@@ -2275,6 +2282,7 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
             '4': Num4Wgt
         }
         DenomWgt = evtweights[trigDenom]
+        
         # ---- Defining Trigger Analysis Numerator(s) and Denominator ---- #
         jet_HT_numerator1 = ak.sum(Jets_NumCondition1[passAK4_num1].pt, axis=-1) # Sum over each AK4 Jet per event
         jet_HT_numerator2 = ak.sum(Jets_NumCondition2[passAK4_num2].pt, axis=-1)
@@ -2287,6 +2295,25 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
             '4': jet_HT_numerator4
         }
         jet_HT_denominator = ak.sum(Jets_DenomCondition[passAK4_denom].pt, axis=-1) # Sum over each AK4 Jet per event
+        output['cutflow']['jets cond1 with ak4cut'] += ak.to_awkward0(ak.flatten(passAK4_num1)).sum()
+        output['cutflow']['jets cond2 with ak4cut'] += ak.to_awkward0(ak.flatten(passAK4_num2)).sum()
+        output['cutflow']['jets cond3 with ak4cut'] += ak.to_awkward0(ak.flatten(passAK4_num3)).sum()
+        output['cutflow']['jets cond4 with ak4cut'] += ak.to_awkward0(ak.flatten(passAK4_num4)).sum()
+        output['cutflow']['jets Denom with ak4cut'] += ak.to_awkward0(ak.flatten(passAK4_denom)).sum()
+        
+        # ---- Keep track of cutflow for individual bins ---- #
+        # ---- [200, 600, 800, 840, 880, 920, 960, 1000, 1200, 1400, 1600, 1800] ---- #
+        num1_inBin1 = (200. < jet_HT_numerator1) & (jet_HT_numerator1 < 600.)
+        num2_inBin1 = (200. < jet_HT_numerator2) & (jet_HT_numerator2 < 600.)
+        num3_inBin1 = (200. < jet_HT_numerator3) & (jet_HT_numerator3 < 600.)
+        num4_inBin1 = (200. < jet_HT_numerator4) & (jet_HT_numerator4 < 600.)
+        denom_inBin1 = (200. < jet_HT_denominator) & (jet_HT_denominator < 600.)
+        output['cutflow']['numerator 1 in bin [200, 600]'] += ak.to_awkward0(num1_inBin1).sum() #np.where(num1_inBin1, ak.to_awkward0(ak.flatten(passAK4_num1)).sum(), 0.)
+        output['cutflow']['numerator 2 in bin [200, 600]'] += ak.to_awkward0(num2_inBin1).sum()
+        output['cutflow']['numerator 3 in bin [200, 600]'] += ak.to_awkward0(num3_inBin1).sum()
+        output['cutflow']['numerator 4 in bin [200, 600]'] += ak.to_awkward0(num4_inBin1).sum()
+        output['cutflow']['denominator in bin [200, 600]'] += ak.to_awkward0(denom_inBin1).sum()
+        
         # ---- Define Categories for Trigger Analysis Denominator and Fill Hists ---- #
         ttags = [ttag0[trigDenom],ttagI[trigDenom]]
         cats = [ ak.to_awkward0(ak.flatten(t)) for t in ttags ]
