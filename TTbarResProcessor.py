@@ -78,7 +78,6 @@ class TTbarResProcessor(processor.ProcessorABC):
         
         # --- Combine categories like "0bcen", "0bfwd", etc: --- #
         self.anacats = [ t+b+y for t,b,y in itertools.product( self.ttagcats, self.btagcats, self.ycats) ]
-        self.anacats_forTriggerAnalysis = [ t+b+y for t,b,y in itertools.product( self.ttagcats_forTriggerAnalysis, self.btagcats, self.ycats) ]
         #print(self.anacats)
         
         dataset_axis = hist.Cat("dataset", "Primary dataset")
