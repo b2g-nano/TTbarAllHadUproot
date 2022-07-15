@@ -439,9 +439,10 @@ if UsingDaskExecutor == True and args.casa:
                 client.register_worker_plugin(UploadDirectory('TTbarAllHadUproot',restart=True,update_path=True),nanny=True)
                 break
             except OSError as ose:
-                print(ose)
-                print('\nTryingAgain\n')
+                print('\n' + ose)
+                print('\nTried Attempt #' + str(tries) + ' and failed.\n')
                 tries -= 1
+                print('Now Trying Attempt #' + str(tries))
             
         # client.upload_file('TTbarAllHadUproot/Filesets.py')
         # client.upload_file('TTbarAllHadUproot/TTbarResProcessor.py')

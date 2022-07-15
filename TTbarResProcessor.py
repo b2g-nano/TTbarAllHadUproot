@@ -29,7 +29,7 @@ manual_bins = [400, 500, 600, 800, 1000, 1500, 2000, 3000, 7000, 10000]
 # --- Define 'Manual pT bins' to use for mc flavor efficiency plots for higher stats per bin--- # 
 manual_subjetpt_bins = [0, 300, 600, 1200] # Used on 6/17/22 for ttbar (3 bins)
 manual_subjeteta_bins = [0., 0.6, 1.2, 2.4] # Used on 6/17/22 for ttbar (3 bins)
-manual_jetht_bins = [200, 600, 800, 840, 880, 920, 960, 1000, 1200, 1400, 1600, 1800]
+manual_jetht_bins = [200, 800, 840, 880, 920, 960, 1000, 1200, 1400, 1600, 1800, 2000]
 
 """Package to perform the data-driven mistag-rate-based ttbar hadronic analysis. """
 class TTbarResProcessor(processor.ProcessorABC):
@@ -2301,18 +2301,28 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         output['cutflow']['jets cond4 with ak4cut'] += ak.to_awkward0(ak.flatten(passAK4_num4)).sum()
         output['cutflow']['jets Denom with ak4cut'] += ak.to_awkward0(ak.flatten(passAK4_denom)).sum()
         
-        # ---- Keep track of cutflow for individual bins ---- #
-        # ---- [200, 600, 800, 840, 880, 920, 960, 1000, 1200, 1400, 1600, 1800] ---- #
-        num1_inBin1 = (200. < jet_HT_numerator1) & (jet_HT_numerator1 < 600.)
-        num2_inBin1 = (200. < jet_HT_numerator2) & (jet_HT_numerator2 < 600.)
-        num3_inBin1 = (200. < jet_HT_numerator3) & (jet_HT_numerator3 < 600.)
-        num4_inBin1 = (200. < jet_HT_numerator4) & (jet_HT_numerator4 < 600.)
-        denom_inBin1 = (200. < jet_HT_denominator) & (jet_HT_denominator < 600.)
-        output['cutflow']['numerator 1 in bin [200, 600]'] += ak.to_awkward0(num1_inBin1).sum() #np.where(num1_inBin1, ak.to_awkward0(ak.flatten(passAK4_num1)).sum(), 0.)
-        output['cutflow']['numerator 2 in bin [200, 600]'] += ak.to_awkward0(num2_inBin1).sum()
-        output['cutflow']['numerator 3 in bin [200, 600]'] += ak.to_awkward0(num3_inBin1).sum()
-        output['cutflow']['numerator 4 in bin [200, 600]'] += ak.to_awkward0(num4_inBin1).sum()
-        output['cutflow']['denominator in bin [200, 600]'] += ak.to_awkward0(denom_inBin1).sum()
+        # ----------------- Keep track of cutflow for individual bins ---------------- #
+        # ---- [200, 800, 840, 880, 920, 960, 1000, 1200, 1400, 1600, 1800, 2000] ---- #
+        num1_inBin1 = (200. < jet_HT_numerator1) & (jet_HT_numerator1 < 800.)
+        num2_inBin1 = (200. < jet_HT_numerator2) & (jet_HT_numerator2 < 800.)
+        num3_inBin1 = (200. < jet_HT_numerator3) & (jet_HT_numerator3 < 800.)
+        num4_inBin1 = (200. < jet_HT_numerator4) & (jet_HT_numerator4 < 800.)
+        denom_inBin1 = (200. < jet_HT_denominator) & (jet_HT_denominator < 800.)
+        num1_inBin11 = (1800. < jet_HT_numerator1) & (jet_HT_numerator1 < 2000.)
+        num2_inBin11 = (1800. < jet_HT_numerator2) & (jet_HT_numerator2 < 2000.)
+        num3_inBin11 = (1800. < jet_HT_numerator3) & (jet_HT_numerator3 < 2000.)
+        num4_inBin11 = (1800. < jet_HT_numerator4) & (jet_HT_numerator4 < 2000.)
+        denom_inBin11 = (1800. < jet_HT_denominator) & (jet_HT_denominator < 2000.)
+        output['cutflow']['numerator 1 in bin [200, 800]'] += ak.to_awkward0(num1_inBin1).sum()
+        output['cutflow']['numerator 2 in bin [200, 800]'] += ak.to_awkward0(num2_inBin1).sum()
+        output['cutflow']['numerator 3 in bin [200, 800]'] += ak.to_awkward0(num3_inBin1).sum()
+        output['cutflow']['numerator 4 in bin [200, 800]'] += ak.to_awkward0(num4_inBin1).sum()
+        output['cutflow']['denominator in bin [200, 800]'] += ak.to_awkward0(denom_inBin1).sum()
+        output['cutflow']['numerator 1 in bin [1800, 2000]'] += ak.to_awkward0(num1_inBin11).sum()
+        output['cutflow']['numerator 2 in bin [1800, 2000]'] += ak.to_awkward0(num2_inBin11).sum()
+        output['cutflow']['numerator 3 in bin [1800, 2000]'] += ak.to_awkward0(num3_inBin11).sum()
+        output['cutflow']['numerator 4 in bin [1800, 2000]'] += ak.to_awkward0(num4_inBin11).sum()
+        output['cutflow']['denominator in bin [1800, 2000]'] += ak.to_awkward0(denom_inBin11).sum()
         
         # ---- Define Categories for Trigger Analysis Denominator and Fill Hists ---- #
         ttags = [ttag0[trigDenom],ttagI[trigDenom]]
