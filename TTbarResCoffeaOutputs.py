@@ -432,9 +432,18 @@ if UsingDaskExecutor == True and args.casa:
     from dask.distributed import Client #, Scheduler, SchedulerPlugin
     from dask.distributed.diagnostics.plugin import UploadDirectory
     if __name__ == "__main__":       
-        
         client = Client('tls://ac-2emalik-2ewilliams-40cern-2ech.dask.coffea.casa:8786')
-        client.register_worker_plugin(UploadDirectory('TTbarAllHadUproot',restart=True,update_path=True),nanny=True)
+        tries = 1
+        while tries>=1:
+            try:
+                client.register_worker_plugin(UploadDirectory('TTbarAllHadUproot',restart=True,update_path=True),nanny=True)
+                break
+            except OSError as ose:
+                print('\n', ose)
+                print('\nTried Attempt #' + str(tries) + ' and failed.\n')
+                tries -= 1
+                print('Attempts left :  ' + str(tries))
+            
         # client.upload_file('TTbarAllHadUproot/Filesets.py')
         # client.upload_file('TTbarAllHadUproot/TTbarResProcessor.py')
         # client.upload_file('TTbarAllHadUproot/TTbarResLookUpTables.py')
@@ -769,6 +778,7 @@ for name,files in filesets_to_run.items():
                                                                                        year=args.year,
                                                                                        apv=convertLabel[VFP],
                                                                                        vfp=VFP,
+                                                                                       # triggerAnalysisObjects = isTrigEffArg,
                                                                                        prng=prng),
                                                   executor=processor.futures_executor,
                                                   executor_args={
@@ -789,6 +799,7 @@ for name,files in filesets_to_run.items():
                                                                                        year=args.year,
                                                                                        apv=convertLabel[VFP],
                                                                                        vfp=VFP,
+                                                                                       # triggerAnalysisObjects = isTrigEffArg,
                                                                                        prng=prng),
                                                   executor=processor.dask_executor,
                                                   executor_args={
@@ -808,6 +819,12 @@ for name,files in filesets_to_run.items():
                           + SaveLocation[name]
                           + name    
                           + '.coffea')
+            if isTrigEffArg and args.saveTrig:
+                util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForTriggerAnalysis/'
+                      + SaveLocation[name]
+                      + name    
+                      + '_TriggerAnalysis' 
+                      + '.coffea')
             
             
         else: # Run all Root Files
@@ -822,6 +839,7 @@ for name,files in filesets_to_run.items():
                                                                                        year=args.year,
                                                                                        apv=convertLabel[VFP],
                                                                                        vfp=VFP,
+                                                                                       # triggerAnalysisObjects = isTrigEffArg,
                                                                                        prng=prng),
                                                   executor=processor.futures_executor,
                                                   executor_args={
@@ -842,6 +860,7 @@ for name,files in filesets_to_run.items():
                                                                                        year=args.year,
                                                                                        apv=convertLabel[VFP],
                                                                                        vfp=VFP,
+                                                                                       # triggerAnalysisObjects = isTrigEffArg,
                                                                                        prng=prng),
                                                   executor=processor.dask_executor,
                                                   executor_args={
