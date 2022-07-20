@@ -75,20 +75,21 @@ def multi_dict(K, type): # definition from https://www.geeksforgeeks.org/python-
 luts = {}
 luts = multi_dict(2, str) #Annoying, but necessary definition of the dictionary
 
-def LoadDataLUTS(Year):
+def LoadDataLUTS(bdiscDirectory, Year):
     for icat in list_of_cats:
-        df = pd.read_csv('TTbarAllHadUproot/LookupTables/mistag_JetHT' + str(Year) + '_Data_ttContaminationRemoved_' + icat + '.csv')
+        df = pd.read_csv('TTbarAllHadUproot/LookupTables/' + bdiscDirectory + 'mistag_JetHT' + str(Year) + '_Data_ttContaminationRemoved_' + icat + '.csv')
         luts['JetHT' + str(Year) + '_Data'][icat] = df
     return(luts)
 
-def CreateLUTS(Filesets, Outputs, Year, VFP, RemoveContam, Save):
+def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, Save):
     '''
-    Filesets     --> Dictionary of datasets
-    Outputs      --> Dictionary of uproot outputs from 1st run
-    Year         --> Integer for the year of datasets used in the 1st uproot run
-    VFP          --> string; either preVFP or postVFP
-    RemoveContam --> bool; Remove the ttbar contamination from mistag when selecting --mistag option in TTbarResCoffeaOutputs.py
-    Save         --> bool; Save mistag rates or not
+    Filesets        --> Dictionary of datasets
+    Outputs         --> Dictionary of uproot outputs from 1st run
+    bdiscDirectory  --> string; Directory path for chosen b discriminator
+    Year            --> Integer for the year of datasets used in the 1st uproot run
+    VFP             --> string; either preVFP or postVFP
+    RemoveContam    --> bool; Remove the ttbar contamination from mistag when selecting --mistag option in TTbarResCoffeaOutputs.py
+    Save            --> bool; Save mistag rates or not
     '''
     
 #     -------------------------------------------------------------------
@@ -211,7 +212,7 @@ def CreateLUTS(Filesets, Outputs, Year, VFP, RemoveContam, Save):
 #     M     M IIIIIII SSSSS      T    A     A  GGGGG      R     R A     A    T    EEEEEEE SSSSS 
 #     -------------------------------------------------------------------------------------------
     
-    SaveDirectory = maindirectory + '/TTbarAllHadUproot/LookupTables/'
+    SaveDirectory = maindirectory + '/TTbarAllHadUproot/LookupTables/' + bdiscDirectory
     DoesDirectoryExist(SaveDirectory)
 
     # ---- Check if TTbar simulation was used in previous processor ---- #

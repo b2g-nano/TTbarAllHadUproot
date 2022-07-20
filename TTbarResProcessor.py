@@ -34,7 +34,7 @@ manual_jetht_bins = [200, 800, 840, 880, 920, 960, 1000, 1200, 1400, 1600, 1800,
 """Package to perform the data-driven mistag-rate-based ttbar hadronic analysis. """
 class TTbarResProcessor(processor.ProcessorABC):
     def __init__(self, prng=RandomState(1234567890), htCut=950., minMSD=105., maxMSD=210.,
-                 tau32Cut=0.65, ak8PtMin=400., bdisc=0.8484, deepAK8Cut=0.435,
+                 tau32Cut=0.65, ak8PtMin=400., bdisc=0.8484, deepAK8Cut=0.435, BDirect='',
                  year=None, apv='', vfp='', UseLookUpTables=False, lu=None, extraDaskDirectory='',
                  ModMass=False, RandomDebugMode=False, UseEfficiencies=False, xsSystematicWeight=1., lumSystematicWeight=1.,
                  ApplybtagSF=False, ScaleFactorFile='', ApplyttagSF=False, ApplyTopReweight=False, 
@@ -47,6 +47,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         self.tau32Cut = tau32Cut
         self.ak8PtMin = ak8PtMin
         self.bdisc = bdisc
+        self.BDirect = BDirect
         self.deepAK8Cut = deepAK8Cut
         self.year = year
         self.apv = apv
@@ -828,7 +829,14 @@ class TTbarResProcessor(processor.ProcessorABC):
                     s0_pt = np.where(abs(s0_pt)>=Max_ptval, Max_ptval-1.00, s0_pt)
                     s1_pt = np.where(abs(s1_pt)>=Max_ptval, Max_ptval-1.00, s1_pt)
                     
-                    BSF_s0_allHeavy = btag_sf['deepCSV_subjet'].evaluate(self.sysType, 'lt', Fitting, s0_allHeavy, abs(s0_eta), s0_pt)
+                    try:
+                        BSF_s0_allHeavy = btag_sf['deepCSV_subjet'].evaluate(self.sysType, 'lt', Fitting, s0_allHeavy, abs(s0_eta), s0_pt)
+                    except RuntimeError as re:
+                        print('flavor (with light mask): \n', s0_allHeavy)
+                        print('eta: \n', s0_eta)
+                        print('pt: \n', s0_pt)
+                        print('These subjets\' all heavy SFs evaluation failed')
+                        print(re)
                     try:
                         BSF_s1_allHeavy = btag_sf['deepCSV_subjet'].evaluate(self.sysType, 'lt', Fitting, s1_allHeavy, abs(s1_eta), s1_pt)
                     except RuntimeError as RE:
@@ -1055,7 +1063,7 @@ class TTbarResProcessor(processor.ProcessorABC):
             ###---------------------------------------------------------------------------------------------###
             if self.ModMass == True:
                 QCD_unweighted = util.load(self.extraDaskDirectory+'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/QCD/'
-                                           +str(self.year)+'/'+self.apv+'/TTbarRes_0l_UL'+str(self.year-2000)+self.vfp+'_QCD.coffea') 
+                                           +self.BDirect+str(self.year)+'/'+self.apv+'/TTbarRes_0l_UL'+str(self.year-2000)+self.vfp+'_QCD.coffea') 
     
                 # ---- Extract event counts from QCD MC hist in signal region ---- #
                 QCD_hist = QCD_unweighted['jetmass'].integrate('anacat', '2t' + str(ilabel[-5:]))#.integrate('dataset', 'QCD')

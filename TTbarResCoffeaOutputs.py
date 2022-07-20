@@ -145,6 +145,7 @@ RedirectorGroup.add_argument('-L', '--lpc', action='store_true', help='Use CMSLP
 BDiscriminatorGroup = Parser.add_mutually_exclusive_group(required=True)
 BDiscriminatorGroup.add_argument('-l', '--loose', action='store_true', help='Apply loose bTag discriminant cut')
 BDiscriminatorGroup.add_argument('-med', '--medium', action='store_true', help='Apply medium bTag discriminant cut')
+BDiscriminatorGroup.add_argument('-med2016', '--medium2016', action='store_true', help='Apply medium bTag discriminant cut from 2016 AN')
 
 Parser.add_argument('-a', '--APV', type=str, required=True, choices=['yes', 'no'], help='Do datasets have APV?')
 Parser.add_argument('-y', '--year', type=int, required=True, choices=[2016, 2017, 2018, 0], help='Year(s) of data/MC of the datasets you want to run uproot with.  Choose 0 for all years simultaneously.')
@@ -204,9 +205,10 @@ if args.runMMO and args.uproot:
 
 Redirector = None
 daskDirectory = ''
+envirDirectory = ''
 if args.casa:
     Redirector = 'root://xcache/'
-    daskDirectory = 'dask-worker-space/'
+    envirDirectory = 'dask-worker-space/'
 elif args.lpc:
     Redirector = 'root://cmsxrootd.fnal.gov/'
 else:
@@ -226,10 +228,17 @@ convertLabel = {
 #    ---------------------------------------------------------------------------------------------------------------------    # 
 
 BDisc = 0.
+OldDisc = '' #Label the datasets that use the old discriminator cut from 2016 AN
+BDiscDirectory = ''
 if args.loose:
     BDisc = 0.1918
-else: # args.medium
+    BDiscDirectory = 'LooseBTag/'
+elif args.medium:
     BDisc = 0.5847
+    BDiscDirectory = 'MediumBTag/'
+else:
+    BDisc = 0.8484
+    OldDisc = '_oldANdisc'
 #    ---------------------------------------------------------------------------------------------------------------------    # 
 
 Testing = args.runtesting
@@ -280,16 +289,24 @@ ApplytSF = False
 xsSystwgt = 1.
 lumSystwgt = 1.
 
+if UsingDaskExecutor:
+    daskDirectory = envirDirectory
+#    ---------------------------------------------------------------------------------------------------------------------    # 
+
+TPT = ''
+if args.tpt:
+    TPT = '_TopReweight'
+
 if args.bTagSyst:
-    UncType = "_btagUnc"
-    SystType = '_'+args.bTagSyst # string for btag SF evaluator --> "central", "up", or "down"
+    UncType = "_btagUnc_"
+    SystType = args.bTagSyst # string for btag SF evaluator --> "central", "up", or "down"
     ApplybSF = True
-    SFfile = 'dask-worker-space/TTbarAllHadUproot/CorrectionFiles/SFs/bquark/subjet_btagging.json.gz'
+    SFfile = daskDirectory+'TTbarAllHadUproot/CorrectionFiles/SFs/bquark/subjet_btagging.json.gz'
 #    ---------------------------------------------------------------------------------------------------------------------    # 
 
 if args.ttXSSyst:
-    UncType = "_ttXSUnc"
-    SystType = '_'+args.ttXSSyst # string for btag SF evaluator --> "central", "up", or "down"
+    UncType = "_ttXSUnc_"
+    SystType = args.ttXSSyst # string for btag SF evaluator --> "central", "up", or "down"
     if args.ttXSSyst == 'up':
         xsSystwgt = 0.08
     elif args.ttXSSyst == 'down':
@@ -299,8 +316,8 @@ if args.ttXSSyst:
 #    ---------------------------------------------------------------------------------------------------------------------    # 
 
 if args.lumSyst:
-    UncType = "_lumUnc"
-    SystType = '_'+args.lumSyst # string for btag SF evaluator --> "central", "up", or "down"
+    UncType = "_lumUnc_"
+    SystType = args.lumSyst # string for btag SF evaluator --> "central", "up", or "down"
     if args.lumSyst == 'up':
         lumSystwgt = 0.025
     elif args.lumSyst == 'down':
@@ -310,23 +327,23 @@ if args.lumSyst:
 #    ---------------------------------------------------------------------------------------------------------------------    # 
 
 elif args.tTagSyst:
-    UncType = "_ttagUnc"
-    SystType = '_'+args.tTagSyst # string for ttag SF correction --> "central", "up", or "down"
+    UncType = "_ttagUnc_"
+    SystType = args.tTagSyst # string for ttag SF correction --> "central", "up", or "down"
 #    ---------------------------------------------------------------------------------------------------------------------    # 
 
 elif args.jec:
-    UncType = "_jecUnc"
-    SystType = '_'+args.jec # string for ttag SF correction --> "central", "up", or "down"
+    UncType = "_jecUnc_"
+    SystType = args.jec # string for ttag SF correction --> "central", "up", or "down"
 #    ---------------------------------------------------------------------------------------------------------------------    # 
 
 elif args.jer:
-    UncType = "_jerUnc"
-    SystType = '_'+args.jer # string for ttag SF correction --> "central", "up", or "down"
+    UncType = "_jerUnc_"
+    SystType = args.jer # string for ttag SF correction --> "central", "up", or "down"
 #    ---------------------------------------------------------------------------------------------------------------------    # 
 
 elif args.pileup:
-    UncType = "_pileupUnc"
-    SystType = '_'+args.pileup # string for ttag SF correction --> "central", "up", or "down"
+    UncType = "_pileupUnc_"
+    SystType = args.pileup # string for ttag SF correction --> "central", "up", or "down"
 #    ---------------------------------------------------------------------------------------------------------------------    # 
 
 UncArgs = np.array([args.bTagSyst, args.tTagSyst, args.jec, args.jer, args.ttXSSyst, args.lumSyst, args.pileup])
@@ -352,8 +369,8 @@ from TTbarResProcessor import TTbarResProcessor, TriggerAnalysisProcessor, MCFla
 namingConvention = 'UL'+str(args.year-2000)+VFP # prefix to help name every MC coffea output according to the selected options
 fileConvention = str(args.year) + '/' + convertLabel[VFP] + '/TTbarRes_0l_' # direct the saved coffea output to the appropriate directory
 SaveLocation={ # Fill this dictionary with each type of dataset; use this dictionary when saving uproot jobs below
-    namingConvention+'_TTbar': 'TT/' + fileConvention,
-    namingConvention+'_QCD': 'QCD/' + fileConvention
+    namingConvention+'_TTbar': 'TT/' + BDiscDirectory + fileConvention,
+    namingConvention+'_QCD': 'QCD/' + BDiscDirectory + fileConvention
 }
 if not Testing:
     filesets_to_run = {}
@@ -363,45 +380,45 @@ if not Testing:
         for a in args.rundataset: # for any dataset included as user argument...
             if ('JetHT' in a) and (args.year != 0): 
                 filesets_to_run['JetHT'+str(args.year)+'_Data'] = filesets['JetHT'+str(args.year)+'_Data'] # include JetHT dataset read in from Filesets
-                SaveLocation['JetHT'+str(args.year)+'_Data'] = 'JetHT/' + str(args.year) + '/TTbarRes_0l_' # file where output will be saved
+                SaveLocation['JetHT'+str(args.year)+'_Data'] = 'JetHT/' + BDiscDirectory + str(args.year) + '/TTbarRes_0l_' # file where output will be saved
             elif ('SingleMu' in a) and (args.year != 0): 
                 filesets_to_run['SingleMu'+str(args.year)+'_Data'] = filesets['SingleMu'+str(args.year)+'_Data'] # include JetHT dataset read in from Filesets
-                SaveLocation['SingleMu'+str(args.year)+'_Data'] = 'SingleMu/' + str(args.year) + '/TTbarRes_0l_' # file where output will be saved
+                SaveLocation['SingleMu'+str(args.year)+'_Data'] = 'SingleMu/' + BDiscDirectory + str(args.year) + '/TTbarRes_0l_' # file where output will be saved
             elif args.year != 0:
                 filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a] # include MC dataset read in from Filesets
                 if 'RSGluon' in a :
-                    SaveLocation[namingConvention+'_'+a] = 'RSGluonToTT/' + fileConvention
+                    SaveLocation[namingConvention+'_'+a] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
                 elif 'DM' in a :
-                    SaveLocation[namingConvention+'_'+a] = 'ZprimeDMToTTbar/' + fileConvention
+                    SaveLocation[namingConvention+'_'+a] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
     elif args.runMMO:
         for a in args.runMMO: # for any dataset included as user argument...
             if ('JetHT' in a) and (args.year != 0): 
                 filesets_to_run['JetHT'+str(args.year)+'_Data'] = filesets['JetHT'+str(args.year)+'_Data'] # include JetHT dataset read in from Filesets
-                SaveLocation['JetHT'+str(args.year)+'_Data'] = 'JetHT/' + str(args.year) + '/TTbarRes_0l_' # file where output will be saved
+                SaveLocation['JetHT'+str(args.year)+'_Data'] = 'JetHT/' + BDiscDirectory + str(args.year) + '/TTbarRes_0l_' # file where output will be saved
             elif ('SingleMu' in a) and (args.year != 0): 
                 filesets_to_run['SingleMu'+str(args.year)+'_Data'] = filesets['SingleMu'+str(args.year)+'_Data'] # include JetHT dataset read in from Filesets
-                SaveLocation['SingleMu'+str(args.year)+'_Data'] = 'SingleMu/' + str(args.year) + '/TTbarRes_0l_' # file where output will be saved
+                SaveLocation['SingleMu'+str(args.year)+'_Data'] = 'SingleMu/' + BDiscDirectory + str(args.year) + '/TTbarRes_0l_' # file where output will be saved
             elif args.year != 0:
                 filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a] # include MC dataset read in from Filesets
                 if 'RSGluon' in a :
-                    SaveLocation[namingConvention+'_'+a] = 'RSGluonToTT/' + fileConvention
+                    SaveLocation[namingConvention+'_'+a] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
                 elif 'DM' in a :
-                    SaveLocation[namingConvention+'_'+a] = 'ZprimeDMToTTbar/' + fileConvention
+                    SaveLocation[namingConvention+'_'+a] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
     elif args.runflavoreff:
         for a in args.runflavoreff: # for any dataset included as user argument...
             if args.year != 0:
                 filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a] # include MC dataset read in from Filesets
                 if 'RSGluon' in a :
-                    SaveLocation[namingConvention+'_'+a] = 'RSGluonToTT/' + fileConvention
+                    SaveLocation[namingConvention+'_'+a] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
                 elif 'DM' in a :
-                    SaveLocation[namingConvention+'_'+a] = 'ZprimeDMToTTbar/' + fileConvention
+                    SaveLocation[namingConvention+'_'+a] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
     elif args.runmistag: # if args.mistag: Only run 1st uproot job for ttbar and data to get mistag rate with tt contamination removed
         filesets_to_run[namingConvention+'_TTbar'] = filesets[namingConvention+'_TTbar']
         filesets_to_run['JetHT'+str(args.year)+'_Data'] = filesets['JetHT'+str(args.year)+'_Data']
-        SaveLocation['JetHT'+str(args.year)+'_Data'] = 'JetHT/' + str(args.year) + '/TTbarRes_0l_'
+        SaveLocation['JetHT'+str(args.year)+'_Data'] = 'JetHT/' + BDiscDirectory + str(args.year) + '/TTbarRes_0l_'
     elif isTrigEffArg: # just run over data
         filesets_to_run['SingleMu'+str(args.year)+'_Data'] = filesets['SingleMu'+str(args.year)+'_Data']
-        SaveLocation['SingleMu'+str(args.year)+'_Data'] = 'SingleMu/' + str(args.year) + '/TTbarRes_0l_'
+        SaveLocation['SingleMu'+str(args.year)+'_Data'] = 'SingleMu/' + BDiscDirectory + str(args.year) + '/TTbarRes_0l_'
     else: # if somehow, the initial needed arguments are not used
         print("Something is wrong.  Please come and infestigate what the problem could be")
 else:
@@ -433,16 +450,16 @@ if UsingDaskExecutor == True and args.casa:
     from dask.distributed.diagnostics.plugin import UploadDirectory
     if __name__ == "__main__":       
         client = Client('tls://ac-2emalik-2ewilliams-40cern-2ech.dask.coffea.casa:8786')
-        tries = 1
-        while tries>=1:
-            try:
-                client.register_worker_plugin(UploadDirectory('TTbarAllHadUproot',restart=True,update_path=True),nanny=True)
-                break
-            except OSError as ose:
-                print('\n', ose)
-                print('\nTried Attempt #' + str(tries) + ' and failed.\n')
-                tries -= 1
-                print('Attempts left :  ' + str(tries))
+        # tries = 1
+        # while tries>=1:
+        try:
+            client.register_worker_plugin(UploadDirectory('TTbarAllHadUproot',restart=True,update_path=True),nanny=True)
+            # break
+        except OSError as ose:
+            print('\n', ose)
+                # print('\nTried Attempt #' + str(tries) + ' and failed.\n')
+                # tries -= 1
+                # print('Attempts left :  ' + str(tries))
             
         # client.upload_file('TTbarAllHadUproot/Filesets.py')
         # client.upload_file('TTbarAllHadUproot/TTbarResProcessor.py')
@@ -536,6 +553,7 @@ if args.runflavoreff:
                       + SaveLocation[name]
                       + name    
                       + '_MCFlavorAnalysis' 
+                      + OldDisc
                       + '.coffea')
 
 
@@ -586,6 +604,7 @@ if args.runflavoreff:
                       + SaveLocation[name]
                       + name    
                       + '_MCFlavorAnalysis' 
+                      + OldDisc
                       + '.coffea')
 
 
@@ -682,6 +701,7 @@ if isTrigEffArg:
                       + SaveLocation[name]
                       + name    
                       + '_TriggerAnalysis' 
+                      + OldDisc
                       + '.coffea')
 
 
@@ -732,6 +752,7 @@ if isTrigEffArg:
                       + SaveLocation[name]
                       + name    
                       + '_TriggerAnalysis' 
+                      + OldDisc
                       + '.coffea')
 
 
@@ -745,6 +766,8 @@ if isTrigEffArg:
             print( '%20s : %1s' % (i,j) )        
         
     exit() # No need to go further if performing trigger analysis
+else:
+    pass
     
 #    ---------------------------------------------------------------------------
 #    U     U PPPPPP  RRRRRR    OOO     OOO   TTTTTTT       OOO   N     N EEEEEEE     
@@ -764,6 +787,7 @@ seed = 1234577890
 prng = RandomState(seed)
 
 for name,files in filesets_to_run.items(): 
+    print('\n\n' + name + '\n\n-----------------------------------------------------')
     if not LoadingUnweightedFiles:
         print('Processing', name, '...')
         if not RunAllRootFiles:
@@ -818,13 +842,8 @@ for name,files in filesets_to_run.items():
                 util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/'
                           + SaveLocation[name]
                           + name    
+                          + OldDisc
                           + '.coffea')
-            if isTrigEffArg and args.saveTrig:
-                util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForTriggerAnalysis/'
-                      + SaveLocation[name]
-                      + name    
-                      + '_TriggerAnalysis' 
-                      + '.coffea')
             
             
         else: # Run all Root Files
@@ -877,18 +896,20 @@ for name,files in filesets_to_run.items():
                           + SaveLocation[name])
                 util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/'
                           + SaveLocation[name]
-                          + name   
+                          + name  
+                          + OldDisc
                           + '.coffea')
             
-    for name,output in outputs_unweighted.items(): 
-        print("-------Unweighted " + name + "--------")
-        for i,j in output['cutflow'].items():        
-            print( '%20s : %1s' % (i,j) )
+        for name,output in outputs_unweighted.items(): 
+            print("-------Unweighted " + name + "--------")
+            for i,j in output['cutflow'].items():        
+                print( '%20s : %1s' % (i,j) )
             
     else: # Load files
         output = util.load('TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/'
                            + SaveLocation[name]
                            + name 
+                           + OldDisc
                            + '.coffea')
 
         outputs_unweighted[name] = output
@@ -914,8 +935,8 @@ import TTbarResLookUpTables
 
 from TTbarResLookUpTables import CreateLUTS, LoadDataLUTS
 
-each_mistag_luts = CreateLUTS(filesets_to_run, outputs_unweighted, args.year, VFP, args.runmistag, args.saveMistag)
-mistag_luts = LoadDataLUTS(args.year) # Specifically get data mistag rates with ttContam. corrections
+each_mistag_luts = CreateLUTS(filesets_to_run, outputs_unweighted, BDiscDirectory, args.year, VFP, args.runmistag, args.saveMistag)
+mistag_luts = LoadDataLUTS(BDiscDirectory, args.year) # Specifically get data mistag rates with ttContam. corrections
 
 """ Second uproot job runs the processor with the mistag rates (and flavor effs if desired) and Mass-Modification Procedure """
 
@@ -936,10 +957,8 @@ outputs_weighted = {}
 seed = 1234577890
 prng = RandomState(seed)
 
-outputs_weighted = {}
-
-for name,files in filesets_to_run.items(): 
-    if not OnlyCreateLookupTables and not args.runMMO:
+if not OnlyCreateLookupTables and not args.runMMO:
+    for name,files in filesets_to_run.items(): 
         print('Processing', name)
         if not RunAllRootFiles:
             if not UsingDaskExecutor:
@@ -950,6 +969,7 @@ for name,files in filesets_to_run.items():
                                                                                        lu=mistag_luts,
                                                                                        ModMass=True, 
                                                                                        RandomDebugMode=False,
+                                                                                       BDirect = BDiscDirectory,
                                                                                        xsSystematicWeight = xsSystwgt,
                                                                                        lumSystematicWeight = lumSystwgt,
                                                                                        ApplyTopReweight = args.tpt,
@@ -979,6 +999,7 @@ for name,files in filesets_to_run.items():
                                                                                        extraDaskDirectory = daskDirectory,
                                                                                        ModMass=True, 
                                                                                        RandomDebugMode=False,
+                                                                                       BDirect = BDiscDirectory,
                                                                                        xsSystematicWeight = xsSystwgt,
                                                                                        lumSystematicWeight = lumSystwgt,
                                                                                        ApplyTopReweight = args.tpt,
@@ -1013,6 +1034,8 @@ for name,files in filesets_to_run.items():
                           + UncType
                           + SystType
                           + method
+                          + TPT
+                          + OldDisc
                           + '.coffea')
             
             
@@ -1025,6 +1048,7 @@ for name,files in filesets_to_run.items():
                                                                                        lu=mistag_luts,
                                                                                        ModMass=True, 
                                                                                        RandomDebugMode=False,
+                                                                                       BDirect = BDiscDirectory,
                                                                                        xsSystematicWeight = xsSystwgt,
                                                                                        lumSystematicWeight = lumSystwgt,
                                                                                        ApplyTopReweight = args.tpt,
@@ -1054,6 +1078,7 @@ for name,files in filesets_to_run.items():
                                                                                        extraDaskDirectory = daskDirectory,
                                                                                        ModMass=True, 
                                                                                        RandomDebugMode=False,
+                                                                                       BDirect = BDiscDirectory,
                                                                                        xsSystematicWeight = xsSystwgt,
                                                                                        lumSystematicWeight = lumSystwgt,
                                                                                        ApplyTopReweight = args.tpt,
@@ -1085,22 +1110,19 @@ for name,files in filesets_to_run.items():
                           + UncType
                           + SystType
                           + method
+                          + TPT
+                          + OldDisc
                           + '.coffea')
         print('Elapsed time = ', elapsed, ' sec.')
         print('Elapsed time = ', elapsed/60., ' min.')
         print('Elapsed time = ', elapsed/3600., ' hrs.') 
-    else:
-        continue
-
-    
-
-# if not OnlyCreateLookupTables:
-#     for name,output in outputs_weighted.items(): 
-#         print("-------Weighted " + name + "--------")
-#         for i,j in output['cutflow'].items():        
-#             print( '%20s : %1s' % (i,j) )
-#     print("\n\nWe\'re done here!!")
-    
+        
+    for name,output in outputs_weighted.items(): 
+        print("-------Weighted " + name + "--------")
+        for i,j in output['cutflow'].items():        
+            print( '%20s : %1s' % (i,j) )
+    print("\n\nWe\'re done here!!")
+    exit()
     
     
     
@@ -1123,8 +1145,6 @@ if args.runMMO:
     seed = 1234577890
     prng = RandomState(seed)
 
-    outputs_weighted = {}
-
     for name,files in filesets_to_run.items(): 
         if not OnlyCreateLookupTables:
             print('Processing', name)
@@ -1137,6 +1157,7 @@ if args.runMMO:
                                                                                            lu=mistag_luts,
                                                                                            ModMass=True, 
                                                                                            RandomDebugMode=False,
+                                                                                           BDirect = BDiscDirectory,
                                                                                            ApplybtagSF=ApplybSF,
                                                                                            sysType=SystType,
                                                                                            ScaleFactorFile=SFfile,
@@ -1163,6 +1184,7 @@ if args.runMMO:
                                                                                            extraDaskDirectory = daskDirectory,
                                                                                            ModMass=True, #switch to true later after test! 
                                                                                            RandomDebugMode=False,
+                                                                                           BDirect = BDiscDirectory,
                                                                                            ApplybtagSF=ApplybSF,
                                                                                            sysType=SystType,
                                                                                            ScaleFactorFile=SFfile,
@@ -1192,6 +1214,8 @@ if args.runMMO:
                               + UncType 
                               + SystType
                               + method
+                              + TPT
+                              + OldDisc
                               + '.coffea')
 
 
@@ -1204,6 +1228,7 @@ if args.runMMO:
                                                                                            lu=mistag_luts,
                                                                                            ModMass=True, 
                                                                                            RandomDebugMode=False,
+                                                                                           BDirect = BDiscDirectory,
                                                                                            ApplybtagSF=ApplybSF,
                                                                                            sysType=SystType,
                                                                                            ScaleFactorFile=SFfile,
@@ -1230,6 +1255,7 @@ if args.runMMO:
                                                                                            extraDaskDirectory = daskDirectory,
                                                                                            ModMass=True, 
                                                                                            RandomDebugMode=False,
+                                                                                           BDirect = BDiscDirectory,
                                                                                            ApplybtagSF=ApplybSF,
                                                                                            sysType=SystType,
                                                                                            ScaleFactorFile=SFfile,
@@ -1258,21 +1284,21 @@ if args.runMMO:
                               + UncType
                               + SystType
                               + method
+                              + TPT
+                              + OldDisc
                               + '.coffea')
             print('Elapsed time = ', elapsed, ' sec.')
             print('Elapsed time = ', elapsed/60., ' min.')
             print('Elapsed time = ', elapsed/3600., ' hrs.') 
+        
         else:
             continue
-
-
-if not OnlyCreateLookupTables:
     for name,output in outputs_weighted.items(): 
         print("-------Weighted " + name + "--------")
         for i,j in output['cutflow'].items():        
             print( '%20s : %1s' % (i,j) )
     print("\n\nWe\'re done here!!")
-    # else:
-    #     print('\n\nWe\'re done here!!')
+else:
+    pass
 
-#quit()
+exit()
