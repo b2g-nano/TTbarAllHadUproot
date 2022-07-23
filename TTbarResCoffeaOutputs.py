@@ -59,13 +59,15 @@ def plotratio2d(numerator, denominator, ax=None, cmap='Blues', cbar=True):
         
         return hep.hist2dplot(ratio, ax=ax, cmap=cmap, norm=colors.Normalize(0.,1.), cbar=cbar)
 
-def FlavEffList(Flavor, Output, Dataset):
+def FlavEffList(Flavor, Output, Dataset, bdiscDirectory, Save):
     """
-    Flavor ---> string: either 'b', 'c', or 'udsg'
-    Output ---> Coffea Object: Output that is returned from running processor
-    Dataset ---> string: the dataset string (ex QCD, RSGluon1000, etc...) corresponding to Output
+    Flavor          ---> string: either 'b', 'c', or 'udsg'
+    Output          ---> Coffea Object: Output that is returned from running processor
+    Dataset         ---> string: the dataset string (ex QCD, RSGluon1000, etc...) corresponding to Output
+    bdiscDirectory  ---> string; Directory path for chosen b discriminator
+    Save            ---> bool; Save mistag rates or not
     """
-    SaveDirectory = maindirectory + '/FlavorTagEfficiencies/' + Flavor + 'tagEfficiencyTables/'
+    SaveDirectory = maindirectory + '/FlavorTagEfficiencies/' + bdiscDirectory + Flavor + 'tagEfficiencyTables/'
     mkdir_p(SaveDirectory)
     for subjet in ['s01', 's02', 's11', 's12']:
 
@@ -93,10 +95,15 @@ def FlavEffList(Flavor, Output, Dataset):
                             ['efficiency']
                         )
 
+        print('\n\t--------------------- Subjet ' + subjet + ' ' + Flavor + ' Efficiency ---------------------\n')
+        print('====================================================================\n')
+        print(EfficiencyList)
+        
         # ---- Save the Efficiency List as .csv ---- #
-        filename = dataset + '_' + subjet + '_' + Flavor + 'tageff_large_bins.csv'
-        EfficiencyList.to_csv(SaveDirectory+filename)
-        print('\nSaved ' + filename)
+        if Save:
+            filename = dataset + '_' + subjet + '_' + Flavor + 'tageff.csv'
+            EfficiencyList.to_csv(SaveDirectory+filename)
+            print('\nSaved ' + filename)
         
 #    -----------------------------------------------
 #    PPPPPP     A    RRRRRR    SSSSS EEEEEEE RRRRRR      
@@ -616,12 +623,12 @@ if args.runflavoreff:
         print("-------Unweighted " + dataset + "--------")
         for i,j in output['cutflow'].items():        
             print( '%20s : %1s' % (i,j) ) 
-            
-        if args.saveFlav:
-            FlavEffList('b', output, dataset)
-            FlavEffList('c', output, dataset)
-            FlavEffList('udsg', output, dataset)
-            
+        
+        FlavEffList('b', output, dataset, BDiscDirectory, args.saveFlav)
+        FlavEffList('c', output, dataset, BDiscDirectory, args.saveFlav)
+        FlavEffList('udsg', output, dataset, BDiscDirectory, args.saveFlav)
+        print("\n\nWe\'re done here!!")
+        
     exit() # No need to go further if performing trigger analysis
         
         
@@ -933,10 +940,11 @@ for name,files in filesets_to_run.items():
 
 import TTbarResLookUpTables
 
-from TTbarResLookUpTables import CreateLUTS, LoadDataLUTS
+from TTbarResLookUpTables import CreateLUTS, LoadDataLUTS, CreateMCEfficiencyLUTS
 
 each_mistag_luts = CreateLUTS(filesets_to_run, outputs_unweighted, BDiscDirectory, args.year, VFP, args.runmistag, args.saveMistag)
 mistag_luts = LoadDataLUTS(BDiscDirectory, args.year) # Specifically get data mistag rates with ttContam. corrections
+
 
 """ Second uproot job runs the processor with the mistag rates (and flavor effs if desired) and Mass-Modification Procedure """
 

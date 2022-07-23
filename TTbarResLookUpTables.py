@@ -5,11 +5,13 @@ from coffea import hist
 from coffea import util
 import numpy as np
 import itertools
+import mplhep as hep
 import pandas as pd
 from collections import defaultdict
 import os
 from os import path
 import matplotlib.pyplot as plt
+import matplotlib.colors as colors
 
 # -------------------------------------------------------------------------------------------------------------------------------- #
 # -------- Imported into TTbarCoffeOutputs to get the mistag rates in the form of look up tables for the desired datasets -------- #
@@ -35,6 +37,28 @@ def DoesDirectoryExist(mypath): #extra precaution (Probably overkill...)
         pass
     else:
         mkdir_p(mypath)
+        
+def plotratio2d(numerator, denominator, ax=None, cmap='Blues', cbar=True):
+    NumeratorAxes = numerator.axes()
+    DenominatorAxes = denominator.axes()
+    
+    # integer number of bins in this axis #
+    NumeratorAxis1_BinNumber = NumeratorAxes[0].size - 3 # Subtract 3 to remove overflow
+    NumeratorAxis2_BinNumber = NumeratorAxes[1].size - 3
+    
+    DenominatorAxis1_BinNumber = DenominatorAxes[0].size - 3 
+    DenominatorAxis2_BinNumber = DenominatorAxes[1].size - 3 
+    
+    if(NumeratorAxis1_BinNumber != DenominatorAxis1_BinNumber 
+       or NumeratorAxis2_BinNumber != DenominatorAxis2_BinNumber):
+        raise Exception('Numerator and Denominator axes are different sizes; Cannot perform division.')
+    else:
+        Numerator = numerator.to_hist()
+        Denominator = denominator.to_hist()
+
+        ratio = Numerator / Denominator.values()
+        
+        return hep.hist2dplot(ratio, ax=ax, cmap=cmap, norm=colors.Normalize(0.,1.), cbar=cbar)
 
 #os.chdir('../') # Runs the code from within the working directory without manually changing all directory paths!
 maindirectory = os.getcwd() # changes accordingly
@@ -324,5 +348,58 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, Save)
 
     # print(luts)
     return(luts)
+
+# def CreateMCEfficiencyLUTS(flavor, Outputs, bdiscDirectory, Save):
+#     """
+#     flavor          --> string; b, c, udsg
+#     Outputs         --> Dictionary of uproot outputs from flavor run (uproot 1)
+#     bdiscDirectory  --> string; Directory path for chosen b discriminator
+#     Save            --> bool; Save mistag rates or not
+#     """
+    
+#     # if Year != 0:
+#     #     filestring_prefix = 'UL' + str(Year-2000) + VFP + '_'
+#     # else:
+#     #     filestring_prefix = ''
+    
+#     list_of_subjets = ['s01', 's02', 's11', 's12']
+#     SaveDirectory = maindirectory + '/TTbarAllHadUproot/FlavorTagEfficiencies/' + bdiscDirectory + flavor + 'tagEfficiencyTables/'
+#     DoesDirectoryExist(SaveDirectory)
+    
+#     for dataset,output in Outputs.items():
+#         for subjet in list_of_subjets:
+
+#             eff_numerator = output[flavor + '_eff_numerator_' + subjet + binwidth].integrate('dataset', dataset)
+#             eff_denominator = output[flavor + '_eff_denominator_' + subjet + binwidth].integrate('dataset', dataset)
+
+#             eff = plotratio2d(eff_numerator, eff_denominator) #ColormeshArtists object
+
+#             eff_data = eff[0].get_array().data # This is what goes into pandas dataframe
+#             eff_data = np.nan_to_num(eff_data, nan=0.0)
+            
+#             # ---- Define pt and eta bins from the numerator or denominator hist objects ---- #
+#             pt_bins = []
+#             eta_bins = []
+
+#             for iden in eff_numerator.identifiers('subjetpt'):
+#                 pt_bins.append(iden)
+#             for iden in eff_numerator.identifiers('subjeteta'):
+#                 eta_bins.append(iden)
+
+#             # ---- Define the Efficiency List as a Pandas Dataframe ---- #
+#             EfficiencyList = pd.DataFrame(
+#                                 eff_data,
+#                                 pd.MultiIndex.from_product( [pt_bins, eta_bins], names=['pt', 'eta'] ),
+#                                 ['efficiency']
+#                             )
+
+#             # ---- Save the Efficiency List as .csv ---- #
+#             if Save:
+#                 filename = dataset + '_' + subjet + '_' + flavor + 'tageff.csv'
+#                 EfficiencyList.to_csv(SaveDirectory+filename)
+#                 print('\nSaved ' + filename + '\n')
+                
+#     return EfficiencyList
+
 
 #!jupyter nbconvert --to script TTbarResLookUpTables.ipynb

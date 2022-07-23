@@ -919,9 +919,9 @@ class TTbarResProcessor(processor.ProcessorABC):
                     for subjet,subjet_info in SubjetNumDict.items():
                         flav_tag_list = [FlavorTagsDict[num] for num in np.abs(ak.flatten(subjet_info[0].hadronFlavour))] # List of tags i.e.) ['btag', 'udsgtag', 'ctag',...]
                         for flav_tag in flav_tag_list:
-                            EffFileDict['Eff_File_'+subjet_info[1]].append('TTbarAllHadUproot/FlavorTagEfficiencies/' + flav_tag 
+                            EffFileDict['Eff_File_'+subjet_info[1]].append('TTbarAllHadUproot/FlavorTagEfficiencies/' + BDirect + flav_tag 
                                                                            + 'EfficiencyTables/' + dataset + '_' + subjet_info[1] 
-                                                                           + '_' + flav_tag + 'eff_large_bins.csv')
+                                                                           + '_' + flav_tag + 'eff.csv')
                             
                     # -- Does Subjet pass the discriminator cut and is it updated -- #
                     SubJet01_isBtagged = self.BtagUpdater(SubJet01, EffFileDict['Eff_File_s01'], SF_filename, Fitting, self.sysType)
