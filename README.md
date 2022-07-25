@@ -135,4 +135,44 @@ TBA soon :)
 
 ![Coffea1024_4](https://user-images.githubusercontent.com/42876001/180783637-694246d5-e3cc-498f-a96f-b7c2477c4f7e.jpg)
 ![Coffea1024_5](https://user-images.githubusercontent.com/42876001/180783658-0ddf6d5b-75b7-4a31-82b8-9dae55925323.jpg)
+
+## --- Import ---
+----------------
+As this step implies, insure that the necessary packages, primarily coffea, awkward1 and numpy, are imported and ready to use.  Not much detail is assumed to be required for this step of the workflow.
+
+## --- Processor ---
+----------------
+#### Main Analysis
+1. Preliminary Cuts/Selections
+    - $HT_{Cut}\ >\ 950\ GeV$
+    - Loose Jet ID
+    - $p_T\ >\ 400\ GeV$ and $|y|\ <\ 2.4$
+    - Two AK8 Jets
+      - Randomly assign these two jets as ttbar candidate 0 and 1 to avoid bias
+      - Select events with at least one pair of ttbar candidates
+    - $\Delta\Phi > 2.1$ between two ttbar candadites  
+    - TTbar candidadtes with two subjets each (bjets interpreted another way)
+2. Analysis Categories; Combinations of regions defined by number of ttags and btags and $|\Delta y|$ window 
+    - Define Rapidity Regions
+      - central region: 
+        - $|\Delta y|\ < 1.$  
+      - forward region: 
+        - $|\Delta y|\ > 1.$ 
+    - Define Top Tag Regions (Either with CMSTTV2 (CMS Top Tagger Version 2) or DeepAK8 Tagger)
+      - CMSTTV2 Top Tag:
+        - $\tau_{3/2\} <\ 0.65$ 
+        - $105\ GeV\ <\ m_{SD}\ <\ 210\ GeV$
+      - CMSTTV2 Anti-Tag:
+        - $\tau_{3/2\} >\ 0.65$ 
+        - $105\ GeV\ <\ m_{SD}\ <\ 210\ GeV$
+      - DeepAK8 Top Tag:
+        - deepTag_TvsQCD $>\ 0.435$  
+      - DeepAK8 Anti-Tag:
+        - deepTag_TvsQCD $<\ 0.435$ (???)
+    - Define b Tag Regions
+      - For each ttbar candidate find the subjet with the largest btagCSVV2 value; btagCSVV2$_{max}$
+      - Medium Working Point b Tag:
+        - btagCSVV2$_{\max}\ >\ 0.5847$
+      - Loose Working Point b Tag:
+        - btagCSVV2$_{max}\ >\ 0.1918$
 ***
