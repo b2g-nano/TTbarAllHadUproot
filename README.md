@@ -1,9 +1,9 @@
 # TTbarAllHadUproot
-Uproot-based analysis of the ttbar all-hadronic analysis.
+Uproot-based analysis of the ttbar all-hadronic analysis that uses a COFFEA based workflow.
 
 For this analysis, create an environment which comes with the latest versions of Coffea and Awkward1.
 
-For LPC:
+### For LPC:
 ``` 
 ssh <username>@cmslpc-sl7.fnal.gov 
 voms-proxy init -voms cms
@@ -20,6 +20,10 @@ bash bootstrap.sh
 After the initial setup steps of the coffea-dask environment (stated above) you can enter the singularity shell with the following command (wherever you saved your bootstrap.sh)
 
 > ./shell
+
+### For Coffea-Casa:
+
+[MovingToCoffeaCasa.pdf](https://github.com/b2g-nano/TTbarAllHadUproot/files/9181161/MovingToCoffeaCasa.pdf)
 
 # How to run
 From within this repo, you can run the uproot job that will produce coffea output files.  To see a list of arguments needed to run this program please enter the following in the terminal: 
