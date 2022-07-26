@@ -133,7 +133,6 @@ TBA soon :)
 ***
 # Workflow
 
-![Coffea1024_4](https://user-images.githubusercontent.com/42876001/180783637-694246d5-e3cc-498f-a96f-b7c2477c4f7e.jpg)
 ![Coffea1024_5](https://user-images.githubusercontent.com/42876001/180783658-0ddf6d5b-75b7-4a31-82b8-9dae55925323.jpg)
 
 ## --- Import ---
@@ -181,18 +180,23 @@ As this step implies, insure that the necessary packages, primarily coffea, awkw
       - a. Create an additional event weight (independent of MC flavor tag efficiency)
       - b. Update b-tag status of ttbar candidates (dependent on MC flavor tag efficiency)
 4. Loop Through Analysis Categories (Hist objects are filled with desired variables acccording to dataset and category, along with the event weights)
-    - Uproot 1 Option (-d <LIST OF DATASETS> --uproot 1 ...)
+    - Uproot 1 Option (-d [LIST OF DATASETS] --uproot 1 ...)
       - No additional weights and/or corrections are applied apart from the generator event weights (if any)
       - Fill histograms
     - Mistag Run Option (-m ...)
       - Same as Uproot 1 Option, but specifically done with TTbar and JetHT datasets
       - Standard model ttbar contamination is removed from JetHT mistag-rate
-    - Uproot 2 Option (-d <LIST OF DATASETS> --uproot 2 --<Systematic Option> {central, up, down} ...)
+    - Uproot 2 Option (-d [LIST OF DATASETS] --uproot 2 --SystematicOption {central, up, down} ...)
       - Re-weight events by ttbar contamination subtracted JetHT mistag rate
       - Mass Modification Procedure
       - Include any weights from corrections/re-weighting/uncertainties...
       - Fill histograms 
-#### MC Flavor Efficiency Analysis
+    - Mass Modification Only Option (-M [LIST OF DATASETS] ...)
+      - Re-weight events by ttbar contamination subtracted JetHT mistag rate
+      - Mass Modification Procedure
+      - No other systematic corrections included in this run option
+      - Fill histograms
+#### MC Flavor Efficiency Analysis (-F [LIST OF DATASETS] ...)
 1. Preliminary Cuts/Selections
     - $HT_{Cut}\ >\ 950\ GeV$
     - Loose Jet ID
@@ -203,5 +207,55 @@ As this step implies, insure that the necessary packages, primarily coffea, awkw
     - $\Delta\Phi > 2.1$ between two ttbar candidates  
     - TTbar candidates with two subjets each (bjets interpreted another way)
 2. Get Flavor Efficiency Info
-    - TBH
+    - Efficiency defined as the rate of a given subjet flavor passing our b-tag requirement
+    - Fill histograms as functions of subjet $\eta$ and $p_T$
+#### Trigger Efficiency Analysis (-T ...)
+1. Combination of 2016 Triggers
+    - HLT_PFHT900
+    - HLT_AK8PFHT700_TrimR0p1PT0p03Mass50
+    - HLT_AK8PFJet450
+    - HLT_AK8PFJet360_TrimMass30
+      - Common Control Triggers (for denominator of efficiency calculation):
+        - HLT_Mu50
+        - HLT_IsoMu24
+2. Cuts/Selections
+    - Loose Jet ID
+    - $p_T\ >\ 400\ GeV$ and $|y|\ <\ 2.4$
+    - Two AK8 Jets
+      - Randomly assign these two jets as ttbar candidate 0 and 1 to avoid bias
+      - Select events with at least one pair of ttbar candidates
+    - $\Delta\Phi > 2.1$ between two ttbar candidates  
+    - TTbar candidates with two subjets each (bjets interpreted another way)
+3. Analysis Categories; With and without softdrop mass window
+    - $105\ GeV\ <\ m_{SD}\ <\ 210\ GeV$
+4. For Both Analysis Categories:
+    - For Jet $p_T\ >\ 30\ GeV$ and $|\eta|\ <\ 3.0$:
+      - $\mathit{Jet}\ H_T\ =\ \sum{p_{T_i}}$
+    - Efficiency defined as the rate of jets that pass combination of triggers
+    - Fill histograms as function of Jet $H_T$
+## --- Uproot Job ---
+##### The script `TTbarResCoffeaOutputs.py` imports the desired processor from `TTbarResProcessor.py`, along with all other required scripts
+----------------
+1. Import processor(s)
+2. Import the desired datasets from `Filesets.py` script, that reads the files in from the `nanoAODv9Files` directory
+3. Setup Dask if desired (Highly Recommended for Fast Processing Speed when processing whole dataset(s))
+
+![Coffea1024_4](https://user-images.githubusercontent.com/42876001/180783637-694246d5-e3cc-498f-a96f-b7c2477c4f7e.jpg)
+
+4.) Perform uproot job
+    - Define a dictionary that maps string names to the datasets' files
+    - Call `run_uproot_job` from the coffea processor
+    - Give the run_uproot_job with the names and files from the dictionary defined in this first step.  
+```python
+for name,files in filesets_to_run.items(): 
+    output = processor.run_uproot_job({name:files},
+                                      treename='Events',
+                                      processor_instance=MCFlavorEfficiencyProcessor(),
+                                      executor=processor.futures_executor,
+                                      executor_args={
+                                          #'client': client,
+                                          'skipbadfiles':False,
+                                          'schema': BaseSchema, #NanoAODSchema,
+                                          'workers': 2},
+  ```
 ***
