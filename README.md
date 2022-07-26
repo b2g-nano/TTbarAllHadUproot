@@ -242,7 +242,7 @@ As this step implies, insure that the necessary packages, primarily coffea, awkw
 
 ![Coffea1024_4](https://user-images.githubusercontent.com/42876001/180783637-694246d5-e3cc-498f-a96f-b7c2477c4f7e.jpg)
 
-4.) Perform uproot job
+4. Perform uproot job
     - Define a dictionary that maps string names to the datasets' files
     - Call `run_uproot_job` from the coffea processor
     - Give the run_uproot_job with the names and files from the dictionary defined in this first step.  
