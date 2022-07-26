@@ -141,6 +141,7 @@ TBA soon :)
 As this step implies, insure that the necessary packages, primarily coffea, awkward1 and numpy, are imported and ready to use.  Not much detail is assumed to be required for this step of the workflow.
 
 ## --- Processor ---
+##### Each processor is defined as a class object with an initializer.  The initializer also initializes the accumulator, which defines the coffea objects to be filled with variables of interest.  Of course, other user specific definitions can also be defined after the initializer function.  The accumulator function is defined to return its initialized self.  Then, most importantly, the process itself is defined, where all of the event selection for the analysis takes place, as well as filling the coffea objects (namely histograms).  Finally, postprocessing is defined to simply return the accumulator.
 ----------------
 #### Main Analysis
 1. Preliminary Cuts/Selections
@@ -150,8 +151,8 @@ As this step implies, insure that the necessary packages, primarily coffea, awkw
     - Two AK8 Jets
       - Randomly assign these two jets as ttbar candidate 0 and 1 to avoid bias
       - Select events with at least one pair of ttbar candidates
-    - $\Delta\Phi > 2.1$ between two ttbar candadites  
-    - TTbar candidadtes with two subjets each (bjets interpreted another way)
+    - $\Delta\Phi > 2.1$ between two ttbar candidates  
+    - TTbar candidates with two subjets each (bjets interpreted another way)
 2. Analysis Categories; Combinations of regions defined by number of ttags and btags and $|\Delta y|$ window 
     - Define Rapidity Regions
       - central region: 
@@ -175,4 +176,32 @@ As this step implies, insure that the necessary packages, primarily coffea, awkw
         - btagCSVV2$_{\max}\ >\ 0.5847$
       - Loose Working Point b Tag:
         - btagCSVV2$_{max}\ >\ 0.1918$
+3. Scale Factors
+    - b Tag SF's used to either:
+      - a. Create an additional event weight (independent of MC flavor tag efficiency)
+      - b. Update b-tag status of ttbar candidates (dependent on MC flavor tag efficiency)
+4. Loop Through Analysis Categories (Hist objects are filled with desired variables acccording to dataset and category, along with the event weights)
+    - Uproot 1 Option (-d <LIST OF DATASETS> --uproot 1 ...)
+      - No additional weights and/or corrections are applied apart from the generator event weights (if any)
+      - Fill histograms
+    - Mistag Run Option (-m ...)
+      - Same as Uproot 1 Option, but specifically done with TTbar and JetHT datasets
+      - Standard model ttbar contamination is removed from JetHT mistag-rate
+    - Uproot 2 Option (-d <LIST OF DATASETS> --uproot 2 --<Systematic Option> {central, up, down} ...)
+      - Re-weight events by ttbar contamination subtracted JetHT mistag rate
+      - Mass Modification Procedure
+      - Include any weights from corrections/re-weighting/uncertainties...
+      - Fill histograms 
+#### MC Flavor Efficiency Analysis
+1. Preliminary Cuts/Selections
+    - $HT_{Cut}\ >\ 950\ GeV$
+    - Loose Jet ID
+    - $p_T\ >\ 400\ GeV$ and $|y|\ <\ 2.4$
+    - Two AK8 Jets
+      - Randomly assign these two jets as ttbar candidate 0 and 1 to avoid bias
+      - Select events with at least one pair of ttbar candidates
+    - $\Delta\Phi > 2.1$ between two ttbar candidates  
+    - TTbar candidates with two subjets each (bjets interpreted another way)
+2. Get Flavor Efficiency Info
+    - TBH
 ***
