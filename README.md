@@ -170,11 +170,11 @@ As this step implies, insure that the necessary packages, primarily coffea, awkw
       - DeepAK8 Anti-Tag:
         - deepTag_TvsQCD $<\ 0.435$ (???)
     - Define b Tag Regions
-      - For each ttbar candidate find the subjet with the largest btagCSVV2 value; btagCSVV2$_{max}$
+      - For each ttbar candidate find the subjet with the largest btagCSVV2 value; btagCSVV$2_{max}$
       - Medium Working Point b Tag:
-        - btagCSVV2$_{\max}\ >\ 0.5847$
+        - btagCSVV$2_{\max}\ >\ 0.5847$
       - Loose Working Point b Tag:
-        - btagCSVV2$_{max}\ >\ 0.1918$
+        - btagCSVV$2_{max}\ >\ 0.1918$
 3. Scale Factors
     - b Tag SF's used to either:
       - a. Create an additional event weight (independent of MC flavor tag efficiency)
