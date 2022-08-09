@@ -452,25 +452,34 @@ else:
 client = None
 
 if UsingDaskExecutor == True and args.casa:
-    # from coffea_casa import CoffeaCasaCluster
+    from coffea_casa import CoffeaCasaCluster
     from dask.distributed import Client #, Scheduler, SchedulerPlugin
     from dask.distributed.diagnostics.plugin import UploadDirectory
     if __name__ == "__main__":       
-        client = Client('tls://ac-2emalik-2ewilliams-40cern-2ech.dask.coffea.casa:8786')
-        # tries = 1
-        # while tries>=1:
-        try:
-            client.register_worker_plugin(UploadDirectory('TTbarAllHadUproot',restart=True,update_path=True),nanny=True)
-            # break
-        except OSError as ose:
-            print('\n', ose)
-                # print('\nTried Attempt #' + str(tries) + ' and failed.\n')
-                # tries -= 1
-                # print('Attempts left :  ' + str(tries))
+        client = Client('tls://ac-2emalik-2ewilliams-40cern-2ech.dask.cmsaf-prod.flatiron.hollandhpc.org:8786')
+        
+        tries = 3
+        while tries>=1:
+            try:
+                client.register_worker_plugin(UploadDirectory('TTbarAllHadUproot',restart=True,update_path=True),nanny=True)
+                break
+            except OSError as ose:
+                print('\n', ose)
+                print('\nTried Attempt #' + str(tries) + ' and failed.\n')
+                tries -= 1
+                print('Attempts left :  ' + str(tries))
+        
+    #     cluster = CoffeaCasaCluster(
+    #     job_extra = {
+    #         'docker_image': 'coffeateam/coffea-casa-analysis:latest',
+    #         'transfer_input_files': 'TTbarAllHadUproot'
+    #     }
+    # )
+    #     client = Client('tls://ac-2emalik-2ewilliams-40cern-2ech.dask.cmsaf-prod.flatiron.hollandhpc.org:8786')
+        
+        
+        print(client.run(os.listdir))
             
-        # client.upload_file('TTbarAllHadUproot/Filesets.py')
-        # client.upload_file('TTbarAllHadUproot/TTbarResProcessor.py')
-        # client.upload_file('TTbarAllHadUproot/TTbarResLookUpTables.py')
 
         
 elif UsingDaskExecutor == True and args.lpc:
@@ -940,7 +949,7 @@ for name,files in filesets_to_run.items():
 
 import TTbarResLookUpTables
 
-from TTbarResLookUpTables import CreateLUTS, LoadDataLUTS, CreateMCEfficiencyLUTS
+from TTbarResLookUpTables import CreateLUTS, LoadDataLUTS #, CreateMCEfficiencyLUTS
 
 each_mistag_luts = CreateLUTS(filesets_to_run, outputs_unweighted, BDiscDirectory, args.year, VFP, args.runmistag, args.saveMistag)
 mistag_luts = LoadDataLUTS(BDiscDirectory, args.year) # Specifically get data mistag rates with ttContam. corrections
