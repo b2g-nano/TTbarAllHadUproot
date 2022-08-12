@@ -458,16 +458,16 @@ if UsingDaskExecutor == True and args.casa:
     if __name__ == "__main__":       
         client = Client('tls://ac-2emalik-2ewilliams-40cern-2ech.dask.cmsaf-prod.flatiron.hollandhpc.org:8786')
         
-        tries = 3
-        while tries>=1:
-            try:
-                client.register_worker_plugin(UploadDirectory('TTbarAllHadUproot',restart=True,update_path=True),nanny=True)
-                break
-            except OSError as ose:
-                print('\n', ose)
-                print('\nTried Attempt #' + str(tries) + ' and failed.\n')
-                tries -= 1
-                print('Attempts left :  ' + str(tries))
+        # tries = 3
+        # while tries>=1:
+        try:
+            client.register_worker_plugin(UploadDirectory('TTbarAllHadUproot',restart=True,update_path=True),nanny=True)
+            # break
+        except OSError as ose:
+            print('\n', ose)
+            # print('\nTried Attempt #' + str(tries) + ' and failed.\n')
+            # tries -= 1
+            # print('Attempts left :  ' + str(tries))
         
     #     cluster = CoffeaCasaCluster(
     #     job_extra = {
