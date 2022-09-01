@@ -1020,7 +1020,7 @@ class TTbarResProcessor(processor.ProcessorABC):
             ###------------------------------------------------------------------------------------------###
             ### ------------------------------------ Mistag Scaling ------------------------------------ ###
             ###------------------------------------------------------------------------------------------###
-            if self.UseLookUpTables == True:
+            if self.UseLookUpTables == True: #(Only if dataset == JetHT?)
                 # ---- Weight dataset by mistag from data (corresponding to its year) ---- #
                 # ---- Pick out proper JetHT year mistag for TTbar sim. ---- #
                 
@@ -1062,7 +1062,7 @@ class TTbarResProcessor(processor.ProcessorABC):
             ###---------------------------------------------------------------------------------------------###
             ### ----------------------------------- Mod-mass Procedure ------------------------------------ ###
             ###---------------------------------------------------------------------------------------------###
-            if self.ModMass == True:
+            if self.ModMass == True: #(again, only if processing JetHT for the second uproot job for background estimate ?)
                 QCD_unweighted = util.load(self.extraDaskDirectory+'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/QCD/'
                                            +self.BDirect+str(self.year)+'/'+self.apv+'/TTbarRes_0l_UL'+str(self.year-2000)+self.vfp+'_QCD.coffea') 
     
