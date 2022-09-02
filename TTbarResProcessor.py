@@ -30,6 +30,7 @@ manual_bins = [400, 500, 600, 800, 1000, 1500, 2000, 3000, 7000, 10000]
 manual_subjetpt_bins = [0, 300, 600, 1200] # Used on 6/17/22 for ttbar (3 bins)
 manual_subjeteta_bins = [0., 0.6, 1.2, 2.4] # Used on 6/17/22 for ttbar (3 bins)
 manual_jetht_bins = [200, 800, 840, 880, 920, 960, 1000, 1200, 1400, 1600, 1800, 2000]
+manual_sdMass_bins = [0, 25, 50, 75, 100, 125, 150, 175, 200, 225, 250]
 
 """Package to perform the data-driven mistag-rate-based ttbar hadronic analysis. """
 class TTbarResProcessor(processor.ProcessorABC):
@@ -85,8 +86,8 @@ class TTbarResProcessor(processor.ProcessorABC):
         cats_axis = hist.Cat("anacat", "Analysis Category")
         
         jetmass_axis = hist.Bin("jetmass", r"Jet $m$ [GeV]", 50, 0, 500)
-        jetpt_axis = hist.Bin("jetpt", r"Jet $p_{T}$ [GeV]", 50, 0, 5000)
-        ttbarmass_axis = hist.Bin("ttbarmass", r"$m_{t\bar{t}}$ [GeV]", 50, 0, 5000)
+        jetpt_axis = hist.Bin("jetpt", r"Jet $p_{T}$ [GeV]", 50, 400, 8000)
+        ttbarmass_axis = hist.Bin("ttbarmass", r"$m_{t\bar{t}}$ [GeV]", 50, 800, 8000)
         jeteta_axis = hist.Bin("jeteta", r"Jet $\eta$", 50, -2.4, 2.4)
         jetphi_axis = hist.Bin("jetphi", r"Jet $\phi$", 50, -np.pi, np.pi)
         jety_axis = hist.Bin("jety", r"Jet $y$", 50, -3, 3)
@@ -537,6 +538,10 @@ class TTbarResProcessor(processor.ProcessorABC):
         # ---- Show all events ---- #
         output['cutflow']['all events'] += ak.to_awkward0(FatJets).size
         
+        # ---- Define the SumW2 for MC Datasets (Probably unnecessary now) ---- #
+        output['cutflow']['sumw'] += np.sum(evtweights)
+        output['cutflow']['sumw2'] += np.sum(evtweights**2)
+        
         # ---- Setup Trigger Analysis Conditions in higher scope ---- #
         # condition1 = None
         # condition2 = None
@@ -978,10 +983,6 @@ class TTbarResProcessor(processor.ProcessorABC):
         
         # ---- Weights ---- #
         weights = evtweights*self.xsSystematicWeight*self.lumSystematicWeight
-
-        # ---- Define the SumW2 for MC Datasets (Probably unnecessary now) ---- #
-        output['cutflow']['sumw'] += np.sum(weights)
-        output['cutflow']['sumw2'] += np.sum(weights**2)
         
         # ---- Define Momentum p of probe jet as the Mistag Rate variable; M(p) ---- #
         # ---- Transverse Momentum pT can also be used instead; M(pT) ---- #
@@ -1020,7 +1021,7 @@ class TTbarResProcessor(processor.ProcessorABC):
             ###------------------------------------------------------------------------------------------###
             ### ------------------------------------ Mistag Scaling ------------------------------------ ###
             ###------------------------------------------------------------------------------------------###
-            if self.UseLookUpTables == True: #(Only if dataset == JetHT?)
+            if self.UseLookUpTables == True and (isData or ('TTbar' in dataset)): #No need to apply to signals
                 # ---- Weight dataset by mistag from data (corresponding to its year) ---- #
                 # ---- Pick out proper JetHT year mistag for TTbar sim. ---- #
                 
@@ -1062,7 +1063,7 @@ class TTbarResProcessor(processor.ProcessorABC):
             ###---------------------------------------------------------------------------------------------###
             ### ----------------------------------- Mod-mass Procedure ------------------------------------ ###
             ###---------------------------------------------------------------------------------------------###
-            if self.ModMass == True: #(again, only if processing JetHT for the second uproot job for background estimate ?)
+            if self.ModMass == True and isData: #(again, only if processing JetHT for the second uproot job for background estimate ?)
                 QCD_unweighted = util.load(self.extraDaskDirectory+'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/QCD/'
                                            +self.BDirect+str(self.year)+'/'+self.apv+'/TTbarRes_0l_UL'+str(self.year-2000)+self.vfp+'_QCD.coffea') 
     
@@ -1927,6 +1928,7 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         dataset_axis = hist.Cat("dataset", "Primary dataset")
         cats_axis = hist.Cat("anacat", "Analysis Category")
         jetht_axis = hist.Bin("Jet_HT", r'$AK4\ Jet\ HT$', manual_jetht_bins) # Used for Trigger Analysis
+        sdMass_axis = hist.Bin("Jet_sdMass", r'$AK4\ M_{SD}$', manual_sdMass_bins)
         
 #    ===================================================================================================
 #    TTTTTTT RRRRRR  IIIIIII GGGGGGG GGGGGGG EEEEEEE RRRRRR      H     H IIIIIII   SSSSS TTTTTTT   SSSSS     
@@ -1939,11 +1941,11 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
 #    ===================================================================================================
 
         self._accumulator = processor.dict_accumulator({
-           'condition1_numerator': hist.Hist("Counts", dataset_axis, cats_axis, jetht_axis),
-           'condition2_numerator': hist.Hist("Counts", dataset_axis, cats_axis, jetht_axis),
-           'condition3_numerator': hist.Hist("Counts", dataset_axis, cats_axis, jetht_axis),
-           'condition4_numerator': hist.Hist("Counts", dataset_axis, cats_axis, jetht_axis),
-           'condition_denominator': hist.Hist("Counts", dataset_axis, cats_axis, jetht_axis),
+           'condition1_numerator': hist.Hist("Counts", dataset_axis, cats_axis, jetht_axis, sdMass_axis),
+           'condition2_numerator': hist.Hist("Counts", dataset_axis, cats_axis, jetht_axis, sdMass_axis),
+           'condition3_numerator': hist.Hist("Counts", dataset_axis, cats_axis, jetht_axis, sdMass_axis),
+           'condition4_numerator': hist.Hist("Counts", dataset_axis, cats_axis, jetht_axis, sdMass_axis),
+           'condition_denominator': hist.Hist("Counts", dataset_axis, cats_axis, jetht_axis, sdMass_axis),
             
             'cutflow': processor.defaultdict_accumulator(int),
         })
@@ -2260,6 +2262,7 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         Jets_NumCondition3 = Jets[condition3]
         Jets_NumCondition4 = Jets[condition4]
         Jets_DenomCondition = Jets[trigDenom] # contains jets to be used as denominator for trigger eff
+        
         output['cutflow']['events with jets cond1'] +=  ak.to_awkward0(condition1).sum()
         output['cutflow']['events with jets cond2'] +=  ak.to_awkward0(condition2).sum()
         output['cutflow']['events with jets cond3'] +=  ak.to_awkward0(condition3).sum()
@@ -2291,11 +2294,12 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         }
         DenomWgt = evtweights[trigDenom]
         
-        # ---- Defining Trigger Analysis Numerator(s) and Denominator ---- #
+        # ---- Defining Trigger Analysis Numerator(s) and Denominator as function of HT ---- #
         jet_HT_numerator1 = ak.sum(Jets_NumCondition1[passAK4_num1].pt, axis=-1) # Sum over each AK4 Jet per event
         jet_HT_numerator2 = ak.sum(Jets_NumCondition2[passAK4_num2].pt, axis=-1)
         jet_HT_numerator3 = ak.sum(Jets_NumCondition3[passAK4_num3].pt, axis=-1)
         jet_HT_numerator4 = ak.sum(Jets_NumCondition4[passAK4_num4].pt, axis=-1)
+        
         jet_HT_numeratorDict = {
             '1': jet_HT_numerator1,
             '2': jet_HT_numerator2,
@@ -2303,6 +2307,25 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
             '4': jet_HT_numerator4
         }
         jet_HT_denominator = ak.sum(Jets_DenomCondition[passAK4_denom].pt, axis=-1) # Sum over each AK4 Jet per event
+        
+        # ---- Defining Trigger Analysis Numerator(s) and Denominator as function of SD ---- #
+        sdMass = ak.flatten(ttbarcands.slot0.msoftdrop)
+        
+        jet_SD_numerator1 = sdMass[condition1]
+        jet_SD_numerator2 = sdMass[condition2]
+        jet_SD_numerator3 = sdMass[condition3]
+        jet_SD_numerator4 = sdMass[condition4]
+        jet_SD_denominator = sdMass[trigDenom]
+        
+        # print(jet_SD_denominator)
+        
+        jet_SD_numeratorDict = {
+            '1': jet_SD_numerator1,
+            '2': jet_SD_numerator2,
+            '3': jet_SD_numerator3,
+            '4': jet_SD_numerator4
+        }
+        
         output['cutflow']['jets cond1 with ak4cut'] += ak.to_awkward0(ak.flatten(passAK4_num1)).sum()
         output['cutflow']['jets cond2 with ak4cut'] += ak.to_awkward0(ak.flatten(passAK4_num2)).sum()
         output['cutflow']['jets cond3 with ak4cut'] += ak.to_awkward0(ak.flatten(passAK4_num3)).sum()
@@ -2339,18 +2362,21 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         for ilabel,icat in labels_and_categories.items():
             output['condition_denominator'].fill(dataset = dataset, anacat = ilabel, 
                                                 Jet_HT = ak.to_numpy(jet_HT_denominator[icat]),
+                                                Jet_sdMass = ak.to_numpy(jet_SD_denominator[icat]),
                                                 weight = ak.to_numpy(DenomWgt[icat]))
         # ---- Define Categories for Trigger Analysis Numerators and Fill Hists---- #
         for i in range(1, len(ConditionsDict)+1):
             c = ConditionsDict[str(i)]
-            n = jet_HT_numeratorDict[str(i)]
+            n_HT = jet_HT_numeratorDict[str(i)]
+            n_SD = jet_SD_numeratorDict[str(i)]
             w = NumWgtDict[str(i)]
             ttags = [ttag0[c],ttagI[c]]
             cats = [ ak.to_awkward0(ak.flatten(t)) for t in ttags ]
             labels_and_categories = dict(zip( self.ttagcats_forTriggerAnalysis, cats))
             for ilabel,icat in labels_and_categories.items():
                 output['condition' + str(i) + '_numerator'].fill(dataset = dataset, anacat = ilabel, 
-                                                                Jet_HT = ak.to_numpy(n[icat]),
+                                                                Jet_HT = ak.to_numpy(n_HT[icat]),
+                                                                Jet_sdMass = ak.to_numpy(n_SD[icat]),
                                                                 weight = ak.to_numpy(w[icat]))
  
         return output
