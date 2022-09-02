@@ -452,22 +452,17 @@ else:
 client = None
 
 if UsingDaskExecutor == True and args.casa:
-    from coffea_casa import CoffeaCasaCluster
+    # from coffea_casa import CoffeaCasaCluster
     from dask.distributed import Client #, Scheduler, SchedulerPlugin
     from dask.distributed.diagnostics.plugin import UploadDirectory
     if __name__ == "__main__":       
         client = Client('tls://ac-2emalik-2ewilliams-40cern-2ech.dask.cmsaf-prod.flatiron.hollandhpc.org:8786')
         
-        # tries = 3
-        # while tries>=1:
         try:
             client.register_worker_plugin(UploadDirectory('TTbarAllHadUproot',restart=True,update_path=True),nanny=True)
             # break
         except OSError as ose:
-            print('\n', ose)
-            # print('\nTried Attempt #' + str(tries) + ' and failed.\n')
-            # tries -= 1
-            # print('Attempts left :  ' + str(tries))
+            print('\n', ose)    
         
     #     cluster = CoffeaCasaCluster(
     #     job_extra = {
@@ -478,8 +473,14 @@ if UsingDaskExecutor == True and args.casa:
     #     client = Client('tls://ac-2emalik-2ewilliams-40cern-2ech.dask.cmsaf-prod.flatiron.hollandhpc.org:8786')
         
         
+        print('All Hidden Directories:\n')
         print(client.run(os.listdir))
-            
+        print('Look inside dask-worker-space:\n')
+        print(client.run(os.listdir,"dask-worker-space"))
+        # print('Look inside dask-worker-space/purge.lock:\n')
+        # print(client.run(os.listdir,"dask-worker-space/purge.lock"))
+        print('Look inside TTbarAllHadUproot:\n')
+        print(client.run(os.listdir,"dask-worker-space/TTbarAllHadUproot"))
 
         
 elif UsingDaskExecutor == True and args.lpc:
