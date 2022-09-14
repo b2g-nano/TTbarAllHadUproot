@@ -1063,7 +1063,7 @@ class TTbarResProcessor(processor.ProcessorABC):
             ###---------------------------------------------------------------------------------------------###
             ### ----------------------------------- Mod-mass Procedure ------------------------------------ ###
             ###---------------------------------------------------------------------------------------------###
-            if self.ModMass == True and (isData): #(again, only if processing JetHT for the second uproot job for background estimate ?)
+            if self.ModMass == True and (isData or ('TTbar' in dataset)): #(again, only if processing JetHT for the second uproot job for background estimate ?)
                 QCD_unweighted = util.load(self.extraDaskDirectory+'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/QCD/'
                                            +self.BDirect+str(self.year)+'/'+self.apv+'/TTbarRes_0l_UL'+str(self.year-2000)+self.vfp+'_QCD.coffea') 
     
