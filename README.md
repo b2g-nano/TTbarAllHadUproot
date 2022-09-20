@@ -24,6 +24,15 @@ After the initial setup steps of the coffea-dask environment (stated above) you 
 ### For Coffea-Casa:
 
 [MovingToCoffeaCasa.pdf](https://github.com/b2g-nano/TTbarAllHadUproot/files/9181161/MovingToCoffeaCasa.pdf)
+
+![CoffeaCasa1](https://github.com/7quantumphysics/b2g-nano/TTbarAllHadUproot/blob/MovingToCoffeaCasa-01.png?raw=true)
+
+
+
+
+
+
+
 ***
 # Brief Intro and Basic Idea for Using COFFEA
 
