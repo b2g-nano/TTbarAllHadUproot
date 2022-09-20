@@ -1063,7 +1063,7 @@ class TTbarResProcessor(processor.ProcessorABC):
             ###---------------------------------------------------------------------------------------------###
             ### ----------------------------------- Mod-mass Procedure ------------------------------------ ###
             ###---------------------------------------------------------------------------------------------###
-            if self.ModMass == True and (isData or ('TTbar' in dataset)): #(again, only if processing JetHT for the second uproot job for background estimate ?)
+            if (self.ModMass == True and (isData or ('TTbar' in dataset))) and (ilabel == 'pret'): # Make sure this is only applied to pre-tag region's jet1
                 QCD_hist = None # Higher scope declaration
                 if self.year > 0:
                     QCD_unweighted = util.load(self.extraDaskDirectory+'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/QCD/'
