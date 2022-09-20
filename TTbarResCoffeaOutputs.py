@@ -135,7 +135,19 @@ All objects for each dataset ran can be saved as its own .coffea output file.
                                 TTbar
                                 JetHT
                                 SingleMu
-                                NOTE** UL17 and UL18 samples TBA''')
+                                NOTE** UL17 and UL18 samples TBA
+    Example of a usual workflow on Coffea-Casa to make the relevant coffea outputs:
+    1.) Make Outputs for Flavor and Trigger Efficiencies
+python TTbarResCoffeaOutputs.py -C -med -F QCD TTbar DM RSGluon -a no -y 2016 --dask --saveFlav
+python TTbarResCoffeaOutputs.py -C -med -T -a no -y 2016 --dask --saveTrig
+    2.) Create Mistag Rates that will be used to estimate NTMJ background
+python TTbarResCoffeaOutputs.py -C -med -m -a no -y 2016 --dask --saveMistag
+    3.) Make Outputs for the first Uproot Job with no weights applied (outside of MC weights that come with the nanoAOD)
+python TTbarResCoffeaOutputs.py -C -med -d QCD TTbar JetHT DM RSGluon -a no -y 2016 --uproot 1 --dask --save
+    4.) Make Outputs for the second Uproot Job with only mistag rate applied to JetHT and TTbar, and mass modification of JetHT and TTbar in pre-tag region
+python TTbarResCoffeaOutputs.py -C -med -M QCD TTbar JetHT DM RSGluon -a no -y 2016 --dask --save
+    5.) Make Outputs for the second Uproot Job with systematics, on top of mistag rate application and mass modification
+python TTbarResCoffeaOutputs.py -C -med -d QCD TTbar JetHT DM RSGluon -a no -y 2016 --uproot 2 --bTagSyst central --useEff --dask --save''')
 # ---- Necessary arguments ---- #
 StartGroup = Parser.add_mutually_exclusive_group(required=True)
 StartGroup.add_argument('-t', '--runtesting', action='store_true', help='Only run a select few root files defined in the code.')
@@ -571,7 +583,7 @@ if not Testing:
     elif args.runmistag: # if args.mistag: Only run 1st uproot job for ttbar and data to get mistag rate with tt contamination removed
         filesets_to_run[namingConvention+'_TTbar'] = filesets[namingConvention+'_TTbar']
         if args.year > 0:
-            filesets_to_run['JetHT'+str(args.year)+_Data'] = filesets['JetHT'+str(args.year)+'_Data']
+            filesets_to_run['JetHT'+str(args.year)+'_Data'] = filesets['JetHT'+str(args.year)+'_Data']
             SaveLocation['JetHT'+str(args.year)+'_Data'] = 'JetHT/' + BDiscDirectory + str(args.year) + '/TTbarRes_0l_'
         else:
             filesets_to_run['JetHT_Data'] = filesets['JetHT_Data']
