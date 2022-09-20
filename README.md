@@ -52,8 +52,8 @@ From within this repo, you can run the uproot job that will produce coffea outpu
 
 The output should look something like this:
 ```
-usage: TTbarResCoffeaOutputs.py [-h] (-t | -m | -T | -F RUNFLAVOREFF [RUNFLAVOREFF ...] | -M RUNMMO [RUNMMO ...] | -d RUNDATASET [RUNDATASET ...]) (-C | -L) (-l | -med) -a {yes,no} -y
-                                {2016,2017,2018,0} [--uproot {1,2}] [--chunks CHUNKS] [--chunksize CHUNKSIZE] [--save] [--saveMistag] [--saveTrig] [--saveFlav] [--dask] [--useEff] [--tpt]
+usage: TTbarResCoffeaOutputs.py [-h] (-t | -m | -T | -F RUNFLAVOREFF [RUNFLAVOREFF ...] | -M RUNMMO [RUNMMO ...] | -d RUNDATASET [RUNDATASET ...]) (-C | -L) (-l | -med | -med2016) -a {yes,no} -y {2016,2017,2018,0} [--uproot {1,2}] [--chunks CHUNKS]
+                                [--chunksize CHUNKSIZE] [--save] [--saveMistag] [--saveTrig] [--saveFlav] [--dask] [--useEff] [--tpt]
                                 [--bTagSyst {central,up,down} | --tTagSyst {central,up,down} | --ttXSSyst {central,up,down} | --lumSyst {central,up,down} | --jec {central,up,down} | --jer {central,up,down} | --pileup {central,up,down}]
 
 -----------------------------------------------------------------------------
@@ -76,6 +76,8 @@ optional arguments:
   -L, --lpc             Use CMSLPC redirector: root://cmsxrootd.fnal.gov/
   -l, --loose           Apply loose bTag discriminant cut
   -med, --medium        Apply medium bTag discriminant cut
+  -med2016, --medium2016
+                        Apply medium bTag discriminant cut from 2016 AN
   -a {yes,no}, --APV {yes,no}
                         Do datasets have APV?
   -y {2016,2017,2018,0}, --year {2016,2017,2018,0}
@@ -114,12 +116,24 @@ optional arguments:
                                 <x> = <y> = 5 is not an available string to be included in dataset string names
                                 -------------------------------------------------------------------------------
                                 QCD
-                                DM<x><y>00
-                                RSGluon<x><y>00
+                                DM<x><y>00, DM
+                                RSGluon<x><y>00, RSGluon
                                 TTbar
                                 JetHT
                                 SingleMu
                                 NOTE** UL17 and UL18 samples TBA
+    Example of a usual workflow on Coffea-Casa to make the relevant coffea outputs:
+    1.) Make Outputs for Flavor and Trigger Efficiencies
+python TTbarResCoffeaOutputs.py -C -med -F QCD TTbar DM RSGluon -a no -y 2016 --dask --saveFlav
+python TTbarResCoffeaOutputs.py -C -med -T -a no -y 2016 --dask --saveTrig
+    2.) Create Mistag Rates that will be used to estimate NTMJ background
+python TTbarResCoffeaOutputs.py -C -med -m -a no -y 2016 --dask --saveMistag
+    3.) Make Outputs for the first Uproot Job with no weights applied (outside of MC weights that come with the nanoAOD)
+python TTbarResCoffeaOutputs.py -C -med -d QCD TTbar JetHT DM RSGluon -a no -y 2016 --uproot 1 --dask --save
+    4.) Make Outputs for the second Uproot Job with only mistag rate applied to JetHT and TTbar, and mass modification of JetHT and TTbar in pre-tag region
+python TTbarResCoffeaOutputs.py -C -med -M QCD TTbar JetHT DM RSGluon -a no -y 2016 --dask --save
+    5.) Make Outputs for the second Uproot Job with systematics, on top of mistag rate application and mass modification
+python TTbarResCoffeaOutputs.py -C -med -d QCD TTbar JetHT DM RSGluon -a no -y 2016 --uproot 2 --bTagSyst central --useEff --dask --save
 ```
 ***
 # How it works
