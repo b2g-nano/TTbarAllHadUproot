@@ -1064,11 +1064,30 @@ class TTbarResProcessor(processor.ProcessorABC):
             ### ----------------------------------- Mod-mass Procedure ------------------------------------ ###
             ###---------------------------------------------------------------------------------------------###
             if self.ModMass == True and (isData or ('TTbar' in dataset)): #(again, only if processing JetHT for the second uproot job for background estimate ?)
-                QCD_unweighted = util.load(self.extraDaskDirectory+'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/QCD/'
-                                           +self.BDirect+str(self.year)+'/'+self.apv+'/TTbarRes_0l_UL'+str(self.year-2000)+self.vfp+'_QCD.coffea') 
-    
+                QCD_hist = None # Higher scope declaration
+                if self.year > 0:
+                    QCD_unweighted = util.load(self.extraDaskDirectory+'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/QCD/'
+                                               +self.BDirect+str(self.year)+'/'+self.apv+'/TTbarRes_0l_UL'+str(self.year-2000)+self.vfp+'_QCD.coffea') 
+                    # ---- Define Histogram ---- #
+                    QCD_hist = QCD_unweighted['jetmass'].integrate('anacat', '2t' + str(ilabel[-5:]))#.integrate('dataset', 'QCD')
+                else: # All years
+                    QCD_unwgt_2016 = util.load(self.extraDaskDirectory+'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/QCD/'
+                                               +self.BDirect+str(self.year)+'/'+self.apv+'/TTbarRes_0l_UL2016'+self.vfp+'_QCD.coffea') 
+                    QCD_unwgt_2017 = util.load(self.extraDaskDirectory+'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/QCD/'
+                                               +self.BDirect+str(self.year)+'/'+self.apv+'/TTbarRes_0l_UL2017'+self.vfp+'_QCD.coffea') 
+                    QCD_unwgt_2018 = util.load(self.extraDaskDirectory+'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/QCD/'
+                                               +self.BDirect+str(self.year)+'/'+self.apv+'/TTbarRes_0l_UL2018'+self.vfp+'_QCD.coffea') 
+                    
+                    # ---- Define Histogram ---- #
+                    QCD_hist_2016 = QCD_unwgt_2016['jetmass'].integrate('anacat', '2t' + str(ilabel[-5:]))#.integrate('dataset', 'QCD')
+                    QCD_hist_2017 = QCD_unwgt_2017['jetmass'].integrate('anacat', '2t' + str(ilabel[-5:]))#.integrate('dataset', 'QCD')
+                    QCD_hist_2018 = QCD_unwgt_2018['jetmass'].integrate('anacat', '2t' + str(ilabel[-5:]))#.integrate('dataset', 'QCD')
+                    
+                    QCD_hist = QCD_hist_2016.copy()
+                    QCD_hist.add(QCD_hist_2017)
+                    QCD_hist.add(QCD_hist_2018)
+                    
                 # ---- Extract event counts from QCD MC hist in signal region ---- #
-                QCD_hist = QCD_unweighted['jetmass'].integrate('anacat', '2t' + str(ilabel[-5:]))#.integrate('dataset', 'QCD')
                 data = QCD_hist.values() # Dictionary of values
 
                 QCD_data = [i for i in data.values()][0] # place every element of the dictionary into a numpy array
