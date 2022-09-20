@@ -36,7 +36,7 @@ After the initial setup steps of the coffea-dask environment (stated above) you 
 ![MovingToCoffeaCasa-10](https://user-images.githubusercontent.com/42876001/191271739-42a9389f-1edd-41df-8dab-4fdf9a874f07.png)
 ![MovingToCoffeaCasa-11](https://user-images.githubusercontent.com/42876001/191271786-f7718a2f-cb51-4f99-b8d9-03d3411930d0.png)
 ![MovingToCoffeaCasa-12](https://user-images.githubusercontent.com/42876001/191271930-80b87200-0e73-41a2-8048-f190b0896e63.png)
-![MovingToCoffeaCasa-13](https://user-images.githubusercontent.com/42876001/191271988-c1db5b31-6c7c-41f2-aa20-949d76fa5f60.png)
+![CoffeaCasa](https://user-images.githubusercontent.com/42876001/191276229-6acd0320-0032-4d13-a8c6-e582efbb76fb.png)
 ![MovingToCoffeaCasa-14](https://user-images.githubusercontent.com/42876001/191272013-f9dfd5f2-1de3-4bd3-9267-edad9b3fe374.png)
 ![MovingToCoffeaCasa-15](https://user-images.githubusercontent.com/42876001/191272034-4551948d-93d1-446d-815a-cbdac844bc05.png)
 ***
