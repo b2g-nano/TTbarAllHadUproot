@@ -2436,11 +2436,13 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
        
 """Package to process NANOAOD's without any analysis cuts or MC Weights for Testing Purposes"""
 class TestProcessor(processor.ProcessorABC):
-    def __init__(self, year=None, apv='', vfp=''):
+    def __init__(self, year=None, apv='', vfp='', step=None, prng=RandomState(1234567890)):
         
         self.year = year
         self.apv = apv
         self.vfp = vfp
+        self.step = step
+        self.prng = prng
         
         dataset_axis = hist.Cat("dataset", "Primary dataset")
         
@@ -2458,6 +2460,15 @@ class TestProcessor(processor.ProcessorABC):
         subjeteta_axis = hist.Bin("jeteta", r"SubJet $\eta$ No Weights", 50, -2.4, 2.4)
         subjetphi_axis = hist.Bin("jetphi", r"SubJet $\phi$ No Weights", 50, -np.pi, np.pi)
         subjetmass_axis = hist.Bin("jetmass", r"SubJet $m$ [GeV] No Weights", 50, 0, 500)
+        
+        DeepBdiscriminator_axis = hist.Bin("discriminator", r"DeepB Discriminator", 50, 0, 1)
+        CSVV2discriminator_axis = hist.Bin("discriminator", r"CSVV2 Discriminator", 50, 0, 1)
+        
+        tau2_axis = hist.Bin("tau", r"\tau_2", 50, 0, 0.5)
+        tau3_axis = hist.Bin("tau", r"\tau_3", 50, 0, 0.5)
+        tau32_axis = hist.Bin("tau", r"\tau_{3/2}", 50, 0, 1.5)
+        
+        nFatJets_axis = hist.Bin("nFatJets", r"Number of AK8 Jets", 5, 0, 4)
 
         self._accumulator = processor.dict_accumulator({
             'ak8jetpt': hist.Hist("Counts", dataset_axis, ak8jetpt_axis),
@@ -2475,6 +2486,15 @@ class TestProcessor(processor.ProcessorABC):
             'subjetphi': hist.Hist("Counts", dataset_axis, subjetphi_axis),
             'subjetmass': hist.Hist("Counts", dataset_axis, subjetmass_axis),
             
+            "DeepB": hist.Hist("Counts", dataset_axis, DeepBdiscriminator_axis),
+            "CSVV2": hist.Hist("Counts", dataset_axis, CSVV2discriminator_axis),
+            
+            "tau2": hist.Hist("Counts", dataset_axis, tau2_axis),
+            "tau3": hist.Hist("Counts", dataset_axis, tau3_axis),
+            "tau32": hist.Hist("Counts", dataset_axis, tau32_axis),
+            
+            "nFatJets": hist.Hist("Counts", dataset_axis, nFatJets_axis),
+            
             'cutflow': processor.defaultdict_accumulator(int),
         })
         
@@ -2491,6 +2511,56 @@ class TestProcessor(processor.ProcessorABC):
 
         isData = ('JetHT' in dataset) or ('SingleMu' in dataset)
         
+        def FillHists(self):
+            output['ak8jetpt'].fill(dataset = dataset, jetpt = ak.to_numpy(ak.flatten(FatJets.pt)))
+            output['ak8jeteta'].fill(dataset = dataset, jeteta = ak.to_numpy(ak.flatten(FatJets.eta)))
+            output['ak8jetphi'].fill(dataset = dataset, jetphi = ak.to_numpy(ak.flatten(FatJets.phi)))
+            output['ak8jetmass'].fill(dataset = dataset, jetmass = ak.to_numpy(ak.flatten(FatJets.mass)))
+
+            output['ak4jetpt'].fill(dataset = dataset, jetpt = ak.to_numpy(ak.flatten(Jets.pt)))
+            output['ak4jeteta'].fill(dataset = dataset, jeteta = ak.to_numpy(ak.flatten(Jets.eta)))
+            output['ak4jetphi'].fill(dataset = dataset, jetphi = ak.to_numpy(ak.flatten(Jets.phi)))
+            output['ak4jetmass'].fill(dataset = dataset, jetmass = ak.to_numpy(ak.flatten(Jets.mass)))
+
+            output['subjetpt'].fill(dataset = dataset, jetpt = ak.to_numpy(ak.flatten(SubJets.pt)))
+            output['subjeteta'].fill(dataset = dataset, jeteta = ak.to_numpy(ak.flatten(SubJets.eta)))
+            output['subjetphi'].fill(dataset = dataset, jetphi = ak.to_numpy(ak.flatten(SubJets.phi)))
+            output['subjetmass'].fill(dataset = dataset, jetmass = ak.to_numpy(ak.flatten(SubJets.mass)))
+
+            output['DeepB'].fill(dataset = dataset, discriminator = ak.to_numpy(ak.flatten(SubJets.btagDeepB)))
+            output['CSVV2'].fill(dataset = dataset, discriminator = ak.to_numpy(ak.flatten(SubJets.btagCSVV2)))
+
+            output['tau2'].fill(dataset = dataset, tau = ak.to_numpy(ak.flatten(FatJets.tau2)))
+            output['tau3'].fill(dataset = dataset, tau = ak.to_numpy(ak.flatten(FatJets.tau3)))
+            output['tau32'].fill(dataset = dataset, tau = ak.to_numpy(ak.flatten(FatJets.tau3/FatJets.tau2)))
+
+            output['nFatJets'].fill(dataset = dataset, nFatJets = ak.to_numpy(ak.flatten(FatJets.nFatJet)))
+            
+        def FillHistsTTbar(self):
+            output['ak8jetpt'].fill(dataset = dataset, jetpt = ak.to_numpy(ak.flatten(ttbarcands.pt)))
+            output['ak8jeteta'].fill(dataset = dataset, jeteta = ak.to_numpy(ak.flatten(ttbarcands.eta)))
+            output['ak8jetphi'].fill(dataset = dataset, jetphi = ak.to_numpy(ak.flatten(ttbarcands.phi)))
+            output['ak8jetmass'].fill(dataset = dataset, jetmass = ak.to_numpy(ak.flatten(ttbarcands.mass)))
+
+            output['ak4jetpt'].fill(dataset = dataset, jetpt = ak.to_numpy(ak.flatten(Jets.pt)))
+            output['ak4jeteta'].fill(dataset = dataset, jeteta = ak.to_numpy(ak.flatten(Jets.eta)))
+            output['ak4jetphi'].fill(dataset = dataset, jetphi = ak.to_numpy(ak.flatten(Jets.phi)))
+            output['ak4jetmass'].fill(dataset = dataset, jetmass = ak.to_numpy(ak.flatten(Jets.mass)))
+
+            output['subjetpt'].fill(dataset = dataset, jetpt = ak.to_numpy(ak.flatten(SubJets.pt)))
+            output['subjeteta'].fill(dataset = dataset, jeteta = ak.to_numpy(ak.flatten(SubJets.eta)))
+            output['subjetphi'].fill(dataset = dataset, jetphi = ak.to_numpy(ak.flatten(SubJets.phi)))
+            output['subjetmass'].fill(dataset = dataset, jetmass = ak.to_numpy(ak.flatten(SubJets.mass)))
+
+            output['DeepB'].fill(dataset = dataset, discriminator = ak.to_numpy(ak.flatten(SubJets.btagDeepB)))
+            output['CSVV2'].fill(dataset = dataset, discriminator = ak.to_numpy(ak.flatten(SubJets.btagCSVV2)))
+
+            output['tau2'].fill(dataset = dataset, tau = ak.to_numpy(ak.flatten(ttbarcands.tau2)))
+            output['tau3'].fill(dataset = dataset, tau = ak.to_numpy(ak.flatten(ttbarcands.tau3)))
+            output['tau32'].fill(dataset = dataset, tau = ak.to_numpy(ak.flatten(ttbarcands.tau3/ttbarcands.tau2)))
+
+            output['nFatJets'].fill(dataset = dataset, nFatJets = ak.to_numpy(ak.flatten(ttbarcands.nFatJet)))
+        
         # ---- Define AK8 Jets as FatJets ---- #
         FatJets = ak.zip({
             "run": events.run,
@@ -2499,6 +2569,10 @@ class TestProcessor(processor.ProcessorABC):
             "eta": events.FatJet_eta,
             "phi": events.FatJet_phi,
             "mass": events.FatJet_mass,
+            "tau2": events.FatJet_tau2,
+            "tau3": events.FatJet_tau3,
+            "btagDeepB": events.FatJet_btagDeepB,
+            "btagCSVV2": events.FatJet_btagCSVV2,
             "msoftdrop": events.FatJet_msoftdrop,
             "jetId": events.FatJet_jetId,
             "deepTag_TvsQCD": events.FatJet_deepTag_TvsQCD,
@@ -2554,20 +2628,257 @@ class TestProcessor(processor.ProcessorABC):
         # ---- Show all events ---- #
         output['cutflow']['all events'] += ak.to_awkward0(FatJets).size
         
-        output['ak8jetpt'].fill(dataset = dataset, jetpt = ak.to_numpy(ak.flatten(FatJets.pt)))
-        output['ak8jeteta'].fill(dataset = dataset, jeteta = ak.to_numpy(ak.flatten(FatJets.eta)))
-        output['ak8jetphi'].fill(dataset = dataset, jetphi = ak.to_numpy(ak.flatten(FatJets.phi)))
-        output['ak8jetmass'].fill(dataset = dataset, jetmass = ak.to_numpy(ak.flatten(FatJets.mass)))
+        if self.step == None:
         
-        output['ak4jetpt'].fill(dataset = dataset, jetpt = ak.to_numpy(ak.flatten(Jets.pt)))
-        output['ak4jeteta'].fill(dataset = dataset, jeteta = ak.to_numpy(ak.flatten(Jets.eta)))
-        output['ak4jetphi'].fill(dataset = dataset, jetphi = ak.to_numpy(ak.flatten(Jets.phi)))
-        output['ak4jetmass'].fill(dataset = dataset, jetmass = ak.to_numpy(ak.flatten(Jets.mass)))
+            FillHists(self)
         
-        output['subjetpt'].fill(dataset = dataset, jetpt = ak.to_numpy(ak.flatten(SubJets.pt)))
-        output['subjeteta'].fill(dataset = dataset, jeteta = ak.to_numpy(ak.flatten(SubJets.eta)))
-        output['subjetphi'].fill(dataset = dataset, jetphi = ak.to_numpy(ak.flatten(SubJets.phi)))
-        output['subjetmass'].fill(dataset = dataset, jetmass = ak.to_numpy(ak.flatten(SubJets.mass)))
+            
+        elif self.step == 1:
+            # ---- Apply HT Cut ---- #
+            # ---- This gives the analysis 99.8% efficiency (see 2016 AN) ---- #
+            hT = ak.to_awkward0(Jets.pt).sum()
+            passhT = (hT > 950.)
+            FatJets = FatJets[passhT]
+            Jets = Jets[passhT] # this used to not be here
+            SubJets = SubJets[passhT]
+            evtweights = evtweights[passhT]
+            output['cutflow']['HT Cut'] += ak.to_awkward0(passhT).sum()
+            
+            FillHists(self)
+            
+        elif self.step == 2:
+            
+            # ---- Apply HT Cut ---- #
+            # ---- This gives the analysis 99.8% efficiency (see 2016 AN) ---- #
+            hT = ak.to_awkward0(Jets.pt).sum()
+            passhT = (hT > 950.)
+            FatJets = FatJets[passhT]
+            Jets = Jets[passhT] # this used to not be here
+            SubJets = SubJets[passhT]
+            evtweights = evtweights[passhT]
+            output['cutflow']['HT Cut'] += ak.to_awkward0(passhT).sum()
+            # ---- Jets that satisfy Jet ID ---- #
+            jet_id = (FatJets.jetId > 0) # Loose jet ID
+            FatJets = FatJets[jet_id]
+            output['cutflow']['Loose Jet ID'] += ak.to_awkward0(jet_id).any().sum()
+            
+            FillHists(self)
+            
+        elif self.step == 3:
+            
+            # ---- Apply HT Cut ---- #
+            # ---- This gives the analysis 99.8% efficiency (see 2016 AN) ---- #
+            hT = ak.to_awkward0(Jets.pt).sum()
+            passhT = (hT > 950.)
+            FatJets = FatJets[passhT]
+            Jets = Jets[passhT] # this used to not be here
+            SubJets = SubJets[passhT]
+            evtweights = evtweights[passhT]
+            output['cutflow']['HT Cut'] += ak.to_awkward0(passhT).sum()
+            # ---- Jets that satisfy Jet ID ---- #
+            jet_id = (FatJets.jetId > 0) # Loose jet ID
+            FatJets = FatJets[jet_id]
+            output['cutflow']['Loose Jet ID'] += ak.to_awkward0(jet_id).any().sum()
+            # ---- Apply pT Cut and Rapidity Window ---- #
+            FatJets_rapidity = .5*np.log( (FatJets.p4.energy + FatJets.p4.pz)/(FatJets.p4.energy - FatJets.p4.pz) )
+            jetkincut_index = (FatJets.pt > 400.) & (np.abs(FatJets_rapidity) < 2.4)
+            FatJets = FatJets[ jetkincut_index ]
+            output['cutflow']['pT,y Cut'] += ak.to_awkward0(jetkincut_index).any().sum()
+            
+            FillHists(self)
+            
+        elif self.step == 4:
+            
+            # ---- Apply HT Cut ---- #
+            # ---- This gives the analysis 99.8% efficiency (see 2016 AN) ---- #
+            hT = ak.to_awkward0(Jets.pt).sum()
+            passhT = (hT > 950.)
+            FatJets = FatJets[passhT]
+            Jets = Jets[passhT] # this used to not be here
+            SubJets = SubJets[passhT]
+            evtweights = evtweights[passhT]
+            output['cutflow']['HT Cut'] += ak.to_awkward0(passhT).sum()
+            # ---- Jets that satisfy Jet ID ---- #
+            jet_id = (FatJets.jetId > 0) # Loose jet ID
+            FatJets = FatJets[jet_id]
+            output['cutflow']['Loose Jet ID'] += ak.to_awkward0(jet_id).any().sum()
+            # ---- Apply pT Cut and Rapidity Window ---- #
+            FatJets_rapidity = .5*np.log( (FatJets.p4.energy + FatJets.p4.pz)/(FatJets.p4.energy - FatJets.p4.pz) )
+            jetkincut_index = (FatJets.pt > 400.) & (np.abs(FatJets_rapidity) < 2.4)
+            FatJets = FatJets[ jetkincut_index ]
+            output['cutflow']['pT,y Cut'] += ak.to_awkward0(jetkincut_index).any().sum()
+            # ---- Find two AK8 Jets ---- #
+            twoFatJetsKin = (ak.num(FatJets, axis=-1) == 2)
+            FatJets = FatJets[twoFatJetsKin]
+            SubJets = SubJets[twoFatJetsKin]
+            Jets = Jets[twoFatJetsKin] # this used to not be here
+            evtweights = evtweights[twoFatJetsKin]
+            output['cutflow']['two FatJets'] += ak.to_awkward0(twoFatJetsKin).sum()
+            
+            FillHists(self)
+            
+        elif self.step == 5:
+            # ---- Apply HT Cut ---- #
+            # ---- This gives the analysis 99.8% efficiency (see 2016 AN) ---- #
+            hT = ak.to_awkward0(Jets.pt).sum()
+            passhT = (hT > 950.)
+            FatJets = FatJets[passhT]
+            Jets = Jets[passhT] # this used to not be here
+            SubJets = SubJets[passhT]
+            evtweights = evtweights[passhT]
+            output['cutflow']['HT Cut'] += ak.to_awkward0(passhT).sum()
+            # ---- Jets that satisfy Jet ID ---- #
+            jet_id = (FatJets.jetId > 0) # Loose jet ID
+            FatJets = FatJets[jet_id]
+            output['cutflow']['Loose Jet ID'] += ak.to_awkward0(jet_id).any().sum()
+            # ---- Apply pT Cut and Rapidity Window ---- #
+            FatJets_rapidity = .5*np.log( (FatJets.p4.energy + FatJets.p4.pz)/(FatJets.p4.energy - FatJets.p4.pz) )
+            jetkincut_index = (FatJets.pt > 400.) & (np.abs(FatJets_rapidity) < 2.4)
+            FatJets = FatJets[ jetkincut_index ]
+            output['cutflow']['pT,y Cut'] += ak.to_awkward0(jetkincut_index).any().sum()
+            # ---- Find two AK8 Jets ---- #
+            twoFatJetsKin = (ak.num(FatJets, axis=-1) == 2)
+            FatJets = FatJets[twoFatJetsKin]
+            SubJets = SubJets[twoFatJetsKin]
+            Jets = Jets[twoFatJetsKin] # this used to not be here
+            evtweights = evtweights[twoFatJetsKin]
+            output['cutflow']['two FatJets'] += ak.to_awkward0(twoFatJetsKin).sum()
+            # ---- Randomly Assign AK8 Jets as TTbar Candidates 0 and 1 --- #
+            Counts = np.ones(len(FatJets), dtype='i') # Number 1 for each FatJet
+            index = ak.unflatten( self.prng.randint(2, size=len(FatJets)), Counts )
+            jet0 = FatJets[index] #J0
+            jet1 = FatJets[1 - index] #J1
+            ttbarcands = ak.cartesian([jet0, jet1]) # Re-group the randomized pairs in a similar fashion to how they were
+            """ NOTE that ak.cartesian gives a shape with one more layer than FatJets """
+            # ---- Make sure we have at least 1 TTbar candidate pair and re-broadcast releveant arrays  ---- #
+            oneTTbar = (ak.num(ttbarcands, axis=-1) >= 1)
+            output['cutflow']['>= oneTTbar'] += ak.to_awkward0(oneTTbar).sum()
+            ttbarcands = ttbarcands[oneTTbar]
+            FatJets = FatJets[oneTTbar]
+            Jets = Jets[oneTTbar] # this used to not be here
+            SubJets = SubJets[oneTTbar]
+            evtweights = evtweights[oneTTbar]
+            
+            FillHistsTTbar(self)
+            
+        elif step == 6:
+            
+            # ---- Apply HT Cut ---- #
+            # ---- This gives the analysis 99.8% efficiency (see 2016 AN) ---- #
+            hT = ak.to_awkward0(Jets.pt).sum()
+            passhT = (hT > 950.)
+            FatJets = FatJets[passhT]
+            Jets = Jets[passhT] # this used to not be here
+            SubJets = SubJets[passhT]
+            evtweights = evtweights[passhT]
+            output['cutflow']['HT Cut'] += ak.to_awkward0(passhT).sum()
+            # ---- Jets that satisfy Jet ID ---- #
+            jet_id = (FatJets.jetId > 0) # Loose jet ID
+            FatJets = FatJets[jet_id]
+            output['cutflow']['Loose Jet ID'] += ak.to_awkward0(jet_id).any().sum()
+            # ---- Apply pT Cut and Rapidity Window ---- #
+            FatJets_rapidity = .5*np.log( (FatJets.p4.energy + FatJets.p4.pz)/(FatJets.p4.energy - FatJets.p4.pz) )
+            jetkincut_index = (FatJets.pt > 400) & (np.abs(FatJets_rapidity) < 2.4)
+            FatJets = FatJets[ jetkincut_index ]
+            output['cutflow']['pT,y Cut'] += ak.to_awkward0(jetkincut_index).any().sum()
+            # ---- Find two AK8 Jets ---- #
+            twoFatJetsKin = (ak.num(FatJets, axis=-1) == 2)
+            FatJets = FatJets[twoFatJetsKin]
+            SubJets = SubJets[twoFatJetsKin]
+            Jets = Jets[twoFatJetsKin] # this used to not be here
+            evtweights = evtweights[twoFatJetsKin]
+            output['cutflow']['two FatJets'] += ak.to_awkward0(twoFatJetsKin).sum()
+            # ---- Randomly Assign AK8 Jets as TTbar Candidates 0 and 1 --- #
+            Counts = np.ones(len(FatJets), dtype='i') # Number 1 for each FatJet
+            index = ak.unflatten( self.prng.randint(2, size=len(FatJets)), Counts )
+            jet0 = FatJets[index] #J0
+            jet1 = FatJets[1 - index] #J1
+            ttbarcands = ak.cartesian([jet0, jet1]) # Re-group the randomized pairs in a similar fashion to how they were
+            """ NOTE that ak.cartesian gives a shape with one more layer than FatJets """
+            # ---- Make sure we have at least 1 TTbar candidate pair and re-broadcast releveant arrays  ---- #
+            oneTTbar = (ak.num(ttbarcands, axis=-1) >= 1)
+            output['cutflow']['>= oneTTbar'] += ak.to_awkward0(oneTTbar).sum()
+            ttbarcands = ttbarcands[oneTTbar]
+            FatJets = FatJets[oneTTbar]
+            Jets = Jets[oneTTbar] # this used to not be here
+            SubJets = SubJets[oneTTbar]
+            evtweights = evtweights[oneTTbar]
+            # ---- Apply Delta Phi Cut for Back to Back Topology ---- #
+            """ NOTE: Should find function for this; avoids 2pi problem """
+            dPhiCut = ttbarcands.slot0.p4.delta_phi(ttbarcands.slot1.p4) > 2.1
+            dPhiCut = ak.flatten(dPhiCut)
+            output['cutflow']['dPhi Cut'] += ak.to_awkward0(dPhiCut).sum()
+            ttbarcands = ttbarcands[dPhiCut]
+            FatJets = FatJets[dPhiCut] 
+            Jets = Jets[dPhiCut] # this used to not be here
+            SubJets = SubJets[dPhiCut] 
+            evtweights = evtweights[dPhiCut]
+            
+            FillHistsTTbar(self)
+            
+        elif step == 7:
+            
+            # ---- Apply HT Cut ---- #
+            # ---- This gives the analysis 99.8% efficiency (see 2016 AN) ---- #
+            hT = ak.to_awkward0(Jets.pt).sum()
+            passhT = (hT > 950.)
+            FatJets = FatJets[passhT]
+            Jets = Jets[passhT] # this used to not be here
+            SubJets = SubJets[passhT]
+            evtweights = evtweights[passhT]
+            output['cutflow']['HT Cut'] += ak.to_awkward0(passhT).sum()
+            # ---- Jets that satisfy Jet ID ---- #
+            jet_id = (FatJets.jetId > 0) # Loose jet ID
+            FatJets = FatJets[jet_id]
+            output['cutflow']['Loose Jet ID'] += ak.to_awkward0(jet_id).any().sum()
+            # ---- Apply pT Cut and Rapidity Window ---- #
+            FatJets_rapidity = .5*np.log( (FatJets.p4.energy + FatJets.p4.pz)/(FatJets.p4.energy - FatJets.p4.pz) )
+            jetkincut_index = (FatJets.pt > 400.) & (np.abs(FatJets_rapidity) < 2.4)
+            FatJets = FatJets[ jetkincut_index ]
+            output['cutflow']['pT,y Cut'] += ak.to_awkward0(jetkincut_index).any().sum()
+            # ---- Find two AK8 Jets ---- #
+            twoFatJetsKin = (ak.num(FatJets, axis=-1) == 2)
+            FatJets = FatJets[twoFatJetsKin]
+            SubJets = SubJets[twoFatJetsKin]
+            Jets = Jets[twoFatJetsKin] # this used to not be here
+            evtweights = evtweights[twoFatJetsKin]
+            output['cutflow']['two FatJets'] += ak.to_awkward0(twoFatJetsKin).sum()
+            # ---- Randomly Assign AK8 Jets as TTbar Candidates 0 and 1 --- #
+            Counts = np.ones(len(FatJets), dtype='i') # Number 1 for each FatJet
+            index = ak.unflatten( self.prng.randint(2, size=len(FatJets)), Counts )
+            jet0 = FatJets[index] #J0
+            jet1 = FatJets[1 - index] #J1
+            ttbarcands = ak.cartesian([jet0, jet1]) # Re-group the randomized pairs in a similar fashion to how they were
+            """ NOTE that ak.cartesian gives a shape with one more layer than FatJets """
+            # ---- Make sure we have at least 1 TTbar candidate pair and re-broadcast releveant arrays  ---- #
+            oneTTbar = (ak.num(ttbarcands, axis=-1) >= 1)
+            output['cutflow']['>= oneTTbar'] += ak.to_awkward0(oneTTbar).sum()
+            ttbarcands = ttbarcands[oneTTbar]
+            FatJets = FatJets[oneTTbar]
+            Jets = Jets[oneTTbar] # this used to not be here
+            SubJets = SubJets[oneTTbar]
+            evtweights = evtweights[oneTTbar]
+            # ---- Apply Delta Phi Cut for Back to Back Topology ---- #
+            """ NOTE: Should find function for this; avoids 2pi problem """
+            dPhiCut = ttbarcands.slot0.p4.delta_phi(ttbarcands.slot1.p4) > 2.1
+            dPhiCut = ak.flatten(dPhiCut)
+            output['cutflow']['dPhi Cut'] += ak.to_awkward0(dPhiCut).sum()
+            ttbarcands = ttbarcands[dPhiCut]
+            FatJets = FatJets[dPhiCut] 
+            Jets = Jets[dPhiCut] # this used to not be here
+            SubJets = SubJets[dPhiCut] 
+            evtweights = evtweights[dPhiCut]
+            # ---- Identify subjets according to subjet ID ---- #
+            hasSubjets0 = ((ttbarcands.slot0.subJetIdx1 > -1) & (ttbarcands.slot0.subJetIdx2 > -1)) # 1st candidate has two subjets
+            hasSubjets1 = ((ttbarcands.slot1.subJetIdx1 > -1) & (ttbarcands.slot1.subJetIdx2 > -1)) # 2nd candidate has two subjets
+            GoodSubjets = ak.flatten(((hasSubjets0) & (hasSubjets1))) # Selection of 4 (leading) subjects
+            output['cutflow']['Good Subjets'] += ak.to_awkward0(GoodSubjets).sum()
+            ttbarcands = ttbarcands[GoodSubjets] # Choose only ttbar candidates with this selection of subjets
+            SubJets = SubJets[GoodSubjets]
+            Jets = Jets[GoodSubjets] # this used to not be here
+            evtweights = evtweights[GoodSubjets]
+            
+            FillHistsTTbar(self)
         
         return output
 

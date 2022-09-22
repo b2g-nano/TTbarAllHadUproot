@@ -171,6 +171,7 @@ Parser.add_argument('-a', '--APV', type=str, required=True, choices=['yes', 'no'
 Parser.add_argument('-y', '--year', type=int, required=True, choices=[2016, 2017, 2018, 0], help='Year(s) of data/MC of the datasets you want to run uproot with.  Choose 0 for all years simultaneously.')
 
 # ---- Other arguments ---- #
+Parser.add_argument('--step', type=int, choices=[1, 2, 3, 4, 5, 6, 7], help='Pre-Selection Step For Checking Histograms When Running Unweighted Test')
 Parser.add_argument('--uproot', type=int, choices=[1, 2], help='1st run or 2nd run of uproot job.  If not specified, both the 1st and 2nd job will be run one after the other.')
 Parser.add_argument('--chunks', type=int, help='Number of chunks of data to run for given dataset(s)')
 Parser.add_argument('--chunksize', type=int, help='Size of each chunk to run for given dataset(s)')
@@ -226,6 +227,30 @@ if args.rununweighttest and args.uproot:
 #     O   O  P          T       I     O   O  N    NN      S      
 #      OOO   P          T    IIIIIII   OOO   N     N SSSSS   
 #    -------------------------------------------------------
+
+StepNumber = 'NoSelection'
+# match args.step:
+#     case 1:
+#         StepNumber = 'Selection1'
+#     case 2:
+#         StepNumber = 'Selection2'
+#     case 3:
+#         StepNumber = 'Selection3'
+#     case 4:
+#         StepNumber = 'Selection4'
+#     case _:
+#         print('No Selection Chosen For Test Run')
+if args.step == 1:
+    StepNumber = 'Selection1'
+elif args.step == 2:
+    StepNumber = 'Selection2'
+elif args.step == 3:
+    StepNumber = 'Selection3'
+elif args.step == 4:
+    StepNumber = 'Selection4'
+else:
+    print('No Selection Chosen For Test Run')
+    
 
 Redirector = None
 daskDirectory = ''
@@ -690,7 +715,8 @@ if args.rununweighttest:
                                                   treename='Events',
                                                   processor_instance=TestProcessor(year=args.year,
                                                                                     apv=convertLabel[VFP],
-                                                                                    vfp=VFP),
+                                                                                    vfp=VFP,
+                                                                                    step=args.step),
                                                   executor=processor.futures_executor,
                                                   executor_args={
                                                       #'client': client,
@@ -705,7 +731,8 @@ if args.rununweighttest:
                                                   treename='Events',
                                                   processor_instance=TestProcessor(year=args.year,
                                                                                     apv=convertLabel[VFP],
-                                                                                    vfp=VFP),
+                                                                                    vfp=VFP,
+                                                                                    step=args.step),
                                                   executor=processor.dask_executor,
                                                   executor_args={
                                                       'client': client,
@@ -719,12 +746,12 @@ if args.rununweighttest:
             print(output)
 
             if args.saveTest:
-                mkdir_p('TTbarAllHadUproot/CoffeaOutputsForNoSelectionTest/'
+                mkdir_p('TTbarAllHadUproot/CoffeaOutputsForSelectionTest/'
                           + SaveLocation[name])
-                util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForNoSelectionTest/'
+                util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForSelectionTest/'
                       + SaveLocation[name]
                       + name    
-                      + '_NoSelectionTest' 
+                      + '_' + StepNumber + '_Test' 
                       + OldDisc
                       + '.coffea')
 
@@ -736,7 +763,8 @@ if args.rununweighttest:
                                                   treename='Events',
                                                   processor_instance=TestProcessor(year=args.year,
                                                                                     apv=convertLabel[VFP],
-                                                                                    vfp=VFP),
+                                                                                    vfp=VFP,
+                                                                                    step=args.step),
                                                   executor=processor.futures_executor,
                                                   executor_args={
                                                       #'client': client,
@@ -751,7 +779,8 @@ if args.rununweighttest:
                                                   treename='Events',
                                                   processor_instance=TestProcessor(year=args.year,
                                                                                     apv=convertLabel[VFP],
-                                                                                    vfp=VFP),
+                                                                                    vfp=VFP,
+                                                                                    step=args.step),
                                                   executor=processor.dask_executor,
                                                   executor_args={
                                                       'client': client,
@@ -764,12 +793,12 @@ if args.rununweighttest:
             print(output)
 
             if args.saveTest:
-                mkdir_p('TTbarAllHadUproot/CoffeaOutputsForNoSelectionTest/'
+                mkdir_p('TTbarAllHadUproot/CoffeaOutputsForSelectionTest/'
                           + SaveLocation[name])
-                util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForNoSelectionTest/'
+                util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForSelectionTest/'
                       + SaveLocation[name]
                       + name    
-                      + '_NoSelectionTest' 
+                      + '_' + StepNumber + '_Test'
                       + OldDisc
                       + '.coffea')
 
