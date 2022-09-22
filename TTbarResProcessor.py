@@ -100,6 +100,10 @@ class TTbarResProcessor(processor.ProcessorABC):
         subjetpt_axis = hist.Bin("subjetpt", r"SubJet $p_{T}$ [GeV]", 25, 0, 2000)
         subjeteta_axis = hist.Bin("subjeteta", r"SubJet $\eta$", 25, 0, 2.4)
         subjetphi_axis = hist.Bin("subjetphi", r"SubJet $\phi$", 50, -np.pi, np.pi)
+        
+        jetpt_fortest1_axis = hist.Bin("jetpt", r"AK8 Jet $p_{T}$ [GeV] No Weights", 50, 0, 8000)
+        jetpt_fortest2_axis = hist.Bin("jetpt", r"AK8 Jet $p_{T}$ [GeV] with Weights", 50, 0, 8000)
+        
 
         self._accumulator = processor.dict_accumulator({
 #    ===================================================================================================================
@@ -143,9 +147,12 @@ class TTbarResProcessor(processor.ProcessorABC):
             'numerator':   hist.Hist("Counts", dataset_axis, cats_axis, manual_axis),
             'denominator': hist.Hist("Counts", dataset_axis, cats_axis, manual_axis),
             
+            'jetpt_fortest1': hist.Hist("Counts", dataset_axis, jetpt_fortest1_axis),
+            'jetpt_fortest2': hist.Hist("Counts", dataset_axis, jetpt_fortest2_axis),
+            
             #********************************************************************************************************************#
             
-            'cutflow': processor.defaultdict_accumulator(int),
+            'cutflow': processor.defaultdict_accumulator(int), 
             
         })
         
@@ -567,6 +574,17 @@ class TTbarResProcessor(processor.ProcessorABC):
         #     SubJets = SubJets[applyTrigs] 
         #     evtweights = evtweights[applyTrigs]
 
+        # ---- TEST ---- #
+        
+        jetpt_fortest = ak.flatten(FatJets.pt)
+        
+        # ---- Make Histograms (non-weighted by event weights) Before Any Cuts ---- #
+        output['jetpt_fortest1'].fill(dataset = dataset, jetpt = ak.to_numpy(jetpt_fortest))
+        # ---- Make Histograms (weighted by event weights) Before Any Cuts ---- #
+        # output['jetpt_fortest2'].fill(dataset = dataset, jetpt = ak.to_numpy(jetpt_fortest), weight = ak.to_numpy(evtweights))
+        
+        
+        
         # ---- Apply HT Cut ---- #
         # ---- This gives the analysis 99.8% efficiency (see 2016 AN) ---- #
         hT = ak.to_awkward0(Jets.pt).sum()
@@ -580,7 +598,7 @@ class TTbarResProcessor(processor.ProcessorABC):
             # print('if not isData command works')
             GenParts = GenParts[passhT]
         
-            
+           
         # ---- Jets that satisfy Jet ID ---- #
         jet_id = (FatJets.jetId > 0) # Loose jet ID
         FatJets = FatJets[jet_id]
@@ -2402,3 +2420,162 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
 
     def postprocess(self, accumulator):
         return accumulator
+    
+    
+    
+    
+    
+    
+    
+#===================================================================================================================================================    
+#=================================================================================================================================================== 
+#=================================================================================================================================================== 
+#=================================================================================================================================================== 
+#=================================================================================================================================================== 
+#=================================================================================================================================================== 
+       
+"""Package to process NANOAOD's without any analysis cuts or MC Weights for Testing Purposes"""
+class TestProcessor(processor.ProcessorABC):
+    def __init__(self, year=None, apv='', vfp=''):
+        
+        self.year = year
+        self.apv = apv
+        self.vfp = vfp
+        
+        dataset_axis = hist.Cat("dataset", "Primary dataset")
+        
+        ak8jetpt_axis = hist.Bin("jetpt", r"AK8 Jet $p_{T}$ [GeV] No Weights", 50, 0, 8000)
+        ak8jeteta_axis = hist.Bin("jeteta", r"AK8 Jet $\eta$ No Weights", 50, -2.4, 2.4)
+        ak8jetphi_axis = hist.Bin("jetphi", r"AK8 Jet $\phi$ No Weights", 50, -np.pi, np.pi)
+        ak8jetmass_axis = hist.Bin("jetmass", r"AK8 Jet $m$ [GeV] No Weights", 50, 0, 500)
+        
+        ak4jetpt_axis = hist.Bin("jetpt", r"AK4 Jet $p_{T}$ [GeV] No Weights", 50, 0, 2000)
+        ak4jeteta_axis = hist.Bin("jeteta", r"AK4 Jet $\eta$ No Weights", 50, -2.4, 2.4)
+        ak4jetphi_axis = hist.Bin("jetphi", r"AK4 Jet $\phi$ No Weights", 50, -np.pi, np.pi)
+        ak4jetmass_axis = hist.Bin("jetmass", r"AK4 Jet $m$ [GeV] No Weights", 50, 0, 500)
+        
+        subjetpt_axis = hist.Bin("jetpt", r"SubJet $p_{T}$ [GeV] No Weights", 50, 0, 2000)
+        subjeteta_axis = hist.Bin("jeteta", r"SubJet $\eta$ No Weights", 50, -2.4, 2.4)
+        subjetphi_axis = hist.Bin("jetphi", r"SubJet $\phi$ No Weights", 50, -np.pi, np.pi)
+        subjetmass_axis = hist.Bin("jetmass", r"SubJet $m$ [GeV] No Weights", 50, 0, 500)
+
+        self._accumulator = processor.dict_accumulator({
+            'ak8jetpt': hist.Hist("Counts", dataset_axis, ak8jetpt_axis),
+            'ak8jeteta': hist.Hist("Counts", dataset_axis, ak8jeteta_axis),
+            'ak8jetphi': hist.Hist("Counts", dataset_axis, ak8jetphi_axis),
+            'ak8jetmass': hist.Hist("Counts", dataset_axis, ak8jetmass_axis),
+            
+            'ak4jetpt': hist.Hist("Counts", dataset_axis, ak4jetpt_axis),
+            'ak4jeteta': hist.Hist("Counts", dataset_axis, ak4jeteta_axis),
+            'ak4jetphi': hist.Hist("Counts", dataset_axis, ak4jetphi_axis),
+            'ak4jetmass': hist.Hist("Counts", dataset_axis, ak4jetmass_axis),
+            
+            'subjetpt': hist.Hist("Counts", dataset_axis, subjetpt_axis),
+            'subjeteta': hist.Hist("Counts", dataset_axis, subjeteta_axis),
+            'subjetphi': hist.Hist("Counts", dataset_axis, subjetphi_axis),
+            'subjetmass': hist.Hist("Counts", dataset_axis, subjetmass_axis),
+            
+            'cutflow': processor.defaultdict_accumulator(int),
+        })
+        
+            
+    @property
+    def accumulator(self):
+        return self._accumulator
+
+    def process(self, events):
+        output = self.accumulator.identity()
+        
+        # ---- Define dataset ---- #
+        dataset = events.metadata['dataset'] 
+
+        isData = ('JetHT' in dataset) or ('SingleMu' in dataset)
+        
+        # ---- Define AK8 Jets as FatJets ---- #
+        FatJets = ak.zip({
+            "run": events.run,
+            "nFatJet": events.nFatJet,
+            "pt": events.FatJet_pt,
+            "eta": events.FatJet_eta,
+            "phi": events.FatJet_phi,
+            "mass": events.FatJet_mass,
+            "msoftdrop": events.FatJet_msoftdrop,
+            "jetId": events.FatJet_jetId,
+            "deepTag_TvsQCD": events.FatJet_deepTag_TvsQCD,
+            "deepTagMD_TvsQCD": events.FatJet_deepTagMD_TvsQCD,
+            "subJetIdx1": events.FatJet_subJetIdx1,
+            "subJetIdx2": events.FatJet_subJetIdx2,
+            "p4": ak.zip({
+                "pt": events.FatJet_pt,
+                "eta": events.FatJet_eta,
+                "phi": events.FatJet_phi,
+                "mass": events.FatJet_mass,
+                }, with_name="PtEtaPhiMLorentzVector"),
+            })
+
+        # ---- Define AK4 jets as Jets ---- #
+        Jets = ak.zip({
+            "run": events.run,
+            "pt": events.Jet_pt,
+            "eta": events.Jet_eta,
+            "phi": events.Jet_phi,
+            "mass": events.Jet_mass,
+            "area": events.Jet_area,
+            "p4": ak.zip({
+                "pt": events.Jet_pt,
+                "eta": events.Jet_eta,
+                "phi": events.Jet_phi,
+                "mass": events.Jet_mass,
+                }, with_name="PtEtaPhiMLorentzVector"),
+            })
+
+        # ---- Define SubJets ---- #
+        SubJets = ak.zip({
+            "run": events.run,
+            "pt": events.SubJet_pt,
+            "eta": events.SubJet_eta,
+            "phi": events.SubJet_phi,
+            "mass": events.SubJet_mass,
+            "btagDeepB": events.SubJet_btagDeepB,
+            "btagCSVV2": events.SubJet_btagCSVV2,
+            "p4": ak.zip({
+                "pt": events.SubJet_pt,
+                "eta": events.SubJet_eta,
+                "phi": events.SubJet_phi,
+                "mass": events.SubJet_mass,
+                }, with_name="PtEtaPhiMLorentzVector"),
+            })
+        
+        # ---- Get event weights from dataset ---- #
+        if isData:
+            evtweights = np.ones(ak.to_awkward0(FatJets).size) # set all "data weights" to one
+        else: 
+            evtweights = events.Generator_weight
+        # ---- Show all events ---- #
+        output['cutflow']['all events'] += ak.to_awkward0(FatJets).size
+        
+        output['ak8jetpt'].fill(dataset = dataset, jetpt = ak.to_numpy(ak.flatten(FatJets.pt)))
+        output['ak8jeteta'].fill(dataset = dataset, jeteta = ak.to_numpy(ak.flatten(FatJets.eta)))
+        output['ak8jetphi'].fill(dataset = dataset, jetphi = ak.to_numpy(ak.flatten(FatJets.phi)))
+        output['ak8jetmass'].fill(dataset = dataset, jetmass = ak.to_numpy(ak.flatten(FatJets.mass)))
+        
+        output['ak4jetpt'].fill(dataset = dataset, jetpt = ak.to_numpy(ak.flatten(Jets.pt)))
+        output['ak4jeteta'].fill(dataset = dataset, jeteta = ak.to_numpy(ak.flatten(Jets.eta)))
+        output['ak4jetphi'].fill(dataset = dataset, jetphi = ak.to_numpy(ak.flatten(Jets.phi)))
+        output['ak4jetmass'].fill(dataset = dataset, jetmass = ak.to_numpy(ak.flatten(Jets.mass)))
+        
+        output['subjetpt'].fill(dataset = dataset, jetpt = ak.to_numpy(ak.flatten(SubJets.pt)))
+        output['subjeteta'].fill(dataset = dataset, jeteta = ak.to_numpy(ak.flatten(SubJets.eta)))
+        output['subjetphi'].fill(dataset = dataset, jetphi = ak.to_numpy(ak.flatten(SubJets.phi)))
+        output['subjetmass'].fill(dataset = dataset, jetmass = ak.to_numpy(ak.flatten(SubJets.mass)))
+        
+        return output
+
+    def postprocess(self, accumulator):
+        return accumulator
+    
+    
+    
+    
+    
+    

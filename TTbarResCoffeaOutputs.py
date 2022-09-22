@@ -151,6 +151,7 @@ python TTbarResCoffeaOutputs.py -C -med -d QCD TTbar JetHT DM RSGluon -a no -y 2
 # ---- Necessary arguments ---- #
 StartGroup = Parser.add_mutually_exclusive_group(required=True)
 StartGroup.add_argument('-t', '--runtesting', action='store_true', help='Only run a select few root files defined in the code.')
+StartGroup.add_argument('-u', '--rununweighttest', action='store_true', help='Run with no MC weights, cuts, nor category selections')
 StartGroup.add_argument('-m', '--runmistag', action='store_true',help='Make data mistag rate where ttbar contamination is removed (as well as ttbar mistag rate)')
 StartGroup.add_argument('-T', '--runtrigeff', action='store_true', help='Create trigger efficiency hist coffea output objects for chosen condition') 
 StartGroup.add_argument('-F', '--runflavoreff', type=str, nargs='+', help='Create flavor efficiency hist coffea output objects for chosen MC datasets')
@@ -174,6 +175,7 @@ Parser.add_argument('--uproot', type=int, choices=[1, 2], help='1st run or 2nd r
 Parser.add_argument('--chunks', type=int, help='Number of chunks of data to run for given dataset(s)')
 Parser.add_argument('--chunksize', type=int, help='Size of each chunk to run for given dataset(s)')
 Parser.add_argument('--save', action='store_true', help='Choose to save the uproot job as a coffea output for later analysis')
+Parser.add_argument('--saveTest', action='store_true', help='Save some test run (-t or -u option)')
 Parser.add_argument('--saveMistag', action='store_true', help='Save mistag rate calculated from running either --uproot 1 or --mistag')
 Parser.add_argument('--saveTrig', action='store_true', help='Save uproot job with trigger analysis outputs (Only if -T selected)')
 Parser.add_argument('--saveFlav', action='store_true', help='Save uproot job with flavor efficiency outputs (Only if -F selected)')
@@ -210,6 +212,9 @@ if isTrigEffArg == False and args.saveTrig:
     quit()
 if args.runMMO and args.uproot:
     Parser.error('When running --runMMO option do not specify --uproot.')
+    quit()
+if args.rununweighttest and args.uproot:
+    Parser.error('When running the --rununweighttest option do not specify --uproot.')
     quit()
     
 #    -------------------------------------------------------
@@ -265,7 +270,7 @@ Testing = args.runtesting
 
 LoadingUnweightedFiles = False 
 OnlyCreateLookupTables = False 
-if (args.uproot == 1 or args.runmistag) or (isTrigEffArg or args.runflavoreff):
+if ((args.uproot == 1 or args.runmistag) or (isTrigEffArg or args.runflavoreff)) or args.rununweighttest:
     OnlyCreateLookupTables = True # stop the code after LUTs are displayed on the terminal; after 1st uproot job
 elif (args.uproot == 2 or args.runMMO):
     LoadingUnweightedFiles = True # Load the 1st uproot job's coffea outputs if you only want to run the 2nd uproot job.
@@ -374,7 +379,7 @@ if (not OnlyCreateLookupTables) and (not SystOpts and not args.runMMO) :
 Chunk = [args.chunksize, args.chunks] # [chunksize, maxchunks]
 #    -------------------------------------------------------    # 
 
-from TTbarResProcessor import TTbarResProcessor, TriggerAnalysisProcessor, MCFlavorEfficiencyProcessor
+from TTbarResProcessor import TTbarResProcessor, TriggerAnalysisProcessor, MCFlavorEfficiencyProcessor, TestProcessor
 
 #    -------------------------------------------------------------------------------------------------------------------
 #    IIIIIII M     M PPPPPP    OOO   RRRRRR  TTTTTTT     DDDD       A    TTTTTTT    A      SSSSS EEEEEEE TTTTTTT   SSSSS     
@@ -461,7 +466,7 @@ if not Testing:
                 else:
                     SaveLocation[namingConvention+'_'+a] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
                     filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a]
-            else:
+            elif 'TTbar' in a or 'QCD' in a:
                 filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a] # include MC dataset read in from Filesets
             
     elif args.runMMO:
@@ -580,7 +585,7 @@ if not Testing:
                     filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a]
             else:
                 filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a] # include MC dataset read in from Filesets
-    elif args.runmistag: # if args.mistag: Only run 1st uproot job for ttbar and data to get mistag rate with tt contamination removed
+    elif args.runmistag or args.rununweighttest: # if args.mistag: Only run 1st uproot job for ttbar and data to get mistag rate with tt contamination removed
         filesets_to_run[namingConvention+'_TTbar'] = filesets[namingConvention+'_TTbar']
         if args.year > 0:
             filesets_to_run['JetHT'+str(args.year)+'_Data'] = filesets['JetHT'+str(args.year)+'_Data']
@@ -667,9 +672,121 @@ elif UsingDaskExecutor == True and args.lpc:
         client.upload_file('TTbarAllHadUproot/Filesets.py')
         client.upload_file('TTbarAllHadUproot/TTbarResProcessor.py')
         client.upload_file('TTbarAllHadUproot/TTbarResLookUpTables.py')
+
+#    ----------------------------------------------------------------------------------------------------  
+#    ----------------------------------------------------------------------------------------------------  
         
+if args.rununweighttest:
+    tstart = time.time()
+
+    outputs_unweighted = {}
+
+    for name,files in filesets_to_run.items(): 
+        print('Processing', name, '...')
+        if not RunAllRootFiles:
+            if not UsingDaskExecutor:
+                chosen_exec = 'futures'
+                output = processor.run_uproot_job({name:files},
+                                                  treename='Events',
+                                                  processor_instance=TestProcessor(year=args.year,
+                                                                                    apv=convertLabel[VFP],
+                                                                                    vfp=VFP),
+                                                  executor=processor.futures_executor,
+                                                  executor_args={
+                                                      #'client': client,
+                                                      'skipbadfiles':False,
+                                                      'schema': BaseSchema, #NanoAODSchema,
+                                                      'workers': 2},
+                                                  chunksize=Chunk[0], maxchunks=Chunk[1])
+            else: # use dask
+                chosen_exec = 'dask'
+                client.wait_for_workers(1)
+                output = processor.run_uproot_job({name:files},
+                                                  treename='Events',
+                                                  processor_instance=TestProcessor(year=args.year,
+                                                                                    apv=convertLabel[VFP],
+                                                                                    vfp=VFP),
+                                                  executor=processor.dask_executor,
+                                                  executor_args={
+                                                      'client': client,
+                                                      'skipbadfiles':False,
+                                                      'schema': BaseSchema},
+                                                  chunksize=Chunk[0], maxchunks=Chunk[1])
+                # client.restart()
+
+            elapsed = time.time() - tstart
+            outputs_unweighted[name] = output
+            print(output)
+
+            if args.saveTest:
+                mkdir_p('TTbarAllHadUproot/CoffeaOutputsForNoSelectionTest/'
+                          + SaveLocation[name])
+                util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForNoSelectionTest/'
+                      + SaveLocation[name]
+                      + name    
+                      + '_NoSelectionTest' 
+                      + OldDisc
+                      + '.coffea')
+
+
+        else: # Run all Root Files
+            if not UsingDaskExecutor:
+                chosen_exec = 'futures'
+                output = processor.run_uproot_job({name:files},
+                                                  treename='Events',
+                                                  processor_instance=TestProcessor(year=args.year,
+                                                                                    apv=convertLabel[VFP],
+                                                                                    vfp=VFP),
+                                                  executor=processor.futures_executor,
+                                                  executor_args={
+                                                      #'client': client,
+                                                      'skipbadfiles':False,
+                                                      'schema': BaseSchema, #NanoAODSchema,
+                                                      'workers': 2})
+
+            else: # use dask
+                chosen_exec = 'dask'
+                client.wait_for_workers(1)
+                output = processor.run_uproot_job({name:files},
+                                                  treename='Events',
+                                                  processor_instance=TestProcessor(year=args.year,
+                                                                                    apv=convertLabel[VFP],
+                                                                                    vfp=VFP),
+                                                  executor=processor.dask_executor,
+                                                  executor_args={
+                                                      'client': client,
+                                                      'skipbadfiles':False,
+                                                      'schema': BaseSchema})
+                # client.restart()
+
+            elapsed = time.time() - tstart
+            outputs_unweighted[name] = output
+            print(output)
+
+            if args.saveTest:
+                mkdir_p('TTbarAllHadUproot/CoffeaOutputsForNoSelectionTest/'
+                          + SaveLocation[name])
+                util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForNoSelectionTest/'
+                      + SaveLocation[name]
+                      + name    
+                      + '_NoSelectionTest' 
+                      + OldDisc
+                      + '.coffea')
+
+
+        print('Elapsed time = ', elapsed, ' sec.')
+        print('Elapsed time = ', elapsed/60., ' min.')
+        print('Elapsed time = ', elapsed/3600., ' hrs.') 
+
+    for dataset,output in outputs_unweighted.items(): 
+        print("-------Unweighted " + dataset + "--------")
+        for i,j in output['cutflow'].items():        
+            print( '%20s : %1s' % (i,j) ) 
+            
+        print("\n\nWe\'re done here!!")
         
-        
+    exit() # No need to go further if performing trigger analysis
+                
         
 #    ----------------------------------------------------------------------------------------------------  
 #    U     U PPPPPP  RRRRRR    OOO     OOO   TTTTTTT     FFFFFFF L          A    V     V   OOO   RRRRRR      
@@ -681,7 +798,7 @@ elif UsingDaskExecutor == True and args.lpc:
 #      UUU   P       R     R   OOO     OOO      T        F       LLLLLLL A     A    V      OOO   R     R   
 #    ----------------------------------------------------------------------------------------------------  
         
-if args.runflavoreff:
+elif args.runflavoreff:
     tstart = time.time()
 
     outputs_unweighted = {}
@@ -810,13 +927,6 @@ if args.runflavoreff:
         
     exit() # No need to go further if performing trigger analysis
         
-        
-        
-        
-        
-        
-        
-
 
 #    -----------------------------------------------------------------------------------------------------------
 #    U     U PPPPPP  RRRRRR    OOO     OOO   TTTTTTT     TTTTTTT RRRRRR  IIIIIII GGGGGGG GGGGGGG EEEEEEE RRRRRR      
@@ -829,7 +939,7 @@ if args.runflavoreff:
 #    -----------------------------------------------------------------------------------------------------------
         
                       
-if isTrigEffArg:
+elif isTrigEffArg:
     tstart = time.time()
 
     outputs_unweighted = {}
@@ -1311,9 +1421,7 @@ if not OnlyCreateLookupTables and not args.runMMO:
     print("\n\nWe\'re done here!!")
     exit()
     
-    
-    
-    
+        
 #    ----------------------------------------------------------------------------    
 #     U     U PPPPPP  RRRRRR    OOO     OOO   TTTTTTT     M     M M     M   OOO       
 #     U     U P     P R     R  O   O   O   O     T        MM   MM MM   MM  O   O      
