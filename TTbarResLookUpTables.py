@@ -5,17 +5,21 @@ from coffea import hist
 from coffea import util
 import numpy as np
 import itertools
-import mplhep as hep
 import pandas as pd
 from collections import defaultdict
 import os
 from os import path
 import matplotlib.pyplot as plt
-import matplotlib.colors as colors
 
 # -------------------------------------------------------------------------------------------------------------------------------- #
-# -------- Imported into TTbarCoffeOutputs to get the mistag rates in the form of look up tables for the desired datasets -------- #
+# -- if 'runLUTS' is true, make separate Directory to place new Look-Up Tables and perform ttbar subtraction for mistag weights -- #
+# ---------- if 'runLUTS' is false, read in [previously made] Look Up Table csv's [and don't overwrite or make new ones] --------- #
 # -------------------------------------------------------------------------------------------------------------------------------- #
+
+runLUTS = False # Make separate Directory to place Look-Up Tables (and maybe perform ttbar subtraction for mistag weights)
+
+if not runLUTS:
+    print("\n\nLoading Previously Made Look Up Tables for Mistag Rate\n\nDoes not Correspond to Test Files...\n\n")
 
 def mkdir_p(mypath):
     '''Creates a directory. equivalent to using mkdir -p on the command line'''
@@ -37,31 +41,9 @@ def DoesDirectoryExist(mypath): #extra precaution (Probably overkill...)
         pass
     else:
         mkdir_p(mypath)
-        
-def plotratio2d(numerator, denominator, ax=None, cmap='Blues', cbar=True):
-    NumeratorAxes = numerator.axes()
-    DenominatorAxes = denominator.axes()
-    
-    # integer number of bins in this axis #
-    NumeratorAxis1_BinNumber = NumeratorAxes[0].size - 3 # Subtract 3 to remove overflow
-    NumeratorAxis2_BinNumber = NumeratorAxes[1].size - 3
-    
-    DenominatorAxis1_BinNumber = DenominatorAxes[0].size - 3 
-    DenominatorAxis2_BinNumber = DenominatorAxes[1].size - 3 
-    
-    if(NumeratorAxis1_BinNumber != DenominatorAxis1_BinNumber 
-       or NumeratorAxis2_BinNumber != DenominatorAxis2_BinNumber):
-        raise Exception('Numerator and Denominator axes are different sizes; Cannot perform division.')
-    else:
-        Numerator = numerator.to_hist()
-        Denominator = denominator.to_hist()
 
-        ratio = Numerator / Denominator.values()
-        
-        return hep.hist2dplot(ratio, ax=ax, cmap=cmap, norm=colors.Normalize(0.,1.), cbar=cbar)
-
-#os.chdir('../') # Runs the code from within the working directory without manually changing all directory paths!
 maindirectory = os.getcwd() # changes accordingly
+#print(maindirectory)
 
 # ---- Reiterate categories ---- #
 ttagcats = ["at"] #, "0t", "1t", "It", "2t"]
@@ -69,6 +51,16 @@ btagcats = ["0b", "1b", "2b"]
 ycats = ['cen', 'fwd']
 
 list_of_cats = [ t+b+y for t,b,y in itertools.product( ttagcats, btagcats, ycats) ]
+
+
+from Filesets import filesets
+
+
+outputs_unweighted = {}
+for name,files in filesets.items():
+    outputs_unweighted[name] = util.load('TTbarAllHadUproot/CoffeaOutputs/UnweightedOutputs/TTbarResCoffea_' + name + '_unweighted_output.coffea')
+outputs_unweighted
+
 
 """ ---------------- CREATE RAW MISTAG PLOTS ---------------- """
 # ---- Only Use This When LookUp Tables Were Not In Use for Previous Uproot Job (i.e. UseLookUpTables = False) ---- #
@@ -82,11 +74,85 @@ DoesDirectoryExist(SaveDirectory) # no need to create the directory several time
 def forward(x):
     return x**(1/2)
 
+
 def inverse(x):
     return x**2
 
+#print(SaveDirectory)
+for iset in filesets:
+    for icat in list_of_cats:
+        print(iset)
+        print(icat)
+        title = iset + ' mistag ' + icat
+        filename = 'mistag_' + iset + '_' + icat + '.' + 'png'
+        print(outputs_unweighted[iset]['numerator'])
+        Numerator = outputs_unweighted[iset]['numerator'].integrate('anacat', icat).integrate('dataset', iset)
+        Denominator = outputs_unweighted[iset]['denominator'].integrate('anacat', icat).integrate('dataset', iset)
+        print(Numerator)
+        print(Denominator)
+        mistag = hist.plotratio(num = Numerator, denom = Denominator,
+                                error_opts={'marker': '.', 'markersize': 10., 'color': 'k', 'elinewidth': 1},
+                                unc = 'num')
+        plt.title(title)
+        plt.ylim(bottom = 0, top = 0.12)
+        plt.xlim(left = 100, right = 2500)
+        
+        # ---- Better mistag plots are made in 'TTbarResCoffea_MistagAnalysis-BkgEst' python script ---- #
+        # ---- However, if one wants to save these raw plots, they may uncomment the following 5 lines ---- #
+        
+        #plt.xticks(np.array([0, 500, 600, 700]))
+        #mistag.set_xscale('function', functions=(forward, inverse))
+        #mistag.set_xscale('log')
+        #plt.savefig(SaveDirectory+filename, bbox_inches="tight")
+        #print(filename + ' saved')
+
+
+""" ---------------- Scale-Factors for JetHT Data According to Year---------------- """
+Nevts2016 = 625516390. # from dasgoclient
+Nevts2017 = 410461585. # from dasgoclient
+Nevts2018 = 676328827. # from dasgoclient
+Nevts = Nevts2016 + Nevts2017 + Nevts2018 # for all three years
+
+if 'JetHT2016_Data' in filesets:
+    Nevts2016_sf = Nevts2016/outputs_unweighted['JetHT2016_Data']['cutflow']['all events']
+#     print(Nevts2016_sf)
+if 'JetHT2017_Data' in filesets:
+    Nevts2017_sf = Nevts2017/outputs_unweighted['JetHT2017_Data']['cutflow']['all events']
+#     print(Nevts2017_sf)
+if 'JetHT2018_Data' in filesets:
+    Nevts2018_sf = Nevts2018/outputs_unweighted['JetHT2018_Data']['cutflow']['all events']
+#     print(Nevts2018_sf)
+if 'JetHT' in filesets:
+    Nevts_sf = Nevts / outputs_unweighted['JetHT']['cutflow']['all events']
+#     print(Nevts_sf)
+
+
+""" ---------------- Luminosities, Cross Sections, Scale-Factors ---------------- """ 
+Lum2016 = 35920. # pb^-1 from https://twiki.cern.ch/twiki/bin/viewauth/CMS/PdmVAnalysisSummaryTable
+Lum2017 = 41530.
+Lum2018 = 59740.
+Lum     = 137190. # total Luminosity of all years
+
+ttbar_BR = 0.457 # 0.442 from PDG 2018
+ttbar_xs = 1.0   # Monte Carlo already includes xs in event weight!! Otherwise, ttbar_xs = 831.76 * ttbar_BR  pb
+
+ttbar2016_sf = ttbar_xs*Lum2016/(142155064.)
+ttbar2017_sf = ttbar_xs*Lum2017/(142155064.)
+ttbar2018_sf = ttbar_xs*Lum2018/(142155064.)
+ttbar_sf = ttbar_xs*Lum/(142155064.)
+
+# print("ttbar 2016 scale factor = ", ttbar2016_sf)
+# print("ttbar 2017 scale factor = ", ttbar2017_sf)
+# print("ttbar 2018 scale factor = ", ttbar2018_sf)
+# print("ttbar (all years) scale factor = ", ttbar_sf)
+
+qcd_xs = 1370000000.0 #pb From https://cms-gen-dev.cern.ch/xsdb
+#qcd_sf = qcd_xs*Lum/18455107.
+
+
 import warnings
 warnings.filterwarnings("ignore")
+
 
 """ ---------------- CREATE LOOK UP TABLE .CSV FILES ---------------- """
 
@@ -99,307 +165,162 @@ def multi_dict(K, type): # definition from https://www.geeksforgeeks.org/python-
 luts = {}
 luts = multi_dict(2, str) #Annoying, but necessary definition of the dictionary
 
-def LoadDataLUTS(bdiscDirectory, Year):
-    for icat in list_of_cats:
-        df = pd.read_csv('TTbarAllHadUproot/LookupTables/' + bdiscDirectory + 'mistag_JetHT' + str(Year) + '_Data_ttContaminationRemoved_' + icat + '.csv')
-        luts['JetHT' + str(Year) + '_Data'][icat] = df
-    return(luts)
+if runLUTS : 
 
-def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, Save):
-    '''
-    Filesets        --> Dictionary of datasets
-    Outputs         --> Dictionary of uproot outputs from 1st run
-    bdiscDirectory  --> string; Directory path for chosen b discriminator
-    Year            --> Integer for the year of datasets used in the 1st uproot run
-    VFP             --> string; either preVFP or postVFP
-    RemoveContam    --> bool; Remove the ttbar contamination from mistag when selecting --mistag option in TTbarResCoffeaOutputs.py
-    Save            --> bool; Save mistag rates or not
-    '''
-    
-#     -------------------------------------------------------------------
-#     GGGGGGG EEEEEEE TTTTTTT     FFFFFFF IIIIIII L       EEEEEEE   SSSSS     
-#     G       E          T        F          I    L       E        S          
-#     G       E          T        F          I    L       E       S           
-#     G  GGGG EEEEEEE    T        FFFFFFF    I    L       EEEEEEE  SSSSS      
-#     G     G E          T        F          I    L       E             S     
-#     G     G E          T        F          I    L       E            S      
-#      GGGGG  EEEEEEE    T        F       IIIIIII LLLLLLL EEEEEEE SSSSS
-#     -------------------------------------------------------------------
-        
-    
-    outputs_unweighted = {}
-    if Year != 0:
-        filestring_prefix = 'UL' + str(Year-2000) + VFP + '_'
-        filestring_prefix_data = str(Year)
-    else:
-        filestring_prefix = ''
-        filestring_prefix_data = ''
-
-#     ---------------------------------------
-#     PPPPPP  L         OOO   TTTTTTT   SSSSS     
-#     P     P L        O   O     T     S          
-#     P     P L       O     O    T    S           
-#     PPPPPP  L       O     O    T     SSSSS      
-#     P       L       O     O    T          S     
-#     P       L        O   O     T         S      
-#     P       LLLLLLL   OOO      T    SSSSS 
-#     ---------------------------------------
-    
-    for iset in Filesets:
-        for icat in list_of_cats:
-            # print(iset)
-            # print(icat)
-            title = iset + ' mistag ' + icat
-            filename = 'mistag_' + iset + '_' + icat + '.' + 'png'
-            # print(Outputs[iset]['numerator'])
-            Numerator = Outputs[iset]['numerator'].integrate('anacat', icat).integrate('dataset', iset)
-            Denominator = Outputs[iset]['denominator'].integrate('anacat', icat).integrate('dataset', iset)
-            # print(Numerator)
-            # print(Denominator)
-            mistag = hist.plotratio(num = Numerator, denom = Denominator,
-                                    error_opts={'marker': '.', 'markersize': 10., 'color': 'k', 'elinewidth': 1},
-                                    unc = 'num')
-            plt.title(title)
-            plt.ylim(bottom = 0, top = 0.12)
-            plt.xlim(left = 100, right = 2500)
-
-            # ----- Better mistag plots are made in 'TTbarResCoffea_MistagAnalysis-BkgEst' python script ------ #
-            # ---- However, if one wants to save these raw plots, they may uncomment the following 5 lines ---- #
-            # ------------- NOTE: MAYBE THINK OF MAKING A SWITCH FOR PLOTTING/SAVING THESE LATER? ------------- # 
-
-            #plt.xticks(np.array([0, 500, 600, 700]))
-            #mistag.set_xscale('function', functions=(forward, inverse))
-            #mistag.set_xscale('log')
-            #plt.savefig(SaveDirectory+filename, bbox_inches="tight")
-            #print(filename + ' saved')
-    
-#     -------------------------------------------------------    
-#       SSSSS   CCCC     A    L       IIIIIII N     N GGGGGGG     
-#      S       C        A A   L          I    NN    N G           
-#     S       C        A   A  L          I    N N   N G           
-#      SSSSS  C        AAAAA  L          I    N  N  N G  GGGG     
-#           S C       A     A L          I    N   N N G     G     
-#          S   C      A     A L          I    N    NN G     G     
-#     SSSSS     CCCC  A     A LLLLLLL IIIIIII N     N  GGGGG  
-#     -------------------------------------------------------   
-    
-    """ ---------------- Scale-Factors for JetHT Data According to Year---------------- """
-    Nevts2016 = 583876623. # from dasgoclient
-    Nevts2017 = 410461585. # from dasgoclient MUST BE UPDATED AFTER MOVING TO NANOv9
-    Nevts2018 = 676328827. # from dasgoclient MUST BE UPDATED AFTER MOVING TO NANOv9
-    Nevts = Nevts2016 + Nevts2017 + Nevts2018 # for all three years
-    
-    Nevts2016_sf = 0.
-    Nevts2017_sf = 0.
-    Nevts2018_sf = 0.
-    Nevts_sf = 0.
-    
-    if 'JetHT2016_Data' in Filesets:
-        Nevts2016_sf = Nevts2016/Outputs['JetHT2016_Data']['cutflow']['all events']
-    if 'JetHT2017_Data' in Filesets:
-        Nevts2017_sf = Nevts2017/Outputs['JetHT2017_Data']['cutflow']['all events']
-    if 'JetHT2018_Data' in Filesets:
-        Nevts2018_sf = Nevts2018/Outputs['JetHT2018_Data']['cutflow']['all events']
-    if 'JetHT_Data' in Filesets:
-        Nevts_sf = Nevts / Outputs['JetHT_Data']['cutflow']['all events']
-
-    """ ---------------- Luminosities, Cross Sections, Scale-Factors ---------------- """ 
-    Lum2016 = 35920. # pb^-1 from https://twiki.cern.ch/twiki/bin/viewauth/CMS/PdmVAnalysisSummaryTable
-    Lum2017 = 41530.
-    Lum2018 = 59740.
-    Lum     = 137190. # total Luminosity of all years
-
-    ttbar_BR = 0.457 # 0.442 from PDG 2018
-    ttbar_xs = 1.0   # Monte Carlo already includes xs in event weight!! Otherwise, ttbar_xs = 831.76 * ttbar_BR  pb
-    
-    ttbar2016_sf = 0.
-    ttbar2017_sf = 0.
-    ttbar2018_sf = 0.
-    ttbar_sf = 0.
-
-    if 'UL16' and 'TTbar' in Outputs.items():
-        ttbar2016_sf = ttbar_xs*ttbar_BR*Lum2016/Outputs['UL16'+VFP+'_TTbar']['cutflow']['all events']
-    if 'UL17' and 'TTbar' in Outputs.items():
-        ttbar2017_sf = ttbar_xs*ttbar_BR*Lum2017/Outputs['UL17'+VFP+'_TTbar']['cutflow']['all events']
-    if 'UL18' and 'TTbar' in Outputs.items():
-        ttbar2018_sf = ttbar_xs*ttbar_BR*Lum2018/Outputs['UL18'+VFP+'_TTbar']['cutflow']['all events']
-    if ('TTbar' in Outputs.items()) and (Year == 0):
-        ttbar_sf = ttbar_xs*ttbar_BR*Lum/Outputs[VFP+'_TTbar']['cutflow']['all events']
-    
-#     -------------------------------------------------------------------------------------------
-#     M     M IIIIIII   SSSSS TTTTTTT    A    GGGGGGG     RRRRRR     A    TTTTTTT EEEEEEE   SSSSS     
-#     MM   MM    I     S         T      A A   G           R     R   A A      T    E        S          
-#     M M M M    I    S          T     A   A  G           R     R  A   A     T    E       S           
-#     M  M  M    I     SSSSS     T     AAAAA  G  GGGG     RRRRRR   AAAAA     T    EEEEEEE  SSSSS      
-#     M     M    I          S    T    A     A G     G     R   R   A     A    T    E             S     
-#     M     M    I         S     T    A     A G     G     R    R  A     A    T    E            S      
-#     M     M IIIIIII SSSSS      T    A     A  GGGGG      R     R A     A    T    EEEEEEE SSSSS 
-#     -------------------------------------------------------------------------------------------
-    
-    SaveDirectory = maindirectory + '/TTbarAllHadUproot/LookupTables/' + bdiscDirectory
+    SaveDirectory = maindirectory + '/TTbarAllHadUproot/LookupTables/'
     DoesDirectoryExist(SaveDirectory)
-
+    
     # ---- Check if TTbar simulation was used in previous processor ---- #
-    for iset in Filesets: 
-        if ('JetHT' in iset) and any('TTbar' in i for i in Outputs) and RemoveContam:
-            # print('\t\tfileset: ' + iset + 'With Contamination Removed!\n*****************************************************\n')
+    if 'TTbar' in filesets:
+        for iset in filesets:
+            #if iset != 'TTbar' or iset != 'QCD': # if JetHT filesets are found...
+            if 'JetHT' in iset:
+                print('\t\tfileset: ' + iset + 'Wtih Contamination Removed!\n*****************************************************\n')
+                for icat in list_of_cats:
+                    filename = 'mistag_' + iset + '_' + icat + '.' + 'csv'
+                    title = iset + ' mistag ' + icat
+
+                    # ---- Info from TTbar ---- #
+                    Numerator_tt = outputs_unweighted['TTbar']['numerator'].integrate('anacat',icat).integrate('dataset','TTbar')
+                    Denominator_tt = outputs_unweighted['TTbar']['denominator'].integrate('anacat',icat).integrate('dataset','TTbar')
+                    N_vals_tt = Numerator_tt.values()[()] 
+                    D_vals_tt = Denominator_tt.values()[()] 
+
+                    # ---- Info from JetHT datasets ---- #
+                    Numerator = outputs_unweighted[iset]['numerator'].integrate('anacat',icat).integrate('dataset',iset)
+                    Denominator = outputs_unweighted[iset]['denominator'].integrate('anacat',icat).integrate('dataset',iset)
+                    N_vals = Numerator.values()[()]
+                    D_vals = Denominator.values()[()]
+
+                    # ---- Properly scale chunks of data and ttbar MC according to year of dataset used---- #
+                    if '2016' in iset:
+                        N_vals *= Nevts2016_sf 
+                        D_vals *= Nevts2016_sf
+                        N_vals_tt *= ttbar2016_sf
+                        D_vals_tt *= ttbar2016_sf
+                    elif '2017' in iset:
+                        N_vals *= Nevts2017_sf 
+                        D_vals *= Nevts2017_sf
+                        N_vals_tt *= ttbar2017_sf
+                        D_vals_tt *= ttbar2017_sf
+                    elif '2018' in iset:
+                        N_vals *= Nevts2018_sf 
+                        D_vals *= Nevts2018_sf
+                        N_vals_tt *= ttbar2018_sf
+                        D_vals_tt *= ttbar2018_sf
+                    else: # all years
+                        N_vals *= Nevts_sf 
+                        D_vals *= Nevts_sf
+                        N_vals_tt *= ttbar_sf
+                        D_vals_tt *= ttbar_sf
+
+                    # ---- Subtract ttbar MC probe momenta from datasets' ---- #
+                    N_vals_diff = np.abs(N_vals-N_vals_tt)
+                    D_vals_diff = np.abs(D_vals-D_vals_tt)
+
+                    print(N_vals_diff)
+                    print(D_vals_diff)
+                    print()
+
+                    # ---- Define Mistag values ---- #
+                    mistag_vals = np.where(D_vals_diff > 0, N_vals_diff/D_vals_diff, 0)
+                    
+                    # ---- Define Momentum values ---- #
+                    p_vals = []
+                    for iden in Numerator.identifiers('jetp'):
+                        p_vals.append(iden)
+
+                    # ---- Display and Save Dataframe, df, as Look-up Table ---- #
+                    print('fileset:  ' + iset)
+                    print('category: ' + icat)
+                    print('________________________________________________\n')
+
+                    d = {'p': p_vals, 'M(p)': mistag_vals} # 'data'
+
+                    print("d vals = ", d)
+                    print()
+                    df = pd.DataFrame(data=d)
+                    luts[iset][icat] = df
+
+                    with pd.option_context('display.max_rows', None, 'display.max_columns', None): 
+                        print(df)
+                    print('\n')
+
+                    df.to_csv(SaveDirectory+filename) # use later to collect bins and weights for re-scaling
+            else: # If iset is not JetHT...
+                print('\t\tfileset: ' + iset + '\n*****************************************************\n')
+                for icat in list_of_cats:
+                    filename = 'mistag_' + iset + '_' + icat + '.' + 'csv'
+                    Numerator = outputs_unweighted[iset]['numerator'].integrate('anacat',icat).integrate('dataset',iset)
+                    Denominator = outputs_unweighted[iset]['denominator'].integrate('anacat',icat).integrate('dataset',iset)
+                    N_vals = Numerator.values()[()]
+                    D_vals = Denominator.values()[()]
+                    print(N_vals)
+                    print(D_vals)
+                    print()
+                    mistag_vals = np.where(D_vals > 0, N_vals/D_vals, 0)
+
+                    p_vals = [] # Momentum values
+                    for iden in Numerator.identifiers('jetp'):
+                        p_vals.append(iden)
+                    print('fileset:  ' + iset)
+                    print('category: ' + icat)
+                    print('________________________________________________\n')
+                    d = {'p': p_vals, 'M(p)': mistag_vals}
+
+                    print("d vals = ", d)
+                    print()
+                    df = pd.DataFrame(data=d)
+                    luts[iset][icat] = df
+
+                    with pd.option_context('display.max_rows', None, 'display.max_columns', None): 
+                        print(df)
+                    print('\n')
+
+                    df.to_csv(SaveDirectory+filename) # use later to collect bins and weights for re-scaling
+
+    else: # If iset did not run over 'TTbar' Simulation...
+        for iset in filesets:
+            print('\t\tfileset: ' + iset + '\n*****************************************************\n')
             for icat in list_of_cats:
-                filename = 'mistag_' + iset + '_ttContaminationRemoved_' + icat + '.' + 'csv'
-                title = iset + ' mistag ' + icat
-
-                # ---- Info from TTbar ---- #
-                Numerator_tt = Outputs[filestring_prefix+'TTbar']['numerator'].integrate('anacat',icat).integrate('dataset',filestring_prefix+'TTbar')
-                Denominator_tt = Outputs[filestring_prefix+'TTbar']['denominator'].integrate('anacat',icat).integrate('dataset',filestring_prefix+'TTbar')
-                N_vals_tt = Numerator_tt.values()[()] 
-                D_vals_tt = Denominator_tt.values()[()] 
-
-                # ---- Info from JetHT datasets ---- #
-                Numerator = Outputs[iset]['numerator'].integrate('anacat',icat).integrate('dataset',iset)
-                Denominator = Outputs[iset]['denominator'].integrate('anacat',icat).integrate('dataset',iset)
+                filename = 'mistag_' + iset + '_' + icat + '.' + 'csv'
+                Numerator = outputs_unweighted[iset]['numerator'].integrate('anacat',icat).integrate('dataset',iset)
+                Denominator = outputs_unweighted[iset]['denominator'].integrate('anacat',icat).integrate('dataset',iset)
                 N_vals = Numerator.values()[()]
                 D_vals = Denominator.values()[()]
+                print(N_vals)
+                print(D_vals)
+                print()
+                
+                mistag_vals = np.where(D_vals > 0, N_vals/D_vals, 0)
 
-                # ---- Properly scale chunks of data and ttbar MC according to year of dataset used---- #
-                if '2016' in iset:
-                    N_vals *= Nevts2016_sf 
-                    D_vals *= Nevts2016_sf
-                    N_vals_tt *= ttbar2016_sf
-                    D_vals_tt *= ttbar2016_sf
-                elif '2017' in iset:
-                    N_vals *= Nevts2017_sf 
-                    D_vals *= Nevts2017_sf
-                    N_vals_tt *= ttbar2017_sf
-                    D_vals_tt *= ttbar2017_sf
-                elif '2018' in iset:
-                    N_vals *= Nevts2018_sf 
-                    D_vals *= Nevts2018_sf
-                    N_vals_tt *= ttbar2018_sf
-                    D_vals_tt *= ttbar2018_sf
-                else: # all years
-                    N_vals *= Nevts_sf 
-                    D_vals *= Nevts_sf
-                    N_vals_tt *= ttbar_sf
-                    D_vals_tt *= ttbar_sf
-
-                # ---- Subtract ttbar MC probe momenta from datasets' ---- #
-                N_vals_diff = np.abs(N_vals-N_vals_tt)
-                D_vals_diff = np.abs(D_vals-D_vals_tt)
-
-                # print(N_vals_diff)
-                # print(D_vals_diff)
-                # print()
-
-                # ---- Define Mistag values ---- #
-                mistag_vals = np.where(D_vals_diff > 0, N_vals_diff/D_vals_diff, 0)
-
-                # ---- Define Momentum values ---- #
                 p_vals = []
                 for iden in Numerator.identifiers('jetp'):
                     p_vals.append(iden)
-
-                # ---- Display and Save Dataframe, df, as Look-up Table ---- #
-                # print('fileset:  ' + iset + '_ttContaminationRemoved')
-                # print('category: ' + icat)
-                # print('________________________________________________\n')
-
-                d = {'p': p_vals, 'M(p)': mistag_vals} # 'data'
-
-                # print("d vals = ", d)
-                # print()
-                df = pd.DataFrame(data=d)
-                luts[iset][icat] = df
-
-                # with pd.option_context('display.max_rows', None, 'display.max_columns', None): 
-                #     print(df)
-                # print('\n')
-                if Save:
-                    df.to_csv(SaveDirectory+filename) # use later to collect bins and weights for re-scaling
-        else: # Make mistag rate of any dataset that was run in the 1st uproot job
-            # print('\t\tfileset: ' + iset + '\n*****************************************************\n')
-            for icat in list_of_cats:
-                filename = 'mistag_' + iset + '_' + icat + '.' + 'csv'
-                Numerator = Outputs[iset]['numerator'].integrate('anacat',icat).integrate('dataset',iset)
-                Denominator = Outputs[iset]['denominator'].integrate('anacat',icat).integrate('dataset',iset)
-                N_vals = Numerator.values()[()]
-                D_vals = Denominator.values()[()]
-                # print(N_vals)
-                # print(D_vals)
-                # print()
-                mistag_vals = np.where(D_vals > 0, N_vals/D_vals, 0)
-
-                p_vals = [] # Momentum values
-                for iden in Numerator.identifiers('jetp'):
-                    p_vals.append(iden)
-                # print('fileset:  ' + iset)
-                # print('category: ' + icat)
-                # print('________________________________________________\n')
+                    
+                print('fileset:  ' + iset)
+                print('category: ' + icat)
+                print('________________________________________________\n')
                 d = {'p': p_vals, 'M(p)': mistag_vals}
 
-                # print("d vals = ", d)
-                # print()
+                print("d vals = ", d)
+                print()
                 df = pd.DataFrame(data=d)
                 luts[iset][icat] = df
 
-                # with pd.option_context('display.max_rows', None, 'display.max_columns', None): 
-                #     print(df)
-                # print('\n')
-                if Save:
-                    df.to_csv(SaveDirectory+filename) # use later to collect bins and weights for re-scaling
+                with pd.option_context('display.max_rows', None, 'display.max_columns', None): 
+                    print(df)
+                print('\n')
 
-    # print(luts)
-    return(luts)
-
-# def CreateMCEfficiencyLUTS(flavor, Outputs, bdiscDirectory, Save):
-#     """
-#     flavor          --> string; b, c, udsg
-#     Outputs         --> Dictionary of uproot outputs from flavor run (uproot 1)
-#     bdiscDirectory  --> string; Directory path for chosen b discriminator
-#     Save            --> bool; Save mistag rates or not
-#     """
-    
-#     # if Year != 0:
-#     #     filestring_prefix = 'UL' + str(Year-2000) + VFP + '_'
-#     # else:
-#     #     filestring_prefix = ''
-    
-#     list_of_subjets = ['s01', 's02', 's11', 's12']
-#     SaveDirectory = maindirectory + '/TTbarAllHadUproot/FlavorTagEfficiencies/' + bdiscDirectory + flavor + 'tagEfficiencyTables/'
-#     DoesDirectoryExist(SaveDirectory)
-    
-#     for dataset,output in Outputs.items():
-#         for subjet in list_of_subjets:
-
-#             eff_numerator = output[flavor + '_eff_numerator_' + subjet + binwidth].integrate('dataset', dataset)
-#             eff_denominator = output[flavor + '_eff_denominator_' + subjet + binwidth].integrate('dataset', dataset)
-
-#             eff = plotratio2d(eff_numerator, eff_denominator) #ColormeshArtists object
-
-#             eff_data = eff[0].get_array().data # This is what goes into pandas dataframe
-#             eff_data = np.nan_to_num(eff_data, nan=0.0)
+                df.to_csv(SaveDirectory+filename) # use later to collect bins and weights for re-scaling
             
-#             # ---- Define pt and eta bins from the numerator or denominator hist objects ---- #
-#             pt_bins = []
-#             eta_bins = []
-
-#             for iden in eff_numerator.identifiers('subjetpt'):
-#                 pt_bins.append(iden)
-#             for iden in eff_numerator.identifiers('subjeteta'):
-#                 eta_bins.append(iden)
-
-#             # ---- Define the Efficiency List as a Pandas Dataframe ---- #
-#             EfficiencyList = pd.DataFrame(
-#                                 eff_data,
-#                                 pd.MultiIndex.from_product( [pt_bins, eta_bins], names=['pt', 'eta'] ),
-#                                 ['efficiency']
-#                             )
-
-#             # ---- Save the Efficiency List as .csv ---- #
-#             if Save:
-#                 filename = dataset + '_' + subjet + '_' + flavor + 'tageff.csv'
-#                 EfficiencyList.to_csv(SaveDirectory+filename)
-#                 print('\nSaved ' + filename + '\n')
-                
-#     return EfficiencyList
-
+else : # If runLUTS = False, read in [previously made] Look Up Table csv's
+    for iset in filesets:
+        print('\t\tfileset: ' + iset + '\n*****************************************************\n')
+        for icat in list_of_cats:
+            title = iset + ' mistag ' + icat
+            filename = 'mistag_' + iset + '_' + icat + '.' + 'csv'
+            luts[iset][icat] = pd.read_csv('TTbarAllHadUproot/LookupTables/'+filename)
+print(luts)
 
 #!jupyter nbconvert --to script TTbarResLookUpTables.ipynb

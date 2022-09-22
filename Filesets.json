@@ -1,0 +1,17 @@
+{
+    "DM1000":DM1000files,
+    "DM1500":DM1500files,
+    "DM2000":DM2000files,
+    "DM2500":DM2500files,
+    "DM3000":DM3000files,
+    "DM3500":DM3500files,
+    "DM4000":DM4000files,
+    "DM4500":DM4500files,
+    "DM5000":DM5000files,
+    "TTbar":ttbarfiles,
+    "QCD":qcdfiles,
+    "JetHT":jetdatafiles,
+    "JetHT2016_Data":jetdatafiles2016,
+    "JetHT2017_Data":jetdatafiles2017,
+    "JetHT2018_Data":jetdatafiles2018
+}
