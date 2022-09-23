@@ -76,6 +76,12 @@ elif args.step == 3:
     StepNumber = 'Selection3'
 elif args.step == 4:
     StepNumber = 'Selection4'
+elif args.step == 5:
+    StepNumber = 'Selection5'
+elif args.step == 6:
+    StepNumber = 'Selection6'
+elif args.step == 7:
+    StepNumber = 'Selection7'
 else:
     print('No Selection Chosen For Test Run')
     
@@ -163,7 +169,7 @@ for name,files in filesets.items():
                                                       'skipbadfiles':False,
                                                       'schema': BaseSchema},
                                                   chunksize=Chunk[0], maxchunks=Chunk[1])
-                client.restart()
+                # client.restart()
 
             elapsed = time.time() - tstart
             outputs_unweighted[name] = output
@@ -200,7 +206,7 @@ for name,files in filesets.items():
                                                       'client': client,
                                                       'skipbadfiles':False,
                                                       'schema': BaseSchema})
-                client.restart()
+                # client.restart()
 
             elapsed = time.time() - tstart
             outputs_unweighted[name] = output
@@ -233,11 +239,11 @@ for name,output in outputs_unweighted.items():
 
 # First, run the `TTbarResLookUpTables` module by simply importing it.  If it works, it will print out varies pandas dataframes with information about the mistag rates and finally print the `luts` multi-dictionary
 
-import TTbarResLookUpTables
+# import TTbarResLookUpTables
 
 # Next, import that multi-dictionary `luts`, as it is needed for the processor to create output files.  These new output files will have the necessary datasets weighted by their corresponding mistag rate
 
-from TTbarResLookUpTables import luts
+# from TTbarResLookUpTables import luts
 
 #from Filesets import filesets_forweights
 
