@@ -2537,10 +2537,10 @@ class TestProcessor(processor.ProcessorABC):
             output['nFatJets'].fill(dataset = dataset, nFatJets = ak.to_numpy(ak.flatten(FatJets.nFatJet)))
             
         def FillHistsTTbar(self):
-            output['ak8jetpt'].fill(dataset = dataset, jetpt = ak.to_numpy(ak.flatten(ttbarcands.pt)))
-            output['ak8jeteta'].fill(dataset = dataset, jeteta = ak.to_numpy(ak.flatten(ttbarcands.eta)))
-            output['ak8jetphi'].fill(dataset = dataset, jetphi = ak.to_numpy(ak.flatten(ttbarcands.phi)))
-            output['ak8jetmass'].fill(dataset = dataset, jetmass = ak.to_numpy(ak.flatten(ttbarcands.mass)))
+            output['ak8jetpt'].fill(dataset = dataset, jetpt = ak.to_numpy(ak.flatten(ttbarcands.slot0.pt)))
+            output['ak8jeteta'].fill(dataset = dataset, jeteta = ak.to_numpy(ak.flatten(ttbarcands.slot0.eta)))
+            output['ak8jetphi'].fill(dataset = dataset, jetphi = ak.to_numpy(ak.flatten(ttbarcands.slot0.phi)))
+            output['ak8jetmass'].fill(dataset = dataset, jetmass = ak.to_numpy(ak.flatten(ttbarcands.slot0.mass)))
 
             output['ak4jetpt'].fill(dataset = dataset, jetpt = ak.to_numpy(ak.flatten(Jets.pt)))
             output['ak4jeteta'].fill(dataset = dataset, jeteta = ak.to_numpy(ak.flatten(Jets.eta)))
@@ -2555,11 +2555,11 @@ class TestProcessor(processor.ProcessorABC):
             output['DeepB'].fill(dataset = dataset, discriminator = ak.to_numpy(ak.flatten(SubJets.btagDeepB)))
             output['CSVV2'].fill(dataset = dataset, discriminator = ak.to_numpy(ak.flatten(SubJets.btagCSVV2)))
 
-            output['tau2'].fill(dataset = dataset, tau = ak.to_numpy(ak.flatten(ttbarcands.tau2)))
-            output['tau3'].fill(dataset = dataset, tau = ak.to_numpy(ak.flatten(ttbarcands.tau3)))
-            output['tau32'].fill(dataset = dataset, tau = ak.to_numpy(ak.flatten(ttbarcands.tau3/ttbarcands.tau2)))
+            output['tau2'].fill(dataset = dataset, tau = ak.to_numpy(ak.flatten(ttbarcands.slot0.tau2)))
+            output['tau3'].fill(dataset = dataset, tau = ak.to_numpy(ak.flatten(ttbarcands.slot0.tau3)))
+            output['tau32'].fill(dataset = dataset, tau = ak.to_numpy(ak.flatten(ttbarcands.slot0.tau3/ttbarcands.slot0.tau2)))
 
-            output['nFatJets'].fill(dataset = dataset, nFatJets = ak.to_numpy(ak.flatten(ttbarcands.nFatJet)))
+            output['nFatJets'].fill(dataset = dataset, nFatJets = ak.to_numpy(ak.flatten(ttbarcands.slot0.nFatJet)))
         
         # ---- Define AK8 Jets as FatJets ---- #
         FatJets = ak.zip({
@@ -2761,7 +2761,7 @@ class TestProcessor(processor.ProcessorABC):
             
             FillHistsTTbar(self)
             
-        elif step == 6:
+        elif self.step == 6:
             
             # ---- Apply HT Cut ---- #
             # ---- This gives the analysis 99.8% efficiency (see 2016 AN) ---- #
@@ -2816,7 +2816,7 @@ class TestProcessor(processor.ProcessorABC):
             
             FillHistsTTbar(self)
             
-        elif step == 7:
+        elif self.step == 7:
             
             # ---- Apply HT Cut ---- #
             # ---- This gives the analysis 99.8% efficiency (see 2016 AN) ---- #

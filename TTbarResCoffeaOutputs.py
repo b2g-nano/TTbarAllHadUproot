@@ -248,6 +248,12 @@ elif args.step == 3:
     StepNumber = 'Selection3'
 elif args.step == 4:
     StepNumber = 'Selection4'
+elif args.step == 5:
+    StepNumber = 'Selection5'
+elif args.step == 6:
+    StepNumber = 'Selection6'
+elif args.step == 7:
+    StepNumber = 'Selection7'
 else:
     print('No Selection Chosen For Test Run')
     
