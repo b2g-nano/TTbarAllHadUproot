@@ -30,15 +30,30 @@ def CollectDatasets(redirector_str):
     Years = ['UL16']#, 'UL17', 'UL18']
     VFP = ['preVFP', 'postVFP']
 
-    filesets = {}
-
+    filesets = {} # To be filled and returned by this function
+ 
+    # ---- Before concatenation with +=, lists should be declard ---- #
+    
+    for v in VFP:
+        filesets[v+'_QCD'] = []
+        filesets[v+'_TTbar'] = []
+        
+        for i in range(1000, 5500, 500):
+            filesets[v+'_DM'+str(i)] = []
+            filesets[v+'_RSGluon'+str(i)] = []
+    
+    # ---- Loop through years and VFP status, filling the filesets dictionary with the MC file locations from corresponding txt files ---- #
+    
     for y in Years:
         for v in VFP:
+            # ---- QCD ---- #
             ulqcdfilename = filedir + 'QCD/QCD_NanoAODv9_' + y + '_' + v + '.txt'
             with open(ulqcdfilename) as f:
                 ulqcdfiles = [redirector_str + s.strip() for s in f.readlines()]
             filesets[y+v+'_QCD'] = ulqcdfiles
-
+            filesets[v+'_QCD'] += ulqcdfiles # Combine files of all three years for both VFP conditions
+            
+            # ---- TTbar ---- #
             ulttbar700to1000filename = filedir + 'TT/TT_Mtt-700to1000_NanoAODv9_' + y + '_' + v + '.txt'
             with open(ulttbar700to1000filename) as f:
                 ulttbar700to1000files = [redirector_str + s.strip() for s in f.readlines()]
@@ -47,65 +62,26 @@ def CollectDatasets(redirector_str):
                 ulttbar1000toInffiles = [redirector_str + s.strip() for s in f.readlines()]
             ulttbarfiles = ulttbar700to1000files + ulttbar1000toInffiles # inclusion of both biased samples
             filesets[y+v+'_TTbar'] = ulttbarfiles
-
+            filesets[v+'_TTbar'] += ulttbarfiles # Combine files of all three years for both VFP conditions
+            
+            # ---- Z' Dark Matter Mediator ---- #
             ulZprimeDMfilename = filedir + 'ZprimeDMToTTbar/ZprimeDMToTTbar_NanoAODv9_' + y + '_' + v + '.txt'
             with open(ulZprimeDMfilename) as f:
-                ulDM1000files = [redirector_str + s.strip() for s in f.readlines() if "ResoIncl_MZp1000" in s]
-            filesets[y+v+'_DM1000'] = ulDM1000files
-            with open(ulZprimeDMfilename) as f:
-                ulDM1500files = [redirector_str + s.strip() for s in f.readlines() if "ResoIncl_MZp1500" in s]
-            filesets[y+v+'_DM1500'] = ulDM1500files
-            with open(ulZprimeDMfilename) as f:
-                ulDM2000files = [redirector_str + s.strip() for s in f.readlines() if "ResoIncl_MZp2000" in s]
-            filesets[y+v+'_DM2000'] = ulDM2000files
-            with open(ulZprimeDMfilename) as f:
-                ulDM2500files = [redirector_str + s.strip() for s in f.readlines() if "ResoIncl_MZp2500" in s]
-            filesets[y+v+'_DM2500'] = ulDM2500files
-            with open(ulZprimeDMfilename) as f:
-                ulDM3000files = [redirector_str + s.strip() for s in f.readlines() if "ResoIncl_MZp3000" in s]
-            filesets[y+v+'_DM3000'] = ulDM3000files
-            with open(ulZprimeDMfilename) as f:
-                ulDM3500files = [redirector_str + s.strip() for s in f.readlines() if "ResoIncl_MZp3500" in s]
-            filesets[y+v+'_DM3500'] = ulDM3500files
-            with open(ulZprimeDMfilename) as f:
-                ulDM4000files = [redirector_str + s.strip() for s in f.readlines() if "ResoIncl_MZp4000" in s]
-            filesets[y+v+'_DM4000'] = ulDM4000files
-            with open(ulZprimeDMfilename) as f:
-                ulDM4500files = [redirector_str + s.strip() for s in f.readlines() if "ResoIncl_MZp4500" in s]
-            filesets[y+v+'_DM4500'] = ulDM4500files
-            with open(ulZprimeDMfilename) as f:
-                ulDM5000files = [redirector_str + s.strip() for s in f.readlines() if "ResoIncl_MZp5000" in s]
-            filesets[y+v+'_DM5000'] = ulDM5000files
-
+                for i in range(1000, 5500, 500):
+                    ulDMfiles = [redirector_str + s.strip() for s in f.readlines() if "ResoIncl_MZp"+str(i) in s]
+                    filesets[y+v+'_DM'+str(i)] = ulDMfiles
+                    filesets[v+'_DM'+str(i)] += ulDMfiles # Combine files of all three years for both VFP conditions
+            
+            # ---- RS KK Gluon ---- #
             ulRSGluonfilename = filedir + 'RSGluonToTT/RSGluonToTT_NanoAODv9_' + y + '_' + v + '.txt'
             with open(ulRSGluonfilename) as f:
-                ulRSGluon1000files = [redirector_str + s.strip() for s in f.readlines() if "RSGluonToTT_M-1000" in s]
-            filesets[y+v+'_RSGluon1000'] = ulRSGluon1000files
-            with open(ulRSGluonfilename) as f:
-                ulRSGluon1500files = [redirector_str + s.strip() for s in f.readlines() if "RSGluonToTT_M-1500" in s]
-            filesets[y+v+'_RSGluon1500'] = ulRSGluon1500files
-            with open(ulRSGluonfilename) as f:
-                ulRSGluon2000files = [redirector_str + s.strip() for s in f.readlines() if "RSGluonToTT_M-2000" in s]
-            filesets[y+v+'_RSGluon2000'] = ulRSGluon2000files
-            with open(ulRSGluonfilename) as f:
-                ulRSGluon2500files = [redirector_str + s.strip() for s in f.readlines() if "RSGluonToTT_M-2500" in s]
-            filesets[y+v+'_RSGluon2500'] = ulRSGluon2500files
-            with open(ulRSGluonfilename) as f:
-                ulRSGluon3000files = [redirector_str + s.strip() for s in f.readlines() if "RSGluonToTT_M-3000" in s]
-            filesets[y+v+'_RSGluon3000'] = ulRSGluon3000files
-            with open(ulRSGluonfilename) as f:
-                ulRSGluon3500files = [redirector_str + s.strip() for s in f.readlines() if "RSGluonToTT_M-3500" in s]
-            filesets[y+v+'_RSGluon3500'] = ulRSGluon3500files
-            with open(ulRSGluonfilename) as f:
-                ulRSGluon4000files = [redirector_str + s.strip() for s in f.readlines() if "RSGluonToTT_M-4000" in s]
-            filesets[y+v+'_RSGluon4000'] = ulRSGluon4000files
-            with open(ulRSGluonfilename) as f:
-                ulRSGluon4500files = [redirector_str + s.strip() for s in f.readlines() if "RSGluonToTT_M-4500" in s]
-            filesets[y+v+'_RSGluon4500'] = ulRSGluon4500files
-            with open(ulRSGluonfilename) as f:
-                ulRSGluon5000files = [redirector_str + s.strip() for s in f.readlines() if "RSGluonToTT_M-5000" in s]
-            filesets[y+v+'_RSGluon5000'] = ulRSGluon5000files
-
+                for i in range(1000, 5500, 500):
+                    ulRSGluon1000files = [redirector_str + s.strip() for s in f.readlines() if "RSGluonToTT_M-"+str(i) in s]
+                    filesets[y+v+'_RSGluon'+str(i)] = ulRSGluon1000files
+                    filesets[v+'_RSGluon'+str(i)] += ulRSGluon1000files # Combine files of all three years for both VFP conditions
+            
+    
+    # ---- JetHT ---- #
     datafilelist = os.listdir(filedir + 'JetHT/')
     for filename in datafilelist:
         if 'Run2016' in filename:
@@ -117,9 +93,13 @@ def CollectDatasets(redirector_str):
         else:
             with open(filedir + 'JetHT/' + filename) as h:
                 jetdatafiles2018 = [redirector_str + s.strip() for s in h.readlines()[::3]] 
-    filesets['JetHT2016_Data'] = jetdatafiles2016            
+    filesets['JetHT2016_Data'] = jetdatafiles2016   
+    filesets['JetHT2017_Data'] = jetdatafiles2017 
+    filesets['JetHT2018_Data'] = jetdatafiles2018 
     jetdatafiles = jetdatafiles2016 + jetdatafiles2017 + jetdatafiles2018 # All data after unblinding
+    filesets['JetHT_Data'] = jetdatafiles
     
+    # ---- Single Muon ---- #
     datafilelist = os.listdir(filedir + 'SingleMu/')
     for filename in datafilelist:
         if 'Run2016' in filename:

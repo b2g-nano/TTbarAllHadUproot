@@ -132,7 +132,7 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, Save)
         filestring_prefix = 'UL' + str(Year-2000) + VFP + '_'
         filestring_prefix_data = str(Year)
     else:
-        filestring_prefix = ''
+        filestring_prefix = 'UL' + VFP + '_'
         filestring_prefix_data = ''
 
 #     ---------------------------------------
@@ -204,13 +204,14 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, Save)
         Nevts_sf = Nevts / Outputs['JetHT_Data']['cutflow']['all events']
 
     """ ---------------- Luminosities, Cross Sections, Scale-Factors ---------------- """ 
-    Lum2016 = 35920. # pb^-1 from https://twiki.cern.ch/twiki/bin/viewauth/CMS/PdmVAnalysisSummaryTable
-    Lum2017 = 41530.
-    Lum2018 = 59740.
-    Lum     = 137190. # total Luminosity of all years
+    Lum2016 = 35920./3. # Division by 3. Correction for blinding # pb^-1 from https://twiki.cern.ch/twiki/bin/viewauth/CMS/PdmVAnalysisSummaryTable
+    Lum2017 = 41530./3.
+    Lum2018 = 59740./3.
+    Lum     = 137190./3. # total Luminosity of all years
 
-    ttbar_BR = 0.457 # 0.442 from PDG 2018
+    ttbar_BR = 0.4544 # 0.442 from PDG 2018
     ttbar_xs = 1.0   # Monte Carlo already includes xs in event weight!! Otherwise, ttbar_xs = 831.76 * ttbar_BR  pb
+    toptag_kf = 0.70 # k-factor from https://github.com/cmsb2g/B2GTTbar/blob/master/test/MakeMistag_SubtractAndDivideAntiTag_B2G2016.cc#L472
     
     ttbar2016_sf = 0.
     ttbar2017_sf = 0.
@@ -218,11 +219,11 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, Save)
     ttbar_sf = 0.
 
     if 'UL16' and 'TTbar' in Outputs.items():
-        ttbar2016_sf = ttbar_xs*ttbar_BR*Lum2016/Outputs['UL16'+VFP+'_TTbar']['cutflow']['all events']
+        ttbar2016_sf = ttbar_xs*ttbar_BR*toptag_kf*Lum2016/Outputs['UL16'+VFP+'_TTbar']['cutflow']['all events']
     if 'UL17' and 'TTbar' in Outputs.items():
-        ttbar2017_sf = ttbar_xs*ttbar_BR*Lum2017/Outputs['UL17'+VFP+'_TTbar']['cutflow']['all events']
+        ttbar2017_sf = ttbar_xs*ttbar_BR*toptag_kf*Lum2017/Outputs['UL17'+VFP+'_TTbar']['cutflow']['all events']
     if 'UL18' and 'TTbar' in Outputs.items():
-        ttbar2018_sf = ttbar_xs*ttbar_BR*Lum2018/Outputs['UL18'+VFP+'_TTbar']['cutflow']['all events']
+        ttbar2018_sf = ttbar_xs*ttbar_BR*toptag_kf*Lum2018/Outputs['UL18'+VFP+'_TTbar']['cutflow']['all events']
     if ('TTbar' in Outputs.items()) and (Year == 0):
         ttbar_sf = ttbar_xs*ttbar_BR*Lum/Outputs[VFP+'_TTbar']['cutflow']['all events']
     
@@ -281,7 +282,7 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, Save)
                     N_vals_tt *= ttbar_sf
                     D_vals_tt *= ttbar_sf
 
-                # ---- Subtract ttbar MC probe momenta from datasets' ---- #
+                # ---- Subtract ttbar MC probe momenta from data's ---- #
                 N_vals_diff = np.abs(N_vals-N_vals_tt)
                 D_vals_diff = np.abs(D_vals-D_vals_tt)
 
