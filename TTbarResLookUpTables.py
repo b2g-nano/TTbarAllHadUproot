@@ -210,7 +210,7 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, Save)
     Lum     = 137190./3. # total Luminosity of all years
 
     ttbar_BR = 0.4544 # 0.442 from PDG 2018
-    ttbar_xs = 1.0   # Monte Carlo already includes xs in event weight!! Otherwise, ttbar_xs = 831.76 * ttbar_BR  pb
+    ttbar_xs = 831.76 # Monte Carlo already includes some value of the xs in event weight, but maybe not NNLO!!
     toptag_kf = 0.70 # k-factor from https://github.com/cmsb2g/B2GTTbar/blob/master/test/MakeMistag_SubtractAndDivideAntiTag_B2G2016.cc#L472
     
     ttbar2016_sf = 0.
@@ -219,13 +219,13 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, Save)
     ttbar_sf = 0.
 
     if 'UL16' and 'TTbar' in Outputs.items():
-        ttbar2016_sf = ttbar_xs*ttbar_BR*toptag_kf*Lum2016/Outputs['UL16'+VFP+'_TTbar']['cutflow']['all events']
+        ttbar2016_sf = ttbar_xs*Lum2016/Outputs['UL16'+VFP+'_TTbar']['cutflow']['sumw']
     if 'UL17' and 'TTbar' in Outputs.items():
-        ttbar2017_sf = ttbar_xs*ttbar_BR*toptag_kf*Lum2017/Outputs['UL17'+VFP+'_TTbar']['cutflow']['all events']
+        ttbar2017_sf = ttbar_xs*Lum2017/Outputs['UL17'+VFP+'_TTbar']['cutflow']['sumw']
     if 'UL18' and 'TTbar' in Outputs.items():
-        ttbar2018_sf = ttbar_xs*ttbar_BR*toptag_kf*Lum2018/Outputs['UL18'+VFP+'_TTbar']['cutflow']['all events']
+        ttbar2018_sf = ttbar_xs*Lum2018/Outputs['UL18'+VFP+'_TTbar']['cutflow']['sumw']
     if ('TTbar' in Outputs.items()) and (Year == 0):
-        ttbar_sf = ttbar_xs*ttbar_BR*Lum/Outputs[VFP+'_TTbar']['cutflow']['all events']
+        ttbar_sf = ttbar_xs*Lum/Outputs[VFP+'_TTbar']['cutflow']['all events']
     
 #     -------------------------------------------------------------------------------------------
 #     M     M IIIIIII   SSSSS TTTTTTT    A    GGGGGGG     RRRRRR     A    TTTTTTT EEEEEEE   SSSSS     
