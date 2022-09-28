@@ -192,9 +192,9 @@ UncertaintyGroup.add_argument('--pileup', type=str, choices=['central', 'up', 'd
 
 args = Parser.parse_args()
 
-if (args.chunks and not args.chunksize) or (args.chunksize and not args.chunks):
-    Parser.error('If either chunks or chunksize is specified, please specify both to run this program.')
-    quit()
+# if (args.chunks and not args.chunksize) or (args.chunksize and not args.chunks):
+#     Parser.error('If either chunks or chunksize is specified, please specify both to run this program.')
+#     quit()
 # if args.year != 2016: # This will be removed once other years are ready
 #     Parser.error('Currently, 2017 and 2018 datasets are not ready for use.  Please stick to 2016 for now.  Thanks!')
 #     quit()
