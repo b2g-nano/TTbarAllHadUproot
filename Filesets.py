@@ -91,10 +91,10 @@ def CollectDatasets(redirector_str):
     for filename in datafilelist:
         if 'Run2016' in filename:
             with open(filedir + 'JetHT/' + filename) as f:
-                jetdatafiles2016 = [redirector_str + s.strip() for s in f.readlines()[::3]] # Every third datafile
+                jetdatafiles2016 = [redirector_str + s.strip() for s in f.readlines()] 
         elif 'Run2017' in filename:
             with open(filedir + 'JetHT/' + filename) as g:
-                jetdatafiles2017 = [redirector_str + s.strip() for s in g.readlines()[::3]]
+                jetdatafiles2017 = [redirector_str + s.strip() for s in g.readlines()[::3]] # Every third datafile
         else:
             with open(filedir + 'JetHT/' + filename) as h:
                 jetdatafiles2018 = [redirector_str + s.strip() for s in h.readlines()[::3]] 
