@@ -178,6 +178,7 @@ Parser.add_argument('--saveMistag', action='store_true', help='Save mistag rate 
 Parser.add_argument('--saveTrig', action='store_true', help='Save uproot job with trigger analysis outputs (Only if -T selected)')
 Parser.add_argument('--saveFlav', action='store_true', help='Save uproot job with flavor efficiency outputs (Only if -F selected)')
 Parser.add_argument('--dask', action='store_true', help='Try the dask executor (experimental) for some fast processing!')
+Parser.add_argument('--timeout', type=float, help='How many seconds should dask wait for scheduler to connect')
 Parser.add_argument('--useEff', action='store_true', help='Use MC bTag efficiencies for bTagging systematics')
 Parser.add_argument('--tpt', action='store_true', help='Apply top pT re-weighting for uproot 2')
 
@@ -198,6 +199,9 @@ args = Parser.parse_args()
 # if args.year != 2016: # This will be removed once other years are ready
 #     Parser.error('Currently, 2017 and 2018 datasets are not ready for use.  Please stick to 2016 for now.  Thanks!')
 #     quit()
+TimeOut = 30.
+if args.timeout:
+    TimeOut = args.timeout
 if args.runmistag and args.uproot:
     Parser.error('When running the --runmistag option do not specify --uproot.')
     quit()
@@ -712,7 +716,7 @@ if args.runflavoreff:
                                                   chunksize=Chunk[0], maxchunks=Chunk[1])
             else: # use dask
                 chosen_exec = 'dask'
-                client.wait_for_workers(1)
+                client.wait_for_workers(timeout=TimeOut)
                 output = processor.run_uproot_job({name:files},
                                                   treename='Events',
                                                   processor_instance=MCFlavorEfficiencyProcessor(RandomDebugMode=False,
@@ -764,7 +768,7 @@ if args.runflavoreff:
 
             else: # use dask
                 chosen_exec = 'dask'
-                client.wait_for_workers(1)
+                client.wait_for_workers(timeout=TimeOut)
                 output = processor.run_uproot_job({name:files},
                                                   treename='Events',
                                                   processor_instance=MCFlavorEfficiencyProcessor(RandomDebugMode=False,
@@ -812,13 +816,6 @@ if args.runflavoreff:
     cluster.close()
     exit() # No need to go further if performing trigger analysis
         
-        
-        
-        
-        
-        
-        
-
 
 #    -----------------------------------------------------------------------------------------------------------
 #    U     U PPPPPP  RRRRRR    OOO     OOO   TTTTTTT     TTTTTTT RRRRRR  IIIIIII GGGGGGG GGGGGGG EEEEEEE RRRRRR      
@@ -861,7 +858,7 @@ if isTrigEffArg:
                                                   chunksize=Chunk[0], maxchunks=Chunk[1])
             else: # use dask
                 chosen_exec = 'dask'
-                client.wait_for_workers(1)
+                client.wait_for_workers(timeout=TimeOut)
                 output = processor.run_uproot_job({name:files},
                                                   treename='Events',
                                                   processor_instance=TriggerAnalysisProcessor(RandomDebugMode=False,
@@ -1002,7 +999,7 @@ for name,files in filesets_to_run.items():
                                                   chunksize=Chunk[0], maxchunks=Chunk[1])
             else: # use dask
                 chosen_exec = 'dask'
-                client.wait_for_workers(1)
+                client.wait_for_workers(timeout=TimeOut)
                 output = processor.run_uproot_job({name:files},
                                                   treename='Events',
                                                   processor_instance=TTbarResProcessor(UseLookUpTables=False,
@@ -1058,7 +1055,7 @@ for name,files in filesets_to_run.items():
 
             else: # use dask
                 chosen_exec = 'dask'
-                client.wait_for_workers(1)
+                client.wait_for_workers(timeout=TimeOut)
                 output = processor.run_uproot_job({name:files},
                                                   treename='Events',
                                                   processor_instance=TTbarResProcessor(UseLookUpTables=False,
@@ -1181,7 +1178,7 @@ if not OnlyCreateLookupTables and not args.runMMO:
                                                   chunksize=Chunk[0], maxchunks=Chunk[1])
             else:
                 chosen_exec = 'dask'
-                client.wait_for_workers(1)
+                client.wait_for_workers(timeout=TimeOut)
                 output = processor.run_uproot_job({name:files},
                                                   treename='Events',
                                                   processor_instance=TTbarResProcessor(UseLookUpTables=True,
@@ -1260,7 +1257,7 @@ if not OnlyCreateLookupTables and not args.runMMO:
 
             else:
                 chosen_exec = 'dask'
-                client.wait_for_workers(timeout=60.)
+                client.wait_for_workers(timeout=TimeOut)
                 output = processor.run_uproot_job({name:files},
                                                   treename='Events',
                                                   processor_instance=TTbarResProcessor(UseLookUpTables=True,
@@ -1368,7 +1365,7 @@ if args.runMMO:
                                                       chunksize=Chunk[0], maxchunks=Chunk[1])
                 else:
                     chosen_exec = 'dask'
-                    client.wait_for_workers(1)
+                    client.wait_for_workers(timeout=TimeOut)
                     output = processor.run_uproot_job({name:files},
                                                       treename='Events',
                                                       processor_instance=TTbarResProcessor(UseLookUpTables=True,
@@ -1439,7 +1436,7 @@ if args.runMMO:
 
                 else:
                     chosen_exec = 'dask'
-                    client.wait_for_workers(1)
+                    client.wait_for_workers(timeout=TimeOut)
                     output = processor.run_uproot_job({name:files},
                                                       treename='Events',
                                                       processor_instance=TTbarResProcessor(UseLookUpTables=True,
