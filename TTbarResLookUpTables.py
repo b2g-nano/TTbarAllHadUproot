@@ -184,7 +184,7 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, Save)
 #     -------------------------------------------------------   
     
     """ ---------------- Scale-Factors for JetHT Data According to Year---------------- """
-    Nevts2016 = 625502676. # from dasgoclient
+    Nevts2016 = 583876623. # from dasgoclient
     Nevts2017 = 410461585. # from dasgoclient MUST BE UPDATED AFTER MOVING TO NANOv9
     Nevts2018 = 676328827. # from dasgoclient MUST BE UPDATED AFTER MOVING TO NANOv9
     Nevts = Nevts2016 + Nevts2017 + Nevts2018 # for all three years
