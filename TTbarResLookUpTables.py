@@ -184,7 +184,7 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, Save)
 #     -------------------------------------------------------   
     
     """ ---------------- Scale-Factors for JetHT Data According to Year---------------- """
-    Nevts2016 = 583876623. # from dasgoclient
+    Nevts2016 = 625502676. # from dasgoclient
     Nevts2017 = 410461585. # from dasgoclient MUST BE UPDATED AFTER MOVING TO NANOv9
     Nevts2018 = 676328827. # from dasgoclient MUST BE UPDATED AFTER MOVING TO NANOv9
     Nevts = Nevts2016 + Nevts2017 + Nevts2018 # for all three years
@@ -204,10 +204,10 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, Save)
         Nevts_sf = Nevts / Outputs['JetHT_Data']['cutflow']['all events']
 
     """ ---------------- Luminosities, Cross Sections, Scale-Factors ---------------- """ 
-    Lum2016 = 35920./3. # Division by 3. Correction for blinding # pb^-1 from https://twiki.cern.ch/twiki/bin/viewauth/CMS/PdmVAnalysisSummaryTable
-    Lum2017 = 41530./3.
-    Lum2018 = 59740./3.
-    Lum     = 137190./3. # total Luminosity of all years
+    Lum2016 = 35920./Nevts2016_sf # Division by 3. Correction for blinding # pb^-1 from https://twiki.cern.ch/twiki/bin/viewauth/CMS/PdmVAnalysisSummaryTable
+    Lum2017 = 41530./Nevts2017_sf
+    Lum2018 = 59740./Nevts2018_sf
+    Lum     = 137190./Nevts_sf # total Luminosity of all years
 
     ttbar_BR = 0.4544 # 0.442 from PDG 2018
     ttbar_xs = 831.76 # Monte Carlo already includes some value of the xs in event weight, but maybe not NNLO!!
