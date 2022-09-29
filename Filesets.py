@@ -66,19 +66,24 @@ def CollectDatasets(redirector_str):
             
             # ---- Z' Dark Matter Mediator ---- #
             ulZprimeDMfilename = filedir + 'ZprimeDMToTTbar/ZprimeDMToTTbar_NanoAODv9_' + y + '_' + v + '.txt'
-            with open(ulZprimeDMfilename) as f:
-                for i in range(1000, 5500, 500):
-                    ulDMfiles = [redirector_str + s.strip() for s in f.readlines() if "ResoIncl_MZp"+str(i) in s]
-                    filesets[y+v+'_DM'+str(i)] = ulDMfiles
-                    filesets[v+'_DM'+str(i)] += ulDMfiles # Combine files of all three years for both VFP conditions
-            
+            ulDMfiles=[]
+            k=0
+            for i in range(1000, 5500, 500):
+                with open(ulZprimeDMfilename) as f:
+                    ulDMfiles.append([redirector_str + s.strip() for s in f.readlines() if "ResoIncl_MZp"+str(i) in s])
+                filesets[y+v+'_DM'+str(i)] = ulDMfiles[k]
+                filesets[v+'_DM'+str(i)] += ulDMfiles[k] # Combine files of all three years for both VFP conditions
+                k += 1
             # ---- RS KK Gluon ---- #
             ulRSGluonfilename = filedir + 'RSGluonToTT/RSGluonToTT_NanoAODv9_' + y + '_' + v + '.txt'
-            with open(ulRSGluonfilename) as f:
-                for i in range(1000, 5500, 500):
-                    ulRSGluon1000files = [redirector_str + s.strip() for s in f.readlines() if "RSGluonToTT_M-"+str(i) in s]
-                    filesets[y+v+'_RSGluon'+str(i)] = ulRSGluon1000files
-                    filesets[v+'_RSGluon'+str(i)] += ulRSGluon1000files # Combine files of all three years for both VFP conditions
+            ulRSGluonfiles=[]
+            l=0
+            for i in range(1000, 5500, 500):
+                with open(ulRSGluonfilename) as f:
+                    ulRSGluonfiles.append([redirector_str + s.strip() for s in f.readlines() if "RSGluonToTT_M-"+str(i) in s])
+                filesets[y+v+'_RSGluon'+str(i)] = ulRSGluonfiles[l]
+                filesets[v+'_RSGluon'+str(i)] += ulRSGluonfiles[l] # Combine files of all three years for both VFP conditions
+                l += 1
             
     
     # ---- JetHT ---- #
@@ -115,7 +120,7 @@ def CollectDatasets(redirector_str):
     
     return filesets
 
-
+# CollectDatasets('root://xcache/')
 # xrootdstr1 = 'root://cmseos.fnal.gov//eos/uscms'
 # xrootdstr2 = 'root://xcache/' # Only works in Coffea-Casa Environment
 # xrootdstr3 = 'root://cmsxrootd-site.fnal.gov/' #If 2nd redirector fails, file is probably here
