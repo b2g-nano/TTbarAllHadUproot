@@ -205,9 +205,9 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, Save)
 
     """ ---------------- Luminosities, Cross Sections, Scale-Factors ---------------- """ 
     Lum2016 = 35920./Nevts2016_sf # Division by 3. Correction for blinding # pb^-1 from https://twiki.cern.ch/twiki/bin/viewauth/CMS/PdmVAnalysisSummaryTable
-    Lum2017 = 41530./Nevts2017_sf
-    Lum2018 = 59740./Nevts2018_sf
-    Lum     = 137190./Nevts_sf # total Luminosity of all years
+    Lum2017 = 41530./3.
+    Lum2018 = 59740./3.
+    Lum     = 137190./3. # total Luminosity of all years
 
     ttbar_BR = 0.4544 # 0.442 from PDG 2018
     ttbar_xs = 831.76 # Monte Carlo already includes some value of the xs in event weight, but maybe not NNLO!!

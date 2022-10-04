@@ -629,20 +629,24 @@ if UsingDaskExecutor == True and args.casa:
     # from coffea_casa import CoffeaCasaCluster
     from dask.distributed import Client #, Scheduler, SchedulerPlugin
     from dask.distributed.diagnostics.plugin import UploadDirectory
+    
+    
     from coffea_casa import CoffeaCasaCluster
     if __name__ == "__main__":       
         
-        cluster = CoffeaCasaCluster(cores=10, memory="50 GiB", death_timeout=60)
-        # cluster.scale(10)
-        cluster.adapt(minimum=1, maximum=14)
+        cluster = CoffeaCasaCluster(cores=11, memory="100 GiB", death_timeout=TimeOut)
+        # cluster.scale(11)
+        cluster.adapt(minimum=2, maximum=14)
         client = Client(cluster)
+        
+        
+        
         
         # client = Client('tls://ac-2emalik-2ewilliams-40cern-2ech.dask.cmsaf-prod.flatiron.hollandhpc.org:8786')
         
         
         try:
             client.register_worker_plugin(UploadDirectory('TTbarAllHadUproot',restart=True,update_path=True),nanny=True)
-            # break
         except OSError as ose:
             print('\n', ose)    
         

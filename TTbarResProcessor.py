@@ -421,7 +421,7 @@ class TTbarResProcessor(processor.ProcessorABC):
             "tau4": events.FatJet_tau4,
             "n3b1": events.FatJet_n3b1,
             "btagDeepB": events.FatJet_btagDeepB,
-            "btagCSVV2": events.FatJet_btagCSVV2, # Use as a prior probability of containing a bjet?
+            "btagCSVV2": events.FatJet_btagCSVV2,
             "deepTag_TvsQCD": events.FatJet_deepTag_TvsQCD,
             "deepTagMD_TvsQCD": events.FatJet_deepTagMD_TvsQCD,
             "subJetIdx1": events.FatJet_subJetIdx1,
