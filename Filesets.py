@@ -45,14 +45,55 @@ def CollectDatasets(redirector_str):
     # ---- Loop through years and VFP status, filling the filesets dictionary with the MC file locations from corresponding txt files ---- #
     
     for y in Years:
-        for v in VFP:
+        if '16' in y:
+            for v in VFP:
+                # ---- QCD ---- #
+                ulqcdfilename = filedir + 'QCD/QCD_NanoAODv9_' + y + '_' + v + '.txt'
+                with open(ulqcdfilename) as f:
+                    ulqcdfiles = [redirector_str + s.strip() for s in f.readlines()]
+                filesets[y+v+'_QCD'] = ulqcdfiles
+                filesets[v+'_QCD'] += ulqcdfiles # Combine files of all three years for both VFP conditions
+
+                # ---- TTbar ---- #
+                ulttbar700to1000filename = filedir + 'TT/TT_Mtt-700to1000_NanoAODv9_' + y + '_' + v + '.txt'
+                with open(ulttbar700to1000filename) as f:
+                    ulttbar700to1000files = [redirector_str + s.strip() for s in f.readlines()]
+                ulttbar1000toInffilename = filedir + 'TT/TT_Mtt-1000toInf_NanoAODv9_' + y + '_' + v + '.txt'
+                with open(ulttbar1000toInffilename) as f:
+                    ulttbar1000toInffiles = [redirector_str + s.strip() for s in f.readlines()]
+                ulttbarfiles = ulttbar700to1000files + ulttbar1000toInffiles # inclusion of both biased samples
+                filesets[y+v+'_TTbar'] = ulttbarfiles
+                filesets[v+'_TTbar'] += ulttbarfiles # Combine files of all three years for both VFP conditions
+
+                # ---- Z' Dark Matter Mediator ---- #
+                ulZprimeDMfilename = filedir + 'ZprimeDMToTTbar/ZprimeDMToTTbar_NanoAODv9_' + y + '_' + v + '.txt'
+                ulDMfiles=[]
+                k=0
+                for i in range(1000, 5500, 500):
+                    with open(ulZprimeDMfilename) as f:
+                        ulDMfiles.append([redirector_str + s.strip() for s in f.readlines() if "ResoIncl_MZp"+str(i) in s])
+                    filesets[y+v+'_DM'+str(i)] = ulDMfiles[k]
+                    filesets[v+'_DM'+str(i)] += ulDMfiles[k] # Combine files of all three years for both VFP conditions
+                    k += 1
+                # ---- RS KK Gluon ---- #
+                ulRSGluonfilename = filedir + 'RSGluonToTT/RSGluonToTT_NanoAODv9_' + y + '_' + v + '.txt'
+                ulRSGluonfiles=[]
+                l=0
+                for i in range(1000, 5500, 500):
+                    with open(ulRSGluonfilename) as f:
+                        ulRSGluonfiles.append([redirector_str + s.strip() for s in f.readlines() if "RSGluonToTT_M-"+str(i) in s])
+                    filesets[y+v+'_RSGluon'+str(i)] = ulRSGluonfiles[l]
+                    filesets[v+'_RSGluon'+str(i)] += ulRSGluonfiles[l] # Combine files of all three years for both VFP conditions
+                    l += 1
+        else: # UL17 and UL18
+            v = VFP[1] # No preVFP after 2016 Run vertex problem was fixed
             # ---- QCD ---- #
             ulqcdfilename = filedir + 'QCD/QCD_NanoAODv9_' + y + '_' + v + '.txt'
             with open(ulqcdfilename) as f:
                 ulqcdfiles = [redirector_str + s.strip() for s in f.readlines()]
             filesets[y+v+'_QCD'] = ulqcdfiles
             filesets[v+'_QCD'] += ulqcdfiles # Combine files of all three years for both VFP conditions
-            
+
             # ---- TTbar ---- #
             ulttbar700to1000filename = filedir + 'TT/TT_Mtt-700to1000_NanoAODv9_' + y + '_' + v + '.txt'
             with open(ulttbar700to1000filename) as f:
@@ -63,7 +104,7 @@ def CollectDatasets(redirector_str):
             ulttbarfiles = ulttbar700to1000files + ulttbar1000toInffiles # inclusion of both biased samples
             filesets[y+v+'_TTbar'] = ulttbarfiles
             filesets[v+'_TTbar'] += ulttbarfiles # Combine files of all three years for both VFP conditions
-            
+
             # ---- Z' Dark Matter Mediator ---- #
             ulZprimeDMfilename = filedir + 'ZprimeDMToTTbar/ZprimeDMToTTbar_NanoAODv9_' + y + '_' + v + '.txt'
             ulDMfiles=[]
@@ -101,7 +142,7 @@ def CollectDatasets(redirector_str):
     filesets['JetHT2016_Data'] = jetdatafiles2016   
     filesets['JetHT2017_Data'] = jetdatafiles2017 
     filesets['JetHT2018_Data'] = jetdatafiles2018 
-    jetdatafiles = jetdatafiles2016 + jetdatafiles2017 + jetdatafiles2018 # All data after unblinding
+    jetdatafiles = jetdatafiles2016 + jetdatafiles2017 + jetdatafiles2018 # All data
     filesets['JetHT_Data'] = jetdatafiles
     
     # ---- Single Muon ---- #
