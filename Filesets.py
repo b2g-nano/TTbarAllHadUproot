@@ -13,7 +13,19 @@
 /JetHT/Run2016G-UL2016_MiniAODv2_NanoAODv9-v1/NANOAOD,           154.2GB, 70 files, 120688407 events
 /JetHT/Run2016H-UL2016_MiniAODv2_NanoAODv9-v1/NANOAOD,           156.1GB, 72 files, 124050331 events
                                                                                     583876623 events total
-(PUT MC DATASETS HERE WHEN I'M NOT FEELING LAZY)
+                                                                                    
+/JetHT/Run2017B-UL2017_MiniAODv2_NanoAODv9-v1/NANOAOD,           67.8GB,  33 files, 63043590 events
+/JetHT/Run2017C-UL2017_MiniAODv2_NanoAODv9-v1/NANOAOD,           107.8GB, 66 files, 96264601 events
+/JetHT/Run2017D-UL2017_MiniAODv2_NanoAODv9-v1/NANOAOD,           52.5GB,  37 files, 46145204 events
+/JetHT/Run2017E-UL2017_MiniAODv2_NanoAODv9-v1/NANOAOD,           110.6GB, 58 files, 89630771 events
+/JetHT/Run2017F-UL2017_MiniAODv2_NanoAODv9-v1/NANOAOD,           147.8GB, 66 files, 115429972 events
+                                                                                    410514138 events total
+
+/JetHT/Run2018A-UL2018_MiniAODv2_NanoAODv9-v2/NANOAOD,           227.6GB, 146 files, 171484635 events
+/JetHT/Run2018B-UL2018_MiniAODv2_NanoAODv9-v1/NANOAOD,           105.4GB, 45 files,  78255208 events
+/JetHT/Run2018C-UL2018_MiniAODv2_NanoAODv9-v1/NANOAOD,           96.1GB,  57 files,  70027804 events
+/JetHT/Run2018D-UL2018_MiniAODv2_NanoAODv9-v2/NANOAOD,           493.1GB, 232 files, 356976276 events
+                                                                                     676743923 events total
 '''
 #
 # Weighted JetHT files are for the data driven background (pre-tag region)
@@ -27,7 +39,7 @@ def CollectDatasets(redirector_str):
                                    'root://cmsxrootd.fnal.gov/'
     """
     filedir = 'TTbarAllHadUproot/nanoAODv9Files/'
-    Years = ['UL16']#, 'UL17', 'UL18']
+    Years = ['UL16', 'UL17', 'UL18']
     VFP = ['preVFP', 'postVFP']
 
     filesets = {} # To be filled and returned by this function
