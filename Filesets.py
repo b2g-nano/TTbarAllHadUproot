@@ -47,12 +47,12 @@ def CollectDatasets(redirector_str):
     # ---- Before concatenation with +=, lists should be declard ---- #
     
     for v in VFP:
-        filesets[v+'_QCD'] = []
-        filesets[v+'_TTbar'] = []
+        filesets['UL'+v+'_QCD'] = []
+        filesets['UL'+v+'_TTbar'] = []
         
         for i in range(1000, 5500, 500):
-            filesets[v+'_DM'+str(i)] = []
-            filesets[v+'_RSGluon'+str(i)] = []
+            filesets['UL'+v+'_DM'+str(i)] = []
+            filesets['UL'+v+'_RSGluon'+str(i)] = []
     
     # ---- Loop through years and VFP status, filling the filesets dictionary with the MC file locations from corresponding txt files ---- #
     
