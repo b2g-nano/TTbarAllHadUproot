@@ -37,7 +37,7 @@ From within this repo, you can run the uproot job that will produce coffea outpu
 
 The output should look something like this:
 ```
-usage: TTbarResCoffeaOutputs.py [-h] (-t | -m | -T | -F RUNFLAVOREFF [RUNFLAVOREFF ...] | -M RUNMMO [RUNMMO ...] | -d RUNDATASET [RUNDATASET ...]) (-C | -L) (-l | -med) -a {yes,no} -y
+usage: Run.py [-h] (-t | -m | -T | -F RUNFLAVOREFF [RUNFLAVOREFF ...] | -M RUNMMO [RUNMMO ...] | -d RUNDATASET [RUNDATASET ...]) (-C | -L) (-l | -med) -a {yes,no} -y
                                 {2016,2017,2018,0} [--uproot {1,2}] [--chunks CHUNKS] [--chunksize CHUNKSIZE] [--save] [--saveMistag] [--saveTrig] [--saveFlav] [--dask] [--useEff] [--tpt]
                                 [--bTagSyst {central,up,down} | --tTagSyst {central,up,down} | --ttXSSyst {central,up,down} | --lumSyst {central,up,down} | --jec {central,up,down} | --jer {central,up,down} | --pileup {central,up,down}]
 
@@ -105,12 +105,30 @@ optional arguments:
                                 JetHT
                                 SingleMu
                                 NOTE** UL17 and UL18 samples TBA
+                                
+Example of a usual workflow on Coffea-Casa to make the relevant coffea outputs:
+
+    1.) Make Outputs for Flavor and Trigger Efficiencies
+python Run.py -C -med -F QCD TTbar DM RSGluon -a no -y 2016 --dask --saveFlav
+python Run.py -C -med -T -a no -y 2016 --dask --saveTrig
+
+    2.) Create Mistag Rates that will be used to estimate NTMJ background
+python Run.py -C -med -m -a no -y 2016 --dask --saveMistag
+
+    3.) Make Outputs for the first Uproot Job with no weights applied (outside of MC weights that come with the nanoAOD)
+python Run.py -C -med -d QCD TTbar JetHT DM RSGluon -a no -y 2016 --uproot 1 --dask --save
+
+    4.) Make Outputs for the second Uproot Job with only mistag rate applied to JetHT and TTbar, and mass modification of JetHT and TTbar in pre-tag region
+python Run.py -C -med -M QCD TTbar JetHT DM RSGluon -a no -y 2016 --dask --save
+
+    5.) Make Outputs for the second Uproot Job with systematics, on top of mistag rate application and mass modification
+python Run.py -C -med -d QCD TTbar JetHT DM RSGluon -a no -y 2016 --uproot 2 --bTagSyst central --useEff --dask --save
 ```
 ***
 # How it works
 The processor is where all of the analysis is defined.  The processor is aptly named `TTbarResProcessor.py`.  
 
-The file `TTbarResCoffeaOutputs.py` runs the file according to the selected options at the beginning of the file.  When this is run, the analysis is performed and the outputs defined in the processor can be stored in a `.coffea` file, which can be found in the corresponding directory `CoffeaOutputs` or `CoffeaOutputsForCombine`.  The first directory `CoffeaOutputs` has outputs that were made while doing numerous tests to ensure the processor was giving what is expected.
+The file `Run.py` runs the file according to the selected options at the beginning of the file.  When this is run, the analysis is performed and the outputs defined in the processor can be stored in a `.coffea` file, which can be found in the corresponding directory `CoffeaOutputs` or `CoffeaOutputsForCombine`.  The first directory `CoffeaOutputs` has outputs that were made while doing numerous tests to ensure the processor was giving what is expected.
 
 For starters, if you are running the code on the LPC or Coffea-Casa, you must specify either `--lpc` (`-L`) or `--casa` (`-C`) respectively.  This is important so that the correct redirector is used for locating the desired datasets.  It also sets specific options for running the dask executor that vary between these two environments.
 
