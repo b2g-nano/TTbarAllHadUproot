@@ -100,9 +100,14 @@ luts = {}
 luts = multi_dict(2, str) #Annoying, but necessary definition of the dictionary
 
 def LoadDataLUTS(bdiscDirectory, Year):
-    for icat in list_of_cats:
-        df = pd.read_csv('TTbarAllHadUproot/LookupTables/' + bdiscDirectory + 'mistag_JetHT' + str(Year) + '_Data_ttContaminationRemoved_' + icat + '.csv')
-        luts['JetHT' + str(Year) + '_Data'][icat] = df
+    if Year != 0:
+        for icat in list_of_cats:
+            df = pd.read_csv('TTbarAllHadUproot/LookupTables/' + bdiscDirectory + 'mistag_JetHT' + str(Year) + '_Data_ttContaminationRemoved_' + icat + '.csv')
+            luts['JetHT' + str(Year) + '_Data'][icat] = df
+    else:
+        for icat in list_of_cats:
+            df = pd.read_csv('TTbarAllHadUproot/LookupTables/' + bdiscDirectory + 'mistag_JetHT_Data_ttContaminationRemoved_' + icat + '.csv')
+            luts['JetHT_Data'][icat] = df
     return(luts)
 
 def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, Save):
@@ -185,14 +190,14 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, Save)
     
     """ ---------------- Scale-Factors for JetHT Data According to Year---------------- """
     Nevts2016 = 583876623. # from dasgoclient
-    Nevts2017 = 410461585. # from dasgoclient MUST BE UPDATED AFTER MOVING TO NANOv9
-    Nevts2018 = 676328827. # from dasgoclient MUST BE UPDATED AFTER MOVING TO NANOv9
+    Nevts2017 = 410514138. # from dasgoclient
+    Nevts2018 = 676743923. # from dasgoclient 
     Nevts = Nevts2016 + Nevts2017 + Nevts2018 # for all three years
     
-    Nevts2016_sf = 0.
-    Nevts2017_sf = 0.
-    Nevts2018_sf = 0.
-    Nevts_sf = 0.
+    Nevts2016_sf = 1.
+    Nevts2017_sf = 1.
+    Nevts2018_sf = 1.
+    Nevts_sf = 1.
     
     if 'JetHT2016_Data' in Filesets:
         Nevts2016_sf = Nevts2016/Outputs['JetHT2016_Data']['cutflow']['all events']
@@ -204,19 +209,19 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, Save)
         Nevts_sf = Nevts / Outputs['JetHT_Data']['cutflow']['all events']
 
     """ ---------------- Luminosities, Cross Sections, Scale-Factors ---------------- """ 
-    Lum2016 = 35920./3. # Division by 3. Correction for blinding # pb^-1 from https://twiki.cern.ch/twiki/bin/viewauth/CMS/PdmVAnalysisSummaryTable
-    Lum2017 = 41530./3.
-    Lum2018 = 59740./3.
-    Lum     = 137190./3. # total Luminosity of all years
+    Lum2016 = 35920./Nevts2016_sf # Division by 3. Correction for blinding # pb^-1 from https://twiki.cern.ch/twiki/bin/viewauth/CMS/PdmVAnalysisSummaryTable
+    Lum2017 = 41530./Nevts2017_sf
+    Lum2018 = 59740./Nevts2018_sf
+    Lum     = 137190./Nevts_sf # total Luminosity of all years
 
     ttbar_BR = 0.4544 # 0.442 from PDG 2018
     ttbar_xs = 831.76 # Monte Carlo already includes some value of the xs in event weight, but maybe not NNLO!!
     toptag_kf = 0.70 # k-factor from https://github.com/cmsb2g/B2GTTbar/blob/master/test/MakeMistag_SubtractAndDivideAntiTag_B2G2016.cc#L472
     
-    ttbar2016_sf = 0.
-    ttbar2017_sf = 0.
-    ttbar2018_sf = 0.
-    ttbar_sf = 0.
+    ttbar2016_sf = 1.
+    ttbar2017_sf = 1.
+    ttbar2018_sf = 1.
+    ttbar_sf = 1.
 
     if 'UL16' and 'TTbar' in Outputs.items():
         ttbar2016_sf = ttbar_xs*Lum2016/Outputs['UL16'+VFP+'_TTbar']['cutflow']['sumw']

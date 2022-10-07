@@ -138,16 +138,16 @@ All objects for each dataset ran can be saved as its own .coffea output file.
                                 NOTE** UL17 and UL18 samples TBA
     Example of a usual workflow on Coffea-Casa to make the relevant coffea outputs:
     1.) Make Outputs for Flavor and Trigger Efficiencies
-python TTbarResCoffeaOutputs.py -C -med -F QCD TTbar DM RSGluon -a no -y 2016 --dask --saveFlav
-python TTbarResCoffeaOutputs.py -C -med -T -a no -y 2016 --dask --saveTrig
+python Run.py -C -med -F QCD TTbar DM RSGluon -a no -y 2016 --dask --saveFlav
+python Run.py -C -med -T -a no -y 2016 --dask --saveTrig
     2.) Create Mistag Rates that will be used to estimate NTMJ background
-python TTbarResCoffeaOutputs.py -C -med -m -a no -y 2016 --dask --saveMistag
+python Run.py -C -med -m -a no -y 2016 --dask --saveMistag
     3.) Make Outputs for the first Uproot Job with no weights applied (outside of MC weights that come with the nanoAOD)
-python TTbarResCoffeaOutputs.py -C -med -d QCD TTbar JetHT DM RSGluon -a no -y 2016 --uproot 1 --dask --save
+python Run.py -C -med -d QCD TTbar JetHT DM RSGluon -a no -y 2016 --uproot 1 --dask --save
     4.) Make Outputs for the second Uproot Job with only mistag rate applied to JetHT and TTbar, and mass modification of JetHT and TTbar in pre-tag region
-python TTbarResCoffeaOutputs.py -C -med -M QCD TTbar JetHT DM RSGluon -a no -y 2016 --dask --save
+python Run.py -C -med -M QCD TTbar JetHT DM RSGluon -a no -y 2016 --dask --save
     5.) Make Outputs for the second Uproot Job with systematics, on top of mistag rate application and mass modification
-python TTbarResCoffeaOutputs.py -C -med -d QCD TTbar JetHT DM RSGluon -a no -y 2016 --uproot 2 --bTagSyst central --useEff --dask --save''')
+python Run.py -C -med -d QCD TTbar JetHT DM RSGluon -a no -y 2016 --uproot 2 --bTagSyst central --useEff --dask --save''')
 # ---- Necessary arguments ---- #
 StartGroup = Parser.add_mutually_exclusive_group(required=True)
 StartGroup.add_argument('-t', '--runtesting', action='store_true', help='Only run a select few root files defined in the code.')
@@ -178,6 +178,7 @@ Parser.add_argument('--saveMistag', action='store_true', help='Save mistag rate 
 Parser.add_argument('--saveTrig', action='store_true', help='Save uproot job with trigger analysis outputs (Only if -T selected)')
 Parser.add_argument('--saveFlav', action='store_true', help='Save uproot job with flavor efficiency outputs (Only if -F selected)')
 Parser.add_argument('--dask', action='store_true', help='Try the dask executor (experimental) for some fast processing!')
+Parser.add_argument('--timeout', type=float, help='How many seconds should dask wait for scheduler to connect')
 Parser.add_argument('--useEff', action='store_true', help='Use MC bTag efficiencies for bTagging systematics')
 Parser.add_argument('--tpt', action='store_true', help='Apply top pT re-weighting for uproot 2')
 
@@ -198,6 +199,9 @@ args = Parser.parse_args()
 # if args.year != 2016: # This will be removed once other years are ready
 #     Parser.error('Currently, 2017 and 2018 datasets are not ready for use.  Please stick to 2016 for now.  Thanks!')
 #     quit()
+TimeOut = 30.
+if args.timeout:
+    TimeOut = args.timeout
 if args.runmistag and args.uproot:
     Parser.error('When running the --runmistag option do not specify --uproot.')
     quit()
@@ -461,7 +465,7 @@ if not Testing:
                 else:
                     SaveLocation[namingConvention+'_'+a] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
                     filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a]
-            else:
+            elif 'TTbar' in a or 'QCD' in a:
                 filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a] # include MC dataset read in from Filesets
             
     elif args.runMMO:
@@ -527,7 +531,7 @@ if not Testing:
                 else:
                     SaveLocation[namingConvention+'_'+a] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
                     filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a]
-            else:
+            elif 'TTbar' in a or 'QCD' in a:
                 filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a] # include MC dataset read in from Filesets
                 
     elif args.runflavoreff:
@@ -578,7 +582,7 @@ if not Testing:
                 else:
                     SaveLocation[namingConvention+'_'+a] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
                     filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a]
-            else:
+            elif 'TTbar' in a or 'QCD' in a:
                 filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a] # include MC dataset read in from Filesets
     elif args.runmistag: # if args.mistag: Only run 1st uproot job for ttbar and data to get mistag rate with tt contamination removed
         filesets_to_run[namingConvention+'_TTbar'] = filesets[namingConvention+'_TTbar']
@@ -618,28 +622,26 @@ else:
 #    DDDD    A     A SSSSS   K   K       SSSSS   EEEEEEE    T      UUU   P    
 #    ---------------------------------------------------------------------------
 
-client = None
+# client = None
+# cluster = None
 
 if UsingDaskExecutor == True and args.casa:
-    # from coffea_casa import CoffeaCasaCluster
     from dask.distributed import Client #, Scheduler, SchedulerPlugin
     from dask.distributed.diagnostics.plugin import UploadDirectory
+    from coffea_casa import CoffeaCasaCluster
+    
     if __name__ == "__main__":       
-        client = Client('tls://ac-2emalik-2ewilliams-40cern-2ech.dask.cmsaf-prod.flatiron.hollandhpc.org:8786')
+        
+        cluster = CoffeaCasaCluster(cores=11, memory="100 GiB", death_timeout=TimeOut)
+        cluster.adapt(minimum=2, maximum=14)
+        client = Client(cluster)
+        
+        # client = Client('tls://ac-2emalik-2ewilliams-40cern-2ech.dask.cmsaf-prod.flatiron.hollandhpc.org:8786')
         
         try:
             client.register_worker_plugin(UploadDirectory('TTbarAllHadUproot',restart=True,update_path=True),nanny=True)
-            # break
         except OSError as ose:
             print('\n', ose)    
-        
-    #     cluster = CoffeaCasaCluster(
-    #     job_extra = {
-    #         'docker_image': 'coffeateam/coffea-casa-analysis:latest',
-    #         'transfer_input_files': 'TTbarAllHadUproot'
-    #     }
-    # )
-    #     client = Client('tls://ac-2emalik-2ewilliams-40cern-2ech.dask.cmsaf-prod.flatiron.hollandhpc.org:8786')
         
         
         # print('All Hidden Directories:\n')
@@ -653,20 +655,25 @@ if UsingDaskExecutor == True and args.casa:
 
         
 elif UsingDaskExecutor == True and args.lpc:
-    # from lpcjobqueue import LPCCondorCluster
+    from dask.distributed import Client #, Scheduler, SchedulerPlugin
+    from dask.distributed.diagnostics.plugin import UploadDirectory
+    from lpcjobqueue import LPCCondorCluster
+
     if __name__ == "__main__":  
-        tic = time.time()
-        cluster = LPCCondorCluster(
-            ship_env = True,
-            transfer_input_files = ImportFiles
-        )
-        # minimum > 0: https://github.com/CoffeaTeam/coffea/issues/465
+        
+        cluster = LPCCondorCluster(death_timeout=TimeOut)
         cluster.adapt(minimum=1, maximum=10)
         client = Client(cluster)
+
+        try:
+            client.register_worker_plugin(UploadDirectory('TTbarAllHadUproot',restart=True,update_path=True),nanny=True)
+        except OSError as ose:
+            print('\n', ose)
+
         # client.restart()
-        client.upload_file('TTbarAllHadUproot/Filesets.py')
-        client.upload_file('TTbarAllHadUproot/TTbarResProcessor.py')
-        client.upload_file('TTbarAllHadUproot/TTbarResLookUpTables.py')
+        # client.upload_file('TTbarAllHadUproot/Filesets.py')
+        # client.upload_file('TTbarAllHadUproot/TTbarResProcessor.py')
+        # client.upload_file('TTbarAllHadUproot/TTbarResLookUpTables.py')
         
         
         
@@ -711,7 +718,7 @@ if args.runflavoreff:
                                                   chunksize=Chunk[0], maxchunks=Chunk[1])
             else: # use dask
                 chosen_exec = 'dask'
-                client.wait_for_workers(1)
+                client.wait_for_workers(timeout=TimeOut)
                 output = processor.run_uproot_job({name:files},
                                                   treename='Events',
                                                   processor_instance=MCFlavorEfficiencyProcessor(RandomDebugMode=False,
@@ -763,7 +770,7 @@ if args.runflavoreff:
 
             else: # use dask
                 chosen_exec = 'dask'
-                client.wait_for_workers(1)
+                client.wait_for_workers(timeout=TimeOut)
                 output = processor.run_uproot_job({name:files},
                                                   treename='Events',
                                                   processor_instance=MCFlavorEfficiencyProcessor(RandomDebugMode=False,
@@ -808,15 +815,9 @@ if args.runflavoreff:
         FlavEffList('udsg', output, dataset, BDiscDirectory, args.saveFlav)
         print("\n\nWe\'re done here!!")
         
+    cluster.close()
     exit() # No need to go further if performing trigger analysis
         
-        
-        
-        
-        
-        
-        
-
 
 #    -----------------------------------------------------------------------------------------------------------
 #    U     U PPPPPP  RRRRRR    OOO     OOO   TTTTTTT     TTTTTTT RRRRRR  IIIIIII GGGGGGG GGGGGGG EEEEEEE RRRRRR      
@@ -859,7 +860,7 @@ if isTrigEffArg:
                                                   chunksize=Chunk[0], maxchunks=Chunk[1])
             else: # use dask
                 chosen_exec = 'dask'
-                client.wait_for_workers(1)
+                client.wait_for_workers(timeout=TimeOut)
                 output = processor.run_uproot_job({name:files},
                                                   treename='Events',
                                                   processor_instance=TriggerAnalysisProcessor(RandomDebugMode=False,
@@ -950,7 +951,8 @@ if isTrigEffArg:
         print("-------Unweighted " + name + "--------")
         for i,j in output['cutflow'].items():        
             print( '%20s : %1s' % (i,j) )        
-        
+    
+    cluster.close()
     exit() # No need to go further if performing trigger analysis
 else:
     pass
@@ -999,7 +1001,7 @@ for name,files in filesets_to_run.items():
                                                   chunksize=Chunk[0], maxchunks=Chunk[1])
             else: # use dask
                 chosen_exec = 'dask'
-                client.wait_for_workers(1)
+                client.wait_for_workers(timeout=TimeOut)
                 output = processor.run_uproot_job({name:files},
                                                   treename='Events',
                                                   processor_instance=TTbarResProcessor(UseLookUpTables=False,
@@ -1055,7 +1057,7 @@ for name,files in filesets_to_run.items():
 
             else: # use dask
                 chosen_exec = 'dask'
-                client.wait_for_workers(1)
+                client.wait_for_workers(timeout=TimeOut)
                 output = processor.run_uproot_job({name:files},
                                                   treename='Events',
                                                   processor_instance=TTbarResProcessor(UseLookUpTables=False,
@@ -1178,7 +1180,7 @@ if not OnlyCreateLookupTables and not args.runMMO:
                                                   chunksize=Chunk[0], maxchunks=Chunk[1])
             else:
                 chosen_exec = 'dask'
-                client.wait_for_workers(1)
+                client.wait_for_workers(timeout=TimeOut)
                 output = processor.run_uproot_job({name:files},
                                                   treename='Events',
                                                   processor_instance=TTbarResProcessor(UseLookUpTables=True,
@@ -1257,7 +1259,7 @@ if not OnlyCreateLookupTables and not args.runMMO:
 
             else:
                 chosen_exec = 'dask'
-                client.wait_for_workers(1)
+                client.wait_for_workers(timeout=TimeOut)
                 output = processor.run_uproot_job({name:files},
                                                   treename='Events',
                                                   processor_instance=TTbarResProcessor(UseLookUpTables=True,
@@ -1309,6 +1311,8 @@ if not OnlyCreateLookupTables and not args.runMMO:
         for i,j in output['cutflow'].items():        
             print( '%20s : %1s' % (i,j) )
     print("\n\nWe\'re done here!!")
+    
+    cluster.close()
     exit()
     
     
@@ -1363,7 +1367,7 @@ if args.runMMO:
                                                       chunksize=Chunk[0], maxchunks=Chunk[1])
                 else:
                     chosen_exec = 'dask'
-                    client.wait_for_workers(1)
+                    client.wait_for_workers(timeout=TimeOut)
                     output = processor.run_uproot_job({name:files},
                                                       treename='Events',
                                                       processor_instance=TTbarResProcessor(UseLookUpTables=True,
@@ -1434,7 +1438,7 @@ if args.runMMO:
 
                 else:
                     chosen_exec = 'dask'
-                    client.wait_for_workers(1)
+                    client.wait_for_workers(timeout=TimeOut)
                     output = processor.run_uproot_job({name:files},
                                                       treename='Events',
                                                       processor_instance=TTbarResProcessor(UseLookUpTables=True,
@@ -1488,4 +1492,5 @@ if args.runMMO:
 else:
     pass
 
+cluster.close()
 exit()
