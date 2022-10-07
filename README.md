@@ -24,6 +24,21 @@ After the initial setup steps of the coffea-dask environment (stated above) you 
 ### For Coffea-Casa:
 
 [MovingToCoffeaCasa.pdf](https://github.com/b2g-nano/TTbarAllHadUproot/files/9181161/MovingToCoffeaCasa.pdf)
+![MovingToCoffeaCasa-01](https://user-images.githubusercontent.com/42876001/191271139-2770b104-516a-4567-b7f7-bdbdecd8e242.png)
+![MovingToCoffeaCasa-02](https://user-images.githubusercontent.com/42876001/191271177-f69f1ea3-c611-464a-879d-5472c9ee99e2.png)
+![MovingToCoffeaCasa-03](https://user-images.githubusercontent.com/42876001/191271205-b8049339-2f39-4766-a7aa-39f0890014bc.png)
+![MovingToCoffeaCasa-04](https://user-images.githubusercontent.com/42876001/191271231-ebf07498-a296-4332-a767-70e5f4872791.png)
+![MovingToCoffeaCasa-05](https://user-images.githubusercontent.com/42876001/191271265-99206ce9-0e69-4cac-b3a0-5302e9e9a00a.png)
+![MovingToCoffeaCasa-06](https://user-images.githubusercontent.com/42876001/191271332-eba3a8a1-65d9-4c9b-bd2e-ad2964255438.png)
+![MovingToCoffeaCasa-07](https://user-images.githubusercontent.com/42876001/191271349-81346536-16f6-40e5-84ff-4bf96109e4c7.png)
+![MovingToCoffeaCasa-08](https://user-images.githubusercontent.com/42876001/191271372-5204d53e-206e-4de1-aa5c-9caa7fbbac58.png)
+![MovingToCoffeaCasa-09](https://user-images.githubusercontent.com/42876001/191271390-6b700e5d-0ca2-4b9a-bb41-06538ba64dcb.png)
+![MovingToCoffeaCasa-10](https://user-images.githubusercontent.com/42876001/191271739-42a9389f-1edd-41df-8dab-4fdf9a874f07.png)
+![MovingToCoffeaCasa-11](https://user-images.githubusercontent.com/42876001/191271786-f7718a2f-cb51-4f99-b8d9-03d3411930d0.png)
+![MovingToCoffeaCasa-12](https://user-images.githubusercontent.com/42876001/191271930-80b87200-0e73-41a2-8048-f190b0896e63.png)
+![CoffeaCasa](https://user-images.githubusercontent.com/42876001/191276229-6acd0320-0032-4d13-a8c6-e582efbb76fb.png)
+![MovingToCoffeaCasa-14](https://user-images.githubusercontent.com/42876001/191272013-f9dfd5f2-1de3-4bd3-9267-edad9b3fe374.png)
+![MovingToCoffeaCasa-15](https://user-images.githubusercontent.com/42876001/191272034-4551948d-93d1-446d-815a-cbdac844bc05.png)
 ***
 # Brief Intro and Basic Idea for Using COFFEA
 
@@ -37,8 +52,8 @@ From within this repo, you can run the uproot job that will produce coffea outpu
 
 The output should look something like this:
 ```
-usage: Run.py [-h] (-t | -m | -T | -F RUNFLAVOREFF [RUNFLAVOREFF ...] | -M RUNMMO [RUNMMO ...] | -d RUNDATASET [RUNDATASET ...]) (-C | -L) (-l | -med) -a {yes,no} -y
-                                {2016,2017,2018,0} [--uproot {1,2}] [--chunks CHUNKS] [--chunksize CHUNKSIZE] [--save] [--saveMistag] [--saveTrig] [--saveFlav] [--dask] [--useEff] [--tpt]
+usage: Run.py [-h] (-t | -m | -T | -F RUNFLAVOREFF [RUNFLAVOREFF ...] | -M RUNMMO [RUNMMO ...] | -d RUNDATASET [RUNDATASET ...]) (-C | -L) (-l | -med | -med2016) -a {yes,no} -y {2016,2017,2018,0} [--uproot {1,2}] [--chunks CHUNKS]
+                                [--chunksize CHUNKSIZE] [--save] [--saveMistag] [--saveTrig] [--saveFlav] [--dask] [--useEff] [--tpt]
                                 [--bTagSyst {central,up,down} | --tTagSyst {central,up,down} | --ttXSSyst {central,up,down} | --lumSyst {central,up,down} | --jec {central,up,down} | --jer {central,up,down} | --pileup {central,up,down}]
 
 -----------------------------------------------------------------------------
@@ -61,6 +76,8 @@ optional arguments:
   -L, --lpc             Use CMSLPC redirector: root://cmsxrootd.fnal.gov/
   -l, --loose           Apply loose bTag discriminant cut
   -med, --medium        Apply medium bTag discriminant cut
+  -med2016, --medium2016
+                        Apply medium bTag discriminant cut from 2016 AN
   -a {yes,no}, --APV {yes,no}
                         Do datasets have APV?
   -y {2016,2017,2018,0}, --year {2016,2017,2018,0}
@@ -99,15 +116,15 @@ optional arguments:
                                 <x> = <y> = 5 is not an available string to be included in dataset string names
                                 -------------------------------------------------------------------------------
                                 QCD
-                                DM<x><y>00
-                                RSGluon<x><y>00
+                                DM<x><y>00, DM
+                                RSGluon<x><y>00, RSGluon
                                 TTbar
                                 JetHT
                                 SingleMu
                                 NOTE** UL17 and UL18 samples TBA
                                 
 Example of a usual workflow on Coffea-Casa to make the relevant coffea outputs:
-
+    
     1.) Make Outputs for Flavor and Trigger Efficiencies
 python Run.py -C -med -F QCD TTbar DM RSGluon -a no -y 2016 --dask --saveFlav
 python Run.py -C -med -T -a no -y 2016 --dask --saveTrig
@@ -128,7 +145,7 @@ python Run.py -C -med -d QCD TTbar JetHT DM RSGluon -a no -y 2016 --uproot 2 --b
 # How it works
 The processor is where all of the analysis is defined.  The processor is aptly named `TTbarResProcessor.py`.  
 
-The file `Run.py` runs the file according to the selected options at the beginning of the file.  When this is run, the analysis is performed and the outputs defined in the processor can be stored in a `.coffea` file, which can be found in the corresponding directory `CoffeaOutputs` or `CoffeaOutputsForCombine`.  The first directory `CoffeaOutputs` has outputs that were made while doing numerous tests to ensure the processor was giving what is expected.
+The file `TTbarResCoffeaOutputs.py` runs the file according to the selected options at the beginning of the file.  When this is run, the analysis is performed and the outputs defined in the processor can be stored in a `.coffea` file, which can be found in the corresponding directory `CoffeaOutputs` or `CoffeaOutputsForCombine`.  The first directory `CoffeaOutputs` has outputs that were made while doing numerous tests to ensure the processor was giving what is expected.
 
 For starters, if you are running the code on the LPC or Coffea-Casa, you must specify either `--lpc` (`-L`) or `--casa` (`-C`) respectively.  This is important so that the correct redirector is used for locating the desired datasets.  It also sets specific options for running the dask executor that vary between these two environments.
 
@@ -141,7 +158,7 @@ Suppose you would like to run the 1.5 TeV Zprime to DM and 2.0 TeV RS Gluon Ultr
 
 For such a task, the code can be ran with the following arguments like this:
 
-> python TTbarResCoffeaOutputs.py -d DM1500 RSGluon2000 -a no -y 2016 --uproot 1 --chunks 10 --chunksize 1000
+> python Run.py -d DM1500 RSGluon2000 -a no -y 2016 --uproot 1 --chunks 10 --chunksize 1000
 
 This runs the first uproot job with the two desired datasets according to the APV status and year (and also mass in this example).  The choice of chunks and chunksize gives roughly 10<sup>1</sup> times 10<sup>3</sup> (10,000) events
 ***
