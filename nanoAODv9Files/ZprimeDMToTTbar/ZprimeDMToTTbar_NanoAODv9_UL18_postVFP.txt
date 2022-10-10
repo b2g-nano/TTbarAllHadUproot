@@ -1,5 +1,3 @@
-Following files correspond to the DAS query '/ZprimeDMToTTbarResoIncl_MZp*_Mchi*/RunIISummer20UL18NanoAODv9*/NANOAODSIM'
- 
 /store/mc/RunIISummer20UL18NanoAODv9/ZprimeDMToTTbarResoIncl_MZp1000_Mchi10_V1_TuneCP5_13TeV-madgraph_pythia8/NANOAODSIM/106X_upgrade2018_realistic_v16_L1v1-v1/270000/B6A7678D-CFF1-954E-AB90-637CCD616FFF.root
 /store/mc/RunIISummer20UL18NanoAODv9/ZprimeDMToTTbarResoIncl_MZp1000_Mchi10_V1_TuneCP5_13TeV-madgraph_pythia8/NANOAODSIM/106X_upgrade2018_realistic_v16_L1v1-v1/130000/63EB58B4-68C8-E44C-95D2-6C1EDF88FB34.root
 /store/mc/RunIISummer20UL18NanoAODv9/ZprimeDMToTTbarResoIncl_MZp1000_Mchi10_V1_TuneCP5_13TeV-madgraph_pythia8/NANOAODSIM/106X_upgrade2018_realistic_v16_L1v1-v1/280000/45A03420-A989-B143-B03E-91AEEA6B16CB.root
