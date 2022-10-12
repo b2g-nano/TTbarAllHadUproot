@@ -115,8 +115,17 @@ def FlavEffList(Flavor, Output, Dataset, bdiscDirectory, Save):
 #    P       A     A R     R SSSSS   EEEEEEE R     R 
 #    -----------------------------------------------
 
+# class STEP1(ap.Action):
+#     def __call__(self, parser, namespace, values, option_string):
+#         print("\nStep 1: Create Mistag Rates for Chosen Year\n")
+#         setattr(namespace, 'APV', 'no')
+#         setattr(namespace, 'runmistag', True)
+#         setattr(namespace, 'medium', True)
+#         setattr(namespace, 'saveMistag', True)
+#         setattr(namespace, 'chunksize', 20000)
+
 # Parser = ap.ArgumentParser(prog='TTbarResCoffeaOutputs.py', description='something')
-Parser = ap.ArgumentParser(prog='TTbarResCoffeaOutputs.py', formatter_class=ap.RawDescriptionHelpFormatter, description='''\
+Parser = ap.ArgumentParser(prog='Run.py', formatter_class=ap.RawDescriptionHelpFormatter, description='''\
 -----------------------------------------------------------------------------
 Run the TTbarAllHadProcessor script.  
 All objects for each dataset ran can be saved as its own .coffea output file.
@@ -137,19 +146,23 @@ All objects for each dataset ran can be saved as its own .coffea output file.
                                 SingleMu
                                 NOTE** UL17 and UL18 samples TBA
     Example of a usual workflow on Coffea-Casa to make the relevant coffea outputs:
-    1.) Make Outputs for Flavor and Trigger Efficiencies
-python Run.py -C -med -F QCD TTbar DM RSGluon -a no -y 2016 --dask --saveFlav
-python Run.py -C -med -T -a no -y 2016 --dask --saveTrig
-    2.) Create Mistag Rates that will be used to estimate NTMJ background
-python Run.py -C -med -m -a no -y 2016 --dask --saveMistag
-    3.) Make Outputs for the first Uproot Job with no weights applied (outside of MC weights that come with the nanoAOD)
-python Run.py -C -med -d QCD TTbar JetHT DM RSGluon -a no -y 2016 --uproot 1 --dask --save
-    4.) Make Outputs for the second Uproot Job with only mistag rate applied to JetHT and TTbar, and mass modification of JetHT and TTbar in pre-tag region
-python Run.py -C -med -M QCD TTbar JetHT DM RSGluon -a no -y 2016 --dask --save
-    5.) Make Outputs for the second Uproot Job with systematics, on top of mistag rate application and mass modification
-python Run.py -C -med -d QCD TTbar JetHT DM RSGluon -a no -y 2016 --uproot 2 --bTagSyst central --useEff --dask --save''')
+    0.) Make Outputs for Flavor and Trigger Efficiencies
+./Run.py -C -med -F QCD TTbar DM RSGluon -a no -y 2016 --dask --saveFlav
+./Run.py -C -med -T -a no -y 2016 --dask --saveTrig
+    1.) Create Mistag Rates that will be used to estimate NTMJ background
+./Run.py -C --step 1
+python Run.py -C -med -m -a no -y 2016 --saveMistag
+    2.) Make Outputs for the first Uproot Job with no weights applied (outside of MC weights that come with the nanoAOD)
+./Run.py -C --step 2
+python Run.py -C -med -d QCD TTbar JetHT DM RSGluon -a no -y 2016 --uproot 1 --save
+    3.) Make Outputs for the second Uproot Job with only mistag rate applied to JetHT and TTbar, and mass modification of JetHT and TTbar in pre-tag region
+./Run.py -C --step 3
+python Run.py -C -med -M QCD TTbar JetHT DM RSGluon -a no -y 2016 --save
+    4.) Make Outputs for the second Uproot Job with systematics, on top of mistag rate application and mass modification
+./Run.py -C --step 4
+python Run.py -C -med -d QCD TTbar JetHT DM RSGluon -a no -y 2016 --uproot 2 --bTagSyst central --useEff --save''')
 # ---- Necessary arguments ---- #
-StartGroup = Parser.add_mutually_exclusive_group(required=True)
+StartGroup = Parser.add_mutually_exclusive_group()
 StartGroup.add_argument('-t', '--runtesting', action='store_true', help='Only run a select few root files defined in the code.')
 StartGroup.add_argument('-m', '--runmistag', action='store_true',help='Make data mistag rate where ttbar contamination is removed (as well as ttbar mistag rate)')
 StartGroup.add_argument('-T', '--runtrigeff', action='store_true', help='Create trigger efficiency hist coffea output objects for chosen condition') 
@@ -161,13 +174,13 @@ RedirectorGroup = Parser.add_mutually_exclusive_group(required=True)
 RedirectorGroup.add_argument('-C', '--casa', action='store_true', help='Use Coffea-Casa redirector: root://xcache/')
 RedirectorGroup.add_argument('-L', '--lpc', action='store_true', help='Use CMSLPC redirector: root://cmsxrootd.fnal.gov/')
 
-BDiscriminatorGroup = Parser.add_mutually_exclusive_group(required=True)
+BDiscriminatorGroup = Parser.add_mutually_exclusive_group()
 BDiscriminatorGroup.add_argument('-l', '--loose', action='store_true', help='Apply loose bTag discriminant cut')
 BDiscriminatorGroup.add_argument('-med', '--medium', action='store_true', help='Apply medium bTag discriminant cut')
 BDiscriminatorGroup.add_argument('-med2016', '--medium2016', action='store_true', help='Apply medium bTag discriminant cut from 2016 AN')
 
-Parser.add_argument('-a', '--APV', type=str, required=True, choices=['yes', 'no'], help='Do datasets have APV?')
-Parser.add_argument('-y', '--year', type=int, required=True, choices=[2016, 2017, 2018, 0], help='Year(s) of data/MC of the datasets you want to run uproot with.  Choose 0 for all years simultaneously.')
+Parser.add_argument('-a', '--APV', type=str, choices=['yes', 'no'], help='Do datasets have APV?', default='no')
+Parser.add_argument('-y', '--year', type=int, choices=[2016, 2017, 2018, 0], help='Year(s) of data/MC of the datasets you want to run uproot with.  Choose 0 for all years simultaneously.', default=0)
 
 # ---- Other arguments ---- #
 Parser.add_argument('--uproot', type=int, choices=[1, 2], help='1st run or 2nd run of uproot job.  If not specified, both the 1st and 2nd job will be run one after the other.')
@@ -182,6 +195,8 @@ Parser.add_argument('--timeout', type=float, help='How many seconds should dask 
 Parser.add_argument('--useEff', action='store_true', help='Use MC bTag efficiencies for bTagging systematics')
 Parser.add_argument('--tpt', action='store_true', help='Apply top pT re-weighting for uproot 2')
 
+Parser.add_argument('--step', type=int, choices=[1, 2, 3, 4], help='Easily run a certain step of the workflow')
+
 UncertaintyGroup = Parser.add_mutually_exclusive_group()
 UncertaintyGroup.add_argument('--bTagSyst', type=str, choices=['central', 'up', 'down'], help='Choose Unc.')
 UncertaintyGroup.add_argument('--tTagSyst', type=str, choices=['central', 'up', 'down'], help='Choose Unc.')
@@ -193,12 +208,45 @@ UncertaintyGroup.add_argument('--pileup', type=str, choices=['central', 'up', 'd
 
 args = Parser.parse_args()
 
-# if (args.chunks and not args.chunksize) or (args.chunksize and not args.chunks):
-#     Parser.error('If either chunks or chunksize is specified, please specify both to run this program.')
-#     quit()
-# if args.year != 2016: # This will be removed once other years are ready
-#     Parser.error('Currently, 2017 and 2018 datasets are not ready for use.  Please stick to 2016 for now.  Thanks!')
-#     quit()
+if args.step == 1:
+    print('\nStep 1: Get and Save Mistag Rates\n')
+    args.medium = True
+    args.runmistag = True
+    args.saveMistag = True
+    args.chunksize = 20000
+elif args.step == 2: 
+    print('\nStep 2: Run and Save the First Uproot Job\n')
+    args.medium = True
+    args.rundataset = ['QCD', 'TTbar', 'JetHT', 'DM', 'RSGluon']
+    args.save = True
+    args.chunksize = 20000
+    args.uproot = 1
+elif args.step == 3: 
+    print('\nStep 3: Run and Save the Second Uproot Job with Only Mistag Rate and ModMass Application\n')
+    args.medium = True
+    args.runMMO = ['QCD', 'TTbar', 'JetHT', 'DM', 'RSGluon']
+    args.save = True
+    args.chunksize = 20000
+elif args.step == 4: 
+    print('\nStep 4: Run and Save the Second Uproot Job\n')
+    args.medium = True
+    args.rundataset = ['QCD', 'TTbar', 'JetHT', 'DM', 'RSGluon']
+    args.save = True
+    args.chunksize = 20000
+    args.uproot = 2
+else:
+    print('\nManual Job Being Performed Below:\n')
+
+StartGroupList = np.array([args.runtesting, args.runmistag, args.runtrigeff, args.runflavoreff, args.runMMO, args.rundataset], dtype=object)
+BDiscriminatorGroupList = np.array([args.loose, args.medium, args.medium2016], dtype=object)
+
+if not np.any(StartGroupList): #if user forgets to assign something here or does not pick a specific step
+    args.rundataset = ['QCD']
+    args.uproot = 1
+    args.medium = True
+if not np.any(BDiscriminatorGroupList): #if user forgets to assign something here or does not pick a specific step
+    args.medium = True
+    
 TimeOut = 30.
 if args.timeout:
     TimeOut = args.timeout
@@ -1492,5 +1540,6 @@ if args.runMMO:
 else:
     pass
 
-cluster.close()
+if args.dask:
+    cluster.close()
 exit()
