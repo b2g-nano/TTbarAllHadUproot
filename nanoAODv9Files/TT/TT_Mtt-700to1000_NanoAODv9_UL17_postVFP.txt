@@ -1,5 +1,3 @@
-Following files correspond to the DAS query '/TT_Mtt-700to1000_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v2/NANOAODSIM'
- 
 /store/mc/RunIISummer20UL17NanoAODv9/TT_Mtt-700to1000_TuneCP5_13TeV-powheg-pythia8/NANOAODSIM/106X_mc2017_realistic_v9-v2/40000/43F32DA6-EB5F-EE4B-A99F-D8C52E161FD8.root
 /store/mc/RunIISummer20UL17NanoAODv9/TT_Mtt-700to1000_TuneCP5_13TeV-powheg-pythia8/NANOAODSIM/106X_mc2017_realistic_v9-v2/40000/D85CB21B-EB41-2C40-B86C-6D2575E57684.root
 /store/mc/RunIISummer20UL17NanoAODv9/TT_Mtt-700to1000_TuneCP5_13TeV-powheg-pythia8/NANOAODSIM/106X_mc2017_realistic_v9-v2/40000/40D7BACB-2B88-D54A-A864-2919887E3B39.root
