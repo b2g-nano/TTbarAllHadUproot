@@ -7,6 +7,9 @@ import scipy.stats as ss
 from coffea import hist, processor, nanoevents
 from coffea import util
 from coffea.btag_tools import BTagScaleFactor
+from coffea.jetmet_tools import FactorizedJetCorrector, JetCorrectionUncertainty
+from coffea.jetmet_tools import JECStack, CorrectedJetsFactory
+from coffea.lookup_tools import extractor
 import numpy as np
 import itertools
 import pandas as pd
@@ -442,6 +445,7 @@ class TTbarResProcessor(processor.ProcessorABC):
             "phi": events.Jet_phi,
             "mass": events.Jet_mass,
             "area": events.Jet_area,
+            "rawFactor": events.Jet_rawFactor,
             "p4": ak.zip({
                 "pt": events.Jet_pt,
                 "eta": events.Jet_eta,
@@ -485,6 +489,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                 })
             
             Jets['hadronFlavour'] = events.Jet_hadronFlavour
+            Jets["genJetIdx"] = events.Jet_genJetIdx
             SubJets['hadronFlavour'] = events.SubJet_hadronFlavour
             
 #    ================================================================
@@ -779,7 +784,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                     """
                     ******************************************************************************************************
                     btag_wgts['mb'][n] --> w(n|m) --> "Probability" of n number of b-tags given m number of b-tagged jets
-                    -----------------------------------------------------------------------------------------
+                    ------------------------------------------------------------------------------------------------------
                     w(0|0) = 1
 
                     w(0|1), w(1|1) = 1 - BSF, 
@@ -943,6 +948,142 @@ class TTbarResProcessor(processor.ProcessorABC):
                     btag0 = (~btag_s0) & (~btag_s1) #(0b)
                     btag1 = btag_s0 ^ btag_s1 #(1b)
                     btag2 = btag_s0 & btag_s1 #(2b)
+                    
+        if self.ApplyJEC == True:
+            # -- start implementing JECs here -- #
+            # ------------------------------------- Meg's Code Starts Here ----------------------------------- #
+
+#             # ---- Define Extractor ----#
+#             ext = extractor()
+
+#             # ---- Add the Weights to the Extractor ---- #
+#             ext.add_weight_sets([
+#                 "* * TTbarAllHadUproot/data/Fall17_17Nov2017_V32_MC_L2Relative_AK4PFPuppi.jec.txt",
+#                 "* * TTbarAllHadUproot/data/Fall17_17Nov2017_V32_MC_Uncertainty_AK4PFPuppi.junc.txt",
+#             ])
+#             ext.finalize()
+
+#             # ---- Create a List of Names to Reference the Sets in the Extractor ---- #
+#             jec_stack_names = [
+#                 "Fall17_17Nov2017_V32_MC_L2Relative_AK4PFPuppi",
+#                 "Fall17_17Nov2017_V32_MC_Uncertainty_AK4PFPuppi"
+#             ]
+
+#             # ---- Define Evaluator from JEC files ---- #
+#             evaluator = ext.make_evaluator()
+            
+            # ---- Make String to Help Decide Which Filename to Get JECs from ---- #
+            extraString = ''
+            if isData:
+                extraString = 'DATA'
+            else:
+                extraString = 'MC'
+            
+            # ---- Define the beginning and the end of the filename using the extra string (See Run.py Line 415) ---- #
+            fname_start = self.ScaleFactorFile[0:-8] + extraString
+            fname_end = '/Summer20UL' + str(self.year - 2000) + '_JRV3_' + extraString + '/'
+            fname = fname_start + fname_end
+            print('\n' + fname + '\n')
+            
+            # ---- Simple with CorrectionLib When Supplied with the json.gz file ---- #
+            # evaluator = correctionlib.CorrectionSet.from_file(fname)
+            
+            # ---- Define Extractor ----#
+            ext = extractor()
+
+            # ---- Add the Weights to the Extractor ---- #
+            ext.add_weight_sets([
+                "* * TTbarAllHadUproot/data/Fall17_17Nov2017_V32_MC_L2Relative_AK4PFPuppi.jec.txt",
+                "* * TTbarAllHadUproot/data/Fall17_17Nov2017_V32_MC_Uncertainty_AK4PFPuppi.junc.txt",
+            ])
+            ext.finalize()
+            
+            # ---- Define Evaluator from JEC files in Extractor ---- #
+            evaluator = ext.make_evaluator()
+            
+            # ---- Create a List of Names to Reference the Sets in the Extractor ---- #
+            jec_stack_names = []
+            Years = {
+                2016: 'Summer20UL16_JRV3_',
+                2017: 'Summer20UL17_JRV3_',
+                2018: 'Summer20UL18_JRV3_'
+            }
+            
+            if isData and self.year > 0:
+                jec_stack_names = [
+                    Years[self.year] + "DATA_EtaResolution_AK4PFPuppi",
+                    Years[self.year] + "DATA_PhiResolution_AK4PFPuppi",
+                    Years[self.year] + "DATA_PtResolution_AK4PFPuppi",
+                    Years[self.year] + "DATA_SF_AK4PFPuppi.txt"
+                ]
+            elif not isData and self.year > 0:
+                jec_stack_names = [
+                    Years[self.year] + "MC_EtaResolution_AK4PFPuppi",
+                    Years[self.year] + "MC_PhiResolution_AK4PFPuppi",
+                    Years[self.year] + "MC_PtResolution_AK4PFPuppi",
+                    Years[self.year] + "MC_SF_AK4PFPuppi.txt"
+                ]
+            # elif isData and self.year == 0:
+            #     jec_stack_names = [
+            #         Years[self.year] + "DATA_EtaResolution_AK4PFPuppi",
+            #         Years[self.year] + "DATA_PhiResolution_AK4PFPuppi",
+            #         Years[self.year] + "DATA_PtResolution_AK4PFPuppi",
+            #         Years[self.year] + "DATA_SF_AK4PFPuppi.txt"
+            #     ]
+
+            # ---- JEC Inputs as Dictionary: Maps Evaluator Files to Reference Names ---- #
+            jec_inputs = {name: evaluator[name] for name in jec_stack_names}
+            jec_stack = JECStack(jec_inputs)
+
+            # ---- Map JEC Variables to Jet Variables ---- #
+            name_map = jec_stack.blank_name_map
+            name_map['JetEta'] = 'eta'
+            name_map['JetPt'] = 'pt'
+            name_map['JetMass'] = 'mass'
+
+            # ---- Match GenJets to Jets ---- #
+            # -- if Jets' gen ID isn't both equal to -1 and have a value less than the number of GenJet events, give 'None'.  Otherwise, give ID -- #
+            matched_genjet_index = ak.mask(Jets.genJetIdx, (Jets.genJetIdx != -1) & (Jets.genJetIdx < ak.count(GenJets.pt, axis=1))) # Why less than?
+            print('Matched GenJet Index                   \n', matched_genjet_index[0])
+            print('Number of GenJets                      \n', ak.count(GenJets.pt, axis=1)[0])
+            print('GenJets Selected by Corresponding Index\n', GenJets.pt[matched_genjet_index])
+
+            matched_GenJet_pt = GenJets.pt[matched_genjet_index]
+            print('Matched GenJet pT                      \n', matched_GenJet_pt[0])
+
+            # ---- Create Raw Jet Variables ---- #
+            Jets['pt_raw'] = (1 - Jets['rawFactor']) * Jets['pt']
+            Jets['mass_raw'] = (1 - Jets['rawFactor']) * Jets['mass']
+
+            # ---- Create Matched Generator Jet Variables ---- #
+            Jets['pt_gen'] = matched_GenJet_pt
+            Jets['rho'] = ak.broadcast_arrays(events.fixedGridRhoFastjetAll, Jets.pt)[0] # Logic?
+            
+            # ---- Map More JEC Variables to Newly Defined Jet Variables ---- #
+            name_map['ptRaw'] = 'pt_raw'
+            name_map['massRaw'] = 'mass_raw'
+            name_map['ptGenJet'] = 'pt_gen'
+            name_map['Rho'] = 'rho'
+
+            events_cache = events.caches[0]
+            # Where are the 'corrector' and 'uncertainties' used
+            # corrector = FactorizedJetCorrector(
+            #     Fall17_17Nov2017_V32_MC_L2Relative_AK4PFPuppi=evaluator['Fall17_17Nov2017_V32_MC_L2Relative_AK4PFPuppi']
+            # )
+            # uncertainties = JetCorrectionUncertainty(
+            #     Fall17_17Nov2017_V32_MC_Uncertainty_AK4PFPuppi=evaluator['Fall17_17Nov2017_V32_MC_Uncertainty_AK4PFPuppi']
+            # )
+
+            jet_factory = CorrectedJetsFactory(name_map, jec_stack)
+            corrected_jets = jet_factory.build(Jets, lazy_cache=events_cache)
+
+            jec_pt = ttbarcands.slot0.pt * (corrected_jets.pt/corrected_jets.pt_raw)
+            jec_pt_up = ttbarcands.slot0.pt * (corrected_jets.JES_jes.up.pt/corrected_jets.pt_raw)
+            jec_pt_down = ttbarcands.slot0.pt * (corrected_jets.JES_jes.down.pt/corrected_jets.pt_raw)
+
+            print('JES UP pt ratio         \n', corrected_jets.JES_jes.up.pt/corrected_jets.pt_raw)
+            print('JES NOMINAL corrected pt\n', corrected_jets.pt/corrected_jets.pt_raw)
+            print('JES DOWN pt ratio       \n', corrected_jets.JES_jes.down.pt/corrected_jets.pt_raw)
                     
 #    ================================================================
 #       A    N     N    A    L       Y     Y   SSSSS IIIIIII   SSSSS 

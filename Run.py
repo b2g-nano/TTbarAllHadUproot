@@ -357,8 +357,14 @@ UncType = ""
 SFfile = ""
 ApplybSF = False
 ApplytSF = False
+Applyjec = False
 xsSystwgt = 1.
 lumSystwgt = 1.
+
+# isData = False
+# MCDatasetChoices = ['QCD', 'TTbar', 'RSGluon', 'DM']
+# if 'JetHT' in args.rundataset:
+#     isData = True
 
 if UsingDaskExecutor:
     daskDirectory = envirDirectory
@@ -375,7 +381,7 @@ if args.bTagSyst:
     SFfile = daskDirectory+'TTbarAllHadUproot/CorrectionFiles/SFs/bquark/subjet_btagging.json.gz'
 #    ---------------------------------------------------------------------------------------------------------------------    # 
 
-if args.ttXSSyst:
+elif args.ttXSSyst:
     UncType = "_ttXSUnc_"
     SystType = args.ttXSSyst # string for btag SF evaluator --> "central", "up", or "down"
     if args.ttXSSyst == 'up':
@@ -386,7 +392,7 @@ if args.ttXSSyst:
         pass
 #    ---------------------------------------------------------------------------------------------------------------------    # 
 
-if args.lumSyst:
+elif args.lumSyst:
     UncType = "_lumUnc_"
     SystType = args.lumSyst # string for btag SF evaluator --> "central", "up", or "down"
     if args.lumSyst == 'up':
@@ -405,6 +411,8 @@ elif args.tTagSyst:
 elif args.jec:
     UncType = "_jecUnc_"
     SystType = args.jec # string for ttag SF correction --> "central", "up", or "down"
+    Applyjec = True
+    SFfile = daskDirectory+'TTbarAllHadUproot/CorrectionFiles/JERs/' # Either 'MC' or 'Data' after this
 #    ---------------------------------------------------------------------------------------------------------------------    # 
 
 elif args.jer:
@@ -420,7 +428,7 @@ elif args.pileup:
 UncArgs = np.array([args.bTagSyst, args.tTagSyst, args.jec, args.jer, args.ttXSSyst, args.lumSyst, args.pileup])
 SystOpts = np.any(UncArgs) # Check to see if any uncertainty argument is used
 if (not OnlyCreateLookupTables) and (not SystOpts and not args.runMMO) :
-    Parser.error('Only run second uproot job with a Systematic application (like --bTagSyst, --jer, etc.)')
+    Parser.error('Only run second uproot job with a Systematic application (like --bTagSyst, --jec, etc.)')
     quit()
 #    -------------------------------------------------------    # 
 Chunk = [args.chunksize, args.chunks] # [chunksize, maxchunks]
@@ -1211,6 +1219,7 @@ if not OnlyCreateLookupTables and not args.runMMO:
                                                                                        lumSystematicWeight = lumSystwgt,
                                                                                        ApplyTopReweight = args.tpt,
                                                                                        ApplybtagSF=ApplybSF,
+                                                                                       ApplyJEC=Applyjec,
                                                                                        sysType=SystType,
                                                                                        ScaleFactorFile=SFfile,
                                                                                        UseEfficiencies=args.useEff,
@@ -1241,6 +1250,7 @@ if not OnlyCreateLookupTables and not args.runMMO:
                                                                                        lumSystematicWeight = lumSystwgt,
                                                                                        ApplyTopReweight = args.tpt,
                                                                                        ApplybtagSF=ApplybSF,
+                                                                                       ApplyJEC=Applyjec,
                                                                                        sysType=SystType,
                                                                                        ScaleFactorFile=SFfile,
                                                                                        UseEfficiencies=args.useEff,
@@ -1290,6 +1300,7 @@ if not OnlyCreateLookupTables and not args.runMMO:
                                                                                        lumSystematicWeight = lumSystwgt,
                                                                                        ApplyTopReweight = args.tpt,
                                                                                        ApplybtagSF=ApplybSF,
+                                                                                       ApplyJEC=Applyjec,
                                                                                        sysType=SystType,
                                                                                        ScaleFactorFile=SFfile,
                                                                                        UseEfficiencies=args.useEff,
@@ -1320,6 +1331,7 @@ if not OnlyCreateLookupTables and not args.runMMO:
                                                                                        lumSystematicWeight = lumSystwgt,
                                                                                        ApplyTopReweight = args.tpt,
                                                                                        ApplybtagSF=ApplybSF,
+                                                                                       ApplyJEC=Applyjec,
                                                                                        sysType=SystType,
                                                                                        ScaleFactorFile=SFfile,
                                                                                        UseEfficiencies=args.useEff,
@@ -1397,10 +1409,6 @@ if args.runMMO:
                                                                                            ModMass=True, 
                                                                                            RandomDebugMode=False,
                                                                                            BDirect = BDiscDirectory,
-                                                                                           ApplybtagSF=ApplybSF,
-                                                                                           sysType=SystType,
-                                                                                           ScaleFactorFile=SFfile,
-                                                                                           UseEfficiencies=args.useEff,
                                                                                            bdisc = BDisc,
                                                                                            year=args.year,
                                                                                            apv=convertLabel[VFP],
@@ -1424,10 +1432,6 @@ if args.runMMO:
                                                                                            ModMass=True, #switch to true later after test! 
                                                                                            RandomDebugMode=False,
                                                                                            BDirect = BDiscDirectory,
-                                                                                           ApplybtagSF=ApplybSF,
-                                                                                           sysType=SystType,
-                                                                                           ScaleFactorFile=SFfile,
-                                                                                           UseEfficiencies=args.useEff,
                                                                                            bdisc = BDisc,
                                                                                            year=args.year,
                                                                                            apv=convertLabel[VFP],
@@ -1468,10 +1472,6 @@ if args.runMMO:
                                                                                            ModMass=True, 
                                                                                            RandomDebugMode=False,
                                                                                            BDirect = BDiscDirectory,
-                                                                                           ApplybtagSF=ApplybSF,
-                                                                                           sysType=SystType,
-                                                                                           ScaleFactorFile=SFfile,
-                                                                                           UseEfficiencies=args.useEff,
                                                                                            bdisc = BDisc,
                                                                                            year=args.year,
                                                                                            apv=convertLabel[VFP],
@@ -1495,10 +1495,6 @@ if args.runMMO:
                                                                                            ModMass=True, 
                                                                                            RandomDebugMode=False,
                                                                                            BDirect = BDiscDirectory,
-                                                                                           ApplybtagSF=ApplybSF,
-                                                                                           sysType=SystType,
-                                                                                           ScaleFactorFile=SFfile,
-                                                                                           UseEfficiencies=args.useEff,
                                                                                            bdisc = BDisc,
                                                                                            year=args.year,
                                                                                            apv=convertLabel[VFP],
