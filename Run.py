@@ -143,24 +143,30 @@ All objects for each dataset ran can be saved as its own .coffea output file.
                                 RSGluon<x><y>00, RSGluon
                                 TTbar
                                 JetHT
-                                SingleMu
-                                NOTE** UL17 and UL18 samples TBA
-    Example of a usual workflow on Coffea-Casa to make the relevant coffea outputs:
+                                SingleMu\n
+                                    **NOTE**
+                                    =========================
+                                    JetHT 2016 letters: B - H
+                                    JetHT 2017 letters: B - F
+                                    JetHT 2018 letters: A - D
+                                    =========================\n
+    Example of a usual workflow on Coffea-Casa to make the relevant coffea outputs:\n
     0.) Make Outputs for Flavor and Trigger Efficiencies
 ./Run.py -C -med -F QCD TTbar DM RSGluon -a no -y 2016 --dask --saveFlav
-./Run.py -C -med -T -a no -y 2016 --dask --saveTrig
+./Run.py -C -med -T -a no -y 2016 --dask --saveTrig\n
     1.) Create Mistag Rates that will be used to estimate NTMJ background
 ./Run.py -C --step 1
-python Run.py -C -med -m -a no -y 2016 --saveMistag
+python Run.py -C -med -m -a no -y 2016 --saveMistag\n
     2.) Make Outputs for the first Uproot Job with no weights applied (outside of MC weights that come with the nanoAOD)
 ./Run.py -C --step 2
-python Run.py -C -med -d QCD TTbar JetHT DM RSGluon -a no -y 2016 --uproot 1 --save
+python Run.py -C -med -d QCD TTbar JetHT DM RSGluon -a no -y 2016 --uproot 1 --save\n
     3.) Make Outputs for the second Uproot Job with only mistag rate applied to JetHT and TTbar, and mass modification of JetHT and TTbar in pre-tag region
 ./Run.py -C --step 3
-python Run.py -C -med -M QCD TTbar JetHT DM RSGluon -a no -y 2016 --save
+python Run.py -C -med -M QCD TTbar JetHT DM RSGluon -a no -y 2016 --save\n
     4.) Make Outputs for the second Uproot Job with systematics, on top of mistag rate application and mass modification
 ./Run.py -C --step 4
-python Run.py -C -med -d QCD TTbar JetHT DM RSGluon -a no -y 2016 --uproot 2 --bTagSyst central --useEff --save''')
+python Run.py -C -med -d QCD TTbar JetHT DM RSGluon -a no -y 2016 --uproot 2 --bTagSyst central --useEff --save\n
+  ''')
 # ---- Necessary arguments ---- #
 StartGroup = Parser.add_mutually_exclusive_group()
 StartGroup.add_argument('-t', '--runtesting', action='store_true', help='Only run a select few root files defined in the code.')
@@ -184,6 +190,7 @@ Parser.add_argument('-y', '--year', type=int, choices=[2016, 2017, 2018, 0], hel
 
 # ---- Other arguments ---- #
 Parser.add_argument('--uproot', type=int, choices=[1, 2], help='1st run or 2nd run of uproot job.  If not specified, both the 1st and 2nd job will be run one after the other.')
+Parser.add_argument('--letters', type=str, nargs='+', help='Choose letter(s) of jetHT to run over')
 Parser.add_argument('--chunks', type=int, help='Number of chunks of data to run for given dataset(s)')
 Parser.add_argument('--chunksize', type=int, help='Size of each chunk to run for given dataset(s)')
 Parser.add_argument('--save', action='store_true', help='Choose to save the uproot job as a coffea output for later analysis')
@@ -191,6 +198,7 @@ Parser.add_argument('--saveMistag', action='store_true', help='Save mistag rate 
 Parser.add_argument('--saveTrig', action='store_true', help='Save uproot job with trigger analysis outputs (Only if -T selected)')
 Parser.add_argument('--saveFlav', action='store_true', help='Save uproot job with flavor efficiency outputs (Only if -F selected)')
 Parser.add_argument('--dask', action='store_true', help='Try the dask executor (experimental) for some fast processing!')
+Parser.add_argument('--newCluster', action='store_true', help='Use Manually Defined Cluster (Must Disable Default Cluster First if Running in CoffeaCasa)')
 Parser.add_argument('--timeout', type=float, help='How many seconds should dask wait for scheduler to connect')
 Parser.add_argument('--useEff', action='store_true', help='Use MC bTag efficiencies for bTagging systematics')
 Parser.add_argument('--tpt', action='store_true', help='Apply top pT re-weighting for uproot 2')
@@ -412,7 +420,7 @@ elif args.jec:
     UncType = "_jecUnc_"
     SystType = args.jec # string for ttag SF correction --> "central", "up", or "down"
     Applyjec = True
-    SFfile = daskDirectory+'TTbarAllHadUproot/CorrectionFiles/JERs/' # Either 'MC' or 'Data' after this
+    SFfile = daskDirectory+'TTbarAllHadUproot/CorrectionFiles/JERs/fatJet_jerc.json.gz' # Either 'MC' or 'Data' after this
 #    ---------------------------------------------------------------------------------------------------------------------    # 
 
 elif args.jer:
@@ -445,6 +453,11 @@ from TTbarResProcessor import TTbarResProcessor, TriggerAnalysisProcessor, MCFla
 #       I    M     M P        O   O  R    R     T        D   D   A     A    T    A     A      S  E          T         S      
 #    IIIIIII M     M P         OOO   R     R    T        DDDD    A     A    T    A     A SSSSS   EEEEEEE    T    SSSSS  
 #    -------------------------------------------------------------------------------------------------------------------
+
+Letters = ['']
+if args.letters:
+    Letters = args.letters
+
 namingConvention = 'UL'+VFP # prefix to help name every MC coffea output according to the selected options
 fileConvention = convertLabel[VFP] + '/TTbarRes_0l_' # direct the saved coffea output to the appropriate directory
 if args.year > 0:
@@ -462,8 +475,9 @@ if not Testing:
         for a in args.rundataset: # for any dataset included as user argument...
             if args.year > 0:
                 if ('JetHT' in a): 
-                    filesets_to_run['JetHT'+str(args.year)+'_Data'] = filesets['JetHT'+str(args.year)+'_Data'] # include JetHT dataset read in from Filesets
-                    SaveLocation['JetHT'+str(args.year)+'_Data'] = 'JetHT/' + BDiscDirectory + str(args.year) + '/TTbarRes_0l_' # file where output will be saved
+                    for L in Letters:
+                        filesets_to_run['JetHT'+str(args.year)+L+'_Data'] = filesets['JetHT'+str(args.year)+L+'_Data'] # include JetHT dataset read in from Filesets
+                        SaveLocation['JetHT'+str(args.year)+L+'_Data'] = 'JetHT/' + BDiscDirectory + str(args.year) + '/TTbarRes_0l_' # file where output will be saved
                 elif ('SingleMu' in a): 
                     filesets_to_run['SingleMu'+str(args.year)+'_Data'] = filesets['SingleMu'+str(args.year)+'_Data'] # include JetHT dataset read in from Filesets
                     SaveLocation['SingleMu'+str(args.year)+'_Data'] = 'SingleMu/' + BDiscDirectory + str(args.year) + '/TTbarRes_0l_' # file where output will be saved
@@ -688,11 +702,14 @@ if UsingDaskExecutor == True and args.casa:
     
     if __name__ == "__main__":       
         
-        cluster = CoffeaCasaCluster(cores=11, memory="100 GiB", death_timeout=TimeOut)
-        cluster.adapt(minimum=2, maximum=14)
-        client = Client(cluster)
+        client = None
         
-        # client = Client('tls://ac-2emalik-2ewilliams-40cern-2ech.dask.cmsaf-prod.flatiron.hollandhpc.org:8786')
+        if args.newCluster:
+            cluster = CoffeaCasaCluster(cores=11, memory="100 GiB", death_timeout=TimeOut)
+            cluster.adapt(minimum=2, maximum=14)
+            client = Client(cluster)
+        else:
+            client = Client('tls://ac-2emalik-2ewilliams-40cern-2ech.dask.cmsaf-prod.flatiron.hollandhpc.org:8786')
         
         try:
             client.register_worker_plugin(UploadDirectory('TTbarAllHadUproot',restart=True,update_path=True),nanny=True)
