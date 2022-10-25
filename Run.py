@@ -657,8 +657,9 @@ if not Testing:
     elif args.runmistag: # if args.mistag: Only run 1st uproot job for ttbar and data to get mistag rate with tt contamination removed
         filesets_to_run[namingConvention+'_TTbar'] = filesets[namingConvention+'_TTbar']
         if args.year > 0:
-            filesets_to_run['JetHT'+str(args.year)+'_Data'] = filesets['JetHT'+str(args.year)+'_Data']
-            SaveLocation['JetHT'+str(args.year)+'_Data'] = 'JetHT/' + BDiscDirectory + str(args.year) + '/TTbarRes_0l_'
+            for L in Letters:
+                filesets_to_run['JetHT'+str(args.year)+L+'_Data'] = filesets['JetHT'+str(args.year)+L+'_Data'] # include JetHT dataset read in from Filesets
+                SaveLocation['JetHT'+str(args.year)+L+'_Data'] = 'JetHT/' + BDiscDirectory + str(args.year) + '/TTbarRes_0l_' # file where output will be saved
         else:
             filesets_to_run['JetHT_Data'] = filesets['JetHT_Data']
             SaveLocation['JetHT_Data'] = 'JetHT/' + BDiscDirectory + '/TTbarRes_0l_'
@@ -702,20 +703,24 @@ if UsingDaskExecutor == True and args.casa:
     
     if __name__ == "__main__":       
         
-        client = None
+        cluster = None
         
         if args.newCluster:
             cluster = CoffeaCasaCluster(cores=11, memory="100 GiB", death_timeout=TimeOut)
             cluster.adapt(minimum=2, maximum=14)
-            client = Client(cluster)
         else:
-            client = Client('tls://ac-2emalik-2ewilliams-40cern-2ech.dask.cmsaf-prod.flatiron.hollandhpc.org:8786')
+            cluster = 'tls://ac-2emalik-2ewilliams-40cern-2ech.dask.cmsaf-prod.flatiron.hollandhpc.org:8786'
+            
+        client = Client(cluster)
         
         try:
             client.register_worker_plugin(UploadDirectory('TTbarAllHadUproot',restart=True,update_path=True),nanny=True)
         except OSError as ose:
             print('\n', ose)    
-        
+            print('\nFor some reason, Dask did not work as intended\n')
+            exit
+            if args.newCluster:
+                cluster.close()
         
         # print('All Hidden Directories:\n')
         # print(client.run(os.listdir))
@@ -887,7 +892,7 @@ if args.runflavoreff:
         FlavEffList('c', output, dataset, BDiscDirectory, args.saveFlav)
         FlavEffList('udsg', output, dataset, BDiscDirectory, args.saveFlav)
         print("\n\nWe\'re done here\n!!")
-    if args.dask:    
+    if args.dask and args.newCluster:    
         cluster.close()
     exit() # No need to go further if performing trigger analysis
         
@@ -1025,7 +1030,7 @@ if isTrigEffArg:
         for i,j in output['cutflow'].items():        
             print( '%20s : %1s' % (i,j) )
     print("\n\nWe\'re done here\n!!")
-    if args.dask:
+    if args.dask and args.newCluster:
         cluster.close()
     exit() # No need to go further if performing trigger analysis
 else:
@@ -1197,12 +1202,19 @@ import TTbarResLookUpTables
 
 from TTbarResLookUpTables import CreateLUTS, LoadDataLUTS #, CreateMCEfficiencyLUTS
 
-each_mistag_luts = CreateLUTS(filesets_to_run, outputs_unweighted, BDiscDirectory, args.year, VFP, args.runmistag, args.saveMistag)
-mistag_luts = LoadDataLUTS(BDiscDirectory, args.year) # Specifically get data mistag rates with ttContam. corrections
+each_mistag_luts = CreateLUTS(filesets_to_run, outputs_unweighted, BDiscDirectory, args.year, VFP, args.runmistag, Letters, args.saveMistag)
+if not args.saveMistag:
+    print(each_mistag_luts)
+    print("\n\nWe\'re done here!!\n")
+    if args.dask and args.newCluster:
+        cluster.close()
+    exit()
+    
+mistag_luts = LoadDataLUTS(BDiscDirectory, args.year, Letters) # Specifically get data mistag rates with ttContam. corrections
 
 if OnlyCreateLookupTables or args.runMMO:
     print("\n\nWe\'re done here!!\n")
-    if args.dask:
+    if args.dask and args.newCluster:
         cluster.close()
     exit()
 
@@ -1400,7 +1412,7 @@ if not OnlyCreateLookupTables and not args.runMMO:
     exit()
 else:
     print("\n\nWe\'re done here!!\n")
-    if args.dask:
+    if args.dask and args.newCluster:
         cluster.close()
     exit()
     
@@ -1565,6 +1577,6 @@ if args.runMMO:
 else:
     pass
 
-if args.dask:
+if args.dask and args.newCluster:
     cluster.close()
 exit()
