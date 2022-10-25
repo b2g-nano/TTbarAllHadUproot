@@ -886,9 +886,9 @@ if args.runflavoreff:
         FlavEffList('b', output, dataset, BDiscDirectory, args.saveFlav)
         FlavEffList('c', output, dataset, BDiscDirectory, args.saveFlav)
         FlavEffList('udsg', output, dataset, BDiscDirectory, args.saveFlav)
-        print("\n\nWe\'re done here!!")
-        
-    cluster.close()
+        print("\n\nWe\'re done here\n!!")
+    if args.dask:    
+        cluster.close()
     exit() # No need to go further if performing trigger analysis
         
 
@@ -1023,9 +1023,10 @@ if isTrigEffArg:
     for name,output in outputs_unweighted.items(): 
         print("-------Unweighted " + name + "--------")
         for i,j in output['cutflow'].items():        
-            print( '%20s : %1s' % (i,j) )        
-    
-    cluster.close()
+            print( '%20s : %1s' % (i,j) )
+    print("\n\nWe\'re done here\n!!")
+    if args.dask:
+        cluster.close()
     exit() # No need to go further if performing trigger analysis
 else:
     pass
@@ -1198,6 +1199,12 @@ from TTbarResLookUpTables import CreateLUTS, LoadDataLUTS #, CreateMCEfficiencyL
 
 each_mistag_luts = CreateLUTS(filesets_to_run, outputs_unweighted, BDiscDirectory, args.year, VFP, args.runmistag, args.saveMistag)
 mistag_luts = LoadDataLUTS(BDiscDirectory, args.year) # Specifically get data mistag rates with ttContam. corrections
+
+if OnlyCreateLookupTables or args.runMMO:
+    print("\n\nWe\'re done here!!\n")
+    if args.dask:
+        cluster.close()
+    exit()
 
 
 """ Second uproot job runs the processor with the mistag rates (and flavor effs if desired) and Mass-Modification Procedure """
@@ -1387,9 +1394,14 @@ if not OnlyCreateLookupTables and not args.runMMO:
         print("-------Weighted " + name + "--------")
         for i,j in output['cutflow'].items():        
             print( '%20s : %1s' % (i,j) )
-    print("\n\nWe\'re done here!!")
-    
-    cluster.close()
+    print("\n\nWe\'re done here!!\n")
+    if args.dask:
+        cluster.close()
+    exit()
+else:
+    print("\n\nWe\'re done here!!\n")
+    if args.dask:
+        cluster.close()
     exit()
     
     
@@ -1549,7 +1561,7 @@ if args.runMMO:
         print("-------Weighted " + name + "--------")
         for i,j in output['cutflow'].items():        
             print( '%20s : %1s' % (i,j) )
-    print("\n\nWe\'re done here!!")
+    print("\n\nWe\'re done here!!\n")
 else:
     pass
 
