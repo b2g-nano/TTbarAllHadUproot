@@ -718,9 +718,9 @@ if UsingDaskExecutor == True and args.casa:
         except OSError as ose:
             print('\n', ose)    
             print('\nFor some reason, Dask did not work as intended\n')
-            exit
             if args.newCluster:
                 cluster.close()
+            exit()
         
         # print('All Hidden Directories:\n')
         # print(client.run(os.listdir))
