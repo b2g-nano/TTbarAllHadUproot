@@ -152,8 +152,8 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
 #     P       LLLLLLL   OOO      T    SSSSS 
 #     ---------------------------------------
     
-    SavePlotDirectory = maindirectory + '/TTbarAllHadUproot/PrelimMistagPlots/' + bdiscDirectory
-    DoesDirectoryExist(SavePlotDirectory)
+    # SavePlotDirectory = maindirectory + '/TTbarAllHadUproot/PrelimMistagPlots/' + bdiscDirectory
+    # DoesDirectoryExist(SavePlotDirectory)
     for iset in Filesets:
         for icat in list_of_cats:
             # print(iset)
