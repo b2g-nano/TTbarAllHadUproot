@@ -2104,6 +2104,7 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
            'condition2_numerator': hist.Hist("Counts", dataset_axis, cats_axis, jetht_axis, sdMass_axis),
            'condition3_numerator': hist.Hist("Counts", dataset_axis, cats_axis, jetht_axis, sdMass_axis),
            'condition4_numerator': hist.Hist("Counts", dataset_axis, cats_axis, jetht_axis, sdMass_axis),
+           'condition5_numerator': hist.Hist("Counts", dataset_axis, cats_axis, jetht_axis, sdMass_axis),
            'condition_denominator': hist.Hist("Counts", dataset_axis, cats_axis, jetht_axis, sdMass_axis),
             
             'cutflow': processor.defaultdict_accumulator(int),
@@ -2210,16 +2211,24 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         
         
         trigDenom = events.HLT_Mu50 | events.HLT_IsoMu24 # WHY!!!!!????
-        # print(events.HLT_Mu50)
+        # print(HLT_PF_triggers)
+        # print(HLT_AK8_triggers)
         # print(events.HLT_IsoMu24)
         # print(trigDenom)
         # print('-----------------------------------------------')
         
-        if self.year == 2016:
-            triggers2016_1 = events.HLT_PFHT900
-            triggers2016_2 = events.HLT_AK8PFHT700_TrimR0p1PT0p03Mass50
-            triggers2016_3 = events.HLT_AK8PFJet450
-            triggers2016_4 = events.HLT_AK8PFJet360_TrimMass30
+        if self.year == 2016: #HLT PFHT890
+            triggers_1 = events.HLT_PFHT900
+            triggers_2 = events.HLT_AK8PFHT700_TrimR0p1PT0p03Mass50
+            triggers_3 = events.HLT_AK8PFJet450
+            triggers_4 = events.HLT_AK8PFJet360_TrimMass30
+            
+        else:
+            triggers_1 = events.HLT_PFHT890
+            triggers_2 = events.HLT_PFHT1050
+            triggers_3 = events.HLT_AK8PFHT750_TrimMass50 # Missing in era B for 2017
+            triggers_4 = events.HLT_AK8PFJet450
+            triggers_5 = events.HLT_AK8PFJet360_TrimMass30 # Missing in era B for 2017
 
 #    ===================================================================================
 #    PPPPPP  RRRRRR  EEEEEEE L       IIIIIII M     M       CCCC  U     U TTTTTTT   SSSSS     
@@ -2245,17 +2254,28 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         condition2 = None
         condition3 = None
         condition4 = None
+        condition5 = None
         firstCondition = None
         
         # ---- Apply Trigger(s) ---- # 
         if self.year == 2016: # Include other years later...
-            firstCondition = (triggers2016_1) 
+            firstCondition = (triggers_1) 
             
-        # ---- Defining Trigger Analysis Conditions ---- #
-        condition1 = firstCondition & trigDenom # WHY?! Figure out later...
-        condition2 = (firstCondition | triggers2016_2) & trigDenom
-        condition3 = ((firstCondition | triggers2016_2) | triggers2016_3) & trigDenom
-        condition4 = ((firstCondition | triggers2016_2) | (triggers2016_3 | triggers2016_4)) & trigDenom
+            # ---- Defining Trigger Analysis Conditions ---- #
+            condition1 = firstCondition & trigDenom # WHY?! Figure out later...
+            condition2 = (firstCondition | triggers_2) & trigDenom
+            condition3 = ((firstCondition | triggers_2) | triggers_3) & trigDenom
+            condition4 = ((firstCondition | triggers_2) | (triggers_3 | triggers_4)) & trigDenom
+            
+        else: # Include other years later...
+            firstCondition = (triggers_1) 
+            
+            # ---- Defining Trigger Analysis Conditions ---- #
+            condition1 = firstCondition & trigDenom # WHY?! Figure out later...
+            condition2 = (firstCondition | triggers_2) & trigDenom
+            condition3 = ((firstCondition | triggers_2) | triggers_3) & trigDenom
+            condition4 = ((firstCondition | triggers_2) | (triggers_3 | triggers_4)) & trigDenom
+            condition5 = ((firstCondition | triggers_2) | (triggers_3 | triggers_4) | triggers_5) & trigDenom
         
             
         # ---- Jets that satisfy Jet ID ---- #
@@ -2279,6 +2299,8 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         condition2 = condition2[twoFatJetsKin]
         condition3 = condition3[twoFatJetsKin]
         condition4 = condition4[twoFatJetsKin]
+        if self.year != 2016:
+            condition5 = condition5[twoFatJetsKin]
         trigDenom = trigDenom[twoFatJetsKin]
         evtweights = evtweights[twoFatJetsKin]
         output['cutflow']['events with two FatJets'] += ak.to_awkward0(twoFatJetsKin).sum()
@@ -2328,6 +2350,8 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         condition2 = condition2[oneTTbar]
         condition3 = condition3[oneTTbar]
         condition4 = condition4[oneTTbar]
+        if self.year != 2016:
+            condition5 = condition5[oneTTbar]
         trigDenom = trigDenom[oneTTbar]
         SubJets = SubJets[oneTTbar]
         evtweights = evtweights[oneTTbar]
@@ -2345,6 +2369,8 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         condition2 = condition2[dPhiCut]
         condition3 = condition3[dPhiCut]
         condition4 = condition4[dPhiCut]
+        if self.year != 2016:
+            condition5 = condition5[dPhiCut]
         trigDenom = trigDenom[dPhiCut]
         SubJets = SubJets[dPhiCut] 
         evtweights = evtweights[dPhiCut]
@@ -2362,6 +2388,8 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         condition2 = condition2[GoodSubjets]
         condition3 = condition3[GoodSubjets]
         condition4 = condition4[GoodSubjets]
+        if self.year != 2016:
+            condition5 = condition5[GoodSubjets]
         trigDenom = trigDenom[GoodSubjets]
         evtweights = evtweights[GoodSubjets]
         
@@ -2414,12 +2442,17 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
             '3': condition3,
             '4': condition4
         }
+        if self.year != 2016:
+            ConditionsDict['5'] = condition5
 
         # ---- Defining Jet Collections for Trigger Analysis Numerator and Denominator ---- #
         Jets_NumCondition1 = Jets[condition1] # contains jets to be used as numerator for trigger eff
         Jets_NumCondition2 = Jets[condition2]
         Jets_NumCondition3 = Jets[condition3]
         Jets_NumCondition4 = Jets[condition4]
+        Jets_NumCondition5 = None # Only declared in higher scope to avoid error later
+        if self.year != 2016:
+            Jets_NumCondition5 = Jets[condition5]
         Jets_DenomCondition = Jets[trigDenom] # contains jets to be used as denominator for trigger eff
         
         output['cutflow']['events with jets cond1'] +=  ak.to_awkward0(condition1).sum()
@@ -2433,6 +2466,9 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         passAK4_num2 = (Jets_NumCondition2.pt > 30.) & (np.abs(Jets_NumCondition2.eta) < 3.0)
         passAK4_num3 = (Jets_NumCondition3.pt > 30.) & (np.abs(Jets_NumCondition3.eta) < 3.0)
         passAK4_num4 = (Jets_NumCondition4.pt > 30.) & (np.abs(Jets_NumCondition4.eta) < 3.0)
+        passAK4_num5 = None # Only declared in higher scope to avoid error later
+        if self.year != 2016:
+            passAK4_num5 = (Jets_NumCondition5.pt > 30.) & (np.abs(Jets_NumCondition5.eta) < 3.0)
         passAK4_denom = (Jets_DenomCondition.pt > 30.) & (np.abs(Jets_DenomCondition.eta) < 3.0) 
         
         # ---------------------------------------------------------------------------------------------#
@@ -2445,12 +2481,17 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         Num2Wgt = evtweights[condition2]
         Num3Wgt = evtweights[condition3]
         Num4Wgt = evtweights[condition4]
+        Num5Wgt = None # Only declared in higher scope to avoid error later
+        if self.year != 2016:
+            Num5Wgt = evtweights[condition5]
         NumWgtDict = {
             '1': Num1Wgt,
             '2': Num2Wgt,
             '3': Num3Wgt,
             '4': Num4Wgt
         }
+        if self.year != 2016:
+            NumWgtDict['5'] = Num5Wgt
         DenomWgt = evtweights[trigDenom]
         
         # ---- Defining Trigger Analysis Numerator(s) and Denominator as function of HT ---- #
@@ -2458,13 +2499,18 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         jet_HT_numerator2 = ak.sum(Jets_NumCondition2[passAK4_num2].pt, axis=-1)
         jet_HT_numerator3 = ak.sum(Jets_NumCondition3[passAK4_num3].pt, axis=-1)
         jet_HT_numerator4 = ak.sum(Jets_NumCondition4[passAK4_num4].pt, axis=-1)
-        
+        jet_HT_numerator5 = None # Only declared in higher scope to avoid error later
+        if self.year != 2016:
+            jet_HT_numerator5 = ak.sum(Jets_NumCondition5[passAK4_num5].pt, axis=-1)
         jet_HT_numeratorDict = {
             '1': jet_HT_numerator1,
             '2': jet_HT_numerator2,
             '3': jet_HT_numerator3,
             '4': jet_HT_numerator4
         }
+        if self.year != 2016:
+            jet_HT_numeratorDict['5'] = jet_HT_numerator5
+            
         jet_HT_denominator = ak.sum(Jets_DenomCondition[passAK4_denom].pt, axis=-1) # Sum over each AK4 Jet per event
         
         # ---- Defining Trigger Analysis Numerator(s) and Denominator as function of SD ---- #
@@ -2474,6 +2520,9 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         jet_SD_numerator2 = sdMass[condition2]
         jet_SD_numerator3 = sdMass[condition3]
         jet_SD_numerator4 = sdMass[condition4]
+        jet_SD_numerator5 = None # Only declared in higher scope to avoid error later
+        if self.year != 2016:
+            jet_SD_numerator5 = sdMass[condition5]
         jet_SD_denominator = sdMass[trigDenom]
         
         # print(jet_SD_denominator)
@@ -2484,35 +2533,39 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
             '3': jet_SD_numerator3,
             '4': jet_SD_numerator4
         }
+        if self.year != 2016:
+            jet_SD_numeratorDict['5'] = jet_SD_numerator5
         
         output['cutflow']['jets cond1 with ak4cut'] += ak.to_awkward0(ak.flatten(passAK4_num1)).sum()
         output['cutflow']['jets cond2 with ak4cut'] += ak.to_awkward0(ak.flatten(passAK4_num2)).sum()
         output['cutflow']['jets cond3 with ak4cut'] += ak.to_awkward0(ak.flatten(passAK4_num3)).sum()
         output['cutflow']['jets cond4 with ak4cut'] += ak.to_awkward0(ak.flatten(passAK4_num4)).sum()
+        if self.year != 2016:
+            output['cutflow']['jets cond4 with ak5cut'] += ak.to_awkward0(ak.flatten(passAK4_num5)).sum()
         output['cutflow']['jets Denom with ak4cut'] += ak.to_awkward0(ak.flatten(passAK4_denom)).sum()
         
         # ----------------- Keep track of cutflow for individual bins ---------------- #
         # ---- [200, 800, 840, 880, 920, 960, 1000, 1200, 1400, 1600, 1800, 2000] ---- #
-        num1_inBin1 = (200. < jet_HT_numerator1) & (jet_HT_numerator1 < 800.)
-        num2_inBin1 = (200. < jet_HT_numerator2) & (jet_HT_numerator2 < 800.)
-        num3_inBin1 = (200. < jet_HT_numerator3) & (jet_HT_numerator3 < 800.)
-        num4_inBin1 = (200. < jet_HT_numerator4) & (jet_HT_numerator4 < 800.)
-        denom_inBin1 = (200. < jet_HT_denominator) & (jet_HT_denominator < 800.)
-        num1_inBin11 = (1800. < jet_HT_numerator1) & (jet_HT_numerator1 < 2000.)
-        num2_inBin11 = (1800. < jet_HT_numerator2) & (jet_HT_numerator2 < 2000.)
-        num3_inBin11 = (1800. < jet_HT_numerator3) & (jet_HT_numerator3 < 2000.)
-        num4_inBin11 = (1800. < jet_HT_numerator4) & (jet_HT_numerator4 < 2000.)
-        denom_inBin11 = (1800. < jet_HT_denominator) & (jet_HT_denominator < 2000.)
-        output['cutflow']['numerator 1 in bin [200, 800]'] += ak.to_awkward0(num1_inBin1).sum()
-        output['cutflow']['numerator 2 in bin [200, 800]'] += ak.to_awkward0(num2_inBin1).sum()
-        output['cutflow']['numerator 3 in bin [200, 800]'] += ak.to_awkward0(num3_inBin1).sum()
-        output['cutflow']['numerator 4 in bin [200, 800]'] += ak.to_awkward0(num4_inBin1).sum()
-        output['cutflow']['denominator in bin [200, 800]'] += ak.to_awkward0(denom_inBin1).sum()
-        output['cutflow']['numerator 1 in bin [1800, 2000]'] += ak.to_awkward0(num1_inBin11).sum()
-        output['cutflow']['numerator 2 in bin [1800, 2000]'] += ak.to_awkward0(num2_inBin11).sum()
-        output['cutflow']['numerator 3 in bin [1800, 2000]'] += ak.to_awkward0(num3_inBin11).sum()
-        output['cutflow']['numerator 4 in bin [1800, 2000]'] += ak.to_awkward0(num4_inBin11).sum()
-        output['cutflow']['denominator in bin [1800, 2000]'] += ak.to_awkward0(denom_inBin11).sum()
+        # num1_inBin1 = (200. < jet_HT_numerator1) & (jet_HT_numerator1 < 800.)
+        # num2_inBin1 = (200. < jet_HT_numerator2) & (jet_HT_numerator2 < 800.)
+        # num3_inBin1 = (200. < jet_HT_numerator3) & (jet_HT_numerator3 < 800.)
+        # num4_inBin1 = (200. < jet_HT_numerator4) & (jet_HT_numerator4 < 800.)
+        # denom_inBin1 = (200. < jet_HT_denominator) & (jet_HT_denominator < 800.)
+        # num1_inBin11 = (1800. < jet_HT_numerator1) & (jet_HT_numerator1 < 2000.)
+        # num2_inBin11 = (1800. < jet_HT_numerator2) & (jet_HT_numerator2 < 2000.)
+        # num3_inBin11 = (1800. < jet_HT_numerator3) & (jet_HT_numerator3 < 2000.)
+        # num4_inBin11 = (1800. < jet_HT_numerator4) & (jet_HT_numerator4 < 2000.)
+        # denom_inBin11 = (1800. < jet_HT_denominator) & (jet_HT_denominator < 2000.)
+        # output['cutflow']['numerator 1 in bin [200, 800]'] += ak.to_awkward0(num1_inBin1).sum()
+        # output['cutflow']['numerator 2 in bin [200, 800]'] += ak.to_awkward0(num2_inBin1).sum()
+        # output['cutflow']['numerator 3 in bin [200, 800]'] += ak.to_awkward0(num3_inBin1).sum()
+        # output['cutflow']['numerator 4 in bin [200, 800]'] += ak.to_awkward0(num4_inBin1).sum()
+        # output['cutflow']['denominator in bin [200, 800]'] += ak.to_awkward0(denom_inBin1).sum()
+        # output['cutflow']['numerator 1 in bin [1800, 2000]'] += ak.to_awkward0(num1_inBin11).sum()
+        # output['cutflow']['numerator 2 in bin [1800, 2000]'] += ak.to_awkward0(num2_inBin11).sum()
+        # output['cutflow']['numerator 3 in bin [1800, 2000]'] += ak.to_awkward0(num3_inBin11).sum()
+        # output['cutflow']['numerator 4 in bin [1800, 2000]'] += ak.to_awkward0(num4_inBin11).sum()
+        # output['cutflow']['denominator in bin [1800, 2000]'] += ak.to_awkward0(denom_inBin11).sum()
         
         # ---- Define Categories for Trigger Analysis Denominator and Fill Hists ---- #
         ttags = [ttag0[trigDenom],ttagI[trigDenom]]
