@@ -420,7 +420,7 @@ elif args.jec:
     UncType = "_jecUnc_"
     SystType = args.jec # string for ttag SF correction --> "central", "up", or "down"
     Applyjec = True
-    SFfile = daskDirectory+'TTbarAllHadUproot/CorrectionFiles/JERs/fatJet_jerc.json.gz' # Either 'MC' or 'Data' after this
+    SFfile = daskDirectory+'TTbarAllHadUproot/CorrectionFiles/JERs/2016preVFPfatJet_jerc.json.gz' # Either 'MC' or 'Data' after this
 #    ---------------------------------------------------------------------------------------------------------------------    # 
 
 elif args.jer:
@@ -1203,21 +1203,25 @@ import TTbarResLookUpTables
 from TTbarResLookUpTables import CreateLUTS, LoadDataLUTS #, CreateMCEfficiencyLUTS
 
 each_mistag_luts = CreateLUTS(filesets_to_run, outputs_unweighted, BDiscDirectory, args.year, VFP, args.runmistag, Letters, args.saveMistag)
-if not args.saveMistag:
+if OnlyCreateLookupTables and not args.saveMistag:
     print(each_mistag_luts)
     print("\n\nWe\'re done here!!\n")
     if args.dask and args.newCluster:
         cluster.close()
     exit()
     
-mistag_luts = LoadDataLUTS(BDiscDirectory, args.year, Letters) # Specifically get data mistag rates with ttContam. corrections
+mistag_luts = LoadDataLUTS(BDiscDirectory, args.year, ['']) # Specifically get data mistag rates with ttContam. corrections
 
-if OnlyCreateLookupTables or args.runMMO:
+if OnlyCreateLookupTables and args.saveMistag:
+    print(mistag_luts)
     print("\n\nWe\'re done here!!\n")
     if args.dask and args.newCluster:
         cluster.close()
     exit()
 
+# print('\n\n Mistag Rate Used:\n')
+# print(mistag_luts)
+# print('==================================================')
 
 """ Second uproot job runs the processor with the mistag rates (and flavor effs if desired) and Mass-Modification Procedure """
 
@@ -1410,11 +1414,11 @@ if not OnlyCreateLookupTables and not args.runMMO:
     if args.dask:
         cluster.close()
     exit()
-else:
-    print("\n\nWe\'re done here!!\n")
-    if args.dask and args.newCluster:
-        cluster.close()
-    exit()
+# else:
+#     print("\n\nWe\'re done here!!\n")
+#     if args.dask and args.newCluster:
+#         cluster.close()
+#     exit()
     
     
     

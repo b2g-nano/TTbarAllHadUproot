@@ -973,11 +973,11 @@ class TTbarResProcessor(processor.ProcessorABC):
 #             evaluator = ext.make_evaluator()
             
             # ---- Make String to Help Decide Which Filename to Get JECs from ---- #
-            extraString = ''
-            if isData:
-                extraString = 'DATA'
-            else:
-                extraString = 'MC'
+            # extraString = ''
+            # if isData:
+            #     extraString = 'DATA'
+            # else:
+            #     extraString = 'MC'
             
             # ---- Define the beginning and the end of the filename using the extra string (See Run.py Line 415) ---- #
             # fname_start = self.ScaleFactorFile[0:-8] + extraString
@@ -987,12 +987,25 @@ class TTbarResProcessor(processor.ProcessorABC):
             # print('\n' + fname + '\n')
             
             # ---- Simple with CorrectionLib When Supplied with the json.gz file ---- #
-#             evaluator = correctionlib.CorrectionSet.from_file(fname)
+            evaluator = correctionlib.CorrectionSet.from_file(self.ScaleFactorFile)
+            # print(evaluator)
+            # for key in evaluator.keys():
+            #     print(f"Key {key}")
+            # print('--------------------------------------------------------------------------')
+            # for item in evaluator.items():
+            #     print(f"Item {item[0]}") # correction name = evaluator item's 'zeroth' slot
+            # print('--------------------------------------------------------------------------')
+            # for i in evaluator.items():
+            #     print(f"evaluator.items(): {i}") # correction name = evaluator item's 'zeroth' slot
+            #     print('--------------------------------------------------------------------------')
             
-#             for corr in evaluator.values():
-#                 print(f"Correction {corr.name} has {len(corr.inputs)} inputs")
-#                 for inputs in corr.inputs:
-#                     print(f"   Input {inputs.name} ({inputs.type}): {inputs.description}")
+            for corr in evaluator.values():
+                print(f"Correction: {corr.name}\nVersion: {corr.version}\nDescription: {corr.description}\n") # correction name = evaluator key
+                # print(corr.inputs)
+                # for inputs in corr.inputs:
+                #     print(f"   Input {inputs.name} ({inputs.type}): {inputs.description}")  
+            print('==========================================================================')
+            
             
 #             # ---- Define Extractor ----#
 #             ext = extractor()
@@ -1172,7 +1185,11 @@ class TTbarResProcessor(processor.ProcessorABC):
                 else:
                     print('Something is wrong...\n\nNecessary JetHT LUT(s) not found')
                     quit()
-               
+                # print(ilabel)
+                # print('JetHT' + str(self.year) + '_Data and at' + str(ilabel[-5:]))
+                # print(self.lu['JetHT' + str(self.year) + '_Data']['at' + str(ilabel[-5:])])
+                # print(file_df['p'])
+                # print('=====================================================================')
                 bin_widths = file_df['p'].values # collect bins as written in .csv file
                 mtr = file_df['M(p)'].values # collect mistag rate as function of p as written in file
                 wgts = mtr # Define weights based on mistag rates

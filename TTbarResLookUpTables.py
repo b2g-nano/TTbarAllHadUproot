@@ -75,8 +75,8 @@ list_of_cats = [ t+b+y for t,b,y in itertools.product( ttagcats, btagcats, ycats
 # ---- This Creates Mistag plots for every dataset in every category for debugging if necessary or for curiosity ---- #
 # ---- Look up tables are a bit more sophisticated and much more useful to the analysis ---- #
 
-SaveDirectory = maindirectory + '/TTbarAllHadUproot/MistagPlots/'
-DoesDirectoryExist(SaveDirectory) # no need to create the directory several times
+# SaveDirectory = maindirectory + '/TTbarAllHadUproot/MistagPlots/'
+# DoesDirectoryExist(SaveDirectory) # no need to create the directory several times
 
 # Function sqrt(x)
 def forward(x):
@@ -203,6 +203,7 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
     Nevts2018_sf = 1.
     Nevts_sf = 1.
     
+    # if ListOfLetters != None:
     for letter in ListOfLetters:
         if ('JetHT2016' + letter + '_Data') in Filesets:
             Nevts2016_sf = Nevts2016/Outputs['JetHT2016' + letter + '_Data']['cutflow']['all events']
@@ -212,6 +213,15 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
             Nevts2018_sf = Nevts2018/Outputs['JetHT2018' + letter + '_Data']['cutflow']['all events']
         if 'JetHT_Data' in Filesets:
             Nevts_sf = Nevts / Outputs['JetHT_Data']['cutflow']['all events']
+    # else:
+    #     if ('JetHT2016_Data') in Filesets:
+    #             Nevts2016_sf = Nevts2016/Outputs['JetHT2016' + letter + '_Data']['cutflow']['all events']
+    #     if ('JetHT2017_Data') in Filesets:
+    #         Nevts2017_sf = Nevts2017/Outputs['JetHT2017' + letter + '_Data']['cutflow']['all events']
+    #     if ('JetHT2018_Data') in Filesets:
+    #         Nevts2018_sf = Nevts2018/Outputs['JetHT2018' + letter + '_Data']['cutflow']['all events']
+    #     if 'JetHT_Data' in Filesets:
+    #         Nevts_sf = Nevts / Outputs['JetHT_Data']['cutflow']['all events']
 
         """ ---------------- Luminosities, Cross Sections, Scale-Factors ---------------- """ 
         Lum2016 = 35920./Nevts2016_sf # Division by scale factor: Correction for blinding/choice of era # pb^-1 from https://twiki.cern.ch/twiki/bin/viewauth/CMS/PdmVAnalysisSummaryTable
