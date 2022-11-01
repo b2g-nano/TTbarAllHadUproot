@@ -386,7 +386,7 @@ if args.bTagSyst:
     UncType = "_btagUnc_"
     SystType = args.bTagSyst # string for btag SF evaluator --> "central", "up", or "down"
     ApplybSF = True
-    SFfile = daskDirectory+'TTbarAllHadUproot/CorrectionFiles/SFs/bquark/subjet_btagging.json.gz'
+    SFfile = daskDirectory+'TTbarAllHadUproot/CorrectionFiles/SFs/bquark/'+str(args.year)+VFP+'subjet_btagging.json.gz'
 #    ---------------------------------------------------------------------------------------------------------------------    # 
 
 elif args.ttXSSyst:
@@ -420,7 +420,7 @@ elif args.jec:
     UncType = "_jecUnc_"
     SystType = args.jec # string for ttag SF correction --> "central", "up", or "down"
     Applyjec = True
-    SFfile = daskDirectory+'TTbarAllHadUproot/CorrectionFiles/JERs/2016preVFPfatJet_jerc.json.gz' # Either 'MC' or 'Data' after this
+    SFfile = daskDirectory+'TTbarAllHadUproot/CorrectionFiles/JECs/'+str(args.year)+VFP+'fatJet_jerc.json.gz'
 #    ---------------------------------------------------------------------------------------------------------------------    # 
 
 elif args.jer:
