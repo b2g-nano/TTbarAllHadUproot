@@ -410,13 +410,14 @@ class TTbarResProcessor(processor.ProcessorABC):
         # ---- Define AK8 Jets as FatJets ---- #
         #FatJets = events.FatJet # Everything should already be defined in here.  example) df['FatJet_pt] -> events.FatJet.pt
         FatJets = ak.zip({
+            "rho": events.fixedGridRhoFastjetAll, # Needed for L1 Corrections
             "run": events.run,
             "nFatJet": events.nFatJet,
             "pt": events.FatJet_pt,
             "eta": events.FatJet_eta,
             "phi": events.FatJet_phi,
             "mass": events.FatJet_mass,
-            "area": events.FatJet_area,
+            "area": events.FatJet_area, # Needed for L1 Corrections
             "msoftdrop": events.FatJet_msoftdrop,
             "jetId": events.FatJet_jetId,
             "tau1": events.FatJet_tau1,
@@ -978,6 +979,8 @@ class TTbarResProcessor(processor.ProcessorABC):
         jeteta = ak.flatten(ttbarcands.slot1.eta)
         jetphi = ak.flatten(ttbarcands.slot1.phi)
         jetmass = ak.flatten(ttbarcands.slot1.mass)
+        jetarea = ak.flatten(ttbarcands.slot1.area)
+        jetrho = ak.flatten(ttbarcands.slot1.rho)
         
         SDmass = ak.flatten(ttbarcands.slot1.msoftdrop)
         Tau32 = ak.flatten((ttbarcands.slot1.tau3/ttbarcands.slot1.tau2))
@@ -997,11 +1000,28 @@ class TTbarResProcessor(processor.ProcessorABC):
             
             jeteta_input = ak.to_numpy(jeteta)
             jetpt_input = ak.to_numpy(jetpt)
+            jetarea_input = ak.to_numpy(jetarea)
+            jetrho_input = ak.to_numpy(jetrho)
             
             if self.year == 2016 and isData:
                  if any(era in dataset for era in ('2016B', '2016C', '2016D')):
-                    print('L2L3 Data Corrections:\n')
-                    print(evaluator['Summer19UL16APV_RunBCD_V7_DATA_L2L3Residual_AK8PFPuppi'].evaluate(jeteta_input, jetpt_input))
+                    
+                    l1_str = 'Summer19UL16APV_RunBCD_V7_DATA_L1FastJet_AK8PFPuppi'
+                    l1_corr = evaluator[l1_str].evaluate(jetarea_input, jeteta_input, jetpt_input, jetrho_input)
+                    
+                    l2_str = 'Summer19UL16APV_RunBCD_V7_DATA_L2Relative_AK8PFPuppi'
+                    l2_corr = evaluator[l2_str].evaluate(jeteta_input, jetpt_input)
+                    
+                    l3_str = 'Summer19UL16APV_RunBCD_V7_DATA_L3Absolute_AK8PFPuppi'
+                    l3_corr = evaluator[l3_str].evaluate(jeteta_input, jetpt_input)
+                    
+                    l2l3_str = 'Summer19UL16APV_RunBCD_V7_DATA_L2L3Residual_AK8PFPuppi'
+                    l2l3_corr = evaluator[l2l3_str].evaluate(jeteta_input, jetpt_input)
+                    
+                    print(f'L1 Data Corrections:\n{l1_corr}\n')
+                    print(f'L2 Data Corrections:\n{l2_corr}\n')
+                    print(f'L3 Data Corrections:\n{l3_corr}\n')
+                    print(f'L2L3 Data Corrections:\n{l2l3_corr}\n')
                     print('==========================================================================\n')
         
         # ---- Weights ---- #
