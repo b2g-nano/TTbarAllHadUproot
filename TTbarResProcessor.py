@@ -1004,25 +1004,62 @@ class TTbarResProcessor(processor.ProcessorABC):
             jetrho_input = ak.to_numpy(jetrho)
             
             if self.year == 2016 and isData:
-                 if any(era in dataset for era in ('2016B', '2016C', '2016D')):
-                    
+                
+                l1_corr = None
+                l2_corr = None
+                l3_corr = None
+                l2l3_corr = None
+                
+                if any(era in dataset for era in ('2016B', '2016C', '2016D')) and self.apv == 'APV':
+
                     l1_str = 'Summer19UL16APV_RunBCD_V7_DATA_L1FastJet_AK8PFPuppi'
                     l1_corr = evaluator[l1_str].evaluate(jetarea_input, jeteta_input, jetpt_input, jetrho_input)
-                    
                     l2_str = 'Summer19UL16APV_RunBCD_V7_DATA_L2Relative_AK8PFPuppi'
                     l2_corr = evaluator[l2_str].evaluate(jeteta_input, jetpt_input)
-                    
                     l3_str = 'Summer19UL16APV_RunBCD_V7_DATA_L3Absolute_AK8PFPuppi'
                     l3_corr = evaluator[l3_str].evaluate(jeteta_input, jetpt_input)
-                    
                     l2l3_str = 'Summer19UL16APV_RunBCD_V7_DATA_L2L3Residual_AK8PFPuppi'
                     l2l3_corr = evaluator[l2l3_str].evaluate(jeteta_input, jetpt_input)
+
+                elif '2016E' in dataset and self.apv == 'APV':
+
+                    l1_str = 'Summer19UL16APV_RunEF_V7_DATA_L1FastJet_AK8PFPuppi'
+                    l1_corr = evaluator[l1_str].evaluate(jetarea_input, jeteta_input, jetpt_input, jetrho_input)
+                    l2_str = 'Summer19UL16APV_RunEF_V7_DATA_L2Relative_AK8PFPuppi'
+                    l2_corr = evaluator[l2_str].evaluate(jeteta_input, jetpt_input)
+                    l3_str = 'Summer19UL16APV_RunEF_V7_DATA_L3Absolute_AK8PFPuppi'
+                    l3_corr = evaluator[l3_str].evaluate(jeteta_input, jetpt_input)
+                    l2l3_str = 'Summer19UL16APV_RunEF_V7_DATA_L2L3Residual_AK8PFPuppi'
+                    l2l3_corr = evaluator[l2l3_str].evaluate(jeteta_input, jetpt_input)
+
+                elif any(era in dataset for era in ('2016F', '2016G', '2016H')) and self.apv == 'noAPV':
+
+                    l1_str = 'Summer19UL16_RunFGH_V7_DATA_L1FastJet_AK8PFPuppi'
+                    l1_corr = evaluator[l1_str].evaluate(jetarea_input, jeteta_input, jetpt_input, jetrho_input)
+                    l2_str = 'Summer19UL16_RunFGH_V7_DATA_L2Relative_AK8PFPuppi'
+                    l2_corr = evaluator[l2_str].evaluate(jeteta_input, jetpt_input)
+                    l3_str = 'Summer19UL16_RunFGH_V7_DATA_L3Absolute_AK8PFPuppi'
+                    l3_corr = evaluator[l3_str].evaluate(jeteta_input, jetpt_input)
+                    l2l3_str = 'Summer19UL16_RunFGH_V7_DATA_L2L3Residual_AK8PFPuppi'
+                    l2l3_corr = evaluator[l2l3_str].evaluate(jeteta_input, jetpt_input)
+
+                elif not any(era in dataset for era in ('2016B', '2016C', '2016D', '2016E', '2016F', '2016G', '2016H')):
                     
-                    print(f'L1 Data Corrections:\n{l1_corr}\n')
-                    print(f'L2 Data Corrections:\n{l2_corr}\n')
-                    print(f'L3 Data Corrections:\n{l3_corr}\n')
-                    print(f'L2L3 Data Corrections:\n{l2l3_corr}\n')
-                    print('==========================================================================\n')
+                    print('\n------------------------------------------------------\n')
+                    print('-----\tPlease Specify --letters for Data JERCs\t-----')
+                    print('\n------------------------------------------------------\n')
+                    
+                else:
+                    
+                    print('\n-------------------------------------------------------------------\n')
+                    print('---\tSome Data JERCs Could Be Applied Given User Options\t---')
+                    print('\n-------------------------------------------------------------------\n')
+
+                print(f'L1 Data Corrections:\n{l1_corr}\n')
+                print(f'L2 Data Corrections:\n{l2_corr}\n')
+                print(f'L3 Data Corrections:\n{l3_corr}\n')
+                print(f'L2L3 Data Corrections:\n{l2l3_corr}\n')
+                print('==========================================================================\n')
         
         # ---- Weights ---- #
         weights = evtweights*self.xsSystematicWeight*self.lumSystematicWeight
