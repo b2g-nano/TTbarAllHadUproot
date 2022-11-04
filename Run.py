@@ -334,7 +334,7 @@ if not args.chunks:
 UsingDaskExecutor = args.dask
 #    ---------------------------------------------------------------------------------------------------------------------    # 
 
-SaveFirstRun = False
+SaveFirstRun = True
 SaveSecondRun = False
 if args.save:
     SaveFirstRun = True # Make a coffea output file of the first uproot job (without the systematics and corrections)
@@ -790,12 +790,16 @@ if args.runflavoreff:
             if args.saveFlav:
                 mkdir_p('TTbarAllHadUproot/CoffeaOutputsForMCFlavorAnalysis/'
                           + SaveLocation[name])
-                util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForMCFlavorAnalysis/'
-                      + SaveLocation[name]
-                      + name    
-                      + '_MCFlavorAnalysis' 
-                      + OldDisc
-                      + '.coffea')
+                
+                savefilename = 'TTbarAllHadUproot/CoffeaOutputsForMCFlavorAnalysis/' + SaveLocation[name] + name     + '_MCFlavorAnalysis'  + OldDisc + '.coffea'
+                util.save(output, savefilename)
+                print('saving ' + savefilename)
+                # util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForMCFlavorAnalysis/'
+                #       + SaveLocation[name]
+                #       + name    
+                #       + '_MCFlavorAnalysis' 
+                #       + OldDisc
+                #       + '.coffea')
 
 
         else: # Run all Root Files
@@ -841,12 +845,16 @@ if args.runflavoreff:
             if args.saveFlav:
                 mkdir_p('TTbarAllHadUproot/CoffeaOutputsForMCFlavorAnalysis/'
                           + SaveLocation[name])
-                util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForMCFlavorAnalysis/'
-                      + SaveLocation[name]
-                      + name    
-                      + '_MCFlavorAnalysis' 
-                      + OldDisc
-                      + '.coffea')
+                
+                savefilename = 'TTbarAllHadUproot/CoffeaOutputsForMCFlavorAnalysis/' + SaveLocation[name] + name + '_MCFlavorAnalysis' + OldDisc + '.coffea'
+                util.save(output, savefilename)
+                print('saving ' + savefilename)
+                # util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForMCFlavorAnalysis/'
+                #       + SaveLocation[name]
+                #       + name    
+                #       + '_MCFlavorAnalysis' 
+                #       + OldDisc
+                #       + '.coffea')
 
 
         print('Elapsed time = ', elapsed, ' sec.')
@@ -863,7 +871,7 @@ if args.runflavoreff:
         FlavEffList('udsg', output, dataset, BDiscDirectory, args.saveFlav)
         print("\n\nWe\'re done here!!")
         
-    cluster.close()
+    if UsingDaskExecutor: cluster.close()
     exit() # No need to go further if performing trigger analysis
         
 
@@ -932,12 +940,16 @@ if isTrigEffArg:
             if args.saveTrig:
                 mkdir_p('TTbarAllHadUproot/CoffeaOutputsForTriggerAnalysis/'
                           + SaveLocation[name])
-                util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForTriggerAnalysis/'
-                      + SaveLocation[name]
-                      + name    
-                      + '_TriggerAnalysis' 
-                      + OldDisc
-                      + '.coffea')
+                savefilename = 'TTbarAllHadUproot/CoffeaOutputsForTriggerAnalysis/' + SaveLocation[name] + name + '_TriggerAnalysis' + OldDisc + '.coffea'
+                util.save(output, savefilename)
+                print('saving ' + savefilename)
+                
+                # util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForTriggerAnalysis/'
+                #       + SaveLocation[name]
+                #       + name    
+                #       + '_TriggerAnalysis' 
+                #       + OldDisc
+                #       + '.coffea')
 
 
         else: # Run all Root Files
@@ -983,12 +995,15 @@ if isTrigEffArg:
             if args.saveTrig:
                 mkdir_p('TTbarAllHadUproot/CoffeaOutputsForTriggerAnalysis/'
                           + SaveLocation[name])
-                util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForTriggerAnalysis/'
-                      + SaveLocation[name]
-                      + name    
-                      + '_TriggerAnalysis' 
-                      + OldDisc
-                      + '.coffea')
+                savefilename =  output, 'TTbarAllHadUproot/CoffeaOutputsForTriggerAnalysis/' + SaveLocation[name] + name + '_TriggerAnalysis' + OldDisc + '.coffea'
+                util.save(output, savefilename)
+                print('saving ' + savefilename)
+                # util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForTriggerAnalysis/'
+                #       + SaveLocation[name]
+                #       + name    
+                #       + '_TriggerAnalysis' 
+                #       + OldDisc
+                #       + '.coffea')
 
 
         print('Elapsed time = ', elapsed, ' sec.')
@@ -1025,9 +1040,12 @@ prng = RandomState(seed)
 for name,files in filesets_to_run.items(): 
     print('\n\n' + name + '\n\n-----------------------------------------------------')
     if not LoadingUnweightedFiles:
+        print('here 8')
         print('Processing', name, '...')
         if not RunAllRootFiles:
+            print('here 7')
             if not UsingDaskExecutor:
+                print('here 6')
                 chosen_exec = 'futures'
                 output = processor.run_uproot_job({name:files},
                                                   treename='Events',
@@ -1048,6 +1066,7 @@ for name,files in filesets_to_run.items():
                                                       'workers': 2},
                                                   chunksize=Chunk[0], maxchunks=Chunk[1])
             else: # use dask
+                print('here 5')
                 chosen_exec = 'dask'
                 client.wait_for_workers(timeout=TimeOut)
                 output = processor.run_uproot_job({name:files},
@@ -1073,17 +1092,25 @@ for name,files in filesets_to_run.items():
             outputs_unweighted[name] = output
             print(output)
             if SaveFirstRun:
+                print('here 0')
                 mkdir_p('TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/'
                           + SaveLocation[name])
-                util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/'
-                          + SaveLocation[name]
-                          + name    
-                          + OldDisc
-                          + '.coffea')
+                
+                savefilename = 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/' + SaveLocation[name] + name + OldDisc + '.coffea'
+                util.save(output, savefilename)
+                print('saving ' + savefilename)                           
+                                          
+                                          
+                # util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/'
+                #           + SaveLocation[name]
+                #           + name    
+                #           + OldDisc
+                #           + '.coffea')
             
             
         else: # Run all Root Files
             if not UsingDaskExecutor:
+                print('here 4')
                 chosen_exec = 'futures'
                 output = processor.run_uproot_job({name:files},
                                                   treename='Events',
@@ -1104,6 +1131,7 @@ for name,files in filesets_to_run.items():
                                                       'workers': 2})
 
             else: # use dask
+                print('here 3')
                 chosen_exec = 'dask'
                 client.wait_for_workers(timeout=TimeOut)
                 output = processor.run_uproot_job({name:files},
@@ -1128,13 +1156,21 @@ for name,files in filesets_to_run.items():
             outputs_unweighted[name] = output
             print(output)
             if SaveFirstRun:
+                print('here 1')
                 mkdir_p('TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/'
                           + SaveLocation[name])
-                util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/'
-                          + SaveLocation[name]
-                          + name  
-                          + OldDisc
-                          + '.coffea')
+                                          
+                                          
+                savefilename =  'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/' + SaveLocation[name] + name + OldDisc + '.coffea'                         
+                util.save(output, savefilename)
+                print('saving ' + savefilename)
+                                          
+                                          
+                # util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/'
+                #           + SaveLocation[name]
+                #           + name  
+                #           + OldDisc
+                #           + '.coffea')
             
         for name,output in outputs_unweighted.items(): 
             print("-------Unweighted " + name + "--------")
@@ -1142,6 +1178,7 @@ for name,files in filesets_to_run.items():
                 print( '%20s : %1s' % (i,j) )
             
     else: # Load files
+        print('here 2')
         output = util.load('TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/'
                            + SaveLocation[name]
                            + name 
@@ -1264,16 +1301,22 @@ if not OnlyCreateLookupTables and not args.runMMO:
             if SaveSecondRun:
                 mkdir_p('TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/'
                           + SaveLocation[name])
-                util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/'
-                          + SaveLocation[name]
-                          + name 
-                          + '_weighted'
-                          + UncType
-                          + SystType
-                          + method
-                          + TPT
-                          + OldDisc
-                          + '.coffea')
+                
+                savefilename = 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/' + SaveLocation[name] + name  + '_weighted' + UncType + SystType + method + TPT + OldDisc + '.coffea'                       
+                util.save(output, savefilename)
+                print('saving ' + savefilename)                          
+                                          
+                
+                # util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/'
+                #           + SaveLocation[name]
+                #           + name 
+                #           + '_weighted'
+                #           + UncType
+                #           + SystType
+                #           + method
+                #           + TPT
+                #           + OldDisc
+                #           + '.coffea')
             
             
         else: # Run all Root Files
@@ -1340,16 +1383,22 @@ if not OnlyCreateLookupTables and not args.runMMO:
             if SaveSecondRun:
                 mkdir_p('TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/'
                           + SaveLocation[name])
-                util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/'
-                          + SaveLocation[name]
-                          + name 
-                          + '_weighted'
-                          + UncType
-                          + SystType
-                          + method
-                          + TPT
-                          + OldDisc
-                          + '.coffea')
+                                          
+                                          
+                savefilename = 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/' + SaveLocation[name] + name  + '_weighted' + UncType + SystType + method + TPT + OldDisc + '.coffea'                       
+                util.save(output, savefilename)
+                print('saving ' + savefilename)  
+                                          
+#                 util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/'
+#                           + SaveLocation[name]
+#                           + name 
+#                           + '_weighted'
+#                           + UncType
+#                           + SystType
+#                           + method
+#                           + TPT
+#                           + OldDisc
+#                           + '.coffea')
         print('Elapsed time = ', elapsed, ' sec.')
         print('Elapsed time = ', elapsed/60., ' min.')
         print('Elapsed time = ', elapsed/3600., ' hrs.') 
@@ -1446,16 +1495,21 @@ if args.runMMO:
                 if SaveSecondRun:
                     mkdir_p('TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/'
                               + SaveLocation[name])
-                    util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/'
-                              + SaveLocation[name]
-                              + name 
-                              + '_weighted'
-                              + UncType 
-                              + SystType
-                              + method
-                              + TPT
-                              + OldDisc
-                              + '.coffea')
+                                          
+                    savefilename = 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/' + SaveLocation[name] + name  + '_weighted' + UncType  + SystType + method + TPT + OldDisc + '.coffea'
+                    util.save(output, savefilename)
+                    print('saving ' + savefilename)
+                                          
+                    # util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/'
+                    #           + SaveLocation[name]
+                    #           + name 
+                    #           + '_weighted'
+                    #           + UncType 
+                    #           + SystType
+                    #           + method
+                    #           + TPT
+                    #           + OldDisc
+                    #           + '.coffea')
 
 
             else: # Run all Root Files
@@ -1516,16 +1570,22 @@ if args.runMMO:
                 if SaveSecondRun:
                     mkdir_p('TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/'
                               + SaveLocation[name])
-                    util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/'
-                              + SaveLocation[name]
-                              + name 
-                              + '_weighted'
-                              + UncType
-                              + SystType
-                              + method
-                              + TPT
-                              + OldDisc
-                              + '.coffea')
+                                          
+                    savefilename = 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/' + SaveLocation[name] + name  + '_weighted' + UncType + SystType + method + TPT + OldDisc + '.coffea'                    
+                    util.save(output, savefilename)
+                    print('saving ' + savefilename)
+                                          
+                                          
+                    # util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/'
+                    #           + SaveLocation[name]
+                    #           + name 
+                    #           + '_weighted'
+                    #           + UncType
+                    #           + SystType
+                    #           + method
+                    #           + TPT
+                    #           + OldDisc
+                    #           + '.coffea')
             print('Elapsed time = ', elapsed, ' sec.')
             print('Elapsed time = ', elapsed/60., ' min.')
             print('Elapsed time = ', elapsed/3600., ' hrs.') 
