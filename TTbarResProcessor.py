@@ -795,7 +795,8 @@ class TTbarResProcessor(processor.ProcessorABC):
         GoodSubjets = ak.flatten(((hasSubjets0) & (hasSubjets1))) # Selection of 4 (leading) subjects
         output['cutflow']['Good Subjets'] += ak.to_awkward0(GoodSubjets).sum()
         ttbarcands = ttbarcands[GoodSubjets] # Choose only ttbar candidates with this selection of subjets
-        SubJets = SubJets[GoodSubjets]
+        FatJets = FatJets[GoodSubjets]
+	SubJets = SubJets[GoodSubjets]
         GenJets = GenJets[GoodSubjets]
         events = events[GoodSubjets]
         Jets = Jets[GoodSubjets] # this used to not be here
