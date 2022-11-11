@@ -44,7 +44,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                  year=None, apv='', vfp='', UseLookUpTables=False, lu=None, extraDaskDirectory='',
                  ModMass=False, RandomDebugMode=False, UseEfficiencies=False, xsSystematicWeight=1., lumSystematicWeight=1.,
                  ApplybtagSF=False, ScaleFactorFile='', ApplyttagSF=False, ApplyTopReweight=False, 
-                 ApplyJER=True, ApplyJEC=False, ApplyPDF=True, sysType=None):
+                 ApplyJER=False, ApplyJEC=False, ApplyPDF=False, sysType=None):
         
         self.prng = prng
         self.htCut = htCut
@@ -400,7 +400,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         return EffStuff
     
     
-    def GetJERUncertainties(self, Jets, GenJets, events, Weights):
+    def GetJERUncertainties(self, FatJets, GenJets, events, Weights):
         
         ext = extractor()
         ext.add_weight_sets([
@@ -427,13 +427,13 @@ class TTbarResProcessor(processor.ProcessorABC):
 
         
         # match gen jets to AK4 jets
-        matched_genjet_index = ak.mask(Jets.genJetIdx, (Jets.genJetIdx != -1) & (Jets.genJetIdx < ak.count(GenJets.pt, axis=1)))
+        matched_genjet_index = ak.mask(FatJets.genJetIdx, (FatJets.genJetIdx != -1) & (FatJets.genJetIdx < ak.count(GenJets.pt, axis=1)))
         matched_GenJet_pt = GenJets.pt[matched_genjet_index]        
 
-        Jets['pt_raw'] = (1 - Jets['rawFactor']) * Jets['pt']
-        Jets['mass_raw'] = (1 - Jets['rawFactor']) * Jets['mass']
-        Jets['pt_gen'] = matched_GenJet_pt
-        Jets['rho'] = ak.broadcast_arrays(events.fixedGridRhoFastjetAll, Jets.pt)[0]
+        FatJets['pt_raw'] = (1 - FatJets['rawFactor']) * FatJets['pt']
+        FatJets['mass_raw'] = (1 - FatJets['rawFactor']) * FatJets['mass']
+        FatJets['pt_gen'] = matched_GenJet_pt
+        FatJets['rho'] = ak.broadcast_arrays(events.fixedGridRhoFastjetAll, FatJets.pt)[0]
         
         name_map['ptGenJet'] = 'pt_gen'
         name_map['ptRaw'] = 'pt_raw'
@@ -450,7 +450,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         )
 
         jet_factory = CorrectedJetsFactory(name_map, jec_stack)
-        corrected_jets = jet_factory.build(Jets, lazy_cache=events_cache)
+        corrected_jets = jet_factory.build(FatJets, lazy_cache=events_cache)
         
         
         jer_up = corrected_jets.JES_jes.up.pt/corrected_jets.pt_raw
@@ -528,6 +528,8 @@ class TTbarResProcessor(processor.ProcessorABC):
             "deepTagMD_TvsQCD": events.FatJet_deepTagMD_TvsQCD,
             "subJetIdx1": events.FatJet_subJetIdx1,
             "subJetIdx2": events.FatJet_subJetIdx2,
+            "rawFactor": events.FatJet_rawFactor,
+            "genJetIdx": events.FatJet_genJetAK8Idx,
             "p4": ak.zip({
                 "pt": events.FatJet_pt,
                 "eta": events.FatJet_eta,
@@ -573,15 +575,15 @@ class TTbarResProcessor(processor.ProcessorABC):
         
         GenJets = ak.zip({
             "run": events.run,
-            "pt": events.GenJet_pt,
-            "eta": events.GenJet_eta,
-            "phi": events.GenJet_phi,
-            "mass": events.GenJet_mass,
+            "pt": events.GenJetAK8_pt,
+            "eta": events.GenJetAK8_eta,
+            "phi": events.GenJetAK8_phi,
+            "mass": events.GenJetAK8_mass,
             "p4": ak.zip({
-                "pt": events.GenJet_pt,
-                "eta": events.GenJet_eta,
-                "phi": events.GenJet_phi,
-                "mass": events.GenJet_mass,
+                "pt": events.GenJetAK8_pt,
+                "eta": events.GenJetAK8_eta,
+                "phi": events.GenJetAK8_phi,
+                "mass": events.GenJetAK8_mass,
                 }, with_name="PtEtaPhiMLorentzVector"),
             })
         
@@ -1255,7 +1257,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                     
                 if self.ApplyJER:
                     
-                    jerUp, jerDown, jerNom = self.GetJERUncertainties(Jets, GenJets, events, Weights)
+                    jerUp, jerDown, jerNom = self.GetJERUncertainties(FatJets, GenJets, events, Weights)
                 
                     Weights_jerUp = ak.flatten(Weights * jerUp)
                     Weights_jerDown = ak.flatten(Weights * jerDown)
