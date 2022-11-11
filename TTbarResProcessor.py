@@ -19,6 +19,11 @@ import awkward as ak
 from coffea.nanoevents.methods import candidate
 from coffea.nanoevents.methods import vector
 
+from coffea.jetmet_tools import JetResolutionScaleFactor
+from coffea.jetmet_tools import FactorizedJetCorrector, JetCorrectionUncertainty
+from coffea.jetmet_tools import JECStack, CorrectedJetsFactory
+from coffea.lookup_tools import extractor
+
 #ak.behavior.update(nanoaod.behavior)
 ak.behavior.update(candidate.behavior)
 ak.behavior.update(vector.behavior)
@@ -39,7 +44,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                  year=None, apv='', vfp='', UseLookUpTables=False, lu=None, extraDaskDirectory='',
                  ModMass=False, RandomDebugMode=False, UseEfficiencies=False, xsSystematicWeight=1., lumSystematicWeight=1.,
                  ApplybtagSF=False, ScaleFactorFile='', ApplyttagSF=False, ApplyTopReweight=False, 
-                 ApplyJER=False, ApplyJEC=False, sysType=None):
+                 ApplyJER=False, ApplyJEC=False, ApplyPDF=False, sysType=None):
         
         self.prng = prng
         self.htCut = htCut
@@ -63,6 +68,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         self.ApplyTopReweight = ApplyTopReweight
         self.ApplyJEC = ApplyJEC
         self.ApplyJER = ApplyJER
+        self.ApplyPDF = ApplyPDF
         self.sysType = sysType # string for btag SF evaluator --> "central", "up", or "down"
         self.UseEfficiencies = UseEfficiencies
         self.xsSystematicWeight = xsSystematicWeight
@@ -114,6 +120,18 @@ class TTbarResProcessor(processor.ProcessorABC):
             
             'ttbarmass': hist.Hist("Counts", dataset_axis, cats_axis, ttbarmass_axis),
             
+            ##### systematic ttbar histograms #####
+            
+            'ttbarmass_jerUp': hist.Hist("Counts", dataset_axis, cats_axis, ttbarmass_axis),
+            'ttbarmass_jerDown': hist.Hist("Counts", dataset_axis, cats_axis, ttbarmass_axis),
+            'ttbarmass_jerNom': hist.Hist("Counts", dataset_axis, cats_axis, ttbarmass_axis),
+            
+            'ttbarmass_pdfUp': hist.Hist("Counts", dataset_axis, cats_axis, ttbarmass_axis),
+            'ttbarmass_pdfDown': hist.Hist("Counts", dataset_axis, cats_axis, ttbarmass_axis),
+            'ttbarmass_pdfNom': hist.Hist("Counts", dataset_axis, cats_axis, ttbarmass_axis),
+            
+            ######################################
+
             'jetmass':         hist.Hist("Counts", dataset_axis, cats_axis, jetmass_axis),
             'SDmass':          hist.Hist("Counts", dataset_axis, cats_axis, jetmass_axis),
             'SDmass_precat':   hist.Hist("Counts", dataset_axis, jetpt_axis, jetmass_axis), # What was this for again?
@@ -380,6 +398,90 @@ class TTbarResProcessor(processor.ProcessorABC):
         }
         
         return EffStuff
+    
+    
+    def GetJERUncertainties(self, FatJets, GenJets, events, Weights):
+        
+        ext = extractor()
+        ext.add_weight_sets([
+            "* * TTbarAllHadUproot/data/Fall17_17Nov2017_V32_MC_L2Relative_AK4PFPuppi.jec.txt",
+            "* * TTbarAllHadUproot/data/Fall17_17Nov2017_V32_MC_Uncertainty_AK4PFPuppi.junc.txt",
+        ])
+        ext.finalize()
+
+        jec_stack_names = [
+            "Fall17_17Nov2017_V32_MC_L2Relative_AK4PFPuppi",
+            "Fall17_17Nov2017_V32_MC_Uncertainty_AK4PFPuppi"
+        ]
+
+        evaluator = ext.make_evaluator()
+
+        jec_inputs = {name: evaluator[name] for name in jec_stack_names}
+        jec_stack = JECStack(jec_inputs)
+
+        name_map = jec_stack.blank_name_map
+        name_map['JetPt'] = 'pt'
+        name_map['JetMass'] = 'mass'
+        name_map['JetEta'] = 'eta'
+        name_map['JetA'] = 'area'
+
+        
+        # match gen jets to AK4 jets
+        matched_genjet_index = ak.mask(FatJets.genJetIdx, (FatJets.genJetIdx != -1) & (FatJets.genJetIdx < ak.count(GenJets.pt, axis=1)))
+        matched_GenJet_pt = GenJets.pt[matched_genjet_index]        
+
+        FatJets['pt_raw'] = (1 - FatJets['rawFactor']) * FatJets['pt']
+        FatJets['mass_raw'] = (1 - FatJets['rawFactor']) * FatJets['mass']
+        FatJets['pt_gen'] = matched_GenJet_pt
+        FatJets['rho'] = ak.broadcast_arrays(events.fixedGridRhoFastjetAll, FatJets.pt)[0]
+        
+        name_map['ptGenJet'] = 'pt_gen'
+        name_map['ptRaw'] = 'pt_raw'
+        name_map['massRaw'] = 'mass_raw'
+        name_map['Rho'] = 'rho'
+
+
+        events_cache = events.caches[0]
+        corrector = FactorizedJetCorrector(
+            Fall17_17Nov2017_V32_MC_L2Relative_AK4PFPuppi=evaluator['Fall17_17Nov2017_V32_MC_L2Relative_AK4PFPuppi'],
+        )
+        uncertainties = JetCorrectionUncertainty(
+            Fall17_17Nov2017_V32_MC_Uncertainty_AK4PFPuppi=evaluator['Fall17_17Nov2017_V32_MC_Uncertainty_AK4PFPuppi']
+        )
+
+        jet_factory = CorrectedJetsFactory(name_map, jec_stack)
+        corrected_jets = jet_factory.build(FatJets, lazy_cache=events_cache)
+        
+        
+        jer_up = corrected_jets.JES_jes.up.pt/corrected_jets.pt_raw
+        jer_down = corrected_jets.JES_jes.down.pt/corrected_jets.pt_raw
+        jer_nom = corrected_jets.pt/corrected_jets.pt_raw
+        
+        return [jer_up, jer_down, jer_nom]
+    
+    
+    def GetPDFWeights(self, events):
+        
+        if "LHEPdfWeight" in events.fields:
+                LHEPdfWeight = events.LHEPdfWeight
+                pdf_up   = ak.flatten(LHEPdfWeight[2::2])
+                pdf_down = ak.flatten(LHEPdfWeight[1::2])
+                pdf_nom  = ak.flatten(LHEPdfWeight[0::2])
+                
+        else:
+
+            pdf_up = np.ones(len(events))
+            pdf_down = np.ones(len(events))
+            pdf_nom = np.ones(len(events))            
+            
+        return [pdf_up, pdf_down, pdf_nom]
+
+        
+        
+        
+        
+        
+
             
     @property
     def accumulator(self):
@@ -426,6 +528,8 @@ class TTbarResProcessor(processor.ProcessorABC):
             "deepTagMD_TvsQCD": events.FatJet_deepTagMD_TvsQCD,
             "subJetIdx1": events.FatJet_subJetIdx1,
             "subJetIdx2": events.FatJet_subJetIdx2,
+            "rawFactor": events.FatJet_rawFactor,
+            "genJetIdx": events.FatJet_genJetAK8Idx,
             "p4": ak.zip({
                 "pt": events.FatJet_pt,
                 "eta": events.FatJet_eta,
@@ -442,6 +546,8 @@ class TTbarResProcessor(processor.ProcessorABC):
             "phi": events.Jet_phi,
             "mass": events.Jet_mass,
             "area": events.Jet_area,
+            "rawFactor": events.Jet_rawFactor,
+            "genJetIdx": events.Jet_genJetIdx,
             "p4": ak.zip({
                 "pt": events.Jet_pt,
                 "eta": events.Jet_eta,
@@ -467,6 +573,20 @@ class TTbarResProcessor(processor.ProcessorABC):
                 }, with_name="PtEtaPhiMLorentzVector"),
             })
         
+        GenJets = ak.zip({
+            "run": events.run,
+            "pt": events.GenJetAK8_pt,
+            "eta": events.GenJetAK8_eta,
+            "phi": events.GenJetAK8_phi,
+            "mass": events.GenJetAK8_mass,
+            "p4": ak.zip({
+                "pt": events.GenJetAK8_pt,
+                "eta": events.GenJetAK8_eta,
+                "phi": events.GenJetAK8_phi,
+                "mass": events.GenJetAK8_mass,
+                }, with_name="PtEtaPhiMLorentzVector"),
+            })
+        
         # ---- Define Generator Particles and other needed event properties for MC ---- #
         if isData == False: # If MC is used...
             GenParts = ak.zip({
@@ -483,6 +603,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                     "mass": events.GenPart_mass,
                     }, with_name="Vector3D"),
                 })
+            
             
             Jets['hadronFlavour'] = events.Jet_hadronFlavour
             SubJets['hadronFlavour'] = events.SubJet_hadronFlavour
@@ -574,7 +695,9 @@ class TTbarResProcessor(processor.ProcessorABC):
         FatJets = FatJets[passhT]
         Jets = Jets[passhT] # this used to not be here
         SubJets = SubJets[passhT]
+        GenJets = GenJets[passhT]
         evtweights = evtweights[passhT]
+        events = events[passhT]
         output['cutflow']['HT Cut'] += ak.to_awkward0(passhT).sum()
         if isData == False: # If MC is used...
             # print('if not isData command works')
@@ -597,6 +720,8 @@ class TTbarResProcessor(processor.ProcessorABC):
         FatJets = FatJets[twoFatJetsKin]
         SubJets = SubJets[twoFatJetsKin]
         Jets = Jets[twoFatJetsKin] # this used to not be here
+        GenJets = GenJets[twoFatJetsKin]
+        events = events[twoFatJetsKin]
         evtweights = evtweights[twoFatJetsKin]
         if not isData: # If MC is used...
             GenParts = GenParts[twoFatJetsKin]
@@ -643,6 +768,8 @@ class TTbarResProcessor(processor.ProcessorABC):
         FatJets = FatJets[oneTTbar]
         Jets = Jets[oneTTbar] # this used to not be here
         SubJets = SubJets[oneTTbar]
+        GenJets = GenJets[oneTTbar]
+        events = events[oneTTbar]
         evtweights = evtweights[oneTTbar]
         if not isData: # If MC is used...
             GenParts = GenParts[oneTTbar]
@@ -656,6 +783,8 @@ class TTbarResProcessor(processor.ProcessorABC):
         FatJets = FatJets[dPhiCut] 
         Jets = Jets[dPhiCut] # this used to not be here
         SubJets = SubJets[dPhiCut] 
+        GenJets = GenJets[dPhiCut]
+        events = events[dPhiCut]
         evtweights = evtweights[dPhiCut]
         if not isData: # If MC is used...
             GenParts = GenParts[dPhiCut]
@@ -666,7 +795,10 @@ class TTbarResProcessor(processor.ProcessorABC):
         GoodSubjets = ak.flatten(((hasSubjets0) & (hasSubjets1))) # Selection of 4 (leading) subjects
         output['cutflow']['Good Subjets'] += ak.to_awkward0(GoodSubjets).sum()
         ttbarcands = ttbarcands[GoodSubjets] # Choose only ttbar candidates with this selection of subjets
-        SubJets = SubJets[GoodSubjets]
+        FatJets = FatJets[GoodSubjets]
+	SubJets = SubJets[GoodSubjets]
+        GenJets = GenJets[GoodSubjets]
+        events = events[GoodSubjets]
         Jets = Jets[GoodSubjets] # this used to not be here
         if not isData: # If MC is used...
             GenParts = GenParts[GoodSubjets]
@@ -977,6 +1109,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         ttbarp4sum = ttbarcands.slot0.p4.add(ttbarcands.slot1.p4)
         ttbarmass = ak.flatten(ttbarp4sum.mass)
         
+        
         """ Use previously defined definitions for rapidity (until/unless better method is found) """
         jety = ak.flatten(ttbarcands_s0_rapidity)
         jetdy = np.abs(ak.flatten(ttbarcands_s0_rapidity) - ak.flatten(ttbarcands_s1_rapidity))
@@ -1122,6 +1255,57 @@ class TTbarResProcessor(processor.ProcessorABC):
                 if (self.ApplybtagSF == True) and (self.UseEfficiencies == False):
                     Weights = Weights*Btag_wgts[str(ilabel[-5:-3])]
                     
+                    
+                if self.ApplyJER:
+                    
+                    jerUp, jerDown, jerNom = self.GetJERUncertainties(FatJets, GenJets, events, Weights)
+                
+                    Weights_jerUp = ak.flatten(Weights * jerUp)
+                    Weights_jerDown = ak.flatten(Weights * jerDown)
+                    Weights_jerNom = ak.flatten(Weights * jerNom)
+                    
+
+                    
+                    output['ttbarmass_jerNom'].fill(dataset = dataset, anacat = ilabel, 
+                                                    ttbarmass = ak.to_numpy(ttbarmass[icat]),
+                                                    weight = ak.to_numpy(Weights_jerNom[icat]))
+                    output['ttbarmass_jerUp'].fill(dataset = dataset, anacat = ilabel, 
+                                                    ttbarmass = ak.to_numpy(ttbarmass[icat]),
+                                                    weight = ak.to_numpy(Weights_jerUp[icat]))
+                    output['ttbarmass_jerDown'].fill(dataset = dataset, anacat = ilabel, 
+                                                    ttbarmass = ak.to_numpy(ttbarmass[icat]),
+                                                    weight = ak.to_numpy(Weights_jerDown[icat]))
+                    
+                    
+                    
+                    
+                if self.ApplyPDF:
+                    
+                    pdfUp, pdfDown, pdfNom = self.GetPDFWeights(events)
+                     
+                    if len(pdfUp > 0):
+                        Weights_pdfUp   = Weights * pdfUp
+                        Weights_pdfDown = Weights * pdfDown
+                        Weights_pdfNom  = Weights * pdfNom
+                        
+                    else:
+                        Weights_pdfUp   = Weights
+                        Weights_pdfDown = Weights
+                        Weights_pdfNom  = Weights
+                    
+
+                    
+                    output['ttbarmass_pdfNom'].fill(dataset = dataset, anacat = ilabel, 
+                                                    ttbarmass = ak.to_numpy(ttbarmass[icat]),
+                                                    weight = ak.to_numpy(Weights_pdfNom[icat]))
+                    output['ttbarmass_pdfUp'].fill(dataset = dataset, anacat = ilabel, 
+                                                    ttbarmass = ak.to_numpy(ttbarmass[icat]),
+                                                    weight = ak.to_numpy(Weights_pdfUp[icat]))
+                    output['ttbarmass_pdfDown'].fill(dataset = dataset, anacat = ilabel, 
+                                                    ttbarmass = ak.to_numpy(ttbarmass[icat]),
+                                                    weight = ak.to_numpy(Weights_pdfDown[icat]))
+                    
+                                    
             ###---------------------------------------------------------------------------------------------###
             ### ----------------------- Top pT Reweighting (S.F. as function of pT) ----------------------- ###
             ###---------------------------------------------------------------------------------------------###
@@ -1360,6 +1544,8 @@ class MCFlavorEfficiencyProcessor(processor.ProcessorABC):
         }
         
         return EffStuff
+    
+    
             
     @property
     def accumulator(self):
