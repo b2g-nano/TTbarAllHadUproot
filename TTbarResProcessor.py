@@ -44,7 +44,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                  year=None, apv='', vfp='', UseLookUpTables=False, lu=None, extraDaskDirectory='',
                  ModMass=False, RandomDebugMode=False, UseEfficiencies=False, xsSystematicWeight=1., lumSystematicWeight=1.,
                  ApplybtagSF=False, ScaleFactorFile='', ApplyttagSF=False, ApplyTopReweight=False, 
-                 ApplyJER=False, ApplyJEC=False, sysType=None):
+                 ApplyJER=True, ApplyJEC=False, ApplyPDF=True, sysType=None):
         
         self.prng = prng
         self.htCut = htCut
@@ -68,6 +68,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         self.ApplyTopReweight = ApplyTopReweight
         self.ApplyJEC = ApplyJEC
         self.ApplyJER = ApplyJER
+        self.ApplyPDF = ApplyPDF
         self.sysType = sysType # string for btag SF evaluator --> "central", "up", or "down"
         self.UseEfficiencies = UseEfficiencies
         self.xsSystematicWeight = xsSystematicWeight
@@ -119,11 +120,18 @@ class TTbarResProcessor(processor.ProcessorABC):
             
             'ttbarmass': hist.Hist("Counts", dataset_axis, cats_axis, ttbarmass_axis),
             
+            ##### systematic ttbar histograms #####
+            
             'ttbarmass_jerUp': hist.Hist("Counts", dataset_axis, cats_axis, ttbarmass_axis),
             'ttbarmass_jerDown': hist.Hist("Counts", dataset_axis, cats_axis, ttbarmass_axis),
             'ttbarmass_jerNom': hist.Hist("Counts", dataset_axis, cats_axis, ttbarmass_axis),
-
             
+            'ttbarmass_pdfUp': hist.Hist("Counts", dataset_axis, cats_axis, ttbarmass_axis),
+            'ttbarmass_pdfDown': hist.Hist("Counts", dataset_axis, cats_axis, ttbarmass_axis),
+            'ttbarmass_pdfNom': hist.Hist("Counts", dataset_axis, cats_axis, ttbarmass_axis),
+            
+            ######################################
+
             'jetmass':         hist.Hist("Counts", dataset_axis, cats_axis, jetmass_axis),
             'SDmass':          hist.Hist("Counts", dataset_axis, cats_axis, jetmass_axis),
             'SDmass_precat':   hist.Hist("Counts", dataset_axis, jetpt_axis, jetmass_axis), # What was this for again?
@@ -450,6 +458,26 @@ class TTbarResProcessor(processor.ProcessorABC):
         jer_nom = corrected_jets.pt/corrected_jets.pt_raw
         
         return [jer_up, jer_down, jer_nom]
+    
+    
+    def GetPDFWeights(self, events):
+        
+        if "LHEPdfWeight" in events.fields:
+                LHEPdfWeight = events.LHEPdfWeight
+                pdf_up   = ak.flatten(LHEPdfWeight[2::2])
+                pdf_down = ak.flatten(LHEPdfWeight[1::2])
+                pdf_nom  = ak.flatten(LHEPdfWeight[0::2])
+                
+        else:
+
+            pdf_up = np.ones(len(events))
+            pdf_down = np.ones(len(events))
+            pdf_nom = np.ones(len(events))            
+            
+        return [pdf_up, pdf_down, pdf_nom]
+
+        
+        
         
         
         
@@ -1228,11 +1256,6 @@ class TTbarResProcessor(processor.ProcessorABC):
                 if self.ApplyJER:
                     
                     jerUp, jerDown, jerNom = self.GetJERUncertainties(Jets, GenJets, events, Weights)
- 
-                    # print('jerUp', jerUp)
-                    # print('jerDown', jerDown)
-                    # print('jerNom', jerNom)
-                    # print('ttbarmass', ttbarmass)
                 
                     Weights_jerUp = ak.flatten(Weights * jerUp)
                     Weights_jerDown = ak.flatten(Weights * jerDown)
@@ -1250,6 +1273,36 @@ class TTbarResProcessor(processor.ProcessorABC):
                                                     ttbarmass = ak.to_numpy(ttbarmass[icat]),
                                                     weight = ak.to_numpy(Weights_jerDown[icat]))
                     
+                    
+                    
+                    
+                if self.ApplyPDF:
+                    
+                    pdfUp, pdfDown, pdfNom = self.GetPDFWeights(events)
+                     
+                    if len(pdfUp > 0):
+                        Weights_pdfUp   = Weights * pdfUp
+                        Weights_pdfDown = Weights * pdfDown
+                        Weights_pdfNom  = Weights * pdfNom
+                        
+                    else:
+                        Weights_pdfUp   = Weights
+                        Weights_pdfDown = Weights
+                        Weights_pdfNom  = Weights
+                    
+
+                    
+                    output['ttbarmass_pdfNom'].fill(dataset = dataset, anacat = ilabel, 
+                                                    ttbarmass = ak.to_numpy(ttbarmass[icat]),
+                                                    weight = ak.to_numpy(Weights_pdfNom[icat]))
+                    output['ttbarmass_pdfUp'].fill(dataset = dataset, anacat = ilabel, 
+                                                    ttbarmass = ak.to_numpy(ttbarmass[icat]),
+                                                    weight = ak.to_numpy(Weights_pdfUp[icat]))
+                    output['ttbarmass_pdfDown'].fill(dataset = dataset, anacat = ilabel, 
+                                                    ttbarmass = ak.to_numpy(ttbarmass[icat]),
+                                                    weight = ak.to_numpy(Weights_pdfDown[icat]))
+                    
+                                    
             ###---------------------------------------------------------------------------------------------###
             ### ----------------------- Top pT Reweighting (S.F. as function of pT) ----------------------- ###
             ###---------------------------------------------------------------------------------------------###
@@ -1488,6 +1541,8 @@ class MCFlavorEfficiencyProcessor(processor.ProcessorABC):
         }
         
         return EffStuff
+    
+    
             
     @property
     def accumulator(self):
