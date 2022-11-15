@@ -12,6 +12,7 @@ import itertools
 import pandas as pd
 from numpy.random import RandomState
 import correctionlib
+import hist as hist2
 # from correctionlib.schemav2 import Correction
 
 import awkward as ak
@@ -44,7 +45,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                  year=None, apv='', vfp='', UseLookUpTables=False, lu=None, extraDaskDirectory='',
                  ModMass=False, RandomDebugMode=False, UseEfficiencies=False, xsSystematicWeight=1., lumSystematicWeight=1.,
                  ApplybtagSF=False, ScaleFactorFile='', ApplyttagSF=False, ApplyTopReweight=False, 
-                 ApplyJER=False, ApplyJEC=False, ApplyPDF=False, sysType=None):
+                 ApplyJER=False, ApplyJEC=False, ApplyPDF=False, sysType=None, useHist=False):
         
         self.prng = prng
         self.htCut = htCut
@@ -74,6 +75,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         self.xsSystematicWeight = xsSystematicWeight
         self.lumSystematicWeight = lumSystematicWeight
         self.lu = lu # Look Up Tables
+        self.useHist = useHist
         
         # --- anti-tag+probe, anti-tag, pre-tag, 0, 1, >=1, 2 ttags, any t-tag (>=0t) --- #
         self.ttagcats = ["AT&Pt", "at", "pret", "0t", "1t", ">=1t", "2t", ">=0t"] 
@@ -88,84 +90,169 @@ class TTbarResProcessor(processor.ProcessorABC):
         self.anacats = [ t+b+y for t,b,y in itertools.product( self.ttagcats, self.btagcats, self.ycats) ]
         #print(self.anacats)
         
-        dataset_axis = hist.Cat("dataset", "Primary dataset")
-        cats_axis = hist.Cat("anacat", "Analysis Category")
-        
-        jetmass_axis = hist.Bin("jetmass", r"Jet $m$ [GeV]", 50, 0, 500)
-        jetpt_axis = hist.Bin("jetpt", r"Jet $p_{T}$ [GeV]", 50, 400, 8000)
-        ttbarmass_axis = hist.Bin("ttbarmass", r"$m_{t\bar{t}}$ [GeV]", 50, 800, 8000)
-        jeteta_axis = hist.Bin("jeteta", r"Jet $\eta$", 50, -2.4, 2.4)
-        jetphi_axis = hist.Bin("jetphi", r"Jet $\phi$", 50, -np.pi, np.pi)
-        jety_axis = hist.Bin("jety", r"Jet $y$", 50, -3, 3)
-        jetdy_axis = hist.Bin("jetdy", r"Jet $\Delta y$", 50, 0, 5)
-        manual_axis = hist.Bin("jetp", r"Jet Momentum [GeV]", manual_bins)
-        tagger_axis = hist.Bin("tagger", r"deepTag", 50, 0, 1)
-        tau32_axis = hist.Bin("tau32", r"$\tau_3/\tau_2$", 50, 0, 2)
-        
-        subjetmass_axis = hist.Bin("subjetmass", r"SubJet $m$ [GeV]", 50, 0, 500)
-        subjetpt_axis = hist.Bin("subjetpt", r"SubJet $p_{T}$ [GeV]", 25, 0, 2000)
-        subjeteta_axis = hist.Bin("subjeteta", r"SubJet $\eta$", 25, 0, 2.4)
-        subjetphi_axis = hist.Bin("subjetphi", r"SubJet $\phi$", 50, -np.pi, np.pi)
 
-        self._accumulator = processor.dict_accumulator({
-#    ===================================================================================================================
-#    K     K IIIIIII N     N EEEEEEE M     M    A    TTTTTTT IIIIIII   CCCC      H     H IIIIIII   SSSSS TTTTTTT   SSSSS     
-#    K   K      I    NN    N E       MM   MM   A A      T       I     C          H     H    I     S         T     S          
-#    K K        I    N N   N E       M M M M  A   A     T       I    C           H     H    I    S          T    S           
-#    KKk        I    N  N  N EEEEEEE M  M  M  AAAAA     T       I    C           HHHHHHH    I     SSSSS     T     SSSSS      
-#    K  K       I    N   N N E       M     M A     A    T       I    C           H     H    I          S    T          S     
-#    K   K      I    N    NN E       M     M A     A    T       I     C          H     H    I         S     T         S      
-#    K   K   IIIIIII N     N EEEEEEE M     M A     A    T    IIIIIII   CCCC      H     H IIIIIII SSSSS      T    SSSSS 
-#    ===================================================================================================================
+        # rewriting axes for scikit-hep/hist
+        
+        if(self.useHist):
             
-            'ttbarmass': hist.Hist("Counts", dataset_axis, cats_axis, ttbarmass_axis),
+            dataset_axis = hist2.axis.StrCategory([], growth=True, name="dataset", label="Primary Dataset")
             
-            ##### systematic ttbar histograms #####
+            # map analysis categories to array #
+            cats_axis = hist2.axis.Regular(48, 0, 47, name="anacat", label="Analysis Category")
             
-            'ttbarmass_jerUp': hist.Hist("Counts", dataset_axis, cats_axis, ttbarmass_axis),
-            'ttbarmass_jerDown': hist.Hist("Counts", dataset_axis, cats_axis, ttbarmass_axis),
-            'ttbarmass_jerNom': hist.Hist("Counts", dataset_axis, cats_axis, ttbarmass_axis),
+            # axes for jets and ttbar candidates #
+            ttbarmass_axis = hist2.axis.Regular(50, 800, 8000, name="ttbarmass", label=r"$m_{t\bar{t}}$ [GeV]")
+            jetmass_axis   = hist2.axis.Regular(50, 0, 500, name="jetmass", label=r"Jet $m$ [GeV]")
+            jetpt_axis     = hist2.axis.Regular(50, 0, 500, name="jetpt", label=r"Jet $p_{T}$ [GeV]")
+            jeteta_axis    = hist2.axis.Regular(50, -2.4, 2.4, name="jeteta", label=r"Jet $\eta$")
+            jetphi_axis    = hist2.axis.Regular(50, -np.pi, np.pi, name="jetphi", label=r"Jet $\phi$")
+            jety_axis      = hist2.axis.Regular(50, -3, 3, name="jety", label=r"Jet $y$")
+            jetdy_axis     = hist2.axis.Regular(50, 0, 5, name="jetdy", label=r"Jet $\Delta y$")
             
-            'ttbarmass_pdfUp': hist.Hist("Counts", dataset_axis, cats_axis, ttbarmass_axis),
-            'ttbarmass_pdfDown': hist.Hist("Counts", dataset_axis, cats_axis, ttbarmass_axis),
-            'ttbarmass_pdfNom': hist.Hist("Counts", dataset_axis, cats_axis, ttbarmass_axis),
+            # axes for top tagger #
+            manual_axis = hist2.axis.Variable(manual_bins, name="jetp", label=r"Jet Momentum [GeV]")
+            tagger_axis = hist2.axis.Regular(50, 0, 1, name="tagger", label=r"deepTag")
+            tau32_axis  = hist2.axis.Regular(50, 0, 2, name="tau32", label=r"$\tau_3/\tau_2$")
             
-            ######################################
+            # axes for subjets #
+            subjetmass_axis = hist2.axis.Regular(50, 0, 500, name="subjetmass", label=r"SubJet $m$ [GeV]")
+            subjetpt_axis   = hist2.axis.Regular(25, 0, 2000, name="subjetpt", label=r"SubJet $p_{T}$ [GeV]")
+            subjeteta_axis  = hist2.axis.Regular(25, 0, 2.4, name="subjeteta", label=r"SubJet $\eta$")
+            subjetphi_axis  = hist2.axis.Regular(50, -np.pi, np.pi, name="subjetphi", label=r"SubJet $\phi$")
+            
+        else:
+        
+            dataset_axis = hist.Cat("dataset", "Primary dataset")
+            cats_axis = hist.Cat("anacat", "Analysis Category")
 
-            'jetmass':         hist.Hist("Counts", dataset_axis, cats_axis, jetmass_axis),
-            'SDmass':          hist.Hist("Counts", dataset_axis, cats_axis, jetmass_axis),
-            'SDmass_precat':   hist.Hist("Counts", dataset_axis, jetpt_axis, jetmass_axis), # What was this for again?
+            jetmass_axis = hist.Bin("jetmass", r"Jet $m$ [GeV]", 50, 0, 500)
+            jetpt_axis = hist.Bin("jetpt", r"Jet $p_{T}$ [GeV]", 50, 0, 500)
+            ttbarmass_axis = hist.Bin("ttbarmass", r"$m_{t\bar{t}}$ [GeV]", 50, 800, 8000)
+            jeteta_axis = hist.Bin("jeteta", r"Jet $\eta$", 50, -2.4, 2.4)
+            jetphi_axis = hist.Bin("jetphi", r"Jet $\phi$", 50, -np.pi, np.pi)
+            jety_axis = hist.Bin("jety", r"Jet $y$", 50, -3, 3)
+            jetdy_axis = hist.Bin("jetdy", r"Jet $\Delta y$", 50, 0, 5)
+            manual_axis = hist.Bin("jetp", r"Jet Momentum [GeV]", manual_bins)
+            tagger_axis = hist.Bin("tagger", r"deepTag", 50, 0, 1)
+            tau32_axis = hist.Bin("tau32", r"$\tau_3/\tau_2$", 50, 0, 2)
+
+            subjetmass_axis = hist.Bin("subjetmass", r"SubJet $m$ [GeV]", 50, 0, 500)
+            subjetpt_axis = hist.Bin("subjetpt", r"SubJet $p_{T}$ [GeV]", 25, 0, 2000)
+            subjeteta_axis = hist.Bin("subjeteta", r"SubJet $\eta$", 25, 0, 2.4)
+            subjetphi_axis = hist.Bin("subjetphi", r"SubJet $\phi$", 50, -np.pi, np.pi)
+        
+        #    ===================================================================================================================
+        #    K     K IIIIIII N     N EEEEEEE M     M    A    TTTTTTT IIIIIII   CCCC      H     H IIIIIII   SSSSS TTTTTTT   SSSSS     
+        #    K   K      I    NN    N E       MM   MM   A A      T       I     C          H     H    I     S         T     S          
+        #    K K        I    N N   N E       M M M M  A   A     T       I    C           H     H    I    S          T    S           
+        #    KKk        I    N  N  N EEEEEEE M  M  M  AAAAA     T       I    C           HHHHHHH    I     SSSSS     T     SSSSS      
+        #    K  K       I    N   N N E       M     M A     A    T       I    C           H     H    I          S    T          S     
+        #    K   K      I    N    NN E       M     M A     A    T       I     C          H     H    I         S     T         S      
+        #    K   K   IIIIIII N     N EEEEEEE M     M A     A    T    IIIIIII   CCCC      H     H IIIIIII SSSSS      T    SSSSS 
+        #    ===================================================================================================================
+        
+        if(self.useHist):
             
-            'jetpt':     hist.Hist("Counts", dataset_axis, cats_axis, jetpt_axis),
-            'jeteta':    hist.Hist("Counts", dataset_axis, cats_axis, jeteta_axis),
-            'jetphi':    hist.Hist("Counts", dataset_axis, cats_axis, jetphi_axis),
+            self.histo_dict = {
+                
+                'ttbarmass' : hist2.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
+                
+                'ttbarmass_jerUp'   : hist2.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
+                'ttbarmass_jerDown' : hist2.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
+                'ttbarmass_jerNom'  : hist2.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
+                
+                'ttbarmass_pdfUp'   : hist2.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
+                'ttbarmass_pdfDown' : hist2.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
+                'ttbarmass_pdfNom'  : hist2.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
+
+                ######################################
+
+                'jetmass' : hist2.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
+                'SDmass'  : hist2.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
+                'SDmass_precat' : hist2.Hist(dataset_axis, jetpt_axis, jetmass_axis, storage="weight", name="Counts"),
+
+                'jetpt'  : hist2.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
+                'jeteta' : hist2.Hist(dataset_axis, cats_axis, jeteta_axis, storage="weight", name="Counts"),
+                'jetphi' : hist2.Hist(dataset_axis, cats_axis, jetphi_axis, storage="weight", name="Counts"),
+
+                'probept' : hist2.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
+                'probep'  : hist2.Hist(dataset_axis, cats_axis, manual_axis, storage="weight", name="Counts"),
+
+                'jety'  : hist2.Hist(dataset_axis, cats_axis, jety_axis, storage="weight", name="Counts"),
+                'jetdy' : hist2.Hist(dataset_axis, cats_axis, jetdy_axis, storage="weight", name="Counts"),
+
+                'deepTag_TvsQCD'   : hist2.Hist(dataset_axis, cats_axis, jetpt_axis, tagger_axis, storage="weight", name="Counts"),
+                'deepTagMD_TvsQCD' : hist2.Hist(dataset_axis, cats_axis, jetpt_axis, tagger_axis, storage="weight", name="Counts"),
+
+                'tau32'        : hist2.Hist(dataset_axis, cats_axis, tau32_axis, storage="weight", name="Counts"),
+                'tau32_2D'     : hist2.Hist(dataset_axis, cats_axis, jetpt_axis, tau32_axis, storage="weight", name="Counts"),
+                'tau32_precat' : hist2.Hist(dataset_axis, jetpt_axis, tau32_axis, storage="weight", name="Counts"),
+
+                'subjetmass' : hist2.Hist(dataset_axis, cats_axis, subjetmass_axis, storage="weight", name="Counts"), # not yet used
+                'subjetpt'   : hist2.Hist(dataset_axis, cats_axis, subjetpt_axis, storage="weight", name="Counts"),
+                'subjeteta'  : hist2.Hist(dataset_axis, cats_axis, subjeteta_axis, storage="weight", name="Counts"),
+                'subjetphi'  : hist2.Hist(dataset_axis, cats_axis, subjetphi_axis, storage="weight", name="Counts"), # not yet used
+
+                'numerator'  : hist2.Hist(dataset_axis, cats_axis, manual_axis, storage="weight", name="Counts"),
+                'denominator': hist2.Hist(dataset_axis, cats_axis, manual_axis, storage="weight", name="Counts"),
+
+                #********************************************************************************************************************#
+
+                'cutflow': processor.defaultdict_accumulator(int),
+            }             
             
-            'probept':   hist.Hist("Counts", dataset_axis, cats_axis, jetpt_axis),
-            'probep':    hist.Hist("Counts", dataset_axis, cats_axis, manual_axis),
-            
-            'jety':      hist.Hist("Counts", dataset_axis, cats_axis, jety_axis),
-            'jetdy':     hist.Hist("Counts", dataset_axis, cats_axis, jetdy_axis),
-            
-            'deepTag_TvsQCD':   hist.Hist("Counts", dataset_axis, cats_axis, jetpt_axis, tagger_axis),
-            'deepTagMD_TvsQCD': hist.Hist("Counts", dataset_axis, cats_axis, jetpt_axis, tagger_axis),
-            
-            'tau32':          hist.Hist("Counts", dataset_axis, cats_axis, tau32_axis),
-            'tau32_2D':       hist.Hist("Counts", dataset_axis, cats_axis, jetpt_axis, tau32_axis),
-            'tau32_precat': hist.Hist("Counts", dataset_axis, jetpt_axis, tau32_axis),
-            
-            'subjetmass':   hist.Hist("Counts", dataset_axis, cats_axis, subjetmass_axis), # not yet used
-            'subjetpt':     hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis),
-            'subjeteta':    hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
-            'subjetphi':    hist.Hist("Counts", dataset_axis, cats_axis, subjetphi_axis), # not yet used
-            
-            'numerator':   hist.Hist("Counts", dataset_axis, cats_axis, manual_axis),
-            'denominator': hist.Hist("Counts", dataset_axis, cats_axis, manual_axis),
-            
-            #********************************************************************************************************************#
-            
-            'cutflow': processor.defaultdict_accumulator(int),
-            
-        })
+        else:
+                
+            self._accumulator = processor.dict_accumulator({
+
+                'ttbarmass': hist.Hist("Counts", dataset_axis, cats_axis, ttbarmass_axis),
+
+                ##### systematic ttbar histograms #####
+
+                'ttbarmass_jerUp': hist.Hist("Counts", dataset_axis, cats_axis, ttbarmass_axis),
+                'ttbarmass_jerDown': hist.Hist("Counts", dataset_axis, cats_axis, ttbarmass_axis),
+                'ttbarmass_jerNom': hist.Hist("Counts", dataset_axis, cats_axis, ttbarmass_axis),
+
+                'ttbarmass_pdfUp': hist.Hist("Counts", dataset_axis, cats_axis, ttbarmass_axis),
+                'ttbarmass_pdfDown': hist.Hist("Counts", dataset_axis, cats_axis, ttbarmass_axis),
+                'ttbarmass_pdfNom': hist.Hist("Counts", dataset_axis, cats_axis, ttbarmass_axis),
+
+                ######################################
+
+                'jetmass':         hist.Hist("Counts", dataset_axis, cats_axis, jetmass_axis),
+                'SDmass':          hist.Hist("Counts", dataset_axis, cats_axis, jetmass_axis),
+                'SDmass_precat':   hist.Hist("Counts", dataset_axis, jetpt_axis, jetmass_axis), # What was this for again?
+
+                'jetpt':     hist.Hist("Counts", dataset_axis, cats_axis, jetpt_axis),
+                'jeteta':    hist.Hist("Counts", dataset_axis, cats_axis, jeteta_axis),
+                'jetphi':    hist.Hist("Counts", dataset_axis, cats_axis, jetphi_axis),
+
+                'probept':   hist.Hist("Counts", dataset_axis, cats_axis, jetpt_axis),
+                'probep':    hist.Hist("Counts", dataset_axis, cats_axis, manual_axis),
+
+                'jety':      hist.Hist("Counts", dataset_axis, cats_axis, jety_axis),
+                'jetdy':     hist.Hist("Counts", dataset_axis, cats_axis, jetdy_axis),
+
+                'deepTag_TvsQCD':   hist.Hist("Counts", dataset_axis, cats_axis, jetpt_axis, tagger_axis),
+                'deepTagMD_TvsQCD': hist.Hist("Counts", dataset_axis, cats_axis, jetpt_axis, tagger_axis),
+
+                'tau32':          hist.Hist("Counts", dataset_axis, cats_axis, tau32_axis),
+                'tau32_2D':       hist.Hist("Counts", dataset_axis, cats_axis, jetpt_axis, tau32_axis),
+                'tau32_precat': hist.Hist("Counts", dataset_axis, jetpt_axis, tau32_axis),
+
+                'subjetmass':   hist.Hist("Counts", dataset_axis, cats_axis, subjetmass_axis), # not yet used
+                'subjetpt':     hist.Hist("Counts", dataset_axis, cats_axis, subjetpt_axis),
+                'subjeteta':    hist.Hist("Counts", dataset_axis, cats_axis, subjeteta_axis),
+                'subjetphi':    hist.Hist("Counts", dataset_axis, cats_axis, subjetphi_axis), # not yet used
+
+                'numerator':   hist.Hist("Counts", dataset_axis, cats_axis, manual_axis),
+                'denominator': hist.Hist("Counts", dataset_axis, cats_axis, manual_axis),
+
+                #********************************************************************************************************************#
+
+                'cutflow': processor.defaultdict_accumulator(int),
+
+            })
         
 #   =======================================================================
 #   FFFFFFF U     U N     N   CCCC  TTTTTTT IIIIIII   OOO   N     N   SSSSS     
@@ -488,7 +575,11 @@ class TTbarResProcessor(processor.ProcessorABC):
         return self._accumulator
 
     def process(self, events):
-        output = self.accumulator.identity()
+        
+        if self.useHist:
+            output = self.histo_dict
+        else:
+            output = self.accumulator.identity()
         
         # ---- Define dataset ---- #
         dataset = events.metadata['dataset']
@@ -796,7 +887,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         output['cutflow']['Good Subjets'] += ak.to_awkward0(GoodSubjets).sum()
         ttbarcands = ttbarcands[GoodSubjets] # Choose only ttbar candidates with this selection of subjets
         FatJets = FatJets[GoodSubjets]
-	SubJets = SubJets[GoodSubjets]
+        SubJets = SubJets[GoodSubjets]
         GenJets = GenJets[GoodSubjets]
         events = events[GoodSubjets]
         Jets = Jets[GoodSubjets] # this used to not be here
@@ -1149,8 +1240,14 @@ class TTbarResProcessor(processor.ProcessorABC):
         file_df = None # Initial Declaration
         
         # print(self.lu[])
-        
-        for ilabel,icat in labels_and_categories.items():
+        print()
+        for i, [ilabel,icat] in enumerate(labels_and_categories.items()):
+            
+            # example: 
+            # i = 42
+            # ilabel = >=0t0bcen
+            # icat = [False, False, True]
+            
             ###------------------------------------------------------------------------------------------###
             ### ------------------------------------ Mistag Scaling ------------------------------------ ###
             ###------------------------------------------------------------------------------------------###
@@ -1264,17 +1361,36 @@ class TTbarResProcessor(processor.ProcessorABC):
                     Weights_jerDown = ak.flatten(Weights * jerDown)
                     Weights_jerNom = ak.flatten(Weights * jerNom)
                     
-
+                    if(self.useHist):
+                        
+                        output['ttbarmass_jerNom'].fill(dataset = dataset,
+                                         anacat = i,
+                                         ttbarmass = ak.to_numpy(ttbarmass[icat]),
+                                         weight = ak.to_numpy(Weights_jerNom[icat]),
+                                        )
+                        output['ttbarmass_jerUp'].fill(dataset = dataset,
+                                         anacat = i,
+                                         ttbarmass = ak.to_numpy(ttbarmass[icat]),
+                                         weight = ak.to_numpy(Weights_jerUp[icat]),
+                                        )
+                        output['ttbarmass_jerDown'].fill(dataset = dataset,
+                                         anacat = i,
+                                         ttbarmass = ak.to_numpy(ttbarmass[icat]),
+                                         weight = ak.to_numpy(Weights_jerDown[icat]),
+                                        )
+                        
+                        
+                    else:
                     
-                    output['ttbarmass_jerNom'].fill(dataset = dataset, anacat = ilabel, 
-                                                    ttbarmass = ak.to_numpy(ttbarmass[icat]),
-                                                    weight = ak.to_numpy(Weights_jerNom[icat]))
-                    output['ttbarmass_jerUp'].fill(dataset = dataset, anacat = ilabel, 
-                                                    ttbarmass = ak.to_numpy(ttbarmass[icat]),
-                                                    weight = ak.to_numpy(Weights_jerUp[icat]))
-                    output['ttbarmass_jerDown'].fill(dataset = dataset, anacat = ilabel, 
-                                                    ttbarmass = ak.to_numpy(ttbarmass[icat]),
-                                                    weight = ak.to_numpy(Weights_jerDown[icat]))
+                        output['ttbarmass_jerNom'].fill(dataset = dataset, anacat = ilabel, 
+                                                        ttbarmass = ak.to_numpy(ttbarmass[icat]),
+                                                        weight = ak.to_numpy(Weights_jerNom[icat]))
+                        output['ttbarmass_jerUp'].fill(dataset = dataset, anacat = ilabel, 
+                                                        ttbarmass = ak.to_numpy(ttbarmass[icat]),
+                                                        weight = ak.to_numpy(Weights_jerUp[icat]))
+                        output['ttbarmass_jerDown'].fill(dataset = dataset, anacat = ilabel, 
+                                                        ttbarmass = ak.to_numpy(ttbarmass[icat]),
+                                                        weight = ak.to_numpy(Weights_jerDown[icat]))
                     
                     
                     
@@ -1293,17 +1409,36 @@ class TTbarResProcessor(processor.ProcessorABC):
                         Weights_pdfDown = Weights
                         Weights_pdfNom  = Weights
                     
-
                     
-                    output['ttbarmass_pdfNom'].fill(dataset = dataset, anacat = ilabel, 
-                                                    ttbarmass = ak.to_numpy(ttbarmass[icat]),
-                                                    weight = ak.to_numpy(Weights_pdfNom[icat]))
-                    output['ttbarmass_pdfUp'].fill(dataset = dataset, anacat = ilabel, 
-                                                    ttbarmass = ak.to_numpy(ttbarmass[icat]),
-                                                    weight = ak.to_numpy(Weights_pdfUp[icat]))
-                    output['ttbarmass_pdfDown'].fill(dataset = dataset, anacat = ilabel, 
-                                                    ttbarmass = ak.to_numpy(ttbarmass[icat]),
-                                                    weight = ak.to_numpy(Weights_pdfDown[icat]))
+                    
+                    if(self.useHist):
+                        
+                        output['ttbarmass_pdfNom'].fill(dataset = dataset,
+                                         anacat = i,
+                                         ttbarmass = ak.to_numpy(ttbarmass[icat]),
+                                         weight = ak.to_numpy(Weights_pdfNom[icat]),
+                                        )
+                        output['ttbarmass_pdfUp'].fill(dataset = dataset,
+                                         anacat = i,
+                                         ttbarmass = ak.to_numpy(ttbarmass[icat]),
+                                         weight = ak.to_numpy(Weights_pdfUp[icat]),
+                                        )
+                        output['ttbarmass_pdfDown'].fill(dataset = dataset,
+                                         anacat = i,
+                                         ttbarmass = ak.to_numpy(ttbarmass[icat]),
+                                         weight = ak.to_numpy(Weights_pdfDown[icat]),
+                                        )
+                        
+                    else:
+                        output['ttbarmass_pdfNom'].fill(dataset = dataset, anacat = ilabel, 
+                                                        ttbarmass = ak.to_numpy(ttbarmass[icat]),
+                                                        weight = ak.to_numpy(Weights_pdfNom[icat]))
+                        output['ttbarmass_pdfUp'].fill(dataset = dataset, anacat = ilabel, 
+                                                        ttbarmass = ak.to_numpy(ttbarmass[icat]),
+                                                        weight = ak.to_numpy(Weights_pdfUp[icat]))
+                        output['ttbarmass_pdfDown'].fill(dataset = dataset, anacat = ilabel, 
+                                                        ttbarmass = ak.to_numpy(ttbarmass[icat]),
+                                                        weight = ak.to_numpy(Weights_pdfDown[icat]))
                     
                                     
             ###---------------------------------------------------------------------------------------------###
@@ -1315,46 +1450,128 @@ class TTbarResProcessor(processor.ProcessorABC):
 # ************************************************************************************************************ #    
 
             output['cutflow'][ilabel] += np.sum(icat)
+    
+    
+    
+            if self.useHist:
+                
+                output['ttbarmass'].fill(dataset = dataset,
+                                         anacat = i,
+                                         ttbarmass = ak.to_numpy(ttbarmass[icat]),
+                                         weight = ak.to_numpy(Weights[icat]),
+                                        )
+                
+                # probe ttbar candidate histograms
+                output['probept'].fill(dataset = dataset,
+                                         anacat = i,
+                                         jetpt = ak.to_numpy(pT[icat]),
+                                         weight = ak.to_numpy(Weights[icat]),
+                                        )
+                output['probep'].fill(dataset = dataset,
+                                         anacat = i,
+                                         jetp = ak.to_numpy(p[icat]),
+                                         weight = ak.to_numpy(Weights[icat]),
+                                        )
+                
+                # jet histograms 
+                output['jetpt'].fill(dataset = dataset,
+                                         anacat = i,
+                                         jetpt = ak.to_numpy(jetpt[icat]),
+                                         weight = ak.to_numpy(Weights[icat]),
+                                        )
+                output['jeteta'].fill(dataset = dataset,
+                                         anacat = i,
+                                         jeteta = ak.to_numpy(jeteta[icat]),
+                                         weight = ak.to_numpy(Weights[icat]),
+                                        )
+                output['jetphi'].fill(dataset = dataset,
+                                         anacat = i,
+                                         jetphi = ak.to_numpy(jetphi[icat]),
+                                         weight = ak.to_numpy(Weights[icat]),
+                                        )
+                output['jety'].fill(dataset = dataset,
+                                         anacat = i,
+                                         jety = ak.to_numpy(jety[icat]),
+                                         weight = ak.to_numpy(Weights[icat]),
+                                        )
+                output['jetdy'].fill(dataset = dataset,
+                                         anacat = i,
+                                         jetdy = ak.to_numpy(jetdy[icat]),
+                                         weight = ak.to_numpy(Weights[icat]),
+                                        )
+                output['jetmass'].fill(dataset = dataset,
+                                         anacat = i,
+                                         jetmass = ak.to_numpy(jetmass[icat]),
+                                         weight = ak.to_numpy(Weights[icat]),
+                                        )
+                output['SDmass'].fill(dataset = dataset,
+                                         anacat = i,
+                                         jetmass = ak.to_numpy(SDmass[icat]),
+                                         weight = ak.to_numpy(Weights[icat]),
+                                        )
+                
+                
+                # mistag rate histograms
+                output['numerator'].fill(dataset = dataset,
+                                         anacat = i,
+                                         jetp = ak.to_numpy(numerator[icat]),
+                                         weight = ak.to_numpy(Weights[icat]),
+                                        )
+                output['denominator'].fill(dataset = dataset,
+                                         anacat = i,
+                                         jetp = ak.to_numpy(denominator[icat]),
+                                         weight = ak.to_numpy(Weights[icat]),
+                                        )
+                
+                
+                # top tagger histograms
+                output['tau32'].fill(dataset = dataset,
+                                         anacat = i,
+                                         tau32 = ak.to_numpy(Tau32[icat]),
+                                         weight = ak.to_numpy(Weights[icat]),
+                                        )
             
-            output['ttbarmass'].fill(dataset = dataset, anacat = ilabel, 
-                                ttbarmass = ak.to_numpy(ttbarmass[icat]),
-                                weight = ak.to_numpy(Weights[icat]))
-            output['jetpt'].fill(dataset = dataset, anacat = ilabel, 
-                                jetpt = ak.to_numpy(jetpt[icat]),
-                                weight = ak.to_numpy(Weights[icat]))
-            output['probept'].fill(dataset = dataset, anacat = ilabel, 
-                                jetpt = ak.to_numpy(pT[icat]),
-                                weight = ak.to_numpy(Weights[icat]))
-            output['probep'].fill(dataset = dataset, anacat = ilabel, 
-                                jetp = ak.to_numpy(p[icat]),
-                                weight = ak.to_numpy(Weights[icat]))
-            output['jeteta'].fill(dataset = dataset, anacat = ilabel, 
-                                jeteta = ak.to_numpy(jeteta[icat]),
-                                weight = ak.to_numpy(Weights[icat]))
-            output['jetphi'].fill(dataset = dataset, anacat = ilabel, 
-                                jetphi = ak.to_numpy(jetphi[icat]),
-                                weight = ak.to_numpy(Weights[icat]))
-            output['jety'].fill(dataset = dataset, anacat = ilabel, 
-                                jety = ak.to_numpy(jety[icat]),
-                                weight = ak.to_numpy(Weights[icat]))
-            output['jetdy'].fill(dataset = dataset, anacat = ilabel, 
-                                jetdy = ak.to_numpy(jetdy[icat]),
-                                weight = ak.to_numpy(Weights[icat]))
-            output['numerator'].fill(dataset = dataset, anacat = ilabel, 
-                                jetp = ak.to_numpy(numerator[icat]),
-                                weight = ak.to_numpy(Weights[icat]))
-            output['denominator'].fill(dataset = dataset, anacat = ilabel, 
-                                jetp = ak.to_numpy(denominator[icat]),
-                                weight = ak.to_numpy(Weights[icat]))
-            output['jetmass'].fill(dataset = dataset, anacat = ilabel, 
-                                   jetmass = ak.to_numpy(jetmass[icat]),
-                                   weight = ak.to_numpy(Weights[icat]))
-            output['SDmass'].fill(dataset = dataset, anacat = ilabel, 
-                                   jetmass = ak.to_numpy(SDmass[icat]),
-                                   weight = ak.to_numpy(Weights[icat]))
-            output['tau32'].fill(dataset = dataset, anacat = ilabel,
-                                          tau32 = ak.to_numpy(Tau32[icat]),
-                                          weight = ak.to_numpy(Weights[icat]))
+            else:
+            
+                output['ttbarmass'].fill(dataset = dataset, anacat = ilabel, 
+                                    ttbarmass = ak.to_numpy(ttbarmass[icat]),
+                                    weight = ak.to_numpy(Weights[icat]))
+                output['jetpt'].fill(dataset = dataset, anacat = ilabel, 
+                                    jetpt = ak.to_numpy(jetpt[icat]),
+                                    weight = ak.to_numpy(Weights[icat]))
+                output['probept'].fill(dataset = dataset, anacat = ilabel, 
+                                    jetpt = ak.to_numpy(pT[icat]),
+                                    weight = ak.to_numpy(Weights[icat]))
+                output['probep'].fill(dataset = dataset, anacat = ilabel, 
+                                    jetp = ak.to_numpy(p[icat]),
+                                    weight = ak.to_numpy(Weights[icat]))
+                output['jeteta'].fill(dataset = dataset, anacat = ilabel, 
+                                    jeteta = ak.to_numpy(jeteta[icat]),
+                                    weight = ak.to_numpy(Weights[icat]))
+                output['jetphi'].fill(dataset = dataset, anacat = ilabel, 
+                                    jetphi = ak.to_numpy(jetphi[icat]),
+                                    weight = ak.to_numpy(Weights[icat]))
+                output['jety'].fill(dataset = dataset, anacat = ilabel, 
+                                    jety = ak.to_numpy(jety[icat]),
+                                    weight = ak.to_numpy(Weights[icat]))
+                output['jetdy'].fill(dataset = dataset, anacat = ilabel, 
+                                    jetdy = ak.to_numpy(jetdy[icat]),
+                                    weight = ak.to_numpy(Weights[icat]))
+                output['numerator'].fill(dataset = dataset, anacat = ilabel, 
+                                    jetp = ak.to_numpy(numerator[icat]),
+                                    weight = ak.to_numpy(Weights[icat]))
+                output['denominator'].fill(dataset = dataset, anacat = ilabel, 
+                                    jetp = ak.to_numpy(denominator[icat]),
+                                    weight = ak.to_numpy(Weights[icat]))
+                output['jetmass'].fill(dataset = dataset, anacat = ilabel, 
+                                       jetmass = ak.to_numpy(jetmass[icat]),
+                                       weight = ak.to_numpy(Weights[icat]))
+                output['SDmass'].fill(dataset = dataset, anacat = ilabel, 
+                                       jetmass = ak.to_numpy(SDmass[icat]),
+                                       weight = ak.to_numpy(Weights[icat]))
+                output['tau32'].fill(dataset = dataset, anacat = ilabel,
+                                              tau32 = ak.to_numpy(Tau32[icat]),
+                                              weight = ak.to_numpy(Weights[icat]))
  
         return output
 

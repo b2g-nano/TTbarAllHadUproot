@@ -194,6 +194,8 @@ Parser.add_argument('--dask', action='store_true', help='Try the dask executor (
 Parser.add_argument('--timeout', type=float, help='How many seconds should dask wait for scheduler to connect')
 Parser.add_argument('--useEff', action='store_true', help='Use MC bTag efficiencies for bTagging systematics')
 Parser.add_argument('--tpt', action='store_true', help='Apply top pT re-weighting for uproot 2')
+Parser.add_argument('--useHist', action='store_true', help='use scikit-hep/hist for histograms')
+
 
 Parser.add_argument('--step', type=int, choices=[1, 2, 3, 4], help='Easily run a certain step of the workflow')
 
@@ -202,8 +204,10 @@ UncertaintyGroup.add_argument('--bTagSyst', type=str, choices=['central', 'up', 
 UncertaintyGroup.add_argument('--tTagSyst', type=str, choices=['central', 'up', 'down'], help='Choose Unc.')
 UncertaintyGroup.add_argument('--ttXSSyst', type=str, choices=['central', 'up', 'down'], help='ttbar cross section systematics.  Choose Unc.')
 UncertaintyGroup.add_argument('--lumSyst', type=str, choices=['central', 'up', 'down'], help='Luminosity systematics.  Choose Unc.')
-UncertaintyGroup.add_argument('--jec', type=str, choices=['central', 'up', 'down'], help='Choose Unc.')
-UncertaintyGroup.add_argument('--jer', type=str, choices=['central', 'up', 'down'], help='Choose Unc.')
+UncertaintyGroup.add_argument('--jec', action='store_true', help='apply jec systematic weights')
+UncertaintyGroup.add_argument('--jer', action='store_true', help='apply jer systematic weights')
+UncertaintyGroup.add_argument('--pdf', action='store_true', help='apply pdf systematic weights')
+
 UncertaintyGroup.add_argument('--pileup', type=str, choices=['central', 'up', 'down'], help='Choose Unc.')
 
 args = Parser.parse_args()
@@ -357,6 +361,10 @@ UncType = ""
 SFfile = ""
 ApplybSF = False
 ApplytSF = False
+ApplyJEC = False
+ApplyJER = False
+ApplyPDF = False
+useHist  = False
 xsSystwgt = 1.
 lumSystwgt = 1.
 
@@ -403,19 +411,34 @@ elif args.tTagSyst:
 #    ---------------------------------------------------------------------------------------------------------------------    # 
 
 elif args.jec:
+    ApplyJEC = True
     UncType = "_jecUnc_"
-    SystType = args.jec # string for ttag SF correction --> "central", "up", or "down"
+    SystType = 'jec' # "central", "up", or "down"
 #    ---------------------------------------------------------------------------------------------------------------------    # 
 
 elif args.jer:
+    ApplyJER = True
     UncType = "_jerUnc_"
-    SystType = args.jer # string for ttag SF correction --> "central", "up", or "down"
+    SystType = 'jer' 
+#    ---------------------------------------------------------------------------------------------------------------------    # 
+
+elif args.pdf:
+    ApplyPDF = True
+    UncType = "_pdfUnc_"
+    SystType = 'pdf' 
 #    ---------------------------------------------------------------------------------------------------------------------    # 
 
 elif args.pileup:
     UncType = "_pileupUnc_"
-    SystType = args.pileup # string for ttag SF correction --> "central", "up", or "down"
+    SystType = args.pileup # "central", "up", or "down"
 #    ---------------------------------------------------------------------------------------------------------------------    # 
+
+# if(args.jec): ApplyJEC = True
+# if(args.jer): ApplyJER = True
+# if(args.pdf): ApplyPDF = True
+
+if args.useHist:
+    useHist = True
 
 UncArgs = np.array([args.bTagSyst, args.tTagSyst, args.jec, args.jer, args.ttXSSyst, args.lumSyst, args.pileup])
 SystOpts = np.any(UncArgs) # Check to see if any uncertainty argument is used
@@ -1040,12 +1063,9 @@ prng = RandomState(seed)
 for name,files in filesets_to_run.items(): 
     print('\n\n' + name + '\n\n-----------------------------------------------------')
     if not LoadingUnweightedFiles:
-        print('here 8')
         print('Processing', name, '...')
         if not RunAllRootFiles:
-            print('here 7')
             if not UsingDaskExecutor:
-                print('here 6')
                 chosen_exec = 'futures'
                 output = processor.run_uproot_job({name:files},
                                                   treename='Events',
@@ -1066,7 +1086,6 @@ for name,files in filesets_to_run.items():
                                                       'workers': 2},
                                                   chunksize=Chunk[0], maxchunks=Chunk[1])
             else: # use dask
-                print('here 5')
                 chosen_exec = 'dask'
                 client.wait_for_workers(timeout=TimeOut)
                 output = processor.run_uproot_job({name:files},
@@ -1092,7 +1111,6 @@ for name,files in filesets_to_run.items():
             outputs_unweighted[name] = output
             print(output)
             if SaveFirstRun:
-                print('here 0')
                 mkdir_p('TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/'
                           + SaveLocation[name])
                 
@@ -1110,7 +1128,6 @@ for name,files in filesets_to_run.items():
             
         else: # Run all Root Files
             if not UsingDaskExecutor:
-                print('here 4')
                 chosen_exec = 'futures'
                 output = processor.run_uproot_job({name:files},
                                                   treename='Events',
@@ -1131,7 +1148,6 @@ for name,files in filesets_to_run.items():
                                                       'workers': 2})
 
             else: # use dask
-                print('here 3')
                 chosen_exec = 'dask'
                 client.wait_for_workers(timeout=TimeOut)
                 output = processor.run_uproot_job({name:files},
@@ -1156,7 +1172,6 @@ for name,files in filesets_to_run.items():
             outputs_unweighted[name] = output
             print(output)
             if SaveFirstRun:
-                print('here 1')
                 mkdir_p('TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/'
                           + SaveLocation[name])
                                           
@@ -1178,7 +1193,6 @@ for name,files in filesets_to_run.items():
                 print( '%20s : %1s' % (i,j) )
             
     else: # Load files
-        print('here 2')
         output = util.load('TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/'
                            + SaveLocation[name]
                            + name 
@@ -1248,6 +1262,10 @@ if not OnlyCreateLookupTables and not args.runMMO:
                                                                                        lumSystematicWeight = lumSystwgt,
                                                                                        ApplyTopReweight = args.tpt,
                                                                                        ApplybtagSF=ApplybSF,
+                                                                                       ApplyJEC=ApplyJEC,
+                                                                                       ApplyJER=ApplyJER,
+                                                                                       ApplyPDF=ApplyPDF,
+                                                                                       useHist=useHist,
                                                                                        sysType=SystType,
                                                                                        ScaleFactorFile=SFfile,
                                                                                        UseEfficiencies=args.useEff,
@@ -1278,6 +1296,10 @@ if not OnlyCreateLookupTables and not args.runMMO:
                                                                                        lumSystematicWeight = lumSystwgt,
                                                                                        ApplyTopReweight = args.tpt,
                                                                                        ApplybtagSF=ApplybSF,
+                                                                                       ApplyJEC=ApplyJEC,
+                                                                                       ApplyJER=ApplyJER,
+                                                                                       ApplyPDF=ApplyPDF,
+                                                                                       useHist=useHist,
                                                                                        sysType=SystType,
                                                                                        ScaleFactorFile=SFfile,
                                                                                        UseEfficiencies=args.useEff,
