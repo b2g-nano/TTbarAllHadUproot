@@ -129,6 +129,10 @@ class TTbarResProcessor(processor.ProcessorABC):
             'ttbarmass_pdfUp': hist.Hist("Counts", dataset_axis, cats_axis, ttbarmass_axis),
             'ttbarmass_pdfDown': hist.Hist("Counts", dataset_axis, cats_axis, ttbarmass_axis),
             'ttbarmass_pdfNom': hist.Hist("Counts", dataset_axis, cats_axis, ttbarmass_axis),
+
+            'ttbarmass_pileupUp': hist.Hist("Counts", dataset_axis, cats_axis, ttbarmass_axis),
+            'ttbarmass_pileupDown': hist.Hist("Counts", dataset_axis, cats_axis, ttbarmass_axis),
+            'ttbarmass_pileupNom': hist.Hist("Counts", dataset_axis, cats_axis, ttbarmass_axis),
             
             ######################################
 
@@ -586,7 +590,9 @@ class TTbarResProcessor(processor.ProcessorABC):
                 "mass": events.GenJetAK8_mass,
                 }, with_name="PtEtaPhiMLorentzVector"),
             })
-        
+        PileUp = ak.zip({
+           "nPV": events.PV_npvs,
+            }) 
         # ---- Define Generator Particles and other needed event properties for MC ---- #
         if isData == False: # If MC is used...
             GenParts = ak.zip({
@@ -696,6 +702,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         Jets = Jets[passhT] # this used to not be here
         SubJets = SubJets[passhT]
         GenJets = GenJets[passhT]
+        PileUp = PileUp[passhT]
         evtweights = evtweights[passhT]
         events = events[passhT]
         output['cutflow']['HT Cut'] += ak.to_awkward0(passhT).sum()
@@ -721,6 +728,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         SubJets = SubJets[twoFatJetsKin]
         Jets = Jets[twoFatJetsKin] # this used to not be here
         GenJets = GenJets[twoFatJetsKin]
+        PileUp = PileUp[twoFatJetsKin]
         events = events[twoFatJetsKin]
         evtweights = evtweights[twoFatJetsKin]
         if not isData: # If MC is used...
@@ -769,6 +777,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         Jets = Jets[oneTTbar] # this used to not be here
         SubJets = SubJets[oneTTbar]
         GenJets = GenJets[oneTTbar]
+        PileUp = PileUp[oneTTbar]
         events = events[oneTTbar]
         evtweights = evtweights[oneTTbar]
         if not isData: # If MC is used...
@@ -784,6 +793,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         Jets = Jets[dPhiCut] # this used to not be here
         SubJets = SubJets[dPhiCut] 
         GenJets = GenJets[dPhiCut]
+        PileUp = PileUp[dPhiCut]
         events = events[dPhiCut]
         evtweights = evtweights[dPhiCut]
         if not isData: # If MC is used...
@@ -796,8 +806,9 @@ class TTbarResProcessor(processor.ProcessorABC):
         output['cutflow']['Good Subjets'] += ak.to_awkward0(GoodSubjets).sum()
         ttbarcands = ttbarcands[GoodSubjets] # Choose only ttbar candidates with this selection of subjets
         FatJets = FatJets[GoodSubjets]
-	SubJets = SubJets[GoodSubjets]
+        SubJets = SubJets[GoodSubjets]
         GenJets = GenJets[GoodSubjets]
+        PileUp= PileUp[GoodSubjets]
         events = events[GoodSubjets]
         Jets = Jets[GoodSubjets] # this used to not be here
         if not isData: # If MC is used...

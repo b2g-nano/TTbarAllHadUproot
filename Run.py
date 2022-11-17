@@ -1014,8 +1014,7 @@ if isTrigEffArg:
         print("-------Unweighted " + name + "--------")
         for i,j in output['cutflow'].items():        
             print( '%20s : %1s' % (i,j) )        
-    
-    cluster.close()
+    if args.dask: cluster.close()
     exit() # No need to go further if performing trigger analysis
 else:
     pass
@@ -1408,8 +1407,7 @@ if not OnlyCreateLookupTables and not args.runMMO:
         for i,j in output['cutflow'].items():        
             print( '%20s : %1s' % (i,j) )
     print("\n\nWe\'re done here!!")
-    
-    cluster.close()
+    if args.dask: cluster.close()
     exit()
     
     
