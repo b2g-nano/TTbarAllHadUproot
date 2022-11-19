@@ -704,17 +704,18 @@ if UsingDaskExecutor == True and args.casa:
     if __name__ == "__main__":       
         
         cluster = None
+        uploadDir = 'TTbarAllHadUproot'#/CoffeaOutputsForCombine/Coffea_firstRun'
         
         if args.newCluster:
-            cluster = CoffeaCasaCluster(cores=11, memory="100 GiB", death_timeout=TimeOut)
-            cluster.adapt(minimum=2, maximum=14)
+            cluster = CoffeaCasaCluster(cores=7, memory="10 GiB", death_timeout=TimeOut)
+            cluster.adapt(minimum=1, maximum=14)
         else:
             cluster = 'tls://ac-2emalik-2ewilliams-40cern-2ech.dask.cmsaf-prod.flatiron.hollandhpc.org:8786'
             
         client = Client(cluster)
         
         try:
-            client.register_worker_plugin(UploadDirectory('TTbarAllHadUproot',restart=True,update_path=True),nanny=True)
+            client.register_worker_plugin(UploadDirectory(uploadDir,restart=True,update_path=True),nanny=True)
         except OSError as ose:
             print('\n', ose)    
             print('\nFor some reason, Dask did not work as intended\n')
@@ -1032,6 +1033,7 @@ if isTrigEffArg:
     print("\n\nWe\'re done here\n!!")
     if args.dask and args.newCluster:
         cluster.close()
+        print('\nManual Cluster Closed\n')
     exit() # No need to go further if performing trigger analysis
 else:
     pass
@@ -1203,12 +1205,12 @@ import TTbarResLookUpTables
 from TTbarResLookUpTables import CreateLUTS, LoadDataLUTS #, CreateMCEfficiencyLUTS
 
 each_mistag_luts = CreateLUTS(filesets_to_run, outputs_unweighted, BDiscDirectory, args.year, VFP, args.runmistag, Letters, args.saveMistag)
-if not args.saveMistag:
-    print(each_mistag_luts)
-    print("\n\nWe\'re done here!!\n")
-    if args.dask and args.newCluster:
-        cluster.close()
-    exit()
+# if not args.saveMistag:
+#     print(each_mistag_luts)
+#     print("\n\nWe\'re done here!!\n")
+#     if args.dask and args.newCluster:
+#         cluster.close()
+#     exit()
     
 mistag_luts = LoadDataLUTS(BDiscDirectory, args.year, Letters) # Specifically get data mistag rates with ttContam. corrections
 

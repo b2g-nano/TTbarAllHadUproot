@@ -5,39 +5,48 @@
 # # ---- All Datasets used for analysis and dasgoclient searches (Need to Finish Filling in!!) ---- #
 '''
 ===========================================================================================================
-/JetHT/Run2016B-ver1_HIPM_UL2016_MiniAODv2_NanoAODv9-v2/NANOAOD, 8.6GB,   11 files,    9726665 events
-/JetHT/Run2016B-ver2_HIPM_UL2016_MiniAODv2_NanoAODv9-v2/NANOAOD, 152.2GB, 74 files,  133752091 events
-/JetHT/Run2016C-HIPM_UL2016_MiniAODv2_NanoAODv9-v2/NANOAOD,      57.9GB,  45 files,   46495988 events
-/JetHT/Run2016D-HIPM_UL2016_MiniAODv2_NanoAODv9-v2/NANOAOD,      89.8GB,  65 files,   73330042 events
-/JetHT/Run2016E-HIPM_UL2016_MiniAODv2_NanoAODv9-v2/NANOAOD,      87.1GB,  49 files,   69219288 events
-/JetHT/Run2016F-UL2016_MiniAODv2_NanoAODv9-v1/NANOAOD,           8.3GB,   5 files,     6613811 events
-/JetHT/Run2016G-UL2016_MiniAODv2_NanoAODv9-v1/NANOAOD,           154.2GB, 70 files,  120688407 events
-/JetHT/Run2016H-UL2016_MiniAODv2_NanoAODv9-v1/NANOAOD,           156.1GB, 72 files,  124050331 events
+/JetHT/Run2016B-ver1_HIPM_UL2016_MiniAODv2_NanoAODv9-v2/NANOAOD,       8.6 GB,   11 files,    9726665 events
+/JetHT/Run2016B-ver2_HIPM_UL2016_MiniAODv2_NanoAODv9-v2/NANOAOD,       152.2 GB, 74 files,  133752091 events
+/JetHT/Run2016C-HIPM_UL2016_MiniAODv2_NanoAODv9-v2/NANOAOD,            57.9 GB,  45 files,   46495988 events
+/JetHT/Run2016D-HIPM_UL2016_MiniAODv2_NanoAODv9-v2/NANOAOD,            89.8 GB,  65 files,   73330042 events
+/JetHT/Run2016E-HIPM_UL2016_MiniAODv2_NanoAODv9-v2/NANOAOD,            87.1 GB,  49 files,   69219288 events
+/JetHT/Run2016F-UL2016_MiniAODv2_NanoAODv9-v1/NANOAOD,                 8.3 GB,   5 files,     6613811 events
+/JetHT/Run2016G-UL2016_MiniAODv2_NanoAODv9-v1/NANOAOD,                 154.2 GB, 70 files,  120688407 events
+/JetHT/Run2016H-UL2016_MiniAODv2_NanoAODv9-v1/NANOAOD,                 156.1 GB, 72 files,  124050331 events
 -----------------------------------------------------------------------------------------------------------
-                                                                                     583876623 events total
+                                                                                            583876623 events total
 ===========================================================================================================
-/JetHT/Run2017B-UL2017_MiniAODv2_NanoAODv9-v1/NANOAOD,           67.8GB,  33 files,   63043590 events
-/JetHT/Run2017C-UL2017_MiniAODv2_NanoAODv9-v1/NANOAOD,           107.8GB, 66 files,   96264601 events
-/JetHT/Run2017D-UL2017_MiniAODv2_NanoAODv9-v1/NANOAOD,           52.5GB,  37 files,   46145204 events
-/JetHT/Run2017E-UL2017_MiniAODv2_NanoAODv9-v1/NANOAOD,           110.6GB, 58 files,   89630771 events
-/JetHT/Run2017F-UL2017_MiniAODv2_NanoAODv9-v1/NANOAOD,           147.8GB, 66 files,  115429972 events
+/JetHT/Run2017B-UL2017_MiniAODv2_NanoAODv9-v1/NANOAOD,                 67.8 GB,  33 files,   63043590 events
+/JetHT/Run2017C-UL2017_MiniAODv2_NanoAODv9-v1/NANOAOD,                 107.8 GB, 66 files,   96264601 events
+/JetHT/Run2017D-UL2017_MiniAODv2_NanoAODv9-v1/NANOAOD,                 52.5 GB,  37 files,   46145204 events
+/JetHT/Run2017E-UL2017_MiniAODv2_NanoAODv9-v1/NANOAOD,                 110.6 GB, 58 files,   89630771 events
+/JetHT/Run2017F-UL2017_MiniAODv2_NanoAODv9-v1/NANOAOD,                 147.8 GB, 66 files,  115429972 events
 -----------------------------------------------------------------------------------------------------------
-                                                                                     410514138 events total
+                                                                                            410514138 events total
 ===========================================================================================================
-/JetHT/Run2018A-UL2018_MiniAODv2_NanoAODv9-v2/NANOAOD,           227.6GB, 146 files, 171484635 events
-/JetHT/Run2018B-UL2018_MiniAODv2_NanoAODv9-v1/NANOAOD,           105.4GB, 45 files,   78255208 events
-/JetHT/Run2018C-UL2018_MiniAODv2_NanoAODv9-v1/NANOAOD,           96.1GB,  57 files,   70027804 events
-/JetHT/Run2018D-UL2018_MiniAODv2_NanoAODv9-v2/NANOAOD,           493.1GB, 232 files, 356976276 events
+/JetHT/Run2018A-UL2018_MiniAODv2_NanoAODv9-v2/NANOAOD,                 227.6 GB, 146 files, 171484635 events
+/JetHT/Run2018B-UL2018_MiniAODv2_NanoAODv9-v1/NANOAOD,                 105.4 GB, 45 files,   78255208 events
+/JetHT/Run2018C-UL2018_MiniAODv2_NanoAODv9-v1/NANOAOD,                 96.1 GB,  57 files,   70027804 events
+/JetHT/Run2018D-UL2018_MiniAODv2_NanoAODv9-v2/NANOAOD,                 493.1 GB, 232 files, 356976276 events
 -----------------------------------------------------------------------------------------------------------
-                                                                                     676743923 events total
+                                                                                            676743923 events total
 ===========================================================================================================
-/SingleMuon/Run2017B-UL2017_MiniAODv2_NanoAODv9-v1/NANOAOD,      102.1GB, 79 files,  136300266 events
-/SingleMuon/Run2017C-UL2017_MiniAODv2_NanoAODv9-v1/NANOAOD,      133.0GB, 117 files, 165652756 events
-/SingleMuon/Run2017D-UL2017_MiniAODv2_NanoAODv9_GT36-v1/NANOAOD, 56.4GB,  40 files,   70274947 events
-/SingleMuon/Run2017E-UL2017_MiniAODv2_NanoAODv9-v1/NANOAOD,      134.3GB, 78 files,  154618774 events
-/SingleMuon/Run2017F-UL2017_MiniAODv2_NanoAODv9-v1/NANOAOD,      219.2GB, 115 files, 242140980 events
+/SingleMuon/Run2016B-ver1_HIPM_UL2016_MiniAODv2_NanoAODv9-v2/NANOAOD,  2.0 GB,   2 files,     2789243 events
+/SingleMuon/Run2016B-ver2_HIPM_UL2016_MiniAODv2_NanoAODv9-v2/NANOAOD,  121.5 GB, 70 files,  158145722 events
+/SingleMuon/Run2016C-HIPM_UL2016_MiniAODv2_NanoAODv9-v2/NANOAOD,       54.1 GB,  28 files,   67441308 events
+/SingleMuon/Run2016D-HIPM_UL2016_MiniAODv2_NanoAODv9-v2/NANOAOD,       76.5 GB,  40 files,   98017996 events
+/SingleMuon/Run2016E-HIPM_UL2016_MiniAODv2_NanoAODv9-v2/NANOAOD,       73.3 GB,  47 files,   90984718 events
+/SingleMuon/Run2016F-HIPM_UL2016_MiniAODv2_NanoAODv9-v2/NANOAOD,       48.6 GB,  43 files,   57465359 events
 -----------------------------------------------------------------------------------------------------------
-                                                                                     768987723 events total
+                                                                                                      events total
+===========================================================================================================
+/SingleMuon/Run2017B-UL2017_MiniAODv2_NanoAODv9-v1/NANOAOD,            102.1 GB, 79 files,  136300266 events
+/SingleMuon/Run2017C-UL2017_MiniAODv2_NanoAODv9-v1/NANOAOD,            133.0 GB, 117 files, 165652756 events
+/SingleMuon/Run2017D-UL2017_MiniAODv2_NanoAODv9_GT36-v1/NANOAOD,       56.4 GB,  40 files,   70274947 events
+/SingleMuon/Run2017E-UL2017_MiniAODv2_NanoAODv9-v1/NANOAOD,            134.3 GB, 78 files,  154618774 events
+/SingleMuon/Run2017F-UL2017_MiniAODv2_NanoAODv9-v1/NANOAOD,            219.2 GB, 115 files, 242140980 events
+-----------------------------------------------------------------------------------------------------------
+                                                                                            768987723 events total
 ===========================================================================================================
 '''
 #
