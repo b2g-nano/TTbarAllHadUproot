@@ -2158,6 +2158,7 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
 
         # ---- Define AK4 jets as Jets ---- #
         Jets = ak.zip({
+            # "PU": events.Pileup_nPU,
             "run": events.run,
             "pt": events.Jet_pt,
             "eta": events.Jet_eta,
@@ -2209,7 +2210,7 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
 #         HLT_PF_triggers = listOfTriggers[isHLT_PF]
 #         HLT_AK8_triggers = listOfTriggers[isHLT_AK8]
         
-        
+        # print(Jets.PU, '\n')
         trigDenom = events.HLT_Mu50 | events.HLT_IsoMu24 # WHY!!!!!????
         # print(HLT_PF_triggers)
         # print(HLT_AK8_triggers)
@@ -2225,15 +2226,15 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
             triggers_3 = events.HLT_AK8PFJet450
             triggers_4 = events.HLT_AK8PFJet360_TrimMass30
         elif self.year == 2017:
-            triggers_1 = events.HLT_PFHT890
+            triggers_1 = events.HLT_PFHT890 # pre-scaled
             triggers_2 = events.HLT_PFHT1050
-            triggers_3 = events.HLT_AK8PFJet450
+            triggers_3 = events.HLT_AK8PFJet450 # pre-scaled
         else:
-            triggers_1 = events.HLT_PFHT890
+            triggers_1 = events.HLT_PFHT890 # pre-scaled 
             triggers_2 = events.HLT_PFHT1050
-            triggers_3 = events.HLT_AK8PFHT750_TrimMass50 # Missing in era B for 2017
-            triggers_4 = events.HLT_AK8PFJet450
-            triggers_5 = events.HLT_AK8PFJet360_TrimMass30 # Missing in era B for 2017
+            triggers_3 = events.HLT_AK8PFHT750_TrimMass50
+            triggers_4 = events.HLT_AK8PFJet450 # pre-scaled
+            triggers_5 = events.HLT_AK8PFJet360_TrimMass30
 
 #    ===================================================================================
 #    PPPPPP  RRRRRR  EEEEEEE L       IIIIIII M     M       CCCC  U     U TTTTTTT   SSSSS     
