@@ -143,24 +143,30 @@ All objects for each dataset ran can be saved as its own .coffea output file.
                                 RSGluon<x><y>00, RSGluon
                                 TTbar
                                 JetHT
-                                SingleMu
-                                NOTE** UL17 and UL18 samples TBA
-    Example of a usual workflow on Coffea-Casa to make the relevant coffea outputs:
+                                SingleMu\n
+                                    **NOTE**
+                                    =========================
+                                    JetHT 2016 letters: B - H
+                                    JetHT 2017 letters: B - F
+                                    JetHT 2018 letters: A - D
+                                    =========================\n
+    Example of a usual workflow on Coffea-Casa to make the relevant coffea outputs:\n
     0.) Make Outputs for Flavor and Trigger Efficiencies
 ./Run.py -C -med -F QCD TTbar DM RSGluon -a no -y 2016 --dask --saveFlav
-./Run.py -C -med -T -a no -y 2016 --dask --saveTrig
+./Run.py -C -med -T -a no -y 2016 --dask --saveTrig\n
     1.) Create Mistag Rates that will be used to estimate NTMJ background
 ./Run.py -C --step 1
-python Run.py -C -med -m -a no -y 2016 --saveMistag
+python Run.py -C -med -m -a no -y 2016 --saveMistag\n
     2.) Make Outputs for the first Uproot Job with no weights applied (outside of MC weights that come with the nanoAOD)
 ./Run.py -C --step 2
-python Run.py -C -med -d QCD TTbar JetHT DM RSGluon -a no -y 2016 --uproot 1 --save
+python Run.py -C -med -d QCD TTbar JetHT DM RSGluon -a no -y 2016 --uproot 1 --save\n
     3.) Make Outputs for the second Uproot Job with only mistag rate applied to JetHT and TTbar, and mass modification of JetHT and TTbar in pre-tag region
 ./Run.py -C --step 3
-python Run.py -C -med -M QCD TTbar JetHT DM RSGluon -a no -y 2016 --save
+python Run.py -C -med -M QCD TTbar JetHT DM RSGluon -a no -y 2016 --save\n
     4.) Make Outputs for the second Uproot Job with systematics, on top of mistag rate application and mass modification
 ./Run.py -C --step 4
-python Run.py -C -med -d QCD TTbar JetHT DM RSGluon -a no -y 2016 --uproot 2 --bTagSyst central --useEff --save''')
+python Run.py -C -med -d QCD TTbar JetHT DM RSGluon -a no -y 2016 --uproot 2 --bTagSyst central --useEff --save\n
+  ''')
 # ---- Necessary arguments ---- #
 StartGroup = Parser.add_mutually_exclusive_group()
 StartGroup.add_argument('-t', '--runtesting', action='store_true', help='Only run a select few root files defined in the code.')
@@ -184,6 +190,7 @@ Parser.add_argument('-y', '--year', type=int, choices=[2016, 2017, 2018, 0], hel
 
 # ---- Other arguments ---- #
 Parser.add_argument('--uproot', type=int, choices=[1, 2], help='1st run or 2nd run of uproot job.  If not specified, both the 1st and 2nd job will be run one after the other.')
+Parser.add_argument('--letters', type=str, nargs='+', help='Choose letter(s) of jetHT to run over')
 Parser.add_argument('--chunks', type=int, help='Number of chunks of data to run for given dataset(s)')
 Parser.add_argument('--chunksize', type=int, help='Size of each chunk to run for given dataset(s)')
 Parser.add_argument('--save', action='store_true', help='Choose to save the uproot job as a coffea output for later analysis')
@@ -191,11 +198,11 @@ Parser.add_argument('--saveMistag', action='store_true', help='Save mistag rate 
 Parser.add_argument('--saveTrig', action='store_true', help='Save uproot job with trigger analysis outputs (Only if -T selected)')
 Parser.add_argument('--saveFlav', action='store_true', help='Save uproot job with flavor efficiency outputs (Only if -F selected)')
 Parser.add_argument('--dask', action='store_true', help='Try the dask executor (experimental) for some fast processing!')
+Parser.add_argument('--newCluster', action='store_true', help='Use Manually Defined Cluster (Must Disable Default Cluster First if Running in CoffeaCasa)')
 Parser.add_argument('--timeout', type=float, help='How many seconds should dask wait for scheduler to connect')
 Parser.add_argument('--useEff', action='store_true', help='Use MC bTag efficiencies for bTagging systematics')
 Parser.add_argument('--tpt', action='store_true', help='Apply top pT re-weighting for uproot 2')
 Parser.add_argument('--useHist', action='store_true', help='use scikit-hep/hist for histograms')
-
 
 Parser.add_argument('--step', type=int, choices=[1, 2, 3, 4], help='Easily run a certain step of the workflow')
 
@@ -207,7 +214,6 @@ UncertaintyGroup.add_argument('--lumSyst', type=str, choices=['central', 'up', '
 UncertaintyGroup.add_argument('--jec', action='store_true', help='apply jec systematic weights')
 UncertaintyGroup.add_argument('--jer', action='store_true', help='apply jer systematic weights')
 UncertaintyGroup.add_argument('--pdf', action='store_true', help='apply pdf systematic weights')
-
 UncertaintyGroup.add_argument('--pileup', type=str, choices=['central', 'up', 'down'], help='Choose Unc.')
 
 args = Parser.parse_args()
@@ -338,7 +344,7 @@ if not args.chunks:
 UsingDaskExecutor = args.dask
 #    ---------------------------------------------------------------------------------------------------------------------    # 
 
-SaveFirstRun = True
+SaveFirstRun = False
 SaveSecondRun = False
 if args.save:
     SaveFirstRun = True # Make a coffea output file of the first uproot job (without the systematics and corrections)
@@ -368,6 +374,11 @@ useHist  = False
 xsSystwgt = 1.
 lumSystwgt = 1.
 
+# isData = False
+# MCDatasetChoices = ['QCD', 'TTbar', 'RSGluon', 'DM']
+# if 'JetHT' in args.rundataset:
+#     isData = True
+
 if UsingDaskExecutor:
     daskDirectory = envirDirectory
 #    ---------------------------------------------------------------------------------------------------------------------    # 
@@ -376,14 +387,14 @@ TPT = ''
 if args.tpt:
     TPT = '_TopReweight'
 
-if args.bTagSyst:
+elif args.bTagSyst:
     UncType = "_btagUnc_"
     SystType = args.bTagSyst # string for btag SF evaluator --> "central", "up", or "down"
     ApplybSF = True
     SFfile = daskDirectory+'TTbarAllHadUproot/CorrectionFiles/SFs/bquark/subjet_btagging.json.gz'
 #    ---------------------------------------------------------------------------------------------------------------------    # 
 
-if args.ttXSSyst:
+elif args.ttXSSyst:
     UncType = "_ttXSUnc_"
     SystType = args.ttXSSyst # string for btag SF evaluator --> "central", "up", or "down"
     if args.ttXSSyst == 'up':
@@ -394,7 +405,7 @@ if args.ttXSSyst:
         pass
 #    ---------------------------------------------------------------------------------------------------------------------    # 
 
-if args.lumSyst:
+elif args.lumSyst:
     UncType = "_lumUnc_"
     SystType = args.lumSyst # string for btag SF evaluator --> "central", "up", or "down"
     if args.lumSyst == 'up':
@@ -413,37 +424,33 @@ elif args.tTagSyst:
 elif args.jec:
     ApplyJEC = True
     UncType = "_jecUnc_"
-    SystType = 'jec' # "central", "up", or "down"
+    SystType = 'jec' # string for ttag SF correction --> "central", "up", or "down"
 #    ---------------------------------------------------------------------------------------------------------------------    # 
 
 elif args.jer:
     ApplyJER = True
     UncType = "_jerUnc_"
-    SystType = 'jer' 
-#    ---------------------------------------------------------------------------------------------------------------------    # 
-
+    SystType = 'jer'
+#    ---------------------------------------------------------------------------------------------------------------------    #
+ 
 elif args.pdf:
     ApplyPDF = True
     UncType = "_pdfUnc_"
-    SystType = 'pdf' 
+    SystType = 'pdf'
 #    ---------------------------------------------------------------------------------------------------------------------    # 
 
 elif args.pileup:
     UncType = "_pileupUnc_"
-    SystType = args.pileup # "central", "up", or "down"
+    SystType = args.pileup # string --> "central", "up", or "down"
 #    ---------------------------------------------------------------------------------------------------------------------    # 
-
-# if(args.jec): ApplyJEC = True
-# if(args.jer): ApplyJER = True
-# if(args.pdf): ApplyPDF = True
 
 if args.useHist:
     useHist = True
-
+    
 UncArgs = np.array([args.bTagSyst, args.tTagSyst, args.jec, args.jer, args.ttXSSyst, args.lumSyst, args.pileup])
 SystOpts = np.any(UncArgs) # Check to see if any uncertainty argument is used
 if (not OnlyCreateLookupTables) and (not SystOpts and not args.runMMO) :
-    Parser.error('Only run second uproot job with a Systematic application (like --bTagSyst, --jer, etc.)')
+    Parser.error('Only run second uproot job with a Systematic application (like --bTagSyst, --jec, etc.)')
     quit()
 #    -------------------------------------------------------    # 
 Chunk = [args.chunksize, args.chunks] # [chunksize, maxchunks]
@@ -460,6 +467,11 @@ from TTbarResProcessor import TTbarResProcessor, TriggerAnalysisProcessor, MCFla
 #       I    M     M P        O   O  R    R     T        D   D   A     A    T    A     A      S  E          T         S      
 #    IIIIIII M     M P         OOO   R     R    T        DDDD    A     A    T    A     A SSSSS   EEEEEEE    T    SSSSS  
 #    -------------------------------------------------------------------------------------------------------------------
+
+Letters = ['']
+if args.letters:
+    Letters = args.letters
+
 namingConvention = 'UL'+VFP # prefix to help name every MC coffea output according to the selected options
 fileConvention = convertLabel[VFP] + '/TTbarRes_0l_' # direct the saved coffea output to the appropriate directory
 if args.year > 0:
@@ -477,8 +489,9 @@ if not Testing:
         for a in args.rundataset: # for any dataset included as user argument...
             if args.year > 0:
                 if ('JetHT' in a): 
-                    filesets_to_run['JetHT'+str(args.year)+'_Data'] = filesets['JetHT'+str(args.year)+'_Data'] # include JetHT dataset read in from Filesets
-                    SaveLocation['JetHT'+str(args.year)+'_Data'] = 'JetHT/' + BDiscDirectory + str(args.year) + '/TTbarRes_0l_' # file where output will be saved
+                    for L in Letters:
+                        filesets_to_run['JetHT'+str(args.year)+L+'_Data'] = filesets['JetHT'+str(args.year)+L+'_Data'] # include JetHT dataset read in from Filesets
+                        SaveLocation['JetHT'+str(args.year)+L+'_Data'] = 'JetHT/' + BDiscDirectory + str(args.year) + '/TTbarRes_0l_' # file where output will be saved
                 elif ('SingleMu' in a): 
                     filesets_to_run['SingleMu'+str(args.year)+'_Data'] = filesets['SingleMu'+str(args.year)+'_Data'] # include JetHT dataset read in from Filesets
                     SaveLocation['SingleMu'+str(args.year)+'_Data'] = 'SingleMu/' + BDiscDirectory + str(args.year) + '/TTbarRes_0l_' # file where output will be saved
@@ -658,8 +671,9 @@ if not Testing:
     elif args.runmistag: # if args.mistag: Only run 1st uproot job for ttbar and data to get mistag rate with tt contamination removed
         filesets_to_run[namingConvention+'_TTbar'] = filesets[namingConvention+'_TTbar']
         if args.year > 0:
-            filesets_to_run['JetHT'+str(args.year)+'_Data'] = filesets['JetHT'+str(args.year)+'_Data']
-            SaveLocation['JetHT'+str(args.year)+'_Data'] = 'JetHT/' + BDiscDirectory + str(args.year) + '/TTbarRes_0l_'
+            for L in Letters:
+                filesets_to_run['JetHT'+str(args.year)+L+'_Data'] = filesets['JetHT'+str(args.year)+L+'_Data'] # include JetHT dataset read in from Filesets
+                SaveLocation['JetHT'+str(args.year)+L+'_Data'] = 'JetHT/' + BDiscDirectory + str(args.year) + '/TTbarRes_0l_' # file where output will be saved
         else:
             filesets_to_run['JetHT_Data'] = filesets['JetHT_Data']
             SaveLocation['JetHT_Data'] = 'JetHT/' + BDiscDirectory + '/TTbarRes_0l_'
@@ -703,17 +717,25 @@ if UsingDaskExecutor == True and args.casa:
     
     if __name__ == "__main__":       
         
-        cluster = CoffeaCasaCluster(cores=11, memory="100 GiB", death_timeout=TimeOut)
-        cluster.adapt(minimum=2, maximum=14)
+        cluster = None
+        uploadDir = 'TTbarAllHadUproot'#/CoffeaOutputsForCombine/Coffea_firstRun'
+        
+        if args.newCluster:
+            cluster = CoffeaCasaCluster(cores=7, memory="10 GiB", death_timeout=TimeOut)
+            cluster.adapt(minimum=1, maximum=14)
+        else:
+            cluster = 'tls://ac-2emalik-2ewilliams-40cern-2ech.dask.cmsaf-prod.flatiron.hollandhpc.org:8786'
+            
         client = Client(cluster)
         
-        # client = Client('tls://ac-2emalik-2ewilliams-40cern-2ech.dask.cmsaf-prod.flatiron.hollandhpc.org:8786')
-        
         try:
-            client.register_worker_plugin(UploadDirectory('TTbarAllHadUproot',restart=True,update_path=True),nanny=True)
+            client.register_worker_plugin(UploadDirectory(uploadDir,restart=True,update_path=True),nanny=True)
         except OSError as ose:
             print('\n', ose)    
-        
+            print('\nFor some reason, Dask did not work as intended\n')
+            exit
+            if args.newCluster:
+                cluster.close()
         
         # print('All Hidden Directories:\n')
         # print(client.run(os.listdir))
@@ -817,12 +839,6 @@ if args.runflavoreff:
                 savefilename = 'TTbarAllHadUproot/CoffeaOutputsForMCFlavorAnalysis/' + SaveLocation[name] + name     + '_MCFlavorAnalysis'  + OldDisc + '.coffea'
                 util.save(output, savefilename)
                 print('saving ' + savefilename)
-                # util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForMCFlavorAnalysis/'
-                #       + SaveLocation[name]
-                #       + name    
-                #       + '_MCFlavorAnalysis' 
-                #       + OldDisc
-                #       + '.coffea')
 
 
         else: # Run all Root Files
@@ -872,12 +888,6 @@ if args.runflavoreff:
                 savefilename = 'TTbarAllHadUproot/CoffeaOutputsForMCFlavorAnalysis/' + SaveLocation[name] + name + '_MCFlavorAnalysis' + OldDisc + '.coffea'
                 util.save(output, savefilename)
                 print('saving ' + savefilename)
-                # util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForMCFlavorAnalysis/'
-                #       + SaveLocation[name]
-                #       + name    
-                #       + '_MCFlavorAnalysis' 
-                #       + OldDisc
-                #       + '.coffea')
 
 
         print('Elapsed time = ', elapsed, ' sec.')
@@ -892,9 +902,9 @@ if args.runflavoreff:
         FlavEffList('b', output, dataset, BDiscDirectory, args.saveFlav)
         FlavEffList('c', output, dataset, BDiscDirectory, args.saveFlav)
         FlavEffList('udsg', output, dataset, BDiscDirectory, args.saveFlav)
-        print("\n\nWe\'re done here!!")
-        
-    if UsingDaskExecutor: cluster.close()
+        print("\n\nWe\'re done here\n!!")
+    if args.dask and args.newCluster:    
+        cluster.close()
     exit() # No need to go further if performing trigger analysis
         
 
@@ -966,13 +976,6 @@ if isTrigEffArg:
                 savefilename = 'TTbarAllHadUproot/CoffeaOutputsForTriggerAnalysis/' + SaveLocation[name] + name + '_TriggerAnalysis' + OldDisc + '.coffea'
                 util.save(output, savefilename)
                 print('saving ' + savefilename)
-                
-                # util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForTriggerAnalysis/'
-                #       + SaveLocation[name]
-                #       + name    
-                #       + '_TriggerAnalysis' 
-                #       + OldDisc
-                #       + '.coffea')
 
 
         else: # Run all Root Files
@@ -1021,12 +1024,6 @@ if isTrigEffArg:
                 savefilename =  output, 'TTbarAllHadUproot/CoffeaOutputsForTriggerAnalysis/' + SaveLocation[name] + name + '_TriggerAnalysis' + OldDisc + '.coffea'
                 util.save(output, savefilename)
                 print('saving ' + savefilename)
-                # util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForTriggerAnalysis/'
-                #       + SaveLocation[name]
-                #       + name    
-                #       + '_TriggerAnalysis' 
-                #       + OldDisc
-                #       + '.coffea')
 
 
         print('Elapsed time = ', elapsed, ' sec.')
@@ -1036,9 +1033,11 @@ if isTrigEffArg:
     for name,output in outputs_unweighted.items(): 
         print("-------Unweighted " + name + "--------")
         for i,j in output['cutflow'].items():        
-            print( '%20s : %1s' % (i,j) )        
-    
-    cluster.close()
+            print( '%20s : %1s' % (i,j) )
+    print("\n\nWe\'re done here\n!!")
+    if args.dask and args.newCluster:
+        cluster.close()
+        print('\nManual Cluster Closed\n')
     exit() # No need to go further if performing trigger analysis
 else:
     pass
@@ -1117,13 +1116,6 @@ for name,files in filesets_to_run.items():
                 savefilename = 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/' + SaveLocation[name] + name + OldDisc + '.coffea'
                 util.save(output, savefilename)
                 print('saving ' + savefilename)                           
-                                          
-                                          
-                # util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/'
-                #           + SaveLocation[name]
-                #           + name    
-                #           + OldDisc
-                #           + '.coffea')
             
             
         else: # Run all Root Files
@@ -1179,13 +1171,6 @@ for name,files in filesets_to_run.items():
                 savefilename =  'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/' + SaveLocation[name] + name + OldDisc + '.coffea'                         
                 util.save(output, savefilename)
                 print('saving ' + savefilename)
-                                          
-                                          
-                # util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/'
-                #           + SaveLocation[name]
-                #           + name  
-                #           + OldDisc
-                #           + '.coffea')
             
         for name,output in outputs_unweighted.items(): 
             print("-------Unweighted " + name + "--------")
@@ -1222,8 +1207,14 @@ import TTbarResLookUpTables
 
 from TTbarResLookUpTables import CreateLUTS, LoadDataLUTS #, CreateMCEfficiencyLUTS
 
-each_mistag_luts = CreateLUTS(filesets_to_run, outputs_unweighted, BDiscDirectory, args.year, VFP, args.runmistag, args.saveMistag)
-mistag_luts = LoadDataLUTS(BDiscDirectory, args.year) # Specifically get data mistag rates with ttContam. corrections
+each_mistag_luts = CreateLUTS(filesets_to_run, outputs_unweighted, BDiscDirectory, args.year, VFP, args.runmistag, Letters, args.saveMistag)
+mistag_luts = LoadDataLUTS(BDiscDirectory, args.year, Letters) # Specifically get data mistag rates with ttContam. corrections
+
+if OnlyCreateLookupTables or args.runMMO:
+    print("\n\nWe\'re done here!!\n")
+    if args.dask and args.newCluster:
+        cluster.close()
+    exit()
 
 
 """ Second uproot job runs the processor with the mistag rates (and flavor effs if desired) and Mass-Modification Procedure """
@@ -1327,18 +1318,6 @@ if not OnlyCreateLookupTables and not args.runMMO:
                 savefilename = 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/' + SaveLocation[name] + name  + '_weighted' + UncType + SystType + method + TPT + OldDisc + '.coffea'                       
                 util.save(output, savefilename)
                 print('saving ' + savefilename)                          
-                                          
-                
-                # util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/'
-                #           + SaveLocation[name]
-                #           + name 
-                #           + '_weighted'
-                #           + UncType
-                #           + SystType
-                #           + method
-                #           + TPT
-                #           + OldDisc
-                #           + '.coffea')
             
             
         else: # Run all Root Files
@@ -1355,6 +1334,10 @@ if not OnlyCreateLookupTables and not args.runMMO:
                                                                                        lumSystematicWeight = lumSystwgt,
                                                                                        ApplyTopReweight = args.tpt,
                                                                                        ApplybtagSF=ApplybSF,
+                                                                                       ApplyJEC=ApplyJEC,
+                                                                                       ApplyJER=ApplyJER,
+                                                                                       ApplyPDF=ApplyPDF,
+                                                                                       useHist=useHist,
                                                                                        sysType=SystType,
                                                                                        ScaleFactorFile=SFfile,
                                                                                        UseEfficiencies=args.useEff,
@@ -1385,6 +1368,10 @@ if not OnlyCreateLookupTables and not args.runMMO:
                                                                                        lumSystematicWeight = lumSystwgt,
                                                                                        ApplyTopReweight = args.tpt,
                                                                                        ApplybtagSF=ApplybSF,
+                                                                                       ApplyJEC=ApplyJEC,
+                                                                                       ApplyJER=ApplyJER,
+                                                                                       ApplyPDF=ApplyPDF,
+                                                                                       useHist=useHist,
                                                                                        sysType=SystType,
                                                                                        ScaleFactorFile=SFfile,
                                                                                        UseEfficiencies=args.useEff,
@@ -1410,17 +1397,6 @@ if not OnlyCreateLookupTables and not args.runMMO:
                 savefilename = 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/' + SaveLocation[name] + name  + '_weighted' + UncType + SystType + method + TPT + OldDisc + '.coffea'                       
                 util.save(output, savefilename)
                 print('saving ' + savefilename)  
-                                          
-#                 util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/'
-#                           + SaveLocation[name]
-#                           + name 
-#                           + '_weighted'
-#                           + UncType
-#                           + SystType
-#                           + method
-#                           + TPT
-#                           + OldDisc
-#                           + '.coffea')
         print('Elapsed time = ', elapsed, ' sec.')
         print('Elapsed time = ', elapsed/60., ' min.')
         print('Elapsed time = ', elapsed/3600., ' hrs.') 
@@ -1429,9 +1405,14 @@ if not OnlyCreateLookupTables and not args.runMMO:
         print("-------Weighted " + name + "--------")
         for i,j in output['cutflow'].items():        
             print( '%20s : %1s' % (i,j) )
-    print("\n\nWe\'re done here!!")
-    
-    cluster.close()
+    print("\n\nWe\'re done here!!\n")
+    if args.dask:
+        cluster.close()
+    exit()
+else:
+    print("\n\nWe\'re done here!!\n")
+    if args.dask and args.newCluster:
+        cluster.close()
     exit()
     
     
@@ -1468,10 +1449,6 @@ if args.runMMO:
                                                                                            ModMass=True, 
                                                                                            RandomDebugMode=False,
                                                                                            BDirect = BDiscDirectory,
-                                                                                           ApplybtagSF=ApplybSF,
-                                                                                           sysType=SystType,
-                                                                                           ScaleFactorFile=SFfile,
-                                                                                           UseEfficiencies=args.useEff,
                                                                                            bdisc = BDisc,
                                                                                            year=args.year,
                                                                                            apv=convertLabel[VFP],
@@ -1495,10 +1472,6 @@ if args.runMMO:
                                                                                            ModMass=True, #switch to true later after test! 
                                                                                            RandomDebugMode=False,
                                                                                            BDirect = BDiscDirectory,
-                                                                                           ApplybtagSF=ApplybSF,
-                                                                                           sysType=SystType,
-                                                                                           ScaleFactorFile=SFfile,
-                                                                                           UseEfficiencies=args.useEff,
                                                                                            bdisc = BDisc,
                                                                                            year=args.year,
                                                                                            apv=convertLabel[VFP],
@@ -1521,17 +1494,6 @@ if args.runMMO:
                     savefilename = 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/' + SaveLocation[name] + name  + '_weighted' + UncType  + SystType + method + TPT + OldDisc + '.coffea'
                     util.save(output, savefilename)
                     print('saving ' + savefilename)
-                                          
-                    # util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/'
-                    #           + SaveLocation[name]
-                    #           + name 
-                    #           + '_weighted'
-                    #           + UncType 
-                    #           + SystType
-                    #           + method
-                    #           + TPT
-                    #           + OldDisc
-                    #           + '.coffea')
 
 
             else: # Run all Root Files
@@ -1544,10 +1506,6 @@ if args.runMMO:
                                                                                            ModMass=True, 
                                                                                            RandomDebugMode=False,
                                                                                            BDirect = BDiscDirectory,
-                                                                                           ApplybtagSF=ApplybSF,
-                                                                                           sysType=SystType,
-                                                                                           ScaleFactorFile=SFfile,
-                                                                                           UseEfficiencies=args.useEff,
                                                                                            bdisc = BDisc,
                                                                                            year=args.year,
                                                                                            apv=convertLabel[VFP],
@@ -1571,10 +1529,6 @@ if args.runMMO:
                                                                                            ModMass=True, 
                                                                                            RandomDebugMode=False,
                                                                                            BDirect = BDiscDirectory,
-                                                                                           ApplybtagSF=ApplybSF,
-                                                                                           sysType=SystType,
-                                                                                           ScaleFactorFile=SFfile,
-                                                                                           UseEfficiencies=args.useEff,
                                                                                            bdisc = BDisc,
                                                                                            year=args.year,
                                                                                            apv=convertLabel[VFP],
@@ -1596,18 +1550,6 @@ if args.runMMO:
                     savefilename = 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/' + SaveLocation[name] + name  + '_weighted' + UncType + SystType + method + TPT + OldDisc + '.coffea'                    
                     util.save(output, savefilename)
                     print('saving ' + savefilename)
-                                          
-                                          
-                    # util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/'
-                    #           + SaveLocation[name]
-                    #           + name 
-                    #           + '_weighted'
-                    #           + UncType
-                    #           + SystType
-                    #           + method
-                    #           + TPT
-                    #           + OldDisc
-                    #           + '.coffea')
             print('Elapsed time = ', elapsed, ' sec.')
             print('Elapsed time = ', elapsed/60., ' min.')
             print('Elapsed time = ', elapsed/3600., ' hrs.') 
@@ -1618,10 +1560,10 @@ if args.runMMO:
         print("-------Weighted " + name + "--------")
         for i,j in output['cutflow'].items():        
             print( '%20s : %1s' % (i,j) )
-    print("\n\nWe\'re done here!!")
+    print("\n\nWe\'re done here!!\n")
 else:
     pass
 
-if args.dask:
+if args.dask and args.newCluster:
     cluster.close()
 exit()
