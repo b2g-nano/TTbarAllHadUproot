@@ -265,7 +265,10 @@ class TTbarResProcessor(processor.ProcessorABC):
 #   F        U   U  N    NN  C         T       I     O   O  N    NN      S      
 #   F         UUU   N     N   CCCC     T    IIIIIII   OOO   N     N SSSSS
 #   =======================================================================
-
+    
+    # def MakeTable(self, *outputs):
+    #     for o in outputs
+    
     #https://stackoverflow.com/questions/11144513/cartesian-product-of-x-and-y-array-points-into-single-array-of-2d-points/11146645#11146645
     def CartesianProduct(self, *arrays): 
         la = len(arrays)
@@ -749,12 +752,13 @@ class TTbarResProcessor(processor.ProcessorABC):
             evtweights = np.ones(ak.to_awkward0(FatJets).size) # set all "data weights" to one
         else: # if Monte Carlo dataset is used...
             evtweights = events.Generator_weight
-        # ---- Show all events ---- #
-        output['cutflow']['all events'] += ak.to_awkward0(FatJets).size
         
         # ---- Define the SumW2 for MC Datasets (Probably unnecessary now) ---- #
         output['cutflow']['sumw'] += np.sum(evtweights)
         output['cutflow']['sumw2'] += np.sum(evtweights**2)
+        
+        # ---- Show all events ---- #
+        output['cutflow']['all events'] += ak.to_awkward0(FatJets).size
         
         # ---- Setup Trigger Analysis Conditions in higher scope ---- #
         # condition1 = None
@@ -1341,13 +1345,22 @@ class TTbarResProcessor(processor.ProcessorABC):
                 jetmass = ak.flatten(ttbarcands_modmass.slot1.mass)
                 
             ###---------------------------------------------------------------------------------------------###
-            ### ------------------------------ B-Tag Weighting (S.F. Only) -------------------------------- ###
+            ### ----------------------- Top pT Reweighting (S.F. as function of pT) ----------------------- ###
             ###---------------------------------------------------------------------------------------------###
+            if ('TTbar' in dataset) and (self.ApplyTopReweight):
+                Weights = Weights*ttbar_wgt
+                
+            
             if not isData:
+                ###---------------------------------------------------------------------------------------------###
+                ### ------------------------------ B-Tag Weighting (S.F. Only) -------------------------------- ###
+                ###---------------------------------------------------------------------------------------------###
                 if (self.ApplybtagSF == True) and (self.UseEfficiencies == False):
                     Weights = Weights*Btag_wgts[str(ilabel[-5:-3])]
                     
-                    
+                ###---------------------------------------------------------------------------------------------###
+                ### ------------------------------- JER Weighting (M.C. Only) --------------------------------- ###
+                ###---------------------------------------------------------------------------------------------###
                 if self.ApplyJER:
                     
                     jerUp, jerDown, jerNom = self.GetJERUncertainties(FatJets, GenJets, events, Weights)
@@ -1389,7 +1402,9 @@ class TTbarResProcessor(processor.ProcessorABC):
                     
                     
                     
-                    
+                ###---------------------------------------------------------------------------------------------###
+                ### ------------------------------- PDF Weighting (M.C. Only) --------------------------------- ###
+                ###---------------------------------------------------------------------------------------------###
                 if self.ApplyPDF:
                     
                     pdfUp, pdfDown, pdfNom = self.GetPDFWeights(events)
@@ -1435,12 +1450,6 @@ class TTbarResProcessor(processor.ProcessorABC):
                                                         ttbarmass = ak.to_numpy(ttbarmass[icat]),
                                                         weight = ak.to_numpy(Weights_pdfDown[icat]))
                     
-                                    
-            ###---------------------------------------------------------------------------------------------###
-            ### ----------------------- Top pT Reweighting (S.F. as function of pT) ----------------------- ###
-            ###---------------------------------------------------------------------------------------------###
-            if ('TTbar' in dataset) and (self.ApplyTopReweight):
-                Weights = Weights*ttbar_wgt
 
 # ************************************************************************************************************ #    
 
@@ -1567,7 +1576,15 @@ class TTbarResProcessor(processor.ProcessorABC):
                 output['tau32'].fill(dataset = dataset, anacat = ilabel,
                                               tau32 = ak.to_numpy(Tau32[icat]),
                                               weight = ak.to_numpy(Weights[icat]))
- 
+         
+        SelectionCats = []
+        NumOfEvents = []
+        
+        for i,j in output['cutflow'].items():
+            SelectionCats.append(i)
+            NumOfEvents.append('%1s'%j)
+        table = pd.DataFrame({'SelectionCats': SelectionCats, 'NumOfEvents': NumOfEvents})
+        print('table:\n\n', table)
         return output
 
     def postprocess(self, accumulator):
