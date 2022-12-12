@@ -52,9 +52,10 @@ From within this repo, you can run the uproot job that will produce coffea outpu
 
 The output should look something like this:
 ```
-usage: Run.py [-h] (-t | -m | -T | -F RUNFLAVOREFF [RUNFLAVOREFF ...] | -M RUNMMO [RUNMMO ...] | -d RUNDATASET [RUNDATASET ...]) (-C | -L) (-l | -med | -med2016) -a {yes,no} -y {2016,2017,2018,0} [--uproot {1,2}] [--chunks CHUNKS]
-                                [--chunksize CHUNKSIZE] [--save] [--saveMistag] [--saveTrig] [--saveFlav] [--dask] [--useEff] [--tpt]
-                                [--bTagSyst {central,up,down} | --tTagSyst {central,up,down} | --ttXSSyst {central,up,down} | --lumSyst {central,up,down} | --jec {central,up,down} | --jer {central,up,down} | --pileup {central,up,down}]
+usage: Run.py [-h] [-t | -m | -T | -F RUNFLAVOREFF [RUNFLAVOREFF ...] | -M RUNMMO [RUNMMO ...] | -d RUNDATASET [RUNDATASET ...]] (-C | -L) [-l | -med | -med2016] [-a {yes,no}] [-y {2016,2017,2018,0}]
+              [--uproot {1,2}] [--letters LETTERS [LETTERS ...]] [--chunks CHUNKS] [--chunksize CHUNKSIZE] [--save] [--saveMistag] [--saveTrig] [--saveFlav] [--dask] [--newCluster] [--timeout TIMEOUT] [--useEff]
+              [--tpt] [--useHist] [--step {1,2,3,4}]
+              [--bTagSyst {central,up,down} | --tTagSyst {central,up,down} | --ttXSSyst {central,up,down} | --lumSyst {central,up,down} | --jec | --jer | --pdf | --pileup {central,up,down}]
 
 -----------------------------------------------------------------------------
 Run the TTbarAllHadProcessor script.  
@@ -83,6 +84,8 @@ optional arguments:
   -y {2016,2017,2018,0}, --year {2016,2017,2018,0}
                         Year(s) of data/MC of the datasets you want to run uproot with. Choose 0 for all years simultaneously.
   --uproot {1,2}        1st run or 2nd run of uproot job. If not specified, both the 1st and 2nd job will be run one after the other.
+  --letters LETTERS [LETTERS ...]
+                        Choose letter(s) of jetHT to run over
   --chunks CHUNKS       Number of chunks of data to run for given dataset(s)
   --chunksize CHUNKSIZE
                         Size of each chunk to run for given dataset(s)
@@ -91,8 +94,12 @@ optional arguments:
   --saveTrig            Save uproot job with trigger analysis outputs (Only if -T selected)
   --saveFlav            Save uproot job with flavor efficiency outputs (Only if -F selected)
   --dask                Try the dask executor (experimental) for some fast processing!
+  --newCluster          Use Manually Defined Cluster (Must Disable Default Cluster First if Running in CoffeaCasa)
+  --timeout TIMEOUT     How many seconds should dask wait for scheduler to connect
   --useEff              Use MC bTag efficiencies for bTagging systematics
   --tpt                 Apply top pT re-weighting for uproot 2
+  --useHist             use scikit-hep/hist for histograms
+  --step {1,2,3,4}      Easily run a certain step of the workflow
   --bTagSyst {central,up,down}
                         Choose Unc.
   --tTagSyst {central,up,down}
@@ -101,10 +108,9 @@ optional arguments:
                         ttbar cross section systematics. Choose Unc.
   --lumSyst {central,up,down}
                         Luminosity systematics. Choose Unc.
-  --jec {central,up,down}
-                        Choose Unc.
-  --jer {central,up,down}
-                        Choose Unc.
+  --jec                 apply jec systematic weights
+  --jer                 apply jer systematic weights
+  --pdf                 apply pdf systematic weights
   --pileup {central,up,down}
                         Choose Unc.
 
@@ -121,25 +127,35 @@ optional arguments:
                                 TTbar
                                 JetHT
                                 SingleMu
-                                NOTE** UL17 and UL18 samples TBA
-                                
-Example of a usual workflow on Coffea-Casa to make the relevant coffea outputs:
-    
-    1.) Make Outputs for Flavor and Trigger Efficiencies
-python Run.py -C -med -F QCD TTbar DM RSGluon -a no -y 2016 --dask --saveFlav
-python Run.py -C -med -T -a no -y 2016 --dask --saveTrig
 
-    2.) Create Mistag Rates that will be used to estimate NTMJ background
-python Run.py -C -med -m -a no -y 2016 --dask --saveMistag
+                                    **NOTE**
+                                    =========================
+                                    JetHT 2016 letters: B - H
+                                    JetHT 2017 letters: B - F
+                                    JetHT 2018 letters: A - D
+                                    =========================
 
-    3.) Make Outputs for the first Uproot Job with no weights applied (outside of MC weights that come with the nanoAOD)
-python Run.py -C -med -d QCD TTbar JetHT DM RSGluon -a no -y 2016 --uproot 1 --dask --save
+    Example of a usual workflow on Coffea-Casa to make the relevant coffea outputs:
 
-    4.) Make Outputs for the second Uproot Job with only mistag rate applied to JetHT and TTbar, and mass modification of JetHT and TTbar in pre-tag region
-python Run.py -C -med -M QCD TTbar JetHT DM RSGluon -a no -y 2016 --dask --save
+    0.) Make Outputs for Flavor and Trigger Efficiencies
+./Run.py -C -med -F QCD TTbar DM RSGluon -a no -y 2016 --dask --saveFlav
+./Run.py -C -med -T -a no -y 2016 --dask --saveTrig
 
-    5.) Make Outputs for the second Uproot Job with systematics, on top of mistag rate application and mass modification
-python Run.py -C -med -d QCD TTbar JetHT DM RSGluon -a no -y 2016 --uproot 2 --bTagSyst central --useEff --dask --save
+    1.) Create Mistag Rates that will be used to estimate NTMJ background
+./Run.py -C --step 1
+python Run.py -C -med -m -a no -y 2016 --saveMistag
+
+    2.) Make Outputs for the first Uproot Job with no weights applied (outside of MC weights that come with the nanoAOD)
+./Run.py -C --step 2
+python Run.py -C -med -d QCD TTbar JetHT DM RSGluon -a no -y 2016 --uproot 1 --save
+
+    3.) Make Outputs for the second Uproot Job with only mistag rate applied to JetHT and TTbar, and mass modification of JetHT and TTbar in pre-tag region
+./Run.py -C --step 3
+python Run.py -C -med -M QCD TTbar JetHT DM RSGluon -a no -y 2016 --save
+
+    4.) Make Outputs for the second Uproot Job with systematics, on top of mistag rate application and mass modification
+./Run.py -C --step 4
+python Run.py -C -med -d QCD TTbar JetHT DM RSGluon -a no -y 2016 --uproot 2 --bTagSyst central --useEff --save
 ```
 ***
 # How it works
