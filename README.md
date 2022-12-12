@@ -161,7 +161,7 @@ python Run.py -C -med -d QCD TTbar JetHT DM RSGluon -a no -y 2016 --uproot 2 --b
 # How it works
 The processor is where all of the analysis is defined.  The processor is aptly named `TTbarResProcessor.py`.  
 
-The file `TTbarResCoffeaOutputs.py` runs the file according to the selected options at the beginning of the file.  When this is run, the analysis is performed and the outputs defined in the processor can be stored in a `.coffea` file, which can be found in the corresponding directory `CoffeaOutputs` or `CoffeaOutputsForCombine`.  The first directory `CoffeaOutputs` has outputs that were made while doing numerous tests to ensure the processor was giving what is expected.
+The file `Run.py` runs the file according to the selected options at the beginning of the file.  When this is run, the analysis is performed and the outputs defined in the processor can be stored in a `.coffea` file, which can be found in the corresponding directory `CoffeaOutputs` or `CoffeaOutputsForCombine`.  The first directory `CoffeaOutputs` has outputs that were made while doing numerous tests to ensure the processor was giving what is expected.
 
 For starters, if you are running the code on the LPC or Coffea-Casa, you must specify either `--lpc` (`-L`) or `--casa` (`-C`) respectively.  This is important so that the correct redirector is used for locating the desired datasets.  It also sets specific options for running the dask executor that vary between these two environments.
 
@@ -285,7 +285,7 @@ As this step implies, insure that the necessary packages, primarily coffea, awkw
     - Efficiency defined as the rate of jets that pass combination of triggers
     - Fill histograms as function of Jet $H_T$
 ## --- Uproot Job ---
-##### The script `TTbarResCoffeaOutputs.py` imports the desired processor from `TTbarResProcessor.py`, along with all other required scripts
+##### The script `Run.py` imports the desired processor from `TTbarResProcessor.py`, along with all other required scripts
 ----------------
 1. Import processor(s)
 2. Import the desired datasets from `Filesets.py` script, that reads the files in from the `nanoAODv9Files` directory
