@@ -165,11 +165,40 @@ The file `Run.py` runs the file according to the selected options at the beginni
 
 For starters, if you are running the code on the LPC or Coffea-Casa, you must specify either `--lpc` (`-L`) or `--casa` (`-C`) respectively.  This is important so that the correct redirector is used for locating the desired datasets.  It also sets specific options for running the dask executor that vary between these two environments.
 
-Next, specify the btagging working point, WP, that you want to run the processor with.  There are two (technically three) choices to pick from.  You can either choose to run with the loose or medium WP, `--loose` (`-l`) or `--medium` (`-med`). For testing purposes, you can also choose to run the processor with the same medium WP that was defined in the 2016 Analysis Note ([AN2016_459_v8.pdf](https://github.com/b2g-nano/TTbarAllHadUproot/files/9182018/AN2016_459_v8.pdf)), by specifying the `-med2016` option.  The output files created from using the loose and medium WPs will be saved in a directory that is labeled with whatever WP you've picked.  Coffea outputs made from `-med2016` option will not get it's own dedicated directory path label(s). 
+Next, specify the btagging working point, WP, that you want to run the processor with.  There are two (technically three) choices to pick from.  You can either choose to run with the loose or medium WP, `--loose` (`-l`) or `--medium` (`-med`). For testing purposes, you can also choose to run the processor with the same medium WP that was defined in the 2016 Analysis Note ([AN2016_459_v8.pdf](https://github.com/b2g-nano/TTbarAllHadUproot/files/9182018/AN2016_459_v8.pdf)), by specifying the `-med2016` option.  The output files created from using the loose and medium WPs will be saved in a directory that is labeled with whatever WP you've picked.  Coffea outputs made from `-med2016` option will not get it's own dedicated directory path label(s). *Note: Should you not specify the WP, the medium WP will be chosen by default.* 
 
-You can choose the datasets you want for the first and second uproot run by specifying `--rundataset` or `-d` followed by the names of the datasets you'd like to run.  When running the code with this `-d` option (selecting the datasets you want from the terminal) it is mandatory to give the names of the dataset according to the key listed in the help message's epilogue.  For any run option selected to run the program (`-d`, `-m` or `-t`) you must also specify the year, `---year` or `-y`, and whether or not the datasets have APV or not, `--APV` or `-a`.  All other arguments are optional, but should still be carefully considered depending on what you want to do.
+You can choose the datasets you want for the first and second uproot run by specifying `--rundataset` or `-d` followed by the names of the datasets you'd like to run.  When running the code with this `-d` option (selecting the datasets you want from the terminal) it is mandatory to give the names of the dataset according to the key listed in the help message's epilogue.  For any run option selected to run the program (`-t`, `-m`, `-T`, `-F`, `-M`, `-d`) you must also specify the year, `---year` or `-y`, and whether or not the datasets have APV or not, `--APV` or `-a` (*Default choice is `--APV no`*).  All other arguments are optional, but should still be carefully considered depending on what you want to do.
 ***
-## Example 1:
+## Main Example:
+To get all outputs needed for the entire analysis for a given year (for all datasets) simply execute steps 1 - 3. For this example, let's assume we are using Coffea Casa and we want to perform the analysis for the 2017 run.
+
+> ./Run.py --step 1 -C -y 2017
+> ./Run.py --step 2 -C -y 2017
+> ./Run.py --step 3 -C -y 2017
+
+For faster processing with dask, you would run the previous lines with additional dask options.
+
+> ./Run.py --step 1 -C -y 2017 --dask 
+> ./Run.py --step 2 -C -y 2017 --dask
+> ./Run.py --step 3 -C -y 2017 --dask
+
+For step 4, specify the systematic that you would like to run.  For this example, let's say we want coffea outputs with b-tag 'up' systematic correction
+
+> ./Run.py --step 4 -C -y 2017 --bTagSyst up
+
+***
+# Specific Examples:
+
+##      Example 1:
+Suppose we want to get the b-tagging effeciencies (flavour efficiencies) for the `--bTagSyst` analysis for QCD and TTbar 2016 datasets with APV.  To get these efficiencies:
+
+> ./Run.py -F QCD TTbar -C -a yes -y 2016 --saveFlav
+
+If we now wanted to use these efficiencies for the b-tagging systematics we will use the `--useEff` option when running the second uproot job:
+
+> ./Run.py -d QCD TTbar -C -a yes -y 2016 --uproot 2 --bTagSyst central --useEff
+
+##      Example 2:
 Suppose you would like to run the 1.5 TeV Zprime to DM and 2.0 TeV RS Gluon Ultra Legacy 16 files with no APV included.  You just want an idea of the order of magnitude of events that goes into each analysis category.  For this run, let's assume you don't need/want to save this coffea output to either avoid clutter in the directory or overwriting a preexisting coffea output with better stats.  Also, there is no need to apply mistag/mod-mass/systematic corrections to this run, as this is just a run out of curiosity; you only want to see the output of the cutflow onto the terminal.  In this case, you only need to run the first uproot job and you can ignore the second run to save time.
 
 For such a task, the code can be ran with the following arguments like this:
@@ -177,10 +206,6 @@ For such a task, the code can be ran with the following arguments like this:
 > python Run.py -d DM1500 RSGluon2000 -a no -y 2016 --uproot 1 --chunks 10 --chunksize 1000
 
 This runs the first uproot job with the two desired datasets according to the APV status and year (and also mass in this example).  The choice of chunks and chunksize gives roughly 10<sup>1</sup> times 10<sup>3</sup> (10,000) events
-***
-## Other Examples:
-
-TBA soon :)
 ***
 # Workflow
 
@@ -230,6 +255,9 @@ As this step implies, insure that the necessary packages, primarily coffea, awkw
     - b Tag SF's used to either:
       - a. Create an additional event weight (independent of MC flavor tag efficiency)
       - b. Update b-tag status of ttbar candidates (dependent on MC flavor tag efficiency)
+    - Top $p_T$ Reweighting (--tpt)
+    - Jet Energy Resolution (--jer)
+    - PDF Weights (--pdf)
 4. Loop Through Analysis Categories (Hist objects are filled with desired variables acccording to dataset and category, along with the event weights)
     - Uproot 1 Option (-d [LIST OF DATASETS] --uproot 1 ...)
       - No additional weights and/or corrections are applied apart from the generator event weights (if any)
