@@ -173,13 +173,17 @@ You can choose the datasets you want for the first and second uproot run by spec
 To get all outputs needed for the entire analysis for a given year (for all datasets) simply execute steps 1 - 3. For this example, let's assume we are using Coffea Casa and we want to perform the analysis for the 2017 run.
 
 > ./Run.py --step 1 -C -y 2017
+
 > ./Run.py --step 2 -C -y 2017
+
 > ./Run.py --step 3 -C -y 2017
 
 For faster processing with dask, you would run the previous lines with additional dask options.
 
 > ./Run.py --step 1 -C -y 2017 --dask 
+
 > ./Run.py --step 2 -C -y 2017 --dask
+
 > ./Run.py --step 3 -C -y 2017 --dask
 
 For step 4, specify the systematic that you would like to run.  For this example, let's say we want coffea outputs with b-tag 'up' systematic correction
