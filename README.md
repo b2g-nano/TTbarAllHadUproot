@@ -48,7 +48,7 @@ After the initial setup steps of the coffea-dask environment (stated above) you 
 # How to run
 From within this repo, you can run the uproot job that will produce coffea output files.  To see a list of arguments needed to run this program please enter the following in the terminal: 
 
-> python TTbarResCoffeaOutputs.py --help
+> python Run.py --help
 
 The output should look something like this:
 ```
