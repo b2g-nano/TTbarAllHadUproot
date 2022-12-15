@@ -4,6 +4,7 @@
 import os 
 import copy
 import scipy.stats as ss
+import uproot
 from coffea import hist, processor, nanoevents
 from coffea import util
 from coffea.btag_tools import BTagScaleFactor
@@ -44,7 +45,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                  year=None, apv='', vfp='', UseLookUpTables=False, lu=None, extraDaskDirectory='',
                  ModMass=False, RandomDebugMode=False, UseEfficiencies=False, xsSystematicWeight=1., lumSystematicWeight=1.,
                  ApplybtagSF=False, ScaleFactorFile='', ApplyttagSF=False, ApplyTopReweight=False, 
-                 ApplyJER=False, ApplyJEC=False, ApplyPDF=False, sysType=None):
+                 ApplyJER=False, ApplyJEC=False, ApplyPDF=False, sysType=None , ApplyPUreweighting=True):
         
         self.prng = prng
         self.htCut = htCut
@@ -69,6 +70,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         self.ApplyJEC = ApplyJEC
         self.ApplyJER = ApplyJER
         self.ApplyPDF = ApplyPDF
+        self.ApplyPUreweighting = ApplyPUreweighting
         self.sysType = sysType # string for btag SF evaluator --> "central", "up", or "down"
         self.UseEfficiencies = UseEfficiencies
         self.xsSystematicWeight = xsSystematicWeight
@@ -133,7 +135,6 @@ class TTbarResProcessor(processor.ProcessorABC):
             'ttbarmass_pileupUp': hist.Hist("Counts", dataset_axis, cats_axis, ttbarmass_axis),
             'ttbarmass_pileupDown': hist.Hist("Counts", dataset_axis, cats_axis, ttbarmass_axis),
             'ttbarmass_pileupNom': hist.Hist("Counts", dataset_axis, cats_axis, ttbarmass_axis),
-            
             ######################################
 
             'jetmass':         hist.Hist("Counts", dataset_axis, cats_axis, jetmass_axis),
@@ -171,6 +172,7 @@ class TTbarResProcessor(processor.ProcessorABC):
             
         })
         
+        print('it arrives here step 0')  
 #   =======================================================================
 #   FFFFFFF U     U N     N   CCCC  TTTTTTT IIIIIII   OOO   N     N   SSSSS     
 #   F       U     U NN    N  C         T       I     O   O  NN    N  S          
@@ -428,7 +430,6 @@ class TTbarResProcessor(processor.ProcessorABC):
         name_map['JetMass'] = 'mass'
         name_map['JetEta'] = 'eta'
         name_map['JetA'] = 'area'
-
         
         # match gen jets to AK4 jets
         matched_genjet_index = ak.mask(FatJets.genJetIdx, (FatJets.genJetIdx != -1) & (FatJets.genJetIdx < ak.count(GenJets.pt, axis=1)))
@@ -482,8 +483,49 @@ class TTbarResProcessor(processor.ProcessorABC):
 
         
         
+    def GetPileupWeights(self, events, year): 
+ 
+      #### READ files first of data and MC. 
+      if year == "2016": 
+                self.dataFile_nominal =os.path.expandvars("TTbarAllHadUproot/CorrectionFiles/pileup/2016/PileupHistogram-goldenJSON-13tev-2016-69200ub-99bins.root")
+                #self.dataFile_nominal ="TTbarAllHadUproot/CorrectionFiles/pileup/2016/PileupHistogram-goldenJSON-13tev-2016-69200ub-99bins.root"
+                self.dataFile_up = os.path.expandvars("TTbarAllHadUproot/CorrectionFiles/pileup/2016/PileupHistogram-goldenJSON-13tev-2016-72400ub-99bins.root")
+                self.dataFile_down = os.path.expandvars("TTbarAllHadUproot/CorrectionFiles/pileup/2016/PileupHistogram-goldenJSON-13tev-2016-66000ub-99bins.root")
+                self.mcFile =  os.path.expandvars("TTbarAllHadUproot/CorrectionFiles/pileup/2016/pileup.root")
+                
+                
+      for var in ["_up", "_nominal", "_down"]: 
+         fData = uproot.open(getattr(self, "dataFile"+var))
+         if not fData:
+            print ("ERROR: Cannot find pileup file: ",getattr(self, "dataFile"+var))
+            sys.exit(1)
+            
+         setattr(self, "dataHist"+var, fData["pileup"].axis("x").centers()-0.5)
+         
+         #for event in events : 
+         ## it will give me the number of primary vertices for all mc events per process. 
+         ### the return is an array of nPV per process , the array length is the number of events. 
+         nTrueInteractions = events.Pileup_nTrueInt
         
-        
+          #print ("nb of true interactions is " , nTrueInteractions )
+          x = np.where(getattr(self, "dataHist"+var) == nTrueInteractions)
+          #print('the bin is found and it is ',  x )
+
+            
+
+    '''
+      mcBin = self.mcHist.FindBin(nTrueInteractions)
+        w = []
+        #add w_up and down
+        for var in ["_up", "_nominal", "_down"]:
+            dataBin = getattr(self, "dataHist"+var).FindBin(nTrueInteractions)
+            w.append(getattr(self, "dataHist"+var).GetBinContent(dataBin)/(self.mcHist.GetBinContent(mcBin)+self.mcHist.Integral()*0.0001))
+            if w[-1]>5.:
+                w[-1] = 0
+        return w
+    '''
+
+      return 1, 1, 1 
         
 
             
@@ -592,7 +634,8 @@ class TTbarResProcessor(processor.ProcessorABC):
             })
         PileUp = ak.zip({
            "nPV": events.PV_npvs,
-            }) 
+            })
+
         # ---- Define Generator Particles and other needed event properties for MC ---- #
         if isData == False: # If MC is used...
             GenParts = ak.zip({
@@ -1287,8 +1330,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                                                     ttbarmass = ak.to_numpy(ttbarmass[icat]),
                                                     weight = ak.to_numpy(Weights_jerDown[icat]))
                     
-                    
-                    
+                       
                     
                 if self.ApplyPDF:
                     
@@ -1305,7 +1347,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                         Weights_pdfNom  = Weights
                     
 
-                    
+                
                     output['ttbarmass_pdfNom'].fill(dataset = dataset, anacat = ilabel, 
                                                     ttbarmass = ak.to_numpy(ttbarmass[icat]),
                                                     weight = ak.to_numpy(Weights_pdfNom[icat]))
@@ -1315,13 +1357,33 @@ class TTbarResProcessor(processor.ProcessorABC):
                     output['ttbarmass_pdfDown'].fill(dataset = dataset, anacat = ilabel, 
                                                     ttbarmass = ak.to_numpy(ttbarmass[icat]),
                                                     weight = ak.to_numpy(Weights_pdfDown[icat]))
-                    
-                                    
+                
+            ###---------------------------------------------------------------------------------------------###
+            ###------------------------------ PileUp reweighting -------------------------------------------###
+            ###---------------------------------------------------------------------------------------------###
+            if self.ApplyPUreweighting:
+
+                   ### add here the  value of pile up weight. 
+                    Weights_pileupUp, Weights_pileupDown , Weights_pileupNom =  self.GetPileupWeights(events, year = "2016")
+                    '''
+                    output['ttbarmass_pileupUp'].fill(dataset = dataset, anacat = ilabel,
+                                                    ttbarmass = ak.to_numpy(ttbarmass[icat]),
+                                                    weight = ak.to_numpy(Weights_pileupUp[icat]))
+
+                    output['ttbarmass_pileupDown'].fill(dataset = dataset, anacat = ilabel,
+                                                    ttbarmass = ak.to_numpy(ttbarmass[icat]),
+                                                    weight = ak.to_numpy(Weights_pileupDown[icat]))
+
+                    output['ttbarmass_pileupNom'].fill(dataset = dataset, anacat = ilabel,
+                                                    ttbarmass = ak.to_numpy(ttbarmass[icat]),
+                                                    weight = ak.to_numpy(Weights_pileupNom[icat]))
+                    '''
             ###---------------------------------------------------------------------------------------------###
             ### ----------------------- Top pT Reweighting (S.F. as function of pT) ----------------------- ###
             ###---------------------------------------------------------------------------------------------###
             if ('TTbar' in dataset) and (self.ApplyTopReweight):
                 Weights = Weights*ttbar_wgt
+
 
 # ************************************************************************************************************ #    
 
