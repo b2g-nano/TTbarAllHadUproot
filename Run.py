@@ -357,6 +357,7 @@ UncType = ""
 SFfile = ""
 ApplybSF = False
 ApplytSF = False
+ApplyPUreweighting = True
 xsSystwgt = 1.
 lumSystwgt = 1.
 
