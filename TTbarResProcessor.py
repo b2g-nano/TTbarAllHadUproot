@@ -48,7 +48,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                  year=None, apv='', vfp='', UseLookUpTables=False, lu=None, extraDaskDirectory='',
                  ModMass=False, RandomDebugMode=False, UseEfficiencies=False, xsSystematicWeight=1., lumSystematicWeight=1.,
                  ApplybtagSF=False, ScaleFactorFile='', ApplyttagSF=False, ApplyTopReweight=False, 
-                 ApplyJER=False, ApplyJEC=False, ApplyPDF=False, sysType=None, , ApplyPUreweighting=True , useHist=False):
+                 ApplyJER=False, ApplyJEC=False, ApplyPDF=False, sysType=None,  ApplyPUreweighting=True , useHist=False):
         
         self.prng = prng
         self.htCut = htCut
@@ -566,53 +566,57 @@ class TTbarResProcessor(processor.ProcessorABC):
             pdf_nom = np.ones(len(events))            
             
         return [pdf_up, pdf_down, pdf_nom]
-
+    
+    
+    ## normalise MC and data pileup histograms: 
+    ## this should be translated to coffea language
+    def normHist(self, hist): 
         
+         hist.Scale(1./hist.Integral())
+         for ibin in range(hist.GetNbinsX()):
+            w = hist.GetBinWidth(ibin+1)
+            c = hist.GetBinContent(ibin+1)
+            hist.SetBinContent(ibin+1,c/w)
         
     def GetPileupWeights(self, events, year): 
  
       #### READ files first of data and MC. 
       if year == "2016": 
                 self.dataFile_nominal =os.path.expandvars("TTbarAllHadUproot/CorrectionFiles/pileup/2016/PileupHistogram-goldenJSON-13tev-2016-69200ub-99bins.root")
-                #self.dataFile_nominal ="TTbarAllHadUproot/CorrectionFiles/pileup/2016/PileupHistogram-goldenJSON-13tev-2016-69200ub-99bins.root"
                 self.dataFile_up = os.path.expandvars("TTbarAllHadUproot/CorrectionFiles/pileup/2016/PileupHistogram-goldenJSON-13tev-2016-72400ub-99bins.root")
                 self.dataFile_down = os.path.expandvars("TTbarAllHadUproot/CorrectionFiles/pileup/2016/PileupHistogram-goldenJSON-13tev-2016-66000ub-99bins.root")
                 self.mcFile =  os.path.expandvars("TTbarAllHadUproot/CorrectionFiles/pileup/2016/pileup.root")
-                
-                
+      elif year == "2017":   
+                self.dataFile_nominal =os.path.expandvars("TTbarAllHadUproot/CorrectionFiles/pileup/2017/PileupHistogram-goldenJSON-13tev-2017-69200ub-99bins.root")
+                self.dataFile_up = os.path.expandvars("TTbarAllHadUproot/CorrectionFiles/pileup/2017/PileupHistogram-goldenJSON-13tev-2016-72400ub-99bins.root")
+                self.dataFile_down = os.path.expandvars("TTbarAllHadUproot/CorrectionFiles/pileup/2017/PileupHistogram-goldenJSON-13tev-2017-66000ub-99bins.root")
+                self.mcFile =  os.path.expandvars("TTbarAllHadUproot/CorrectionFiles/pileup/2017/pileup.root")
+      else : 
+                self.dataFile_nominal =os.path.expandvars("TTbarAllHadUproot/CorrectionFiles/pileup/2018/PileupHistogram-goldenJSON-13tev-2018-69200ub-99bins.root")
+                self.dataFile_up = os.path.expandvars("TTbarAllHadUproot/CorrectionFiles/pileup/2018/PileupHistogram-goldenJSON-13tev-2018-72400ub-99bins.root")
+                self.dataFile_down = os.path.expandvars("TTbarAllHadUproot/CorrectionFiles/pileup/2018/PileupHistogram-goldenJSON-13tev-2018-66000ub-99bins.root")
+                self.mcFile =  os.path.expandvars("TTbarAllHadUproot/CorrectionFiles/pileup/2018/pileup.root")
+        
+      ## Read here fMc without loop, it is just one file with nominal values. 
+      fMc = uproot.open(getattr(self, "mcFile"))
+      setattr(self, "mcHist", fMc["pileup"].values())
+      setattr(self, "mcHist_nTI", fMc["pileup"].axis("x").centers()-0.5)
+       
+      self.normHist(self, getattr(self, "mcHist_nTI" ))
+      ### Read  data files, there are three files corresponding to nominal , up and down pileup values.          
       for var in ["_up", "_nominal", "_down"]: 
          fData = uproot.open(getattr(self, "dataFile"+var))
          if not fData:
             print ("ERROR: Cannot find pileup file: ",getattr(self, "dataFile"+var))
-            sys.exit(1)
-            
-         setattr(self, "dataHist"+var, fData["pileup"].axis("x").centers()-0.5)
-         
-         #for event in events : 
-         ## it will give me the number of primary vertices for all mc events per process. 
-         ### the return is an array of nPV per process , the array length is the number of events. 
-         nTrueInteractions = events.Pileup_nTrueInt
+            sys.exit(1)    
+         self.normHist(getattr(self, "dataHist"+var))   
+         setattr(self, "dataHist"+var, fData["pileup"].values())
+         setattr(self, "dataHist"+var+"_nTI", fData["pileup"].axis("x").centers()-0.5)
+  
+         setattr(self, "weight"+var, getattr(self, "dataHist"+var)/self, "mcHist")
         
-          #print ("nb of true interactions is " , nTrueInteractions )
-          x = np.where(getattr(self, "dataHist"+var) == nTrueInteractions)
-          #print('the bin is found and it is ',  x )
-
-            
-
-    '''
-      mcBin = self.mcHist.FindBin(nTrueInteractions)
-        w = []
-        #add w_up and down
-        for var in ["_up", "_nominal", "_down"]:
-            dataBin = getattr(self, "dataHist"+var).FindBin(nTrueInteractions)
-            w.append(getattr(self, "dataHist"+var).GetBinContent(dataBin)/(self.mcHist.GetBinContent(mcBin)+self.mcHist.Integral()*0.0001))
-            if w[-1]>5.:
-                w[-1] = 0
-        return w
-    '''
-
-      return 1, 1, 1 
-        
+         ## need to return the weights instead and then do a lookup table and call it in the main analysis function ? for now just return 1,1,1 to test the code. 
+         return 1, 1, 1 
 
             
     @property
