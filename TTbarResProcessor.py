@@ -4,7 +4,7 @@
 import os 
 import copy
 import scipy.stats as ss
-from coffea import hist, processor, nanoevents
+from coffea import hist, processor, nanoevents # coffea.hist deprecated as of 12/31/22
 from coffea import util
 from coffea.btag_tools import BTagScaleFactor
 from coffea.jetmet_tools import FactorizedJetCorrector, JetCorrectionUncertainty
@@ -16,6 +16,8 @@ import pandas as pd
 from numpy.random import RandomState
 import correctionlib
 # from correctionlib.schemav2 import Correction
+
+import hist as hist2 # Accepted import as of 1/1/23
 
 import awkward as ak
 #from coffea.nanoevents.methods import nanoaod
@@ -588,21 +590,22 @@ class TTbarResProcessor(processor.ProcessorABC):
             
         # ---- Jets that satisfy Jet ID ---- #
         jet_id = (FatJets.jetId > 0) # Loose jet ID
-        FatJets = FatJets[jet_id]
+        
+        # FatJets = FatJets[jet_id]
         output['cutflow']['Loose Jet ID'] += ak.to_awkward0(jet_id).any().sum()
         
         # ---- Apply pT Cut and Rapidity Window ---- #
         FatJets_rapidity = .5*np.log( (FatJets.p4.energy + FatJets.p4.pz)/(FatJets.p4.energy - FatJets.p4.pz) )
         jetkincut_index = (FatJets.pt > self.ak8PtMin) & (np.abs(FatJets_rapidity) < 2.4)
-        FatJets = FatJets[ jetkincut_index ]
+        # FatJets = FatJets[ jetkincut_index ]
         output['cutflow']['pT,y Cut'] += ak.to_awkward0(jetkincut_index).any().sum()
         
         # ---- Find two AK8 Jets ---- #
         twoFatJetsKin = (ak.num(FatJets, axis=-1) == 2)
-        FatJets = FatJets[twoFatJetsKin]
-        SubJets = SubJets[twoFatJetsKin]
-        Jets = Jets[twoFatJetsKin] # this used to not be here
-        evtweights = evtweights[twoFatJetsKin]
+        # FatJets = FatJets[twoFatJetsKin]
+        # SubJets = SubJets[twoFatJetsKin]
+        # Jets = Jets[twoFatJetsKin] # this used to not be here
+        # evtweights = evtweights[twoFatJetsKin]
         if not isData: # If MC is used...
             GenParts = GenParts[twoFatJetsKin]
         output['cutflow']['two FatJets'] += ak.to_awkward0(twoFatJetsKin).sum()
@@ -693,6 +696,9 @@ class TTbarResProcessor(processor.ProcessorABC):
         cen = np.abs(ttbarcands_s0_rapidity - ttbarcands_s1_rapidity) < 1.0
         fwd = (~cen)
         
+        
+        # -- Event Level -- #
+        # -- Check to see if all booleans True -- #
 
 #    ============================================================
 #    TTTTTTT     TTTTTTT    A    GGGGGGG GGGGGGG EEEEEEE RRRRRR  
@@ -2083,11 +2089,23 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         
         # --- 0, >=1 ttags --- #
         self.ttagcats_forTriggerAnalysis = ["NoCut", ">=1t"]
+        self.label_dict = {i: label for i, label in enumerate(self.ttagcats_forTriggerAnalysis)}
+        # self.ttagcats_forTriggerAnalysis = [0, 1]
         
-        dataset_axis = hist.Cat("dataset", "Primary dataset")
-        cats_axis = hist.Cat("anacat", "Analysis Category")
-        jetht_axis = hist.Bin("Jet_HT", r'$AK4\ Jet\ HT$', manual_jetht_bins) # Used for Trigger Analysis
-        sdMass_axis = hist.Bin("Jet_sdMass", r'$AK4\ M_{SD}$', manual_sdMass_bins)
+        # ---------- ALL Deprecated as of 12/31/22 ---------- #
+        # dataset_axis = hist.Cat("dataset", "Primary dataset")
+        # cats_axis = hist.Cat("anacat", "Analysis Category")
+        # jetht_axis = hist.Bin("Jet_HT", r'$AK4\ Jet\ HT$', manual_jetht_bins) # Used for Trigger Analysis
+        # sdMass_axis = hist.Bin("Jet_sdMass", r'$AK4\ M_{SD}$', manual_sdMass_bins)
+        # jetpt_axis = hist.Bin("Jet_pt", r'$AK4\ Jet\ p_T$', manual_jetpt_bins)
+        
+        # ---------- To be used from 1/1/23 ---------- #
+        dataset_axis = hist2.axis.StrCategory([], growth=True, name="dataset", label="Primary Dataset")
+        cats_axis = hist2.axis.Regular(2, 0, 1, name="anacat", label="Analysis Category")
+        # cats_axis = hist2.axis.StrCategory(self.ttagcats_forTriggerAnalysis, name="anacat", label="Analysis Category")
+        jetht_axis = hist2.axis.Variable(manual_jetht_bins, name="Jet_HT", label=r"$AK4\ Jet\ HT$ [GeV]")
+        sdMass_axis = hist2.axis.Variable(manual_jetht_bins, name="Jet_sdMass", label=r"$AK4\ Jet\ M_{SD}$ [GeV]")
+        # jetpt_axis = hist2.axis.Variable(manual_jetpt_bins, name="jetpt", label=r"$AK4\ Jet\ p_{T}$ [GeV]")
         
 #    ===================================================================================================
 #    TTTTTTT RRRRRR  IIIIIII GGGGGGG GGGGGGG EEEEEEE RRRRRR      H     H IIIIIII   SSSSS TTTTTTT   SSSSS     
@@ -2098,25 +2116,32 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
 #       T    R    R     I    G     G G     G E       R    R      H     H    I         S     T         S      
 #       T    R     R IIIIIII  GGGGG   GGGGG  EEEEEEE R     R     H     H IIIIIII SSSSS      T    SSSSS
 #    ===================================================================================================
-
-        self._accumulator = processor.dict_accumulator({
-           'condition1_numerator': hist.Hist("Counts", dataset_axis, cats_axis, jetht_axis, sdMass_axis),
-           'condition2_numerator': hist.Hist("Counts", dataset_axis, cats_axis, jetht_axis, sdMass_axis),
-           'condition3_numerator': hist.Hist("Counts", dataset_axis, cats_axis, jetht_axis, sdMass_axis),
-           'condition4_numerator': hist.Hist("Counts", dataset_axis, cats_axis, jetht_axis, sdMass_axis),
-           'condition5_numerator': hist.Hist("Counts", dataset_axis, cats_axis, jetht_axis, sdMass_axis),
-           'condition_denominator': hist.Hist("Counts", dataset_axis, cats_axis, jetht_axis, sdMass_axis),
+        
+         # ---------- To be used from 1/1/23 ---------- #
+        self.histo_dict = {  
+            'condition1_numerator': hist2.Hist(dataset_axis, cats_axis, jetht_axis, sdMass_axis, storage="weight", name="Counts"),
+            'condition2_numerator': hist2.Hist(dataset_axis, cats_axis, jetht_axis, sdMass_axis, storage="weight", name="Counts"),
+            'condition3_numerator': hist2.Hist(dataset_axis, cats_axis, jetht_axis, sdMass_axis, storage="weight", name="Counts"),
+            'condition4_numerator': hist2.Hist(dataset_axis, cats_axis, jetht_axis, sdMass_axis, storage="weight", name="Counts"),
+            'condition5_numerator': hist2.Hist(dataset_axis, cats_axis, jetht_axis, sdMass_axis, storage="weight", name="Counts"),
+            'condition_denominator': hist2.Hist(dataset_axis, cats_axis, jetht_axis, sdMass_axis, storage="weight", name="Counts"),
+            
+            # 'trigger1': hist2.Hist(dataset_axis, cats_axis, jetht_axis, sdMass_axis, jetpt_axis, storage="weight", name="Counts"),
+            # 'trigger2': hist2.Hist(dataset_axis, cats_axis, jetht_axis, sdMass_axis, jetpt_axis, storage="weight", name="Counts"),
+            # 'trigger3': hist2.Hist(dataset_axis, cats_axis, jetht_axis, sdMass_axis, jetpt_axis, storage="weight", name="Counts"),
+            # 'trigger4': hist2.Hist(dataset_axis, cats_axis, jetht_axis, sdMass_axis, jetpt_axis, storage="weight", name="Counts"),
+            # 'trigger5': hist2.Hist(dataset_axis, cats_axis, jetht_axis, sdMass_axis, jetpt_axis, storage="weight", name="Counts"),
             
             'cutflow': processor.defaultdict_accumulator(int),
-        })
-        
+        }
             
     @property
     def accumulator(self):
         return self._accumulator
 
     def process(self, events):
-        output = self.accumulator.identity()
+        # output = self.accumulator.identity() # Deprecated as of 12/31/22
+        output = self.histo_dict # Syntax for 1/1/23 Onwards
         
         # ---- Define dataset ---- #
         dataset = events.metadata['dataset']
@@ -2267,7 +2292,7 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
             firstCondition = (triggers_1) 
             
             # ---- Defining Trigger Analysis Conditions ---- #
-            condition1 = firstCondition & trigDenom # WHY?! Figure out later...
+            condition1 = firstCondition & trigDenom 
             condition2 = (firstCondition | triggers_2) & trigDenom
             condition3 = ((firstCondition | triggers_2) | triggers_3) & trigDenom
             condition4 = ((firstCondition | triggers_2) | (triggers_3 | triggers_4)) & trigDenom
@@ -2276,7 +2301,7 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
             firstCondition = (triggers_1) 
             
             # ---- Defining Trigger Analysis Conditions ---- #
-            condition1 = firstCondition & trigDenom # WHY?! Figure out later...
+            condition1 = firstCondition & trigDenom 
             condition2 = (firstCondition | triggers_2) & trigDenom
         
             
@@ -2579,7 +2604,7 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         # ---- Define Categories for Trigger Analysis Denominator and Fill Hists ---- #
         ttags = [ttagAny[trigDenom],ttagI[trigDenom]]
         cats = [ ak.to_awkward0(ak.flatten(t)) for t in ttags ]
-        labels_and_categories = dict(zip( self.ttagcats_forTriggerAnalysis, cats ))
+        labels_and_categories = dict(zip(self.label_dict.keys(), cats))
         for ilabel,icat in labels_and_categories.items():
             output['condition_denominator'].fill(dataset = dataset, anacat = ilabel, 
                                                 Jet_HT = ak.to_numpy(jet_HT_denominator[icat]),
@@ -2593,7 +2618,7 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
             w = NumWgtDict[str(i)]
             ttags = [ttagAny[c],ttagI[c]]
             cats = [ ak.to_awkward0(ak.flatten(t)) for t in ttags ]
-            labels_and_categories = dict(zip( self.ttagcats_forTriggerAnalysis, cats))
+            labels_and_categories = dict(zip(self.label_dict.keys(), cats))
             for ilabel,icat in labels_and_categories.items():
                 output['condition' + str(i) + '_numerator'].fill(dataset = dataset, anacat = ilabel, 
                                                                 Jet_HT = ak.to_numpy(n_HT[icat]),
