@@ -613,7 +613,7 @@ class TTbarResProcessor(processor.ProcessorABC):
          setattr(self, "dataHist"+var, fData["pileup"].values())
          setattr(self, "dataHist"+var+"_nTI", fData["pileup"].axis("x").centers()-0.5)
   
-         setattr(self, "weight"+var, getattr(self, "dataHist"+var)/self, "mcHist")
+         setattr(self, "weight"+var, getattr(self, "dataHist"+var)/ getattr(self, "mcHist"))
         
          ## need to return the weights instead and then do a lookup table and call it in the main analysis function ? for now just return 1,1,1 to test the code. 
          return 1, 1, 1 
