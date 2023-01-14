@@ -616,17 +616,17 @@ class TTbarResProcessor(processor.ProcessorABC):
 #         HLT_AK8_triggers = listOfTriggers[isHLT_AK8]
         
         
-        # trigDenom = events.HLT_Mu50 | events.HLT_IsoMu24 # WHY!!!!!????
-        # print(events.HLT_Mu50)
-        # print(events.HLT_IsoMu24)
-        # print(trigDenom)
-        # print('-----------------------------------------------')
+#         trigDenom = events.HLT_Mu50 | events.HLT_IsoMu24 # WHY!!!!!????
+#         print(events.HLT_Mu50)
+#         print(events.HLT_IsoMu24)
+#         print(trigDenom)
+#         print('-----------------------------------------------')
         
-        # if self.year == 2016:
-        #     triggers2016_1 = events.HLT_PFHT900
-        #     triggers2016_2 = events.HLT_AK8PFHT700_TrimR0p1PT0p03Mass50
-        #     triggers2016_3 = events.HLT_AK8PFJet450
-        #     triggers2016_4 = events.HLT_AK8PFJet360_TrimMass30
+#         if self.year == 2016:
+#             triggers2016_1 = events.HLT_PFHT900
+#             triggers2016_2 = events.HLT_AK8PFHT700_TrimR0p1PT0p03Mass50
+#             triggers2016_3 = events.HLT_AK8PFJet450
+#             triggers2016_4 = events.HLT_AK8PFJet360_TrimMass30
 
 #    ===================================================================================
 #    PPPPPP  RRRRRR  EEEEEEE L       IIIIIII M     M       CCCC  U     U TTTTTTT   SSSSS     
@@ -660,10 +660,11 @@ class TTbarResProcessor(processor.ProcessorABC):
         FatJets = FatJets[passhT]
         Jets = Jets[passhT] # this used to not be here
         SubJets = SubJets[passhT]
-        if not isData:
-            GenJets = GenJets[passhT]
         evtweights = evtweights[passhT]
         events = events[passhT]
+        if not isData:
+            GenJets = GenJets[passhT]
+        
         output['cutflow']['HT Cut'] += ak.to_awkward0(passhT).sum()
           
         # ---- Jets that satisfy Jet ID ---- #
@@ -682,10 +683,10 @@ class TTbarResProcessor(processor.ProcessorABC):
         FatJets = FatJets[twoFatJetsKin]
         SubJets = SubJets[twoFatJetsKin]
         Jets = Jets[twoFatJetsKin] # this used to not be here
-        if not isData:
-            GenJets = GenJets[twoFatJetsKin]
         events = events[twoFatJetsKin]
         evtweights = evtweights[twoFatJetsKin]
+        if not isData:
+            GenJets = GenJets[twoFatJetsKin]
         
         # ---- Randomly Assign AK8 Jets as TTbar Candidates 0 and 1 --- #
         Counts = np.ones(len(FatJets), dtype='i') # Number 1 for each FatJet
@@ -728,10 +729,10 @@ class TTbarResProcessor(processor.ProcessorABC):
         FatJets = FatJets[oneTTbar]
         Jets = Jets[oneTTbar] # this used to not be here
         SubJets = SubJets[oneTTbar]
-        if not isData:
-            GenJets = GenJets[oneTTbar]
         events = events[oneTTbar]
         evtweights = evtweights[oneTTbar]
+        if not isData:
+            GenJets = GenJets[oneTTbar]
             
         # ---- Apply Delta Phi Cut for Back to Back Topology ---- #
         """ NOTE: Should find function for this; avoids 2pi problem """
@@ -742,10 +743,10 @@ class TTbarResProcessor(processor.ProcessorABC):
         FatJets = FatJets[dPhiCut] 
         Jets = Jets[dPhiCut] # this used to not be here
         SubJets = SubJets[dPhiCut] 
-        if not isData:
-            GenJets = GenJets[dPhiCut]
         events = events[dPhiCut]
         evtweights = evtweights[dPhiCut]
+        if not isData:
+            GenJets = GenJets[dPhiCut]
         
         # ---- Identify subjets according to subjet ID ---- #
         hasSubjets0 = ((ttbarcands.slot0.subJetIdx1 > -1) & (ttbarcands.slot0.subJetIdx2 > -1)) # 1st candidate has two subjets
@@ -755,11 +756,11 @@ class TTbarResProcessor(processor.ProcessorABC):
         ttbarcands = ttbarcands[GoodSubjets] # Choose only ttbar candidates with this selection of subjets
         FatJets = FatJets[GoodSubjets]
         SubJets = SubJets[GoodSubjets]
-        if not isData:
-            GenJets = GenJets[GoodSubjets]
         events = events[GoodSubjets]
         Jets = Jets[GoodSubjets] # this used to not be here
         evtweights = evtweights[GoodSubjets]
+        if not isData:
+            GenJets = GenJets[GoodSubjets]
         
         SubJet01 = SubJets[ttbarcands.slot0.subJetIdx1] # ttbarcandidate 0's first subjet 
         SubJet02 = SubJets[ttbarcands.slot0.subJetIdx2] # ttbarcandidate 0's second subjet
@@ -1160,8 +1161,10 @@ class TTbarResProcessor(processor.ProcessorABC):
                     QCD_unweighted = util.load(self.extraDaskDirectory+'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/QCD/'
                                                +self.BDirect+str(self.year)+'/'+self.apv+'/TTbarRes_0l_UL'+str(self.year-2000)+self.vfp+'_QCD.coffea') 
                     # ---- Define Histogram ---- #
-                    QCD_hist = QCD_unweighted['jetmass'].integrate('anacat', '2t' + str(ilabel[-5:]))#.integrate('dataset', 'QCD')
-                else: # All years
+                    # QCD_hist = QCD_unweighted['jetmass'].integrate('anacat', '2t' + str(ilabel[-5:]))
+                    QCD_hist = QCD_unweighted['jetmass'][{'anacat':self.ConvertLabelToInt(self.label_dict, '2t' + str(ilabel[-5:]))}]
+                    
+                else: # All years !NOTE: Needs to be fixed for all years later!
                     QCD_unwgt_2016 = util.load(self.extraDaskDirectory+'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/QCD/'
                                                +self.BDirect+str(self.year)+'/'+self.apv+'/TTbarRes_0l_UL2016'+self.vfp+'_QCD.coffea') 
                     QCD_unwgt_2017 = util.load(self.extraDaskDirectory+'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/QCD/'
@@ -1170,18 +1173,22 @@ class TTbarResProcessor(processor.ProcessorABC):
                                                +self.BDirect+str(self.year)+'/'+self.apv+'/TTbarRes_0l_UL2018'+self.vfp+'_QCD.coffea') 
                     
                     # ---- Define Histogram ---- #
-                    QCD_hist_2016 = QCD_unwgt_2016['jetmass'].integrate('anacat', '2t' + str(ilabel[-5:]))#.integrate('dataset', 'QCD')
-                    QCD_hist_2017 = QCD_unwgt_2017['jetmass'].integrate('anacat', '2t' + str(ilabel[-5:]))#.integrate('dataset', 'QCD')
-                    QCD_hist_2018 = QCD_unwgt_2018['jetmass'].integrate('anacat', '2t' + str(ilabel[-5:]))#.integrate('dataset', 'QCD')
+                    # QCD_hist_2016 = QCD_unwgt_2016['jetmass'].integrate('anacat', '2t' + str(ilabel[-5:]))#.integrate('dataset', 'QCD')
+                    # QCD_hist_2017 = QCD_unwgt_2017['jetmass'].integrate('anacat', '2t' + str(ilabel[-5:]))#.integrate('dataset', 'QCD')
+                    # QCD_hist_2018 = QCD_unwgt_2018['jetmass'].integrate('anacat', '2t' + str(ilabel[-5:]))#.integrate('dataset', 'QCD')
+                    QCD_hist_2016 = QCD_unwgt_2016['jetmass'][{'anacat':self.ConvertLabelToInt(self.label_dict, '2t' + str(ilabel[-5:]))}]
+                    QCD_hist_2017 = QCD_unwgt_2017['jetmass'][{'anacat':self.ConvertLabelToInt(self.label_dict, '2t' + str(ilabel[-5:]))}]
+                    QCD_hist_2018 = QCD_unwgt_2018['jetmass'][{'anacat':self.ConvertLabelToInt(self.label_dict, '2t' + str(ilabel[-5:]))}]
                     
                     QCD_hist = QCD_hist_2016.copy()
                     QCD_hist.add(QCD_hist_2017)
                     QCD_hist.add(QCD_hist_2018)
                     
                 # ---- Extract event counts from QCD MC hist in signal region ---- #
-                data = QCD_hist.values() # Dictionary of values
+                # data = QCD_hist.values() # Dictionary of values
+                data = QCD_hist.view()
 
-                QCD_data = [i for i in data.values()][0] # place every element of the dictionary into a numpy array
+                QCD_data = [i for i in data.view()][0] # place every element of the dictionary into a numpy array
 
                 # ---- Re-create Bins from QCD_hist as Numpy Array ---- #
                 bins = np.arange(510) #Re-make bins from the jetmass_axis starting with the appropriate range

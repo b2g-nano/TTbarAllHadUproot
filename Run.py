@@ -1203,14 +1203,21 @@ import TTbarResLookUpTables
 
 from TTbarResLookUpTables import CreateLUTS, LoadDataLUTS #, CreateMCEfficiencyLUTS
 
-each_mistag_luts = CreateLUTS(filesets_to_run, outputs_unweighted, BDiscDirectory, args.year, VFP, args.runmistag, Letters, args.saveMistag)
-mistag_luts = LoadDataLUTS(BDiscDirectory, args.year, Letters) # Specifically get data mistag rates with ttContam. corrections
+each_mistag_luts = None
+mistag_luts = None
 
-if OnlyCreateLookupTables or args.runMMO:
+if not args.runMMO:
+    each_mistag_luts = CreateLUTS(filesets_to_run, outputs_unweighted, BDiscDirectory, args.year, VFP, args.runmistag, Letters, args.saveMistag)
+    mistag_luts = LoadDataLUTS(BDiscDirectory, args.year, Letters) # Specifically get data mistag rates with ttContam. corrections
+else:
+    mistag_luts = LoadDataLUTS(BDiscDirectory, args.year, Letters) # Specifically get data mistag rates with ttContam. corrections
+
+if OnlyCreateLookupTables:
     print("\n\nWe\'re done here!!\n")
     if args.dask and args.newCluster:
         cluster.close()
     exit()
+    
 
 
 """ Second uproot job runs the processor with the mistag rates (and flavor effs if desired) and Mass-Modification Procedure """
@@ -1401,11 +1408,11 @@ if not OnlyCreateLookupTables and not args.runMMO:
     if args.dask:
         cluster.close()
     exit()
-else:
-    print("\n\nWe\'re done here!!\n")
-    if args.dask and args.newCluster:
-        cluster.close()
-    exit()
+# else:
+#     print("\n\nWe\'re done here!!\n")
+#     if args.dask and args.newCluster:
+#         cluster.close()
+#     exit()
     
     
     
