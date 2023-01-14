@@ -264,7 +264,7 @@ def CollectDatasets(redirector_str):
                 singlemudatafiles2018 = [redirector_str + s.strip() for s in h.readlines()] 
     filesets['SingleMu2016_Data'] = singlemudatafiles2016            
     filesets['SingleMu2017_Data'] = singlemudatafiles2017
-    filesets['SingleMu2018_Data'] = singlemudatafiles2018  
+    filesets['SingleMu2018_Data'] = singlemudatafiles2018 
     
     return filesets
 
