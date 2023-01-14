@@ -13,7 +13,7 @@ import numpy as np
 import glob as glob
 import pandas as pd
 import argparse as ap
-from coffea import hist, processor, nanoevents, util
+from coffea import processor, nanoevents, util
 from coffea.nanoevents.methods import candidate
 from coffea.nanoevents import NanoAODSchema, BaseSchema
 from numpy.random import RandomState
@@ -202,7 +202,6 @@ Parser.add_argument('--newCluster', action='store_true', help='Use Manually Defi
 Parser.add_argument('--timeout', type=float, help='How many seconds should dask wait for scheduler to connect')
 Parser.add_argument('--useEff', action='store_true', help='Use MC bTag efficiencies for bTagging systematics')
 Parser.add_argument('--tpt', action='store_true', help='Apply top pT re-weighting for uproot 2')
-Parser.add_argument('--useHist', action='store_true', help='use scikit-hep/hist for histograms')
 
 Parser.add_argument('--step', type=int, choices=[1, 2, 3, 4], help='Easily run a certain step of the workflow')
 
@@ -370,7 +369,6 @@ ApplytSF = False
 ApplyJEC = False
 ApplyJER = False
 ApplyPDF = False
-useHist  = False
 xsSystwgt = 1.
 lumSystwgt = 1.
 
@@ -444,8 +442,6 @@ elif args.pileup:
     SystType = args.pileup # string --> "central", "up", or "down"
 #    ---------------------------------------------------------------------------------------------------------------------    # 
 
-if args.useHist:
-    useHist = True
     
 UncArgs = np.array([args.bTagSyst, args.tTagSyst, args.jec, args.jer, args.ttXSSyst, args.lumSyst, args.pileup])
 SystOpts = np.any(UncArgs) # Check to see if any uncertainty argument is used
@@ -1256,7 +1252,6 @@ if not OnlyCreateLookupTables and not args.runMMO:
                                                                                        ApplyJEC=ApplyJEC,
                                                                                        ApplyJER=ApplyJER,
                                                                                        ApplyPDF=ApplyPDF,
-                                                                                       useHist=useHist,
                                                                                        sysType=SystType,
                                                                                        ScaleFactorFile=SFfile,
                                                                                        UseEfficiencies=args.useEff,
@@ -1290,7 +1285,6 @@ if not OnlyCreateLookupTables and not args.runMMO:
                                                                                        ApplyJEC=ApplyJEC,
                                                                                        ApplyJER=ApplyJER,
                                                                                        ApplyPDF=ApplyPDF,
-                                                                                       useHist=useHist,
                                                                                        sysType=SystType,
                                                                                        ScaleFactorFile=SFfile,
                                                                                        UseEfficiencies=args.useEff,
@@ -1337,7 +1331,6 @@ if not OnlyCreateLookupTables and not args.runMMO:
                                                                                        ApplyJEC=ApplyJEC,
                                                                                        ApplyJER=ApplyJER,
                                                                                        ApplyPDF=ApplyPDF,
-                                                                                       useHist=useHist,
                                                                                        sysType=SystType,
                                                                                        ScaleFactorFile=SFfile,
                                                                                        UseEfficiencies=args.useEff,
@@ -1371,7 +1364,6 @@ if not OnlyCreateLookupTables and not args.runMMO:
                                                                                        ApplyJEC=ApplyJEC,
                                                                                        ApplyJER=ApplyJER,
                                                                                        ApplyPDF=ApplyPDF,
-                                                                                       useHist=useHist,
                                                                                        sysType=SystType,
                                                                                        ScaleFactorFile=SFfile,
                                                                                        UseEfficiencies=args.useEff,
