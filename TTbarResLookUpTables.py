@@ -2,6 +2,7 @@
 # coding: utf-8
 
 from coffea import util
+import hist
 import numpy as np
 import itertools
 import mplhep as hep
@@ -153,38 +154,38 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
 #     P       LLLLLLL   OOO      T    SSSSS 
 #     ---------------------------------------
     
-    SavePlotDirectory = maindirectory + '/TTbarAllHadUproot/PrelimMistagPlots/' + bdiscDirectory
-    DoesDirectoryExist(SavePlotDirectory)
-    for iset in Filesets:
-        for icat in list_of_ints:
-            # print(iset)
-            # print(icat)
-            title = iset + ' mistag ' + catmap[icat]
-            filename = 'mistag_' + iset + '_' + catmap[icat] + '.' + 'png'
-            # print(Outputs[iset]['numerator'])
-            Numerator = Outputs[iset]['numerator'].project('jetp')
-            Denominator = Outputs[iset]['denominator'].project('jetp')
-            # Numerator = Outputs[iset]['numerator'][iset, icat, sum]
-            # Denominator = Outputs[iset]['denominator'][iset, icat, sum]
-            # print(Numerator)
-            # print(Denominator)
-            # mistag = hist.plotratio(num = Numerator, denom = Denominator,
-            #                         error_opts={'marker': '.', 'markersize': 10., 'color': 'k', 'elinewidth': 1},
-            #                         unc = 'num')
-            mistag = Numerator.plot_ratio(Denominator, rp_uncertainty_type="efficiency")
-            plt.title(title)
-            plt.ylim(bottom = 0, top = 0.12)
-            plt.xlim(left = 100, right = 2500)
+#     SavePlotDirectory = maindirectory + '/TTbarAllHadUproot/PrelimMistagPlots/' + bdiscDirectory
+#     DoesDirectoryExist(SavePlotDirectory)
+#     for iset in Filesets:
+#         for icat in list_of_ints:
+#             # print(iset)
+#             # print(icat)
+#             title = iset + ' mistag ' + catmap[icat]
+#             filename = 'mistag_' + iset + '_' + catmap[icat] + '.' + 'png'
+#             # print(Outputs[iset]['numerator'])
+#             Numerator = Outputs[iset]['numerator'].project('jetp')
+#             Denominator = Outputs[iset]['denominator'].project('jetp')
+#             # Numerator = Outputs[iset]['numerator'][iset, icat, sum]
+#             # Denominator = Outputs[iset]['denominator'][iset, icat, sum]
+#             # print(Numerator)
+#             # print(Denominator)
+#             # mistag = hist.plotratio(num = Numerator, denom = Denominator,
+#             #                         error_opts={'marker': '.', 'markersize': 10., 'color': 'k', 'elinewidth': 1},
+#             #                         unc = 'num')
+#             mistag = Numerator.plot_ratio(Denominator, rp_uncertainty_type="efficiency")
+#             plt.title(title)
+#             plt.ylim(bottom = 0, top = 0.12)
+#             plt.xlim(left = 100, right = 2500)
 
-            # ----- Better mistag plots are made in 'TTbarResCoffea_MistagAnalysis-BkgEst' python script ------ #
-            # ---- However, if one wants to save these raw plots, they may uncomment the following 5 lines ---- #
-            # ------------- NOTE: MAYBE THINK OF MAKING A SWITCH FOR PLOTTING/SAVING THESE LATER? ------------- # 
+#             # ----- Better mistag plots are made in 'TTbarResCoffea_MistagAnalysis-BkgEst' python script ------ #
+#             # ---- However, if one wants to save these raw plots, they may uncomment the following 5 lines ---- #
+#             # ------------- NOTE: MAYBE THINK OF MAKING A SWITCH FOR PLOTTING/SAVING THESE LATER? ------------- # 
 
-            #plt.xticks(np.array([0, 500, 600, 700]))
-            #mistag.set_xscale('function', functions=(forward, inverse))
-            #mistag.set_xscale('log')
-            #plt.savefig(SavePlotDirectory+filename, bbox_inches="tight")
-            #print(filename + ' saved')
+#             #plt.xticks(np.array([0, 500, 600, 700]))
+#             #mistag.set_xscale('function', functions=(forward, inverse))
+#             #mistag.set_xscale('log')
+#             #plt.savefig(SavePlotDirectory+filename, bbox_inches="tight")
+#             #print(filename + ' saved')
     
 #     -------------------------------------------------------    
 #       SSSSS   CCCC     A    L       IIIIIII N     N GGGGGGG     

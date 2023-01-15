@@ -594,6 +594,10 @@ class TTbarResProcessor(processor.ProcessorABC):
                     "mass": events.GenJetAK8_mass,
                     }, with_name="PtEtaPhiMLorentzVector"),
                 })
+            
+            Jets['hadronFlavour'] = events.Jet_hadronFlavour
+            Jets["genJetIdx"] = events.Jet_genJetIdx
+            SubJets['hadronFlavour'] = events.SubJet_hadronFlavour
         
             
 #    ================================================================
