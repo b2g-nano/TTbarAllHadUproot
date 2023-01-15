@@ -38,8 +38,8 @@ def mkdir_p(mypath):
         else: raise
         
 def plotratio2d(numerator, denominator, ax=None, cmap='Blues', cbar=True):
-    NumeratorAxes = numerator.axes()
-    DenominatorAxes = denominator.axes()
+    NumeratorAxes = numerator.axes
+    DenominatorAxes = denominator.axes
     
     # integer number of bins in this axis #
     NumeratorAxis1_BinNumber = NumeratorAxes[0].size - 3 # Subtract 3 to remove overflow
@@ -51,13 +51,13 @@ def plotratio2d(numerator, denominator, ax=None, cmap='Blues', cbar=True):
     if(NumeratorAxis1_BinNumber != DenominatorAxis1_BinNumber 
        or NumeratorAxis2_BinNumber != DenominatorAxis2_BinNumber):
         raise Exception('Numerator and Denominator axes are different sizes; Cannot perform division.')
-    else:
-        Numerator = numerator.to_hist()
-        Denominator = denominator.to_hist()
-
-        ratio = Numerator / Denominator.values()
+    # else:
+    #     Numerator = numerator.to_hist()
+    #     Denominator = denominator.to_hist()
         
-        return hep.hist2dplot(ratio, ax=ax, cmap=cmap, norm=colors.Normalize(0.,1.), cbar=cbar)
+    ratio = numerator / denominator.values()
+
+    return hep.hist2dplot(ratio, ax=ax, cmap=cmap, norm=colors.Normalize(0.,1.), cbar=cbar)
 
 def FlavEffList(Flavor, Output, Dataset, bdiscDirectory, Save):
     """
@@ -71,10 +71,11 @@ def FlavEffList(Flavor, Output, Dataset, bdiscDirectory, Save):
     mkdir_p(SaveDirectory)
     for subjet in ['s01', 's02', 's11', 's12']:
 
-        eff_numerator = Output[Flavor + '_eff_numerator_' + subjet + '_manualbins'].integrate('dataset', Dataset)
-        eff_denominator = Output[Flavor + '_eff_denominator_' + subjet + '_manualbins'].integrate('dataset', Dataset)
+        eff_numerator = Output[Flavor + '_eff_numerator_' + subjet + '_manualbins'][{'dataset': Dataset}]
+        eff_denominator = Output[Flavor + '_eff_denominator_' + subjet + '_manualbins'][{'dataset': Dataset}]
 
         eff = plotratio2d(eff_numerator, eff_denominator) #ColormeshArtists object
+        
         eff_data = eff[0].get_array().data # This is what goes into pandas dataframe
         eff_data = np.nan_to_num(eff_data, nan=0.0) # If eff bin is empty, call it zero
 
@@ -82,9 +83,9 @@ def FlavEffList(Flavor, Output, Dataset, bdiscDirectory, Save):
         pt_bins = []
         eta_bins = []
 
-        for iden in eff_numerator.identifiers('subjetpt'):
+        for iden in eff_numerator.axes['subjetpt']:
             pt_bins.append(iden)
-        for iden in eff_numerator.identifiers('subjeteta'):
+        for iden in eff_numerator.axes['subjeteta']:
             eta_bins.append(iden)
 
         # ---- Define the Efficiency List as a Pandas Dataframe ---- #

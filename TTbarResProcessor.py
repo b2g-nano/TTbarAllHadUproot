@@ -19,7 +19,7 @@ import itertools
 import pandas as pd
 from numpy.random import RandomState
 import correctionlib
-import hist as hist2
+import hist
 # from correctionlib.schemav2 import Correction
 
 import awkward as ak
@@ -88,30 +88,30 @@ class TTbarResProcessor(processor.ProcessorABC):
         self.label_dict = {i: label for i, label in enumerate(self.anacats)}
         
         # rewriting axes for scikit-hep/hist   
-        dataset_axis = hist2.axis.StrCategory([], growth=True, name="dataset", label="Primary Dataset")
+        dataset_axis = hist.axis.StrCategory([], growth=True, name="dataset", label="Primary Dataset")
 
         # map analysis categories to array #
-        cats_axis = hist2.axis.Regular(48, 0, 47, name="anacat", label="Analysis Category")
+        cats_axis = hist.axis.Regular(48, 0, 47, name="anacat", label="Analysis Category")
 
         # axes for jets and ttbar candidates #
-        ttbarmass_axis = hist2.axis.Regular(50, 800, 8000, name="ttbarmass", label=r"$m_{t\bar{t}}$ [GeV]")
-        jetmass_axis   = hist2.axis.Regular(50, 0, 500, name="jetmass", label=r"Jet $m$ [GeV]")
-        jetpt_axis     = hist2.axis.Regular(50, 0, 500, name="jetpt", label=r"Jet $p_{T}$ [GeV]")
-        jeteta_axis    = hist2.axis.Regular(50, -2.4, 2.4, name="jeteta", label=r"Jet $\eta$")
-        jetphi_axis    = hist2.axis.Regular(50, -np.pi, np.pi, name="jetphi", label=r"Jet $\phi$")
-        jety_axis      = hist2.axis.Regular(50, -3, 3, name="jety", label=r"Jet $y$")
-        jetdy_axis     = hist2.axis.Regular(50, 0, 5, name="jetdy", label=r"Jet $\Delta y$")
+        ttbarmass_axis = hist.axis.Regular(50, 800, 8000, name="ttbarmass", label=r"$m_{t\bar{t}}$ [GeV]")
+        jetmass_axis   = hist.axis.Regular(50, 0, 500, name="jetmass", label=r"Jet $m$ [GeV]")
+        jetpt_axis     = hist.axis.Regular(50, 0, 500, name="jetpt", label=r"Jet $p_{T}$ [GeV]")
+        jeteta_axis    = hist.axis.Regular(50, -2.4, 2.4, name="jeteta", label=r"Jet $\eta$")
+        jetphi_axis    = hist.axis.Regular(50, -np.pi, np.pi, name="jetphi", label=r"Jet $\phi$")
+        jety_axis      = hist.axis.Regular(50, -3, 3, name="jety", label=r"Jet $y$")
+        jetdy_axis     = hist.axis.Regular(50, 0, 5, name="jetdy", label=r"Jet $\Delta y$")
 
         # axes for top tagger #
-        manual_axis = hist2.axis.Variable(manual_bins, name="jetp", label=r"Jet Momentum [GeV]")
-        tagger_axis = hist2.axis.Regular(50, 0, 1, name="tagger", label=r"deepTag")
-        tau32_axis  = hist2.axis.Regular(50, 0, 2, name="tau32", label=r"$\tau_3/\tau_2$")
+        manual_axis = hist.axis.Variable(manual_bins, name="jetp", label=r"Jet Momentum [GeV]")
+        tagger_axis = hist.axis.Regular(50, 0, 1, name="tagger", label=r"deepTag")
+        tau32_axis  = hist.axis.Regular(50, 0, 2, name="tau32", label=r"$\tau_3/\tau_2$")
 
         # axes for subjets #
-        subjetmass_axis = hist2.axis.Regular(50, 0, 500, name="subjetmass", label=r"SubJet $m$ [GeV]")
-        subjetpt_axis   = hist2.axis.Regular(25, 0, 2000, name="subjetpt", label=r"SubJet $p_{T}$ [GeV]")
-        subjeteta_axis  = hist2.axis.Regular(25, 0, 2.4, name="subjeteta", label=r"SubJet $\eta$")
-        subjetphi_axis  = hist2.axis.Regular(50, -np.pi, np.pi, name="subjetphi", label=r"SubJet $\phi$")
+        subjetmass_axis = hist.axis.Regular(50, 0, 500, name="subjetmass", label=r"SubJet $m$ [GeV]")
+        subjetpt_axis   = hist.axis.Regular(25, 0, 2000, name="subjetpt", label=r"SubJet $p_{T}$ [GeV]")
+        subjeteta_axis  = hist.axis.Regular(25, 0, 2.4, name="subjeteta", label=r"SubJet $\eta$")
+        subjetphi_axis  = hist.axis.Regular(50, -np.pi, np.pi, name="subjetphi", label=r"SubJet $\phi$")
         
         
         #    ===================================================================================================================
@@ -126,46 +126,46 @@ class TTbarResProcessor(processor.ProcessorABC):
             
         self.histo_dict = {
 
-            'ttbarmass' : hist2.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
+            'ttbarmass' : hist.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
 
-            'ttbarmass_jerUp'   : hist2.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
-            'ttbarmass_jerDown' : hist2.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
-            'ttbarmass_jerNom'  : hist2.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
+            'ttbarmass_jerUp'   : hist.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
+            'ttbarmass_jerDown' : hist.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
+            'ttbarmass_jerNom'  : hist.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
 
-            'ttbarmass_pdfUp'   : hist2.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
-            'ttbarmass_pdfDown' : hist2.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
-            'ttbarmass_pdfNom'  : hist2.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
+            'ttbarmass_pdfUp'   : hist.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
+            'ttbarmass_pdfDown' : hist.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
+            'ttbarmass_pdfNom'  : hist.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
 
             ######################################
 
-            'jetmass' : hist2.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
-            'SDmass'  : hist2.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
-            'SDmass_precat' : hist2.Hist(dataset_axis, jetpt_axis, jetmass_axis, storage="weight", name="Counts"),
+            'jetmass' : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
+            'SDmass'  : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
+            'SDmass_precat' : hist.Hist(dataset_axis, jetpt_axis, jetmass_axis, storage="weight", name="Counts"),
 
-            'jetpt'  : hist2.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
-            'jeteta' : hist2.Hist(dataset_axis, cats_axis, jeteta_axis, storage="weight", name="Counts"),
-            'jetphi' : hist2.Hist(dataset_axis, cats_axis, jetphi_axis, storage="weight", name="Counts"),
+            'jetpt'  : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
+            'jeteta' : hist.Hist(dataset_axis, cats_axis, jeteta_axis, storage="weight", name="Counts"),
+            'jetphi' : hist.Hist(dataset_axis, cats_axis, jetphi_axis, storage="weight", name="Counts"),
 
-            'probept' : hist2.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
-            'probep'  : hist2.Hist(dataset_axis, cats_axis, manual_axis, storage="weight", name="Counts"),
+            'probept' : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
+            'probep'  : hist.Hist(dataset_axis, cats_axis, manual_axis, storage="weight", name="Counts"),
 
-            'jety'  : hist2.Hist(dataset_axis, cats_axis, jety_axis, storage="weight", name="Counts"),
-            'jetdy' : hist2.Hist(dataset_axis, cats_axis, jetdy_axis, storage="weight", name="Counts"),
+            'jety'  : hist.Hist(dataset_axis, cats_axis, jety_axis, storage="weight", name="Counts"),
+            'jetdy' : hist.Hist(dataset_axis, cats_axis, jetdy_axis, storage="weight", name="Counts"),
 
-            'deepTag_TvsQCD'   : hist2.Hist(dataset_axis, cats_axis, jetpt_axis, tagger_axis, storage="weight", name="Counts"),
-            'deepTagMD_TvsQCD' : hist2.Hist(dataset_axis, cats_axis, jetpt_axis, tagger_axis, storage="weight", name="Counts"),
+            'deepTag_TvsQCD'   : hist.Hist(dataset_axis, cats_axis, jetpt_axis, tagger_axis, storage="weight", name="Counts"),
+            'deepTagMD_TvsQCD' : hist.Hist(dataset_axis, cats_axis, jetpt_axis, tagger_axis, storage="weight", name="Counts"),
 
-            'tau32'        : hist2.Hist(dataset_axis, cats_axis, tau32_axis, storage="weight", name="Counts"),
-            'tau32_2D'     : hist2.Hist(dataset_axis, cats_axis, jetpt_axis, tau32_axis, storage="weight", name="Counts"),
-            'tau32_precat' : hist2.Hist(dataset_axis, jetpt_axis, tau32_axis, storage="weight", name="Counts"),
+            'tau32'        : hist.Hist(dataset_axis, cats_axis, tau32_axis, storage="weight", name="Counts"),
+            'tau32_2D'     : hist.Hist(dataset_axis, cats_axis, jetpt_axis, tau32_axis, storage="weight", name="Counts"),
+            'tau32_precat' : hist.Hist(dataset_axis, jetpt_axis, tau32_axis, storage="weight", name="Counts"),
 
-            'subjetmass' : hist2.Hist(dataset_axis, cats_axis, subjetmass_axis, storage="weight", name="Counts"), # not yet used
-            'subjetpt'   : hist2.Hist(dataset_axis, cats_axis, subjetpt_axis, storage="weight", name="Counts"),
-            'subjeteta'  : hist2.Hist(dataset_axis, cats_axis, subjeteta_axis, storage="weight", name="Counts"),
-            'subjetphi'  : hist2.Hist(dataset_axis, cats_axis, subjetphi_axis, storage="weight", name="Counts"), # not yet used
+            'subjetmass' : hist.Hist(dataset_axis, cats_axis, subjetmass_axis, storage="weight", name="Counts"), # not yet used
+            'subjetpt'   : hist.Hist(dataset_axis, cats_axis, subjetpt_axis, storage="weight", name="Counts"),
+            'subjeteta'  : hist.Hist(dataset_axis, cats_axis, subjeteta_axis, storage="weight", name="Counts"),
+            'subjetphi'  : hist.Hist(dataset_axis, cats_axis, subjetphi_axis, storage="weight", name="Counts"), # not yet used
 
-            'numerator'  : hist2.Hist(dataset_axis, cats_axis, manual_axis, storage="weight", name="Counts"),
-            'denominator': hist2.Hist(dataset_axis, cats_axis, manual_axis, storage="weight", name="Counts"),
+            'numerator'  : hist.Hist(dataset_axis, cats_axis, manual_axis, storage="weight", name="Counts"),
+            'denominator': hist.Hist(dataset_axis, cats_axis, manual_axis, storage="weight", name="Counts"),
 
             #********************************************************************************************************************#
 
@@ -1392,16 +1392,17 @@ class MCFlavorEfficiencyProcessor(processor.ProcessorABC):
         self.bdisc = bdisc
         self.RandomDebugMode = RandomDebugMode
         
-        dataset_axis = hist.Cat("dataset", "Primary dataset")
-        cats_axis = hist.Cat("anacat", "Analysis Category")
+        dataset_axis = hist.axis.StrCategory([], growth=True, name="dataset", label="Primary Dataset")
 
-        subjetpt_axis = hist.Bin("subjetpt", r"SubJet $p_{T}$ [GeV]", 25, 0, 2000)
-        subjetpt_laxis = hist.Bin("subjetpt", r"SubJet $p_{T}$ [GeV]", 8, 0, 2000) #Larger bins
-        subjetpt_maxis = hist.Bin("subjetpt", r"SubJet $p_T$ [GeV]", manual_subjetpt_bins) #Manually defined bins for better statistics per bin
+        ttbarmass_axis = hist.axis.Regular(50, 800, 8000, name="ttbarmass", label=r"$m_{t\bar{t}}$ [GeV]")
         
-        subjeteta_axis = hist.Bin("subjeteta", r"SubJet $\eta$", 25, 0, 2.4)
-        subjeteta_laxis = hist.Bin("subjeteta", r"SubJet $\eta$", 8, 0, 2.4) #Larger bins
-        subjeteta_maxis = hist.Bin("subjeteta", r"SubJet $\eta$", manual_subjeteta_bins) #Manually defined bins for better statistics per bin
+        subjetpt_axis = hist.axis.Regular(25, 0, 2000, name = "subjetpt", label = "SubJet $p_{T}$ [GeV]")
+        subjetpt_laxis = hist.axis.Regular( 8, 0, 2000, name = "subjetpt", label = r"SubJet $p_{T}$ [GeV]") #Larger bins
+        subjetpt_maxis = hist.axis.Variable(manual_subjetpt_bins, name = "subjetpt", label = r"SubJet $p_T$ [GeV]") #Manually defined bins for better statistics per bin
+        
+        subjeteta_axis = hist.axis.Regular(25, 0, 2.4, name = "subjeteta", label = r"SubJet $\eta$")
+        subjeteta_laxis = hist.axis.Regular(8, 0, 2.4, name = "subjeteta", label = r"SubJet $\eta$") #Larger bins
+        subjeteta_maxis = hist.axis.Variable(manual_subjeteta_bins, name = "subjeteta", label = r"SubJet $\eta$") #Manually defined bins for better statistics per bin
 
         
 #    ====================================================================
@@ -1414,107 +1415,103 @@ class MCFlavorEfficiencyProcessor(processor.ProcessorABC):
 #    EEEEEEE F       F       *    H     H IIIIIII SSSSS      T    SSSSS
 #    ====================================================================
 
-        self._accumulator = processor.dict_accumulator({
-
+        self.histo_dict = {
             # ---- 2D SubJet b-tag Efficiency ---- #
-            'b_eff_numerator_s01': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
-            'b_eff_numerator_s02': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
-            'b_eff_numerator_s11': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
-            'b_eff_numerator_s12': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
+            'b_eff_numerator_s01': hist.Hist(dataset_axis, subjetpt_axis, subjeteta_axis, storage = "weight", name = "Counts"),
+            'b_eff_numerator_s02': hist.Hist(dataset_axis, subjetpt_axis, subjeteta_axis, storage = "weight", name = "Counts"),
+            'b_eff_numerator_s11': hist.Hist(dataset_axis, subjetpt_axis, subjeteta_axis, storage = "weight", name = "Counts"),
+            'b_eff_numerator_s12': hist.Hist(dataset_axis, subjetpt_axis, subjeteta_axis, storage = "weight", name = "Counts"),
             
-            'b_eff_denominator_s01': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
-            'b_eff_denominator_s02': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
-            'b_eff_denominator_s11': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
-            'b_eff_denominator_s12': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
+            'b_eff_denominator_s01': hist.Hist(dataset_axis, subjetpt_axis, subjeteta_axis, storage = "weight", name = "Counts"),
+            'b_eff_denominator_s02': hist.Hist(dataset_axis, subjetpt_axis, subjeteta_axis, storage = "weight", name = "Counts"),
+            'b_eff_denominator_s11': hist.Hist(dataset_axis, subjetpt_axis, subjeteta_axis, storage = "weight", name = "Counts"),
+            'b_eff_denominator_s12': hist.Hist(dataset_axis, subjetpt_axis, subjeteta_axis, storage = "weight", name = "Counts"),
             
-            'b_eff_numerator_s01_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
-            'b_eff_numerator_s02_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
-            'b_eff_numerator_s11_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
-            'b_eff_numerator_s12_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
+            'b_eff_numerator_s01_largerbins': hist.Hist(dataset_axis, subjetpt_laxis, subjeteta_laxis, storage = "weight", name = "Counts"),
+            'b_eff_numerator_s02_largerbins': hist.Hist(dataset_axis, subjetpt_laxis, subjeteta_laxis, storage = "weight", name = "Counts"),
+            'b_eff_numerator_s11_largerbins': hist.Hist(dataset_axis, subjetpt_laxis, subjeteta_laxis, storage = "weight", name = "Counts"),
+            'b_eff_numerator_s12_largerbins': hist.Hist(dataset_axis, subjetpt_laxis, subjeteta_laxis, storage = "weight", name = "Counts"),
             
-            'b_eff_denominator_s01_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
-            'b_eff_denominator_s02_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
-            'b_eff_denominator_s11_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
-            'b_eff_denominator_s12_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
+            'b_eff_denominator_s01_largerbins': hist.Hist(dataset_axis, subjetpt_laxis, subjeteta_laxis, storage = "weight", name = "Counts"),
+            'b_eff_denominator_s02_largerbins': hist.Hist(dataset_axis, subjetpt_laxis, subjeteta_laxis, storage = "weight", name = "Counts"),
+            'b_eff_denominator_s11_largerbins': hist.Hist(dataset_axis, subjetpt_laxis, subjeteta_laxis, storage = "weight", name = "Counts"),
+            'b_eff_denominator_s12_largerbins': hist.Hist(dataset_axis, subjetpt_laxis, subjeteta_laxis, storage = "weight", name = "Counts"),
             
-            'b_eff_numerator_s01_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_maxis),
-            'b_eff_numerator_s02_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_maxis),
-            'b_eff_numerator_s11_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_maxis),
-            'b_eff_numerator_s12_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_maxis),
+            'b_eff_numerator_s01_manualbins': hist.Hist(dataset_axis, subjetpt_maxis, subjeteta_maxis, storage = "weight", name = "Counts"),
+            'b_eff_numerator_s02_manualbins': hist.Hist(dataset_axis, subjetpt_maxis, subjeteta_maxis, storage = "weight", name = "Counts"),
+            'b_eff_numerator_s11_manualbins': hist.Hist(dataset_axis, subjetpt_maxis, subjeteta_maxis, storage = "weight", name = "Counts"),
+            'b_eff_numerator_s12_manualbins': hist.Hist(dataset_axis, subjetpt_maxis, subjeteta_maxis, storage = "weight", name = "Counts"),
             
-            'b_eff_denominator_s01_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_maxis),
-            'b_eff_denominator_s02_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_maxis),
-            'b_eff_denominator_s11_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_maxis),
-            'b_eff_denominator_s12_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_maxis),
+            'b_eff_denominator_s01_manualbins': hist.Hist(dataset_axis, subjetpt_maxis, subjeteta_maxis, storage = "weight", name = "Counts"),
+            'b_eff_denominator_s02_manualbins': hist.Hist(dataset_axis, subjetpt_maxis, subjeteta_maxis, storage = "weight", name = "Counts"),
+            'b_eff_denominator_s11_manualbins': hist.Hist(dataset_axis, subjetpt_maxis, subjeteta_maxis, storage = "weight", name = "Counts"),
+            'b_eff_denominator_s12_manualbins': hist.Hist(dataset_axis, subjetpt_maxis, subjeteta_maxis, storage = "weight", name = "Counts"),
             
             # ---- 2D SubJet c-tag Efficiency ---- #
-            'c_eff_numerator_s01': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
-            'c_eff_numerator_s02': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
-            'c_eff_numerator_s11': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
-            'c_eff_numerator_s12': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
+            'c_eff_numerator_s01': hist.Hist(dataset_axis, subjetpt_axis, subjeteta_axis, storage = "weight", name = "Counts"),
+            'c_eff_numerator_s02': hist.Hist(dataset_axis, subjetpt_axis, subjeteta_axis, storage = "weight", name = "Counts"),
+            'c_eff_numerator_s11': hist.Hist(dataset_axis, subjetpt_axis, subjeteta_axis, storage = "weight", name = "Counts"),
+            'c_eff_numerator_s12': hist.Hist(dataset_axis, subjetpt_axis, subjeteta_axis, storage = "weight", name = "Counts"),
             
-            'c_eff_denominator_s01': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
-            'c_eff_denominator_s02': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
-            'c_eff_denominator_s11': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
-            'c_eff_denominator_s12': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
+            'c_eff_denominator_s01': hist.Hist(dataset_axis, subjetpt_axis, subjeteta_axis, storage = "weight", name = "Counts"),
+            'c_eff_denominator_s02': hist.Hist(dataset_axis, subjetpt_axis, subjeteta_axis, storage = "weight", name = "Counts"),
+            'c_eff_denominator_s11': hist.Hist(dataset_axis, subjetpt_axis, subjeteta_axis, storage = "weight", name = "Counts"),
+            'c_eff_denominator_s12': hist.Hist(dataset_axis, subjetpt_axis, subjeteta_axis, storage = "weight", name = "Counts"),
             
-            'c_eff_numerator_s01_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
-            'c_eff_numerator_s02_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
-            'c_eff_numerator_s11_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
-            'c_eff_numerator_s12_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
+            'c_eff_numerator_s01_largerbins': hist.Hist(dataset_axis, subjetpt_laxis, subjeteta_laxis, storage = "weight", name = "Counts"),
+            'c_eff_numerator_s02_largerbins': hist.Hist(dataset_axis, subjetpt_laxis, subjeteta_laxis, storage = "weight", name = "Counts"),
+            'c_eff_numerator_s11_largerbins': hist.Hist(dataset_axis, subjetpt_laxis, subjeteta_laxis, storage = "weight", name = "Counts"),
+            'c_eff_numerator_s12_largerbins': hist.Hist(dataset_axis, subjetpt_laxis, subjeteta_laxis, storage = "weight", name = "Counts"),
             
-            'c_eff_denominator_s01_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
-            'c_eff_denominator_s02_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
-            'c_eff_denominator_s11_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
-            'c_eff_denominator_s12_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
+            'c_eff_denominator_s01_largerbins': hist.Hist(dataset_axis, subjetpt_laxis, subjeteta_laxis, storage = "weight", name = "Counts"),
+            'c_eff_denominator_s02_largerbins': hist.Hist(dataset_axis, subjetpt_laxis, subjeteta_laxis, storage = "weight", name = "Counts"),
+            'c_eff_denominator_s11_largerbins': hist.Hist(dataset_axis, subjetpt_laxis, subjeteta_laxis, storage = "weight", name = "Counts"),
+            'c_eff_denominator_s12_largerbins': hist.Hist(dataset_axis, subjetpt_laxis, subjeteta_laxis, storage = "weight", name = "Counts"),
             
-            'c_eff_numerator_s01_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_maxis),
-            'c_eff_numerator_s02_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_maxis),
-            'c_eff_numerator_s11_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_maxis),
-            'c_eff_numerator_s12_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_maxis),
+            'c_eff_numerator_s01_manualbins': hist.Hist(dataset_axis, subjetpt_maxis, subjeteta_maxis, storage = "weight", name = "Counts"),
+            'c_eff_numerator_s02_manualbins': hist.Hist(dataset_axis, subjetpt_maxis, subjeteta_maxis, storage = "weight", name = "Counts"),
+            'c_eff_numerator_s11_manualbins': hist.Hist(dataset_axis, subjetpt_maxis, subjeteta_maxis, storage = "weight", name = "Counts"),
+            'c_eff_numerator_s12_manualbins': hist.Hist(dataset_axis, subjetpt_maxis, subjeteta_maxis, storage = "weight", name = "Counts"),
             
-            'c_eff_denominator_s01_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_maxis),
-            'c_eff_denominator_s02_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_maxis),
-            'c_eff_denominator_s11_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_maxis),
-            'c_eff_denominator_s12_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_maxis),
+            'c_eff_denominator_s01_manualbins': hist.Hist(dataset_axis, subjetpt_maxis, subjeteta_maxis, storage = "weight", name = "Counts"),
+            'c_eff_denominator_s02_manualbins': hist.Hist(dataset_axis, subjetpt_maxis, subjeteta_maxis, storage = "weight", name = "Counts"),
+            'c_eff_denominator_s11_manualbins': hist.Hist(dataset_axis, subjetpt_maxis, subjeteta_maxis, storage = "weight", name = "Counts"),
+            'c_eff_denominator_s12_manualbins': hist.Hist(dataset_axis, subjetpt_maxis, subjeteta_maxis, storage = "weight", name = "Counts"),
             
             # ---- 2D SubJet light quark-tag Efficiency ---- #
-            'udsg_eff_numerator_s01': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
-            'udsg_eff_numerator_s02': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
-            'udsg_eff_numerator_s11': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
-            'udsg_eff_numerator_s12': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
+            'udsg_eff_numerator_s01': hist.Hist(dataset_axis, subjetpt_axis, subjeteta_axis, storage = "weight", name = "Counts"),
+            'udsg_eff_numerator_s02': hist.Hist(dataset_axis, subjetpt_axis, subjeteta_axis, storage = "weight", name = "Counts"),
+            'udsg_eff_numerator_s11': hist.Hist(dataset_axis, subjetpt_axis, subjeteta_axis, storage = "weight", name = "Counts"),
+            'udsg_eff_numerator_s12': hist.Hist(dataset_axis, subjetpt_axis, subjeteta_axis, storage = "weight", name = "Counts"),
             
-            'udsg_eff_denominator_s01': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
-            'udsg_eff_denominator_s02': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
-            'udsg_eff_denominator_s11': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
-            'udsg_eff_denominator_s12': hist.Hist("Counts", dataset_axis, subjetpt_axis, subjeteta_axis),
+            'udsg_eff_denominator_s01': hist.Hist(dataset_axis, subjetpt_axis, subjeteta_axis, storage = "weight", name = "Counts"),
+            'udsg_eff_denominator_s02': hist.Hist(dataset_axis, subjetpt_axis, subjeteta_axis, storage = "weight", name = "Counts"),
+            'udsg_eff_denominator_s11': hist.Hist(dataset_axis, subjetpt_axis, subjeteta_axis, storage = "weight", name = "Counts"),
+            'udsg_eff_denominator_s12': hist.Hist(dataset_axis, subjetpt_axis, subjeteta_axis, storage = "weight", name = "Counts"),
             
-            'udsg_eff_numerator_s01_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
-            'udsg_eff_numerator_s02_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
-            'udsg_eff_numerator_s11_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
-            'udsg_eff_numerator_s12_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
+            'udsg_eff_numerator_s01_largerbins': hist.Hist(dataset_axis, subjetpt_laxis, subjeteta_laxis, storage = "weight", name = "Counts"),
+            'udsg_eff_numerator_s02_largerbins': hist.Hist(dataset_axis, subjetpt_laxis, subjeteta_laxis, storage = "weight", name = "Counts"),
+            'udsg_eff_numerator_s11_largerbins': hist.Hist(dataset_axis, subjetpt_laxis, subjeteta_laxis, storage = "weight", name = "Counts"),
+            'udsg_eff_numerator_s12_largerbins': hist.Hist(dataset_axis, subjetpt_laxis, subjeteta_laxis, storage = "weight", name = "Counts"),
             
-            'udsg_eff_denominator_s01_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
-            'udsg_eff_denominator_s02_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
-            'udsg_eff_denominator_s11_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
-            'udsg_eff_denominator_s12_largerbins': hist.Hist("Counts", dataset_axis, subjetpt_laxis, subjeteta_laxis),
+            'udsg_eff_denominator_s01_largerbins': hist.Hist(dataset_axis, subjetpt_laxis, subjeteta_laxis, storage = "weight", name = "Counts"),
+            'udsg_eff_denominator_s02_largerbins': hist.Hist(dataset_axis, subjetpt_laxis, subjeteta_laxis, storage = "weight", name = "Counts"),
+            'udsg_eff_denominator_s11_largerbins': hist.Hist(dataset_axis, subjetpt_laxis, subjeteta_laxis, storage = "weight", name = "Counts"),
+            'udsg_eff_denominator_s12_largerbins': hist.Hist(dataset_axis, subjetpt_laxis, subjeteta_laxis, storage = "weight", name = "Counts"),
             
-            'udsg_eff_numerator_s01_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_maxis),
-            'udsg_eff_numerator_s02_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_maxis),
-            'udsg_eff_numerator_s11_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_maxis),
-            'udsg_eff_numerator_s12_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_maxis),
+            'udsg_eff_numerator_s01_manualbins': hist.Hist(dataset_axis, subjetpt_maxis, subjeteta_maxis, storage = "weight", name = "Counts"),
+            'udsg_eff_numerator_s02_manualbins': hist.Hist(dataset_axis, subjetpt_maxis, subjeteta_maxis, storage = "weight", name = "Counts"),
+            'udsg_eff_numerator_s11_manualbins': hist.Hist(dataset_axis, subjetpt_maxis, subjeteta_maxis, storage = "weight", name = "Counts"),
+            'udsg_eff_numerator_s12_manualbins': hist.Hist(dataset_axis, subjetpt_maxis, subjeteta_maxis, storage = "weight", name = "Counts"),
             
-            'udsg_eff_denominator_s01_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_maxis),
-            'udsg_eff_denominator_s02_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_maxis),
-            'udsg_eff_denominator_s11_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_maxis),
-            'udsg_eff_denominator_s12_manualbins': hist.Hist("Counts", dataset_axis, subjetpt_maxis, subjeteta_maxis),
-            
-            #********************************************************************************************************************#
+            'udsg_eff_denominator_s01_manualbins': hist.Hist(dataset_axis, subjetpt_maxis, subjeteta_maxis, storage = "weight", name = "Counts"),
+            'udsg_eff_denominator_s02_manualbins': hist.Hist(dataset_axis, subjetpt_maxis, subjeteta_maxis, storage = "weight", name = "Counts"),
+            'udsg_eff_denominator_s11_manualbins': hist.Hist(dataset_axis, subjetpt_maxis, subjeteta_maxis, storage = "weight", name = "Counts"),
+            'udsg_eff_denominator_s12_manualbins': hist.Hist(dataset_axis, subjetpt_maxis, subjeteta_maxis, storage = "weight", name = "Counts"),
             
             'cutflow': processor.defaultdict_accumulator(int),
-            
-        })
-        
+        }
+                                                          
 #   =======================================================================
 #   FFFFFFF U     U N     N   CCCC  TTTTTTT IIIIIII   OOO   N     N   SSSSS     
 #   F       U     U NN    N  C         T       I     O   O  NN    N  S          
@@ -1561,7 +1558,7 @@ class MCFlavorEfficiencyProcessor(processor.ProcessorABC):
         return self._accumulator
 
     def process(self, events):
-        output = self.accumulator.identity()
+        output = self.histo_dict
         
         # ---- Define dataset ---- #
         dataset = events.metadata['dataset']
@@ -1686,7 +1683,7 @@ class MCFlavorEfficiencyProcessor(processor.ProcessorABC):
         output['cutflow']['pT,y Cut'] += ak.to_awkward0(jetkincut_index).any().sum()
         
         # ---- Find two AK8 Jets ---- #
-        twoFatJetsKin = (ak.num(FatJets, axis=-1) == 2)
+        twoFatJetsKin = (ak.num(FatJets, axis=-1) > 1)
         FatJets = FatJets[twoFatJetsKin]
         SubJets = SubJets[twoFatJetsKin]
         Jets = Jets[twoFatJetsKin] # this used to not be here
@@ -1728,7 +1725,7 @@ class MCFlavorEfficiencyProcessor(processor.ProcessorABC):
         
         """ NOTE that ak.cartesian gives a shape with one more layer than FatJets """
         # ---- Make sure we have at least 1 TTbar candidate pair and re-broadcast releveant arrays  ---- #
-        oneTTbar = (ak.num(ttbarcands, axis=-1) >= 1)
+        oneTTbar = (ak.num(ttbarcands, axis=-1) > 0)
         output['cutflow']['>= oneTTbar'] += ak.to_awkward0(oneTTbar).sum()
         ttbarcands = ttbarcands[oneTTbar]
         FatJets = FatJets[oneTTbar]
@@ -2137,12 +2134,13 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
 
         
         # --- 0, >=1 ttags --- #
-        self.ttagcats_forTriggerAnalysis = ["NoCut", ">=1t"]
-        
-        dataset_axis = hist.Cat("dataset", "Primary dataset")
-        cats_axis = hist.Cat("anacat", "Analysis Category")
-        jetht_axis = hist.Bin("Jet_HT", r'$AK4\ Jet\ HT$', manual_jetht_bins) # Used for Trigger Analysis
-        sdMass_axis = hist.Bin("Jet_sdMass", r'$AK4\ M_{SD}$', manual_sdMass_bins)
+        self.ttagcats_forTriggerAnalysis = ["NoCut", ">=1t"]                                     
+        self.label_dict = {i: label for i, label in enumerate(self.ttagcats_forTriggerAnalysis)}
+                                                          
+        dataset_axis = hist.axis.StrCategory([], growth=True, name = "dataset", label = "Primary Dataset")
+        cats_axis = hist.axis.Regular(2, 0, 1, name = "anacat", label = "Analysis Category")
+        jetht_axis = hist.axis.Variable(manual_jetht_bins, name = "Jet_HT", label = r'$AK4\ Jet\ HT$') # Used for Trigger Analysis
+        sdMass_axis = hist.axis.Variable(manual_sdMass_bins, name = "Jet_sdMass", label = r'$AK4\ M_{SD}$')
         
 #    ===================================================================================================
 #    TTTTTTT RRRRRR  IIIIIII GGGGGGG GGGGGGG EEEEEEE RRRRRR      H     H IIIIIII   SSSSS TTTTTTT   SSSSS     
@@ -2153,17 +2151,17 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
 #       T    R    R     I    G     G G     G E       R    R      H     H    I         S     T         S      
 #       T    R     R IIIIIII  GGGGG   GGGGG  EEEEEEE R     R     H     H IIIIIII SSSSS      T    SSSSS
 #    ===================================================================================================
-
-        self._accumulator = processor.dict_accumulator({
-           'condition1_numerator': hist.Hist("Counts", dataset_axis, cats_axis, jetht_axis, sdMass_axis),
-           'condition2_numerator': hist.Hist("Counts", dataset_axis, cats_axis, jetht_axis, sdMass_axis),
-           'condition3_numerator': hist.Hist("Counts", dataset_axis, cats_axis, jetht_axis, sdMass_axis),
-           'condition4_numerator': hist.Hist("Counts", dataset_axis, cats_axis, jetht_axis, sdMass_axis),
-           'condition5_numerator': hist.Hist("Counts", dataset_axis, cats_axis, jetht_axis, sdMass_axis),
-           'condition_denominator': hist.Hist("Counts", dataset_axis, cats_axis, jetht_axis, sdMass_axis),
+        
+        self.histo_dict = {
+           'condition1_numerator': hist.Hist(dataset_axis, cats_axis, jetht_axis, sdMass_axis, storage = "weight", name = "Counts"),
+           'condition2_numerator': hist.Hist(dataset_axis, cats_axis, jetht_axis, sdMass_axis, storage = "weight", name = "Counts"),
+           'condition3_numerator': hist.Hist(dataset_axis, cats_axis, jetht_axis, sdMass_axis, storage = "weight", name = "Counts"),
+           'condition4_numerator': hist.Hist(dataset_axis, cats_axis, jetht_axis, sdMass_axis, storage = "weight", name = "Counts"),
+           'condition5_numerator': hist.Hist(dataset_axis, cats_axis, jetht_axis, sdMass_axis, storage = "weight", name = "Counts"),
+           'condition_denominator': hist.Hist(dataset_axis, cats_axis, jetht_axis, sdMass_axis, storage = "weight", name = "Counts"),
             
-            'cutflow': processor.defaultdict_accumulator(int),
-        })
+           'cutflow': processor.defaultdict_accumulator(int),
+        }
         
             
     @property
@@ -2171,7 +2169,7 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         return self._accumulator
 
     def process(self, events):
-        output = self.accumulator.identity()
+        output = self.histo_dict
         
         # ---- Define dataset ---- #
         dataset = events.metadata['dataset']
