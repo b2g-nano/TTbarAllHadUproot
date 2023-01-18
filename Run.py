@@ -13,7 +13,7 @@ import numpy as np
 import glob as glob
 import pandas as pd
 import argparse as ap
-from coffea import hist, processor, nanoevents, util
+from coffea import processor, nanoevents, util
 from coffea.nanoevents.methods import candidate
 from coffea.nanoevents import NanoAODSchema, BaseSchema
 from numpy.random import RandomState
@@ -38,8 +38,8 @@ def mkdir_p(mypath):
         else: raise
         
 def plotratio2d(numerator, denominator, ax=None, cmap='Blues', cbar=True):
-    NumeratorAxes = numerator.axes()
-    DenominatorAxes = denominator.axes()
+    NumeratorAxes = numerator.axes
+    DenominatorAxes = denominator.axes
     
     # integer number of bins in this axis #
     NumeratorAxis1_BinNumber = NumeratorAxes[0].size - 3 # Subtract 3 to remove overflow
@@ -51,13 +51,13 @@ def plotratio2d(numerator, denominator, ax=None, cmap='Blues', cbar=True):
     if(NumeratorAxis1_BinNumber != DenominatorAxis1_BinNumber 
        or NumeratorAxis2_BinNumber != DenominatorAxis2_BinNumber):
         raise Exception('Numerator and Denominator axes are different sizes; Cannot perform division.')
-    else:
-        Numerator = numerator.to_hist()
-        Denominator = denominator.to_hist()
-
-        ratio = Numerator / Denominator.values()
+    # else:
+    #     Numerator = numerator.to_hist()
+    #     Denominator = denominator.to_hist()
         
-        return hep.hist2dplot(ratio, ax=ax, cmap=cmap, norm=colors.Normalize(0.,1.), cbar=cbar)
+    ratio = numerator / denominator.values()
+
+    return hep.hist2dplot(ratio, ax=ax, cmap=cmap, norm=colors.Normalize(0.,1.), cbar=cbar)
 
 def FlavEffList(Flavor, Output, Dataset, bdiscDirectory, Save):
     """
@@ -71,10 +71,11 @@ def FlavEffList(Flavor, Output, Dataset, bdiscDirectory, Save):
     mkdir_p(SaveDirectory)
     for subjet in ['s01', 's02', 's11', 's12']:
 
-        eff_numerator = Output[Flavor + '_eff_numerator_' + subjet + '_manualbins'].integrate('dataset', Dataset)
-        eff_denominator = Output[Flavor + '_eff_denominator_' + subjet + '_manualbins'].integrate('dataset', Dataset)
+        eff_numerator = Output[Flavor + '_eff_numerator_' + subjet + '_manualbins'][{'dataset': Dataset}]
+        eff_denominator = Output[Flavor + '_eff_denominator_' + subjet + '_manualbins'][{'dataset': Dataset}]
 
         eff = plotratio2d(eff_numerator, eff_denominator) #ColormeshArtists object
+        
         eff_data = eff[0].get_array().data # This is what goes into pandas dataframe
         eff_data = np.nan_to_num(eff_data, nan=0.0) # If eff bin is empty, call it zero
 
@@ -82,9 +83,9 @@ def FlavEffList(Flavor, Output, Dataset, bdiscDirectory, Save):
         pt_bins = []
         eta_bins = []
 
-        for iden in eff_numerator.identifiers('subjetpt'):
+        for iden in eff_numerator.axes['subjetpt']:
             pt_bins.append(iden)
-        for iden in eff_numerator.identifiers('subjeteta'):
+        for iden in eff_numerator.axes['subjeteta']:
             eta_bins.append(iden)
 
         # ---- Define the Efficiency List as a Pandas Dataframe ---- #
@@ -210,8 +211,9 @@ UncertaintyGroup.add_argument('--bTagSyst', type=str, choices=['central', 'up', 
 UncertaintyGroup.add_argument('--tTagSyst', type=str, choices=['central', 'up', 'down'], help='Choose Unc.')
 UncertaintyGroup.add_argument('--ttXSSyst', type=str, choices=['central', 'up', 'down'], help='ttbar cross section systematics.  Choose Unc.')
 UncertaintyGroup.add_argument('--lumSyst', type=str, choices=['central', 'up', 'down'], help='Luminosity systematics.  Choose Unc.')
-UncertaintyGroup.add_argument('--jec', type=str, choices=['central', 'up', 'down'], help='Choose Unc.')
-UncertaintyGroup.add_argument('--jer', type=str, choices=['central', 'up', 'down'], help='Choose Unc.')
+UncertaintyGroup.add_argument('--jec', action='store_true', help='apply jec systematic weights')
+UncertaintyGroup.add_argument('--jer', action='store_true', help='apply jer systematic weights')
+UncertaintyGroup.add_argument('--pdf', action='store_true', help='apply pdf systematic weights')
 UncertaintyGroup.add_argument('--pileup', type=str, choices=['central', 'up', 'down'], help='Choose Unc.')
 
 args = Parser.parse_args()
@@ -365,7 +367,9 @@ UncType = ""
 SFfile = ""
 ApplybSF = False
 ApplytSF = False
-Applyjec = False
+ApplyJEC = False
+ApplyJER = False
+ApplyPDF = False
 xsSystwgt = 1.
 lumSystwgt = 1.
 
@@ -382,7 +386,7 @@ TPT = ''
 if args.tpt:
     TPT = '_TopReweight'
 
-if args.bTagSyst:
+elif args.bTagSyst:
     UncType = "_btagUnc_"
     SystType = args.bTagSyst # string for btag SF evaluator --> "central", "up", or "down"
     ApplybSF = True
@@ -417,22 +421,29 @@ elif args.tTagSyst:
 #    ---------------------------------------------------------------------------------------------------------------------    # 
 
 elif args.jec:
+    ApplyJEC = True
     UncType = "_jecUnc_"
-    SystType = args.jec # string for ttag SF correction --> "central", "up", or "down"
-    Applyjec = True
-    SFfile = daskDirectory+'TTbarAllHadUproot/CorrectionFiles/JERs/fatJet_jerc.json.gz' # Either 'MC' or 'Data' after this
+    SystType = 'jec' # string for ttag SF correction --> "central", "up", or "down"
 #    ---------------------------------------------------------------------------------------------------------------------    # 
 
 elif args.jer:
+    ApplyJER = True
     UncType = "_jerUnc_"
-    SystType = args.jer # string for ttag SF correction --> "central", "up", or "down"
+    SystType = 'jer'
+#    ---------------------------------------------------------------------------------------------------------------------    #
+ 
+elif args.pdf:
+    ApplyPDF = True
+    UncType = "_pdfUnc_"
+    SystType = 'pdf'
 #    ---------------------------------------------------------------------------------------------------------------------    # 
 
 elif args.pileup:
     UncType = "_pileupUnc_"
-    SystType = args.pileup # string for ttag SF correction --> "central", "up", or "down"
+    SystType = args.pileup # string --> "central", "up", or "down"
 #    ---------------------------------------------------------------------------------------------------------------------    # 
 
+    
 UncArgs = np.array([args.bTagSyst, args.tTagSyst, args.jec, args.jer, args.ttXSSyst, args.lumSyst, args.pileup])
 SystOpts = np.any(UncArgs) # Check to see if any uncertainty argument is used
 if (not OnlyCreateLookupTables) and (not SystOpts and not args.runMMO) :
@@ -821,12 +832,10 @@ if args.runflavoreff:
             if args.saveFlav:
                 mkdir_p('TTbarAllHadUproot/CoffeaOutputsForMCFlavorAnalysis/'
                           + SaveLocation[name])
-                util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForMCFlavorAnalysis/'
-                      + SaveLocation[name]
-                      + name    
-                      + '_MCFlavorAnalysis' 
-                      + OldDisc
-                      + '.coffea')
+                
+                savefilename = 'TTbarAllHadUproot/CoffeaOutputsForMCFlavorAnalysis/' + SaveLocation[name] + name     + '_MCFlavorAnalysis'  + OldDisc + '.coffea'
+                util.save(output, savefilename)
+                print('saving ' + savefilename)
 
 
         else: # Run all Root Files
@@ -872,12 +881,10 @@ if args.runflavoreff:
             if args.saveFlav:
                 mkdir_p('TTbarAllHadUproot/CoffeaOutputsForMCFlavorAnalysis/'
                           + SaveLocation[name])
-                util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForMCFlavorAnalysis/'
-                      + SaveLocation[name]
-                      + name    
-                      + '_MCFlavorAnalysis' 
-                      + OldDisc
-                      + '.coffea')
+                
+                savefilename = 'TTbarAllHadUproot/CoffeaOutputsForMCFlavorAnalysis/' + SaveLocation[name] + name + '_MCFlavorAnalysis' + OldDisc + '.coffea'
+                util.save(output, savefilename)
+                print('saving ' + savefilename)
 
 
         print('Elapsed time = ', elapsed, ' sec.')
@@ -963,12 +970,9 @@ if isTrigEffArg:
             if args.saveTrig:
                 mkdir_p('TTbarAllHadUproot/CoffeaOutputsForTriggerAnalysis/'
                           + SaveLocation[name])
-                util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForTriggerAnalysis/'
-                      + SaveLocation[name]
-                      + name    
-                      + '_TriggerAnalysis' 
-                      + OldDisc
-                      + '.coffea')
+                savefilename = 'TTbarAllHadUproot/CoffeaOutputsForTriggerAnalysis/' + SaveLocation[name] + name + '_TriggerAnalysis' + OldDisc + '.coffea'
+                util.save(output, savefilename)
+                print('saving ' + savefilename)
 
 
         else: # Run all Root Files
@@ -1014,12 +1018,9 @@ if isTrigEffArg:
             if args.saveTrig:
                 mkdir_p('TTbarAllHadUproot/CoffeaOutputsForTriggerAnalysis/'
                           + SaveLocation[name])
-                util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForTriggerAnalysis/'
-                      + SaveLocation[name]
-                      + name    
-                      + '_TriggerAnalysis' 
-                      + OldDisc
-                      + '.coffea')
+                savefilename =  output, 'TTbarAllHadUproot/CoffeaOutputsForTriggerAnalysis/' + SaveLocation[name] + name + '_TriggerAnalysis' + OldDisc + '.coffea'
+                util.save(output, savefilename)
+                print('saving ' + savefilename)
 
 
         print('Elapsed time = ', elapsed, ' sec.')
@@ -1108,11 +1109,10 @@ for name,files in filesets_to_run.items():
             if SaveFirstRun:
                 mkdir_p('TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/'
                           + SaveLocation[name])
-                util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/'
-                          + SaveLocation[name]
-                          + name    
-                          + OldDisc
-                          + '.coffea')
+                
+                savefilename = 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/' + SaveLocation[name] + name + OldDisc + '.coffea'
+                util.save(output, savefilename)
+                print('saving ' + savefilename)                           
             
             
         else: # Run all Root Files
@@ -1163,11 +1163,11 @@ for name,files in filesets_to_run.items():
             if SaveFirstRun:
                 mkdir_p('TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/'
                           + SaveLocation[name])
-                util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/'
-                          + SaveLocation[name]
-                          + name  
-                          + OldDisc
-                          + '.coffea')
+                                          
+                                          
+                savefilename =  'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/' + SaveLocation[name] + name + OldDisc + '.coffea'                         
+                util.save(output, savefilename)
+                print('saving ' + savefilename)
             
         for name,output in outputs_unweighted.items(): 
             print("-------Unweighted " + name + "--------")
@@ -1204,21 +1204,21 @@ import TTbarResLookUpTables
 
 from TTbarResLookUpTables import CreateLUTS, LoadDataLUTS #, CreateMCEfficiencyLUTS
 
-each_mistag_luts = CreateLUTS(filesets_to_run, outputs_unweighted, BDiscDirectory, args.year, VFP, args.runmistag, Letters, args.saveMistag)
-# if not args.saveMistag:
-#     print(each_mistag_luts)
-#     print("\n\nWe\'re done here!!\n")
-#     if args.dask and args.newCluster:
-#         cluster.close()
-#     exit()
-    
-mistag_luts = LoadDataLUTS(BDiscDirectory, args.year, Letters) # Specifically get data mistag rates with ttContam. corrections
+each_mistag_luts = None
+mistag_luts = None
 
-if OnlyCreateLookupTables or args.runMMO:
+if not args.runMMO:
+    each_mistag_luts = CreateLUTS(filesets_to_run, outputs_unweighted, BDiscDirectory, args.year, VFP, args.runmistag, Letters, args.saveMistag)
+    mistag_luts = LoadDataLUTS(BDiscDirectory, args.year, Letters) # Specifically get data mistag rates with ttContam. corrections
+else:
+    mistag_luts = LoadDataLUTS(BDiscDirectory, args.year, Letters) # Specifically get data mistag rates with ttContam. corrections
+
+if OnlyCreateLookupTables:
     print("\n\nWe\'re done here!!\n")
     if args.dask and args.newCluster:
         cluster.close()
     exit()
+    
 
 
 """ Second uproot job runs the processor with the mistag rates (and flavor effs if desired) and Mass-Modification Procedure """
@@ -1257,7 +1257,9 @@ if not OnlyCreateLookupTables and not args.runMMO:
                                                                                        lumSystematicWeight = lumSystwgt,
                                                                                        ApplyTopReweight = args.tpt,
                                                                                        ApplybtagSF=ApplybSF,
-                                                                                       ApplyJEC=Applyjec,
+                                                                                       ApplyJEC=ApplyJEC,
+                                                                                       ApplyJER=ApplyJER,
+                                                                                       ApplyPDF=ApplyPDF,
                                                                                        sysType=SystType,
                                                                                        ScaleFactorFile=SFfile,
                                                                                        UseEfficiencies=args.useEff,
@@ -1288,7 +1290,9 @@ if not OnlyCreateLookupTables and not args.runMMO:
                                                                                        lumSystematicWeight = lumSystwgt,
                                                                                        ApplyTopReweight = args.tpt,
                                                                                        ApplybtagSF=ApplybSF,
-                                                                                       ApplyJEC=Applyjec,
+                                                                                       ApplyJEC=ApplyJEC,
+                                                                                       ApplyJER=ApplyJER,
+                                                                                       ApplyPDF=ApplyPDF,
                                                                                        sysType=SystType,
                                                                                        ScaleFactorFile=SFfile,
                                                                                        UseEfficiencies=args.useEff,
@@ -1312,16 +1316,10 @@ if not OnlyCreateLookupTables and not args.runMMO:
             if SaveSecondRun:
                 mkdir_p('TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/'
                           + SaveLocation[name])
-                util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/'
-                          + SaveLocation[name]
-                          + name 
-                          + '_weighted'
-                          + UncType
-                          + SystType
-                          + method
-                          + TPT
-                          + OldDisc
-                          + '.coffea')
+                
+                savefilename = 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/' + SaveLocation[name] + name  + '_weighted' + UncType + SystType + method + TPT + OldDisc + '.coffea'                       
+                util.save(output, savefilename)
+                print('saving ' + savefilename)                          
             
             
         else: # Run all Root Files
@@ -1338,7 +1336,9 @@ if not OnlyCreateLookupTables and not args.runMMO:
                                                                                        lumSystematicWeight = lumSystwgt,
                                                                                        ApplyTopReweight = args.tpt,
                                                                                        ApplybtagSF=ApplybSF,
-                                                                                       ApplyJEC=Applyjec,
+                                                                                       ApplyJEC=ApplyJEC,
+                                                                                       ApplyJER=ApplyJER,
+                                                                                       ApplyPDF=ApplyPDF,
                                                                                        sysType=SystType,
                                                                                        ScaleFactorFile=SFfile,
                                                                                        UseEfficiencies=args.useEff,
@@ -1369,7 +1369,9 @@ if not OnlyCreateLookupTables and not args.runMMO:
                                                                                        lumSystematicWeight = lumSystwgt,
                                                                                        ApplyTopReweight = args.tpt,
                                                                                        ApplybtagSF=ApplybSF,
-                                                                                       ApplyJEC=Applyjec,
+                                                                                       ApplyJEC=ApplyJEC,
+                                                                                       ApplyJER=ApplyJER,
+                                                                                       ApplyPDF=ApplyPDF,
                                                                                        sysType=SystType,
                                                                                        ScaleFactorFile=SFfile,
                                                                                        UseEfficiencies=args.useEff,
@@ -1390,16 +1392,11 @@ if not OnlyCreateLookupTables and not args.runMMO:
             if SaveSecondRun:
                 mkdir_p('TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/'
                           + SaveLocation[name])
-                util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/'
-                          + SaveLocation[name]
-                          + name 
-                          + '_weighted'
-                          + UncType
-                          + SystType
-                          + method
-                          + TPT
-                          + OldDisc
-                          + '.coffea')
+                                          
+                                          
+                savefilename = 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/' + SaveLocation[name] + name  + '_weighted' + UncType + SystType + method + TPT + OldDisc + '.coffea'                       
+                util.save(output, savefilename)
+                print('saving ' + savefilename)  
         print('Elapsed time = ', elapsed, ' sec.')
         print('Elapsed time = ', elapsed/60., ' min.')
         print('Elapsed time = ', elapsed/3600., ' hrs.') 
@@ -1412,11 +1409,11 @@ if not OnlyCreateLookupTables and not args.runMMO:
     if args.dask:
         cluster.close()
     exit()
-else:
-    print("\n\nWe\'re done here!!\n")
-    if args.dask and args.newCluster:
-        cluster.close()
-    exit()
+# else:
+#     print("\n\nWe\'re done here!!\n")
+#     if args.dask and args.newCluster:
+#         cluster.close()
+#     exit()
     
     
     
@@ -1493,16 +1490,10 @@ if args.runMMO:
                 if SaveSecondRun:
                     mkdir_p('TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/'
                               + SaveLocation[name])
-                    util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/'
-                              + SaveLocation[name]
-                              + name 
-                              + '_weighted'
-                              + UncType 
-                              + SystType
-                              + method
-                              + TPT
-                              + OldDisc
-                              + '.coffea')
+                                          
+                    savefilename = 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/' + SaveLocation[name] + name  + '_weighted' + UncType  + SystType + method + TPT + OldDisc + '.coffea'
+                    util.save(output, savefilename)
+                    print('saving ' + savefilename)
 
 
             else: # Run all Root Files
@@ -1555,16 +1546,10 @@ if args.runMMO:
                 if SaveSecondRun:
                     mkdir_p('TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/'
                               + SaveLocation[name])
-                    util.save(output, 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/'
-                              + SaveLocation[name]
-                              + name 
-                              + '_weighted'
-                              + UncType
-                              + SystType
-                              + method
-                              + TPT
-                              + OldDisc
-                              + '.coffea')
+                                          
+                    savefilename = 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/' + SaveLocation[name] + name  + '_weighted' + UncType + SystType + method + TPT + OldDisc + '.coffea'                    
+                    util.save(output, savefilename)
+                    print('saving ' + savefilename)
             print('Elapsed time = ', elapsed, ' sec.')
             print('Elapsed time = ', elapsed/60., ' min.')
             print('Elapsed time = ', elapsed/3600., ' hrs.') 

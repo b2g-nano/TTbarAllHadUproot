@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-from coffea import hist
 from coffea import util
+import hist
 import numpy as np
 import itertools
 import mplhep as hep
@@ -69,6 +69,8 @@ btagcats = ["0b", "1b", "2b"]
 ycats = ['cen', 'fwd']
 
 list_of_cats = [ t+b+y for t,b,y in itertools.product( ttagcats, btagcats, ycats) ]
+list_of_ints = [6, 7, 8, 9, 10, 11]
+catmap = dict(zip(list_of_ints, list_of_cats))
 
 """ ---------------- CREATE RAW MISTAG PLOTS ---------------- """
 # ---- Only Use This When LookUp Tables Were Not In Use for Previous Uproot Job (i.e. UseLookUpTables = False) ---- #
@@ -152,35 +154,38 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
 #     P       LLLLLLL   OOO      T    SSSSS 
 #     ---------------------------------------
     
-    SavePlotDirectory = maindirectory + '/TTbarAllHadUproot/PrelimMistagPlots/' + bdiscDirectory
-    DoesDirectoryExist(SavePlotDirectory)
-    for iset in Filesets:
-        for icat in list_of_cats:
-            # print(iset)
-            # print(icat)
-            title = iset + ' mistag ' + icat
-            filename = 'mistag_' + iset + '_' + icat + '.' + 'png'
-            # print(Outputs[iset]['numerator'])
-            Numerator = Outputs[iset]['numerator'].integrate('anacat', icat).integrate('dataset', iset)
-            Denominator = Outputs[iset]['denominator'].integrate('anacat', icat).integrate('dataset', iset)
-            # print(Numerator)
-            # print(Denominator)
-            mistag = hist.plotratio(num = Numerator, denom = Denominator,
-                                    error_opts={'marker': '.', 'markersize': 10., 'color': 'k', 'elinewidth': 1},
-                                    unc = 'num')
-            plt.title(title)
-            plt.ylim(bottom = 0, top = 0.12)
-            plt.xlim(left = 100, right = 2500)
+#     SavePlotDirectory = maindirectory + '/TTbarAllHadUproot/PrelimMistagPlots/' + bdiscDirectory
+#     DoesDirectoryExist(SavePlotDirectory)
+#     for iset in Filesets:
+#         for icat in list_of_ints:
+#             # print(iset)
+#             # print(icat)
+#             title = iset + ' mistag ' + catmap[icat]
+#             filename = 'mistag_' + iset + '_' + catmap[icat] + '.' + 'png'
+#             # print(Outputs[iset]['numerator'])
+#             Numerator = Outputs[iset]['numerator'].project('jetp')
+#             Denominator = Outputs[iset]['denominator'].project('jetp')
+#             # Numerator = Outputs[iset]['numerator'][iset, icat, sum]
+#             # Denominator = Outputs[iset]['denominator'][iset, icat, sum]
+#             # print(Numerator)
+#             # print(Denominator)
+#             # mistag = hist.plotratio(num = Numerator, denom = Denominator,
+#             #                         error_opts={'marker': '.', 'markersize': 10., 'color': 'k', 'elinewidth': 1},
+#             #                         unc = 'num')
+#             mistag = Numerator.plot_ratio(Denominator, rp_uncertainty_type="efficiency")
+#             plt.title(title)
+#             plt.ylim(bottom = 0, top = 0.12)
+#             plt.xlim(left = 100, right = 2500)
 
-            # ----- Better mistag plots are made in 'TTbarResCoffea_MistagAnalysis-BkgEst' python script ------ #
-            # ---- However, if one wants to save these raw plots, they may uncomment the following 5 lines ---- #
-            # ------------- NOTE: MAYBE THINK OF MAKING A SWITCH FOR PLOTTING/SAVING THESE LATER? ------------- # 
+#             # ----- Better mistag plots are made in 'TTbarResCoffea_MistagAnalysis-BkgEst' python script ------ #
+#             # ---- However, if one wants to save these raw plots, they may uncomment the following 5 lines ---- #
+#             # ------------- NOTE: MAYBE THINK OF MAKING A SWITCH FOR PLOTTING/SAVING THESE LATER? ------------- # 
 
-            #plt.xticks(np.array([0, 500, 600, 700]))
-            #mistag.set_xscale('function', functions=(forward, inverse))
-            #mistag.set_xscale('log')
-            #plt.savefig(SavePlotDirectory+filename, bbox_inches="tight")
-            #print(filename + ' saved')
+#             #plt.xticks(np.array([0, 500, 600, 700]))
+#             #mistag.set_xscale('function', functions=(forward, inverse))
+#             #mistag.set_xscale('log')
+#             #plt.savefig(SavePlotDirectory+filename, bbox_inches="tight")
+#             #print(filename + ' saved')
     
 #     -------------------------------------------------------    
 #       SSSSS   CCCC     A    L       IIIIIII N     N GGGGGGG     
@@ -254,19 +259,23 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
         for iset in Filesets: 
             if ('JetHT' in iset) and any('TTbar' in i for i in Outputs) and RemoveContam:
                 # print('\t\tfileset: ' + iset + 'With Contamination Removed!\n*****************************************************\n')
-                for icat in list_of_cats:
-                    filename = 'mistag_' + iset + '_ttContaminationRemoved_' + icat + '.' + 'csv'
-                    title = iset + ' mistag ' + icat
+                for icat in list_of_ints:
+                    filename = 'mistag_' + iset + '_ttContaminationRemoved_' + catmap[icat] + '.' + 'csv'
+                    title = iset + ' mistag ' + catmap[icat]
 
-                    # ---- Info from TTbar ---- #
-                    Numerator_tt = Outputs[filestring_prefix+'TTbar']['numerator'].integrate('anacat',icat).integrate('dataset',filestring_prefix+'TTbar')
-                    Denominator_tt = Outputs[filestring_prefix+'TTbar']['denominator'].integrate('anacat',icat).integrate('dataset',filestring_prefix+'TTbar')
+                    # ---- Info from TTbar ---- # ['numerator'][dataset, icat, sum]
+                    Numerator_tt = Outputs[filestring_prefix+'TTbar']['numerator'].project('jetp')
+                    Denominator_tt = Outputs[filestring_prefix+'TTbar']['denominator'].project('jetp')
+                    # Numerator_tt = Outputs[filestring_prefix+'TTbar']['numerator'][filestring_prefix+'TTbar', icat, sum]
+                    # Denominator_tt = Outputs[filestring_prefix+'TTbar']['denominator'][filestring_prefix+'TTbar', icat, sum]
                     N_vals_tt = Numerator_tt.values()[()] 
                     D_vals_tt = Denominator_tt.values()[()] 
 
                     # ---- Info from JetHT datasets ---- #
-                    Numerator = Outputs[iset]['numerator'].integrate('anacat',icat).integrate('dataset',iset)
-                    Denominator = Outputs[iset]['denominator'].integrate('anacat',icat).integrate('dataset',iset)
+                    Numerator = Outputs[iset]['numerator'].project('jetp')
+                    Denominator = Outputs[iset]['denominator'].project('jetp')
+                    # Numerator = Outputs[iset]['numerator'][iset, icat, sum]
+                    # Denominator = Outputs[iset]['denominator'][iset, icat, sum]
                     N_vals = Numerator.values()[()]
                     D_vals = Denominator.values()[()]
 
@@ -304,9 +313,9 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
                     mistag_vals = np.where(D_vals_diff > 0, N_vals_diff/D_vals_diff, 0)
 
                     # ---- Define Momentum values ---- #
-                    p_vals = []
-                    for iden in Numerator.identifiers('jetp'):
-                        p_vals.append(iden)
+                    p_vals = pd.IntervalIndex.from_tuples([(400, 500), (500, 600), (600, 800), (800, 1000), (1000, 1500), (1500, 2000), (2000, 3000), (3000, 7000), (7000, 10000), ])
+                    # for iden in : #Find a new way to not have this hard-coded
+                    #     p_vals.append(iden)
 
                     # ---- Display and Save Dataframe, df, as Look-up Table ---- #
                     # print('fileset:  ' + iset + '_ttContaminationRemoved')
@@ -318,7 +327,7 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
                     # print("d vals = ", d)
                     # print()
                     df = pd.DataFrame(data=d)
-                    luts[iset][icat] = df
+                    luts[iset][catmap[icat]] = df
 
                     # with pd.option_context('display.max_rows', None, 'display.max_columns', None): 
                     #     print(df)
@@ -327,29 +336,32 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
                         df.to_csv(SaveDirectory+filename) # use later to collect bins and weights for re-scaling
             else: # Make mistag rate of any dataset that was run in the 1st uproot job
                 # print('\t\tfileset: ' + iset + '\n*****************************************************\n')
-                for icat in list_of_cats:
-                    filename = 'mistag_' + iset + '_' + icat + '.' + 'csv'
-                    Numerator = Outputs[iset]['numerator'].integrate('anacat',icat).integrate('dataset',iset)
-                    Denominator = Outputs[iset]['denominator'].integrate('anacat',icat).integrate('dataset',iset)
+                for icat in list_of_ints:
+                    filename = 'mistag_' + iset + '_' + catmap[icat] + '.' + 'csv'
+                    Numerator = Outputs[iset]['numerator'].project('jetp')
+                    Denominator = Outputs[iset]['denominator'].project('jetp')
                     N_vals = Numerator.values()[()]
                     D_vals = Denominator.values()[()]
                     # print(N_vals)
                     # print(D_vals)
                     # print()
                     mistag_vals = np.where(D_vals > 0, N_vals/D_vals, 0)
+                    # print(mistag_vals)
 
-                    p_vals = [] # Momentum values
-                    for iden in Numerator.identifiers('jetp'):
-                        p_vals.append(iden)
+                    # p_vals = [] # Momentum values
+                    p_vals = pd.IntervalIndex.from_tuples([(400, 500), (500, 600), (600, 800), (800, 1000), (1000, 1500), (1500, 2000), (2000, 3000), (3000, 7000), (7000, 10000), ])
+                    # for iden in Numerator.identifiers():
+                    #     p_vals.append(iden)
                     # print('fileset:  ' + iset)
                     # print('category: ' + icat)
                     # print('________________________________________________\n')
+                    # print(p_vals)
                     d = {'p': p_vals, 'M(p)': mistag_vals}
 
                     # print("d vals = ", d)
                     # print()
                     df = pd.DataFrame(data=d)
-                    luts[iset][icat] = df
+                    luts[iset][catmap[icat]] = df
 
                     # with pd.option_context('display.max_rows', None, 'display.max_columns', None): 
                     #     print(df)
