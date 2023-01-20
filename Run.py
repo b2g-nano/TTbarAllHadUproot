@@ -1018,7 +1018,7 @@ if isTrigEffArg:
             if args.saveTrig:
                 mkdir_p('TTbarAllHadUproot/CoffeaOutputsForTriggerAnalysis/'
                           + SaveLocation[name])
-                savefilename =  output, 'TTbarAllHadUproot/CoffeaOutputsForTriggerAnalysis/' + SaveLocation[name] + name + '_TriggerAnalysis' + OldDisc + '.coffea'
+                savefilename =  'TTbarAllHadUproot/CoffeaOutputsForTriggerAnalysis/' + SaveLocation[name] + name + '_TriggerAnalysis' + OldDisc + '.coffea'
                 util.save(output, savefilename)
                 print('saving ' + savefilename)
 
