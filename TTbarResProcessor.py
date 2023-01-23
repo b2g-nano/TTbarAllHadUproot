@@ -2164,6 +2164,12 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
            'condition5_numerator': hist.Hist(dataset_axis, cats_axis, jetht_axis, sdMass_axis, storage = "weight", name = "Counts"),
            'condition_denominator': hist.Hist(dataset_axis, cats_axis, jetht_axis, sdMass_axis, storage = "weight", name = "Counts"),
             
+           'trigger1_numerator': hist.Hist(dataset_axis, cats_axis, jetht_axis, sdMass_axis, storage = "weight", name = "Counts"),
+           'trigger2_numerator': hist.Hist(dataset_axis, cats_axis, jetht_axis, sdMass_axis, storage = "weight", name = "Counts"),
+           'trigger3_numerator': hist.Hist(dataset_axis, cats_axis, jetht_axis, sdMass_axis, storage = "weight", name = "Counts"),
+           'trigger4_numerator': hist.Hist(dataset_axis, cats_axis, jetht_axis, sdMass_axis, storage = "weight", name = "Counts"),
+           'trigger5_numerator': hist.Hist(dataset_axis, cats_axis, jetht_axis, sdMass_axis, storage = "weight", name = "Counts"),
+            
            'cutflow': processor.defaultdict_accumulator(int),
         }
         
@@ -2275,7 +2281,7 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
 #         HLT_AK8_triggers = listOfTriggers[isHLT_AK8]
         
         # print(Jets.PU, '\n')
-        trigDenom = events.HLT_Mu50 | events.HLT_IsoMu24 # WHY!!!!!????
+        trigDenom = events.HLT_Mu50 | events.HLT_IsoMu24
         # print(HLT_PF_triggers)
         # print(HLT_AK8_triggers)
         # print(events.HLT_IsoMu24)
@@ -2284,19 +2290,30 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         
         # is2017Bun = False # Switch to isolate 2017 B chunks
         
+        trigger1 = None
+        trigger2 = None
+        trigger3 = None
+        trigger4 = None
+        
         if self.year == 2016: #HLT PFHT890
-            triggers_1 = events.HLT_PFHT900
-            triggers_2 = events.HLT_AK8PFHT700_TrimR0p1PT0p03Mass50
-            triggers_3 = events.HLT_AK8PFJet450
-            triggers_4 = events.HLT_AK8PFJet360_TrimMass30
+            trigger1 = events.HLT_PFHT900
+            trigger2 = events.HLT_AK8PFHT700_TrimR0p1PT0p03Mass50
+            trigger3 = events.HLT_AK8PFJet450
+            trigger4 = events.HLT_AK8PFJet360_TrimMass30
         elif self.year == 2017:
-            triggers_1 = events.HLT_PFHT1050
-            triggers_2 = events.HLT_AK8PFJet550 
+            trigger1 = events.HLT_PFHT1050
+            trigger2 = events.HLT_AK8PFJet550 
         else:
-            triggers_1 = events.HLT_PFHT1050
-            triggers_2 = events.HLT_AK8PFHT800_TrimMass50
-            triggers_3 = events.HLT_AK8PFJet550 
-            triggers_4 = events.HLT_AK8PFJet400_TrimMass30
+            trigger1 = events.HLT_PFHT1050
+            trigger2 = events.HLT_AK8PFHT800_TrimMass50
+            trigger3 = events.HLT_AK8PFJet550 
+            trigger4 = events.HLT_AK8PFJet400_TrimMass30
+            
+        Trigger1 = trigger1 & trigDenom
+        Trigger2 = trigger2 & trigDenom
+        if self.year != 2017:
+            Trigger3 = trigger3 & trigDenom
+            Trigger4 = trigger4 & trigDenom
             
 
 #    ===================================================================================
@@ -2323,25 +2340,19 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         condition2 = None
         condition3 = None
         condition4 = None
-        # condition5 = None
-        firstCondition = None
         
         # ---- Apply Trigger(s) ---- # 
         if self.year != 2017: # Include other years later...
-            firstCondition = (triggers_1) 
-            
             # ---- Defining Trigger Analysis Conditions ---- #
-            condition1 = firstCondition & trigDenom 
-            condition2 = (firstCondition | triggers_2) & trigDenom
-            condition3 = ((firstCondition | triggers_2) | triggers_3) & trigDenom
-            condition4 = ((firstCondition | triggers_2) | (triggers_3 | triggers_4)) & trigDenom
+            condition1 = trigger1 & trigDenom 
+            condition2 = (trigger1 | trigger2) & trigDenom
+            condition3 = ((trigger1 | trigger2) | trigger3) & trigDenom
+            condition4 = ((trigger1 | trigger2) | (trigger3 | trigger4)) & trigDenom
             
         else: # Special for 2017 only
-            firstCondition = (triggers_1) 
-            
             # ---- Defining Trigger Analysis Conditions ---- #
-            condition1 = firstCondition & trigDenom 
-            condition2 = (firstCondition | triggers_2) & trigDenom
+            condition1 = trigger1 & trigDenom 
+            condition2 = (trigger1 | trigger2) & trigDenom
         
             
         # ---- Jets that satisfy Jet ID ---- #
@@ -2360,11 +2371,15 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         FatJets = FatJets[twoFatJetsKin]
         SubJets = SubJets[twoFatJetsKin]
         Jets = Jets[twoFatJetsKin] # this used to not be here
-
+        
+        Trigger1 = Trigger1[twoFatJetsKin]
+        Trigger2 = Trigger2[twoFatJetsKin]
         condition1 = condition1[twoFatJetsKin]
         condition2 = condition2[twoFatJetsKin]
 
         if self.year != 2017:
+            Trigger3 = Trigger3[twoFatJetsKin]
+            Trigger4 = Trigger4[twoFatJetsKin]
             condition3 = condition3[twoFatJetsKin]
             condition4 = condition4[twoFatJetsKin]
             
@@ -2413,10 +2428,14 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         FatJets = FatJets[oneTTbar]
         Jets = Jets[oneTTbar] # this used to not be here
         
+        Trigger1 = Trigger1[oneTTbar]
+        Trigger2 = Trigger2[oneTTbar]
         condition1 = condition1[oneTTbar]
         condition2 = condition2[oneTTbar]
         
         if self.year != 2017:
+            Trigger3 = Trigger3[oneTTbar]
+            Trigger4 = Trigger4[oneTTbar]
             condition3 = condition3[oneTTbar]
             condition4 = condition4[oneTTbar]
         
@@ -2433,10 +2452,14 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         FatJets = FatJets[dPhiCut] 
         Jets = Jets[dPhiCut] # this used to not be here
         
+        Trigger1 = Trigger1[dPhiCut]
+        Trigger2 = Trigger2[dPhiCut]
         condition1 = condition1[dPhiCut]
         condition2 = condition2[dPhiCut]
         
         if self.year != 2017:
+            Trigger3 = Trigger3[dPhiCut]
+            Trigger4 = Trigger4[dPhiCut]
             condition3 = condition3[dPhiCut]
             condition4 = condition4[dPhiCut]
             
@@ -2453,10 +2476,14 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         SubJets = SubJets[GoodSubjets]
         Jets = Jets[GoodSubjets] # this used to not be here
         
+        Trigger1 = Trigger1[GoodSubjets]
+        Trigger2 = Trigger2[GoodSubjets]
         condition1 = condition1[GoodSubjets]
         condition2 = condition2[GoodSubjets]
         
         if self.year != 2017:
+            Trigger3 = Trigger3[GoodSubjets]
+            Trigger4 = Trigger4[GoodSubjets]
             condition3 = condition3[GoodSubjets]
             condition4 = condition4[GoodSubjets]
             
@@ -2494,9 +2521,7 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         ttag0 =   (~ttag_s0) & (~ttag_s1) # No tops tagged (0t) (will not store 2D hist values of SD within softdrop window)
         ttagI =   ttag_s0 | ttag_s1 # At least one top tagged ('I' for 'inclusive' tagger; >=1t; 1t+2t)
         ttagAny = ttag0 | ttagI # Any tag region (0, 1, or 2)
-
-                    
-
+        
 #    ===========================================================================================================================        
 #    TTTTTTT RRRRRR  IIIIIII GGGGGGG GGGGGGG EEEEEEE RRRRRR         A    N     N    A    L       Y     Y   SSSSS IIIIIII   SSSSS     
 #       T    R     R    I    G       G       E       R     R       A A   NN    N   A A   L        Y   Y   S         I     S          
@@ -2507,20 +2532,31 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
 #       T    R     R IIIIIII  GGGGG   GGGGG  EEEEEEE R     R     A     A N     N A     A LLLLLLL    Y    SSSSS   IIIIIII SSSSS
 #    ===========================================================================================================================  
         
+        TriggersDict = {
+            '1': Trigger1,
+            '2': Trigger2
+        }   
+    
         ConditionsDict = {
             '1': condition1,
             '2': condition2
-        }
+        } 
         if self.year != 2017:
+            TriggersDict['3'] = Trigger3
+            TriggersDict['4'] = Trigger4
             ConditionsDict['3'] = condition3
             ConditionsDict['4'] = condition4
             
 
         # ---- Defining Jet Collections for Trigger Analysis Numerator and Denominator ---- #
+        Jets_NumTrigger1 = Jets[Trigger1] # contains jets to be used as numerator for trigger eff
+        Jets_NumTrigger2 = Jets[Trigger2]
         Jets_NumCondition1 = Jets[condition1] # contains jets to be used as numerator for trigger eff
         Jets_NumCondition2 = Jets[condition2]
         
         if self.year != 2017:
+            Jets_NumTrigger3 = Jets[Trigger3]
+            Jets_NumTrigger4 = Jets[Trigger4]
             Jets_NumCondition3 = Jets[condition3]
             Jets_NumCondition4 = Jets[condition4]
             
@@ -2536,10 +2572,14 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         output['cutflow']['events with jets Denom cond'] +=  ak.to_awkward0(trigDenom).sum()
         
         # ---- Must pass this cut before calculating HT variables for analysis ---- #
+        passAK4_num1_trig = (Jets_NumTrigger1.pt > 30.) & (np.abs(Jets_NumTrigger1.eta) < 3.0) 
+        passAK4_num2_trig = (Jets_NumTrigger2.pt > 30.) & (np.abs(Jets_NumTrigger2.eta) < 3.0)
         passAK4_num1 = (Jets_NumCondition1.pt > 30.) & (np.abs(Jets_NumCondition1.eta) < 3.0) 
         passAK4_num2 = (Jets_NumCondition2.pt > 30.) & (np.abs(Jets_NumCondition2.eta) < 3.0)
         
         if self.year != 2017:
+            passAK4_num3_trig = (Jets_NumTrigger3.pt > 30.) & (np.abs(Jets_NumTrigger3.eta) < 3.0) 
+            passAK4_num4_trig = (Jets_NumTrigger4.pt > 30.) & (np.abs(Jets_NumTrigger4.eta) < 3.0)
             passAK4_num3 = (Jets_NumCondition3.pt > 30.) & (np.abs(Jets_NumCondition3.eta) < 3.0)
             passAK4_num4 = (Jets_NumCondition4.pt > 30.) & (np.abs(Jets_NumCondition4.eta) < 3.0)
         
@@ -2551,38 +2591,60 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         # ------------- despite this array being simply an array of ones for the sake of ------------- #
         # ----------------------------------- not altering the data ---------------------------------- #
         # ---------------------------------------------------------------------------------------------#
+        
+        Num1Wgt_trig = evtweights[Trigger1]
+        Num2Wgt_trig = evtweights[Trigger2]
         Num1Wgt = evtweights[condition1]
         Num2Wgt = evtweights[condition2]
         
         if self.year != 2017:
+            Num3Wgt_trig = evtweights[Trigger3]
+            Num4Wgt_trig = evtweights[Trigger4]
             Num3Wgt = evtweights[condition3]
             Num4Wgt = evtweights[condition4]
-
+        
+        NumWgtTrigDict = {
+            '1': Num1Wgt_trig,
+            '2': Num2Wgt_trig
+        }
         NumWgtDict = {
             '1': Num1Wgt,
             '2': Num2Wgt
         }
         
         if self.year != 2017:
+            NumWgtTrigDict['3'] = Num3Wgt_trig
+            NumWgtTrigDict['4'] = Num4Wgt_trig
             NumWgtDict['3'] = Num3Wgt
             NumWgtDict['4'] = Num4Wgt
             
         DenomWgt = evtweights[trigDenom]
         
         # ---- Defining Trigger Analysis Numerator(s) and Denominator as function of HT ---- #
+        jet_HT_numerator1_trig = ak.sum(Jets_NumTrigger1[passAK4_num1_trig].pt, axis=-1) # Sum over each AK4 Jet per event
+        jet_HT_numerator2_trig = ak.sum(Jets_NumTrigger2[passAK4_num2_trig].pt, axis=-1)
         jet_HT_numerator1 = ak.sum(Jets_NumCondition1[passAK4_num1].pt, axis=-1) # Sum over each AK4 Jet per event
         jet_HT_numerator2 = ak.sum(Jets_NumCondition2[passAK4_num2].pt, axis=-1)
         
         if self.year != 2017:
+            jet_HT_numerator3_trig = ak.sum(Jets_NumTrigger3[passAK4_num3_trig].pt, axis=-1)
+            jet_HT_numerator4_trig = ak.sum(Jets_NumTrigger4[passAK4_num4_trig].pt, axis=-1)
             jet_HT_numerator3 = ak.sum(Jets_NumCondition3[passAK4_num3].pt, axis=-1)
             jet_HT_numerator4 = ak.sum(Jets_NumCondition4[passAK4_num4].pt, axis=-1)
-            
+        
+        jet_HT_numeratorTrigDict = {
+            '1': jet_HT_numerator1_trig,
+            '2': jet_HT_numerator2_trig
+        }
+        
         jet_HT_numeratorDict = {
             '1': jet_HT_numerator1,
             '2': jet_HT_numerator2
         }
         
         if self.year != 2017:
+            jet_HT_numeratorTrigDict['3'] = jet_HT_numerator3_trig
+            jet_HT_numeratorTrigDict['4'] = jet_HT_numerator4_trig
             jet_HT_numeratorDict['3'] = jet_HT_numerator3
             jet_HT_numeratorDict['4'] = jet_HT_numerator4
             
@@ -2591,20 +2653,32 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         # ---- Defining Trigger Analysis Numerator(s) and Denominator as function of SD ---- #
         sdMass = ak.flatten(ttbarcands.slot0.msoftdrop)
         
+        jet_SD_numerator1_trig = sdMass[Trigger1]
+        jet_SD_numerator2_trig = sdMass[Trigger2]
         jet_SD_numerator1 = sdMass[condition1]
         jet_SD_numerator2 = sdMass[condition2]
 
         if self.year != 2017:
+            jet_SD_numerator3_trig = sdMass[Trigger3]
+            jet_SD_numerator4_trig = sdMass[Trigger4]
             jet_SD_numerator3 = sdMass[condition3]
             jet_SD_numerator4 = sdMass[condition4]
             
         jet_SD_denominator = sdMass[trigDenom]
         
+        jet_SD_numeratorTrigDict = {
+            '1': jet_SD_numerator1_trig,
+            '2': jet_SD_numerator2_trig
+        }
+        
         jet_SD_numeratorDict = {
             '1': jet_SD_numerator1,
             '2': jet_SD_numerator2
         }
+        
         if self.year != 2017:
+            jet_SD_numeratorTrigDict['3'] = jet_SD_numerator3_trig
+            jet_SD_numeratorTrigDict['4'] = jet_SD_numerator4_trig
             jet_SD_numeratorDict['3'] = jet_SD_numerator3
             jet_SD_numeratorDict['4'] = jet_SD_numerator4
         
@@ -2652,17 +2726,30 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         # ---- Define Categories for Trigger Analysis Numerators and Fill Hists---- #
         for i in range(1, len(ConditionsDict)+1):
             c = ConditionsDict[str(i)]
+            ct = TriggersDict[str(i)]
             n_HT = jet_HT_numeratorDict[str(i)]
             n_SD = jet_SD_numeratorDict[str(i)]
+            nt_HT = jet_HT_numeratorTrigDict[str(i)]
+            nt_SD = jet_SD_numeratorTrigDict[str(i)]
             w = NumWgtDict[str(i)]
-            ttags = [ttagAny[c],ttagI[c]]
-            cats = [ ak.to_awkward0(ak.flatten(t)) for t in ttags ]
-            labels_and_categories = dict(zip(labels_and_categories, cats))
-            for ilabel,icat in labels_and_categories.items():
+            wt = NumWgtTrigDict[str(i)]
+            ttags_cond = [ttagAny[c],ttagI[c]]
+            ttags_trig = [ttagAny[ct],ttagI[ct]]
+            cats_cond = [ ak.to_awkward0(ak.flatten(t)) for t in ttags_cond]
+            cats_trig = [ ak.to_awkward0(ak.flatten(t)) for t in ttags_trig]
+            labels_and_categories_cond = dict(zip(self.ttagcats_forTriggerAnalysis, cats_cond))
+            labels_and_categories_trig = dict(zip(self.ttagcats_forTriggerAnalysis, cats_trig))
+            # print(labels_and_categories_cond)
+            for ilabel,icat in labels_and_categories_cond.items():
                 output['condition' + str(i) + '_numerator'].fill(dataset = dataset, anacat = self.ConvertLabelToInt(self.label_dict, ilabel), 
                                                                 Jet_HT = ak.to_numpy(n_HT[icat]),
                                                                 Jet_sdMass = ak.to_numpy(n_SD[icat]),
                                                                 weight = ak.to_numpy(w[icat]))
+            for ilabel,icat in labels_and_categories_trig.items():
+                output['trigger' + str(i) + '_numerator'].fill(dataset = dataset, anacat = self.ConvertLabelToInt(self.label_dict, ilabel), 
+                                                                Jet_HT = ak.to_numpy(nt_HT[icat]),
+                                                                Jet_sdMass = ak.to_numpy(nt_SD[icat]),
+                                                                weight = ak.to_numpy(wt[icat]))
  
         return output
 
