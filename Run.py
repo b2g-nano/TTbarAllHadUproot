@@ -718,7 +718,7 @@ if UsingDaskExecutor == True and args.casa:
         uploadDir = 'TTbarAllHadUproot'#/CoffeaOutputsForCombine/Coffea_firstRun'
         
         if args.newCluster:
-            cluster = CoffeaCasaCluster(cores=7, memory="10 GiB", death_timeout=TimeOut)
+            cluster = CoffeaCasaCluster(cores=7, memory="5 GiB", death_timeout=TimeOut)
             cluster.adapt(minimum=1, maximum=14)
         else:
             cluster = 'tls://ac-2emalik-2ewilliams-40cern-2ech.dask.cmsaf-prod.flatiron.hollandhpc.org:8786'
