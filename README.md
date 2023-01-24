@@ -55,7 +55,7 @@ The output should look something like this:
 usage: Run.py [-h] [-t | -m | -T | -F RUNFLAVOREFF [RUNFLAVOREFF ...] | -M RUNMMO [RUNMMO ...] | -d RUNDATASET [RUNDATASET ...]] (-C | -L) [-l | -med | -med2016] [-a {yes,no}] [-y {2016,2017,2018,0}]
               [--uproot {1,2}] [--letters LETTERS [LETTERS ...]] [--chunks CHUNKS] [--chunksize CHUNKSIZE] [--save] [--saveMistag] [--saveTrig] [--saveFlav] [--dask] [--newCluster] [--timeout TIMEOUT] [--useEff]
               [--tpt] [--useHist] [--step {1,2,3,4}]
-              [--bTagSyst {central,up,down} | --tTagSyst {central,up,down} | --ttXSSyst {central,up,down} | --lumSyst {central,up,down} | --jec | --jer | --pdf | --pileup {central,up,down}]
+              [--bTagSyst {central,up,down} | --tTagSyst {central,up,down} | --ttXSSyst {central,up,down} | --lumSyst {central,up,down} | --jes | --jer | --pdf | --pileup {central,up,down}]
 
 -----------------------------------------------------------------------------
 Run the TTbarAllHadProcessor script.  
@@ -108,7 +108,7 @@ optional arguments:
                         ttbar cross section systematics. Choose Unc.
   --lumSyst {central,up,down}
                         Luminosity systematics. Choose Unc.
-  --jec                 apply jec systematic weights
+  --jes                 apply jes systematic weights
   --jer                 apply jer systematic weights
   --pdf                 apply pdf systematic weights
   --pileup {central,up,down}
