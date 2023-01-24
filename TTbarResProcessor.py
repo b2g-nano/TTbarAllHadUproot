@@ -43,7 +43,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                  year=None, apv='', vfp='', UseLookUpTables=False, lu=None, extraDaskDirectory='',
                  ModMass=False, RandomDebugMode=False, UseEfficiencies=False, xsSystematicWeight=1., lumSystematicWeight=1.,
                  ApplybtagSF=False, ScaleFactorFile='', ApplyttagSF=False, ApplyTopReweight=False, 
-                 ApplyJER=False, ApplyJEC=False, ApplyPDF=False, sysType=None):
+                 ApplyJer=False, ApplyJes=False, ApplyPdf=False, sysType=None):
         
         self.prng = prng
         self.htCut = htCut
@@ -65,9 +65,9 @@ class TTbarResProcessor(processor.ProcessorABC):
         self.ApplybtagSF = ApplybtagSF # Only apply scale factors when MC efficiencies are being imported in second run of processor
         self.ApplyttagSF = ApplyttagSF
         self.ApplyTopReweight = ApplyTopReweight
-        self.ApplyJEC = ApplyJEC
-        self.ApplyJER = ApplyJER
-        self.ApplyPDF = ApplyPDF
+        self.ApplyJes = ApplyJes
+        self.ApplyJer = ApplyJer
+        self.ApplyPdf = ApplyPdf
         self.sysType = sysType # string for btag SF evaluator --> "central", "up", or "down"
         self.UseEfficiencies = UseEfficiencies
         self.xsSystematicWeight = xsSystematicWeight
@@ -1224,8 +1224,10 @@ class TTbarResProcessor(processor.ProcessorABC):
                 if (self.ApplybtagSF == True) and (self.UseEfficiencies == False):
                     Weights = Weights*Btag_wgts[str(ilabel[-5:-3])]
                     
+                # if self.ApplyJes:
+                #     print("JES not finished yet")
                     
-                if self.ApplyJER:
+                if self.ApplyJer:
                     
                     jerUp, jerDown, jerNom = self.GetJERUncertainties(FatJets, GenJets, events, Weights)
                 
@@ -1250,7 +1252,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                                      weight = ak.to_numpy(Weights_jerDown[icat]),
                                     )
                     
-                if self.ApplyPDF:
+                if self.ApplyPdf:
                     
                     pdfUp, pdfDown, pdfNom = self.GetPDFWeights(events)
                      

@@ -211,7 +211,7 @@ UncertaintyGroup.add_argument('--bTagSyst', type=str, choices=['central', 'up', 
 UncertaintyGroup.add_argument('--tTagSyst', type=str, choices=['central', 'up', 'down'], help='Choose Unc.')
 UncertaintyGroup.add_argument('--ttXSSyst', type=str, choices=['central', 'up', 'down'], help='ttbar cross section systematics.  Choose Unc.')
 UncertaintyGroup.add_argument('--lumSyst', type=str, choices=['central', 'up', 'down'], help='Luminosity systematics.  Choose Unc.')
-UncertaintyGroup.add_argument('--jec', action='store_true', help='apply jec systematic weights')
+UncertaintyGroup.add_argument('--jes', action='store_true', help='apply jes systematic weights')
 UncertaintyGroup.add_argument('--jer', action='store_true', help='apply jer systematic weights')
 UncertaintyGroup.add_argument('--pdf', action='store_true', help='apply pdf systematic weights')
 UncertaintyGroup.add_argument('--pileup', type=str, choices=['central', 'up', 'down'], help='Choose Unc.')
@@ -367,7 +367,7 @@ UncType = ""
 SFfile = ""
 ApplybSF = False
 ApplytSF = False
-ApplyJEC = False
+ApplyJES = False
 ApplyJER = False
 ApplyPDF = False
 xsSystwgt = 1.
@@ -386,7 +386,7 @@ TPT = ''
 if args.tpt:
     TPT = '_TopReweight'
 
-elif args.bTagSyst:
+if args.bTagSyst:
     UncType = "_btagUnc_"
     SystType = args.bTagSyst # string for btag SF evaluator --> "central", "up", or "down"
     ApplybSF = True
@@ -420,22 +420,22 @@ elif args.tTagSyst:
     SystType = args.tTagSyst # string for ttag SF correction --> "central", "up", or "down"
 #    ---------------------------------------------------------------------------------------------------------------------    # 
 
-elif args.jec:
-    ApplyJEC = True
-    UncType = "_jecUnc_"
-    SystType = 'jec' # string for ttag SF correction --> "central", "up", or "down"
+elif args.jes:
+    UncType = "_jesUnc_"
+    # SystType = 'jes' # string for ttag SF correction --> "central", "up", or "down"
+    ApplyJES = True
 #    ---------------------------------------------------------------------------------------------------------------------    # 
 
 elif args.jer:
-    ApplyJER = True
     UncType = "_jerUnc_"
-    SystType = 'jer'
+    # SystType = 'jer'
+    ApplyJER = True
 #    ---------------------------------------------------------------------------------------------------------------------    #
  
 elif args.pdf:
-    ApplyPDF = True
     UncType = "_pdfUnc_"
-    SystType = 'pdf'
+    # SystType = 'pdf'
+    ApplyPDF = True
 #    ---------------------------------------------------------------------------------------------------------------------    # 
 
 elif args.pileup:
@@ -444,10 +444,10 @@ elif args.pileup:
 #    ---------------------------------------------------------------------------------------------------------------------    # 
 
     
-UncArgs = np.array([args.bTagSyst, args.tTagSyst, args.jec, args.jer, args.ttXSSyst, args.lumSyst, args.pileup])
+UncArgs = np.array([args.bTagSyst, args.tTagSyst, args.jes, args.jer, args.ttXSSyst, args.lumSyst, args.pileup])
 SystOpts = np.any(UncArgs) # Check to see if any uncertainty argument is used
 if (not OnlyCreateLookupTables) and (not SystOpts and not args.runMMO) :
-    Parser.error('Only run second uproot job with a Systematic application (like --bTagSyst, --jec, etc.)')
+    Parser.error('Only run second uproot job with a Systematic application (like --bTagSyst, --jes, etc.)')
     quit()
 #    -------------------------------------------------------    # 
 Chunk = [args.chunksize, args.chunks] # [chunksize, maxchunks]
@@ -1257,9 +1257,9 @@ if not OnlyCreateLookupTables and not args.runMMO:
                                                                                        lumSystematicWeight = lumSystwgt,
                                                                                        ApplyTopReweight = args.tpt,
                                                                                        ApplybtagSF=ApplybSF,
-                                                                                       ApplyJEC=ApplyJEC,
-                                                                                       ApplyJER=ApplyJER,
-                                                                                       ApplyPDF=ApplyPDF,
+                                                                                       ApplyJes=ApplyJES,
+                                                                                       ApplyJer=ApplyJER,
+                                                                                       ApplyPdf=ApplyPDF,
                                                                                        sysType=SystType,
                                                                                        ScaleFactorFile=SFfile,
                                                                                        UseEfficiencies=args.useEff,
@@ -1290,9 +1290,9 @@ if not OnlyCreateLookupTables and not args.runMMO:
                                                                                        lumSystematicWeight = lumSystwgt,
                                                                                        ApplyTopReweight = args.tpt,
                                                                                        ApplybtagSF=ApplybSF,
-                                                                                       ApplyJEC=ApplyJEC,
-                                                                                       ApplyJER=ApplyJER,
-                                                                                       ApplyPDF=ApplyPDF,
+                                                                                       ApplyJes=ApplyJES,
+                                                                                       ApplyJer=ApplyJER,
+                                                                                       ApplyPdf=ApplyPDF,
                                                                                        sysType=SystType,
                                                                                        ScaleFactorFile=SFfile,
                                                                                        UseEfficiencies=args.useEff,
@@ -1336,9 +1336,9 @@ if not OnlyCreateLookupTables and not args.runMMO:
                                                                                        lumSystematicWeight = lumSystwgt,
                                                                                        ApplyTopReweight = args.tpt,
                                                                                        ApplybtagSF=ApplybSF,
-                                                                                       ApplyJEC=ApplyJEC,
-                                                                                       ApplyJER=ApplyJER,
-                                                                                       ApplyPDF=ApplyPDF,
+                                                                                       ApplyJes=ApplyJES,
+                                                                                       ApplyJer=ApplyJER,
+                                                                                       ApplyPdf=ApplyPDF,
                                                                                        sysType=SystType,
                                                                                        ScaleFactorFile=SFfile,
                                                                                        UseEfficiencies=args.useEff,
@@ -1369,9 +1369,9 @@ if not OnlyCreateLookupTables and not args.runMMO:
                                                                                        lumSystematicWeight = lumSystwgt,
                                                                                        ApplyTopReweight = args.tpt,
                                                                                        ApplybtagSF=ApplybSF,
-                                                                                       ApplyJEC=ApplyJEC,
-                                                                                       ApplyJER=ApplyJER,
-                                                                                       ApplyPDF=ApplyPDF,
+                                                                                       ApplyJes=ApplyJES,
+                                                                                       ApplyJer=ApplyJER,
+                                                                                       ApplyPdf=ApplyPDF,
                                                                                        sysType=SystType,
                                                                                        ScaleFactorFile=SFfile,
                                                                                        UseEfficiencies=args.useEff,
