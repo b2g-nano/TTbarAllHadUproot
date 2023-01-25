@@ -264,20 +264,20 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
                     title = iset + ' mistag ' + catmap[icat]
 
                     # ---- Info from TTbar ---- # ['numerator'][dataset, icat, sum]
-                    Numerator_tt = Outputs[filestring_prefix+'TTbar']['numerator'].project('jetp')
-                    Denominator_tt = Outputs[filestring_prefix+'TTbar']['denominator'].project('jetp')
-                    # Numerator_tt = Outputs[filestring_prefix+'TTbar']['numerator'][filestring_prefix+'TTbar', icat, sum]
-                    # Denominator_tt = Outputs[filestring_prefix+'TTbar']['denominator'][filestring_prefix+'TTbar', icat, sum]
-                    N_vals_tt = Numerator_tt.values()[()] 
-                    D_vals_tt = Denominator_tt.values()[()] 
+                    # Numerator_tt = Outputs[filestring_prefix+'TTbar']['numerator'].project('jetp')
+                    # Denominator_tt = Outputs[filestring_prefix+'TTbar']['denominator'].project('jetp')
+                    Numerator_tt = Outputs[filestring_prefix+'TTbar']['numerator'][filestring_prefix+'TTbar', icat, :]
+                    Denominator_tt = Outputs[filestring_prefix+'TTbar']['denominator'][filestring_prefix+'TTbar', icat, :]
+                    N_vals_tt = Numerator_tt.view().value
+                    D_vals_tt = Denominator_tt.view().value
 
                     # ---- Info from JetHT datasets ---- #
-                    Numerator = Outputs[iset]['numerator'].project('jetp')
-                    Denominator = Outputs[iset]['denominator'].project('jetp')
-                    # Numerator = Outputs[iset]['numerator'][iset, icat, sum]
-                    # Denominator = Outputs[iset]['denominator'][iset, icat, sum]
-                    N_vals = Numerator.values()[()]
-                    D_vals = Denominator.values()[()]
+                    # Numerator = Outputs[iset]['numerator'].project('jetp')
+                    # Denominator = Outputs[iset]['denominator'].project('jetp')
+                    Numerator = Outputs[iset]['numerator'][iset, icat, :]
+                    Denominator = Outputs[iset]['denominator'][iset, icat, :]
+                    N_vals = Numerator.view().value
+                    D_vals = Denominator.view().value
 
                     # ---- Properly scale chunks of data and ttbar MC according to year of dataset used---- #
                     if '2016' in iset:
@@ -338,10 +338,10 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
                 # print('\t\tfileset: ' + iset + '\n*****************************************************\n')
                 for icat in list_of_ints:
                     filename = 'mistag_' + iset + '_' + catmap[icat] + '.' + 'csv'
-                    Numerator = Outputs[iset]['numerator'].project('jetp')
-                    Denominator = Outputs[iset]['denominator'].project('jetp')
-                    N_vals = Numerator.values()[()]
-                    D_vals = Denominator.values()[()]
+                    Numerator = Outputs[iset]['numerator'][iset, icat, :]
+                    Denominator = Outputs[iset]['denominator'][iset, icat, :]
+                    N_vals = Numerator.view().value
+                    D_vals = Denominator.view().value
                     # print(N_vals)
                     # print(D_vals)
                     # print()
