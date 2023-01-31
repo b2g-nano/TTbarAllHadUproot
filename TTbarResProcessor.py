@@ -815,7 +815,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         # antitag = ttbarcands.slot0.deepTag_TvsQCD < self.deepAK8Cut # The Probe jet will always be ttbarcands.slot1 (at)
         
         # ---- Define "Top Tag" Regions ---- #
-        antitag_probe = np.logical_and(antitag, ttag_s1) # Found an antitag and ttagged probe pair for mistag rate (Probet)
+        antitag_probe = np.logical_and(antitag, ttag_s1) # Found an antitag and ttagged probe pair for mistag rate (AT&Pt)
         pretag =  ttag_s0 # Only jet0 (pret)
         ttag0 =   (~ttag_s0) & (~ttag_s1) # No tops tagged (0t)
         ttag1 =   ttag_s0 ^ ttag_s1 # Exclusively one top tagged (1t)
@@ -1053,7 +1053,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         regs = [cen,fwd]
         btags = [btag0,btag1,btag2]
         ttags = [antitag_probe,antitag,pretag,ttag0,ttag1,ttagI,ttag2,Alltags]
-        cats = [ ak.to_awkward0(ak.flatten(t&b&y)) for t,b,y in itertools.product( ttags, btags, regs) ]
+        cats = [ ak.to_awkward0(ak.flatten(t&b&y)) for t,b,y in itertools.product(ttags, btags, regs) ]
         labels_and_categories = dict(zip( self.anacats, cats ))
         # labels_and_categories = dict(zip(self.label_dict.keys(), cats))
         # print(labels_and_categories)
@@ -1159,40 +1159,39 @@ class TTbarResProcessor(processor.ProcessorABC):
             ###---------------------------------------------------------------------------------------------###
             ### ----------------------------------- Mod-mass Procedure ------------------------------------ ###
             ###---------------------------------------------------------------------------------------------###
-            if (self.ModMass == True and (isData or ('TTbar' in dataset))) and (ilabel == 'pret'): # Make sure this is only applied to pre-tag region's jet1
+            if (self.ModMass == True and (isData or ('TTbar' in dataset))) and ('pret' in ilabel or 'at' in ilabel): # Make sure this is only applied to pre-tag region's jet1 for bkg est and anti-tag region for closure test
                 QCD_hist = None # Higher scope declaration
                 if self.year > 0:
                     QCD_unweighted = util.load(self.extraDaskDirectory+'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/QCD/'
                                                +self.BDirect+str(self.year)+'/'+self.apv+'/TTbarRes_0l_UL'+str(self.year-2000)+self.vfp+'_QCD.coffea') 
                     # ---- Define Histogram ---- #
                     # QCD_hist = QCD_unweighted['jetmass'].integrate('anacat', '2t' + str(ilabel[-5:]))
-                    QCD_hist = QCD_unweighted['jetmass'][{'anacat':self.ConvertLabelToInt(self.label_dict, '2t' + str(ilabel[-5:]))}]
+                    loaded_dataset = 'UL'+str(self.year-2000)+self.vfp+'_QCD'
+                    QCD_hist = QCD_unweighted['jetmass'][loaded_dataset, self.ConvertLabelToInt(self.label_dict, '2t' + str(ilabel[-5:])), :]
                     
                 else: # All years !NOTE: Needs to be fixed for all years later!
                     QCD_unwgt_2016 = util.load(self.extraDaskDirectory+'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/QCD/'
-                                               +self.BDirect+str(self.year)+'/'+self.apv+'/TTbarRes_0l_UL2016'+self.vfp+'_QCD.coffea') 
-                    QCD_unwgt_2017 = util.load(self.extraDaskDirectory+'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/QCD/'
-                                               +self.BDirect+str(self.year)+'/'+self.apv+'/TTbarRes_0l_UL2017'+self.vfp+'_QCD.coffea') 
-                    QCD_unwgt_2018 = util.load(self.extraDaskDirectory+'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/QCD/'
-                                               +self.BDirect+str(self.year)+'/'+self.apv+'/TTbarRes_0l_UL2018'+self.vfp+'_QCD.coffea') 
+                                               +self.BDirect+'2016/'+self.apv+'/TTbarRes_0l_UL16'+self.vfp+'_QCD.coffea') 
+                    # QCD_unwgt_2017 = util.load(self.extraDaskDirectory+'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/QCD/'
+                    #                            +self.BDirect+'2017/'+self.apv+'/TTbarRes_0l_UL17'+self.vfp+'_QCD.coffea') 
+                    # QCD_unwgt_2018 = util.load(self.extraDaskDirectory+'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/QCD/'
+                    #                            +self.BDirect+'2018/'+self.apv+'/TTbarRes_0l_UL18'+self.vfp+'_QCD.coffea') 
                     
                     # ---- Define Histogram ---- #
                     # QCD_hist_2016 = QCD_unwgt_2016['jetmass'].integrate('anacat', '2t' + str(ilabel[-5:]))#.integrate('dataset', 'QCD')
                     # QCD_hist_2017 = QCD_unwgt_2017['jetmass'].integrate('anacat', '2t' + str(ilabel[-5:]))#.integrate('dataset', 'QCD')
                     # QCD_hist_2018 = QCD_unwgt_2018['jetmass'].integrate('anacat', '2t' + str(ilabel[-5:]))#.integrate('dataset', 'QCD')
-                    QCD_hist_2016 = QCD_unwgt_2016['jetmass'][{'anacat':self.ConvertLabelToInt(self.label_dict, '2t' + str(ilabel[-5:]))}]
-                    QCD_hist_2017 = QCD_unwgt_2017['jetmass'][{'anacat':self.ConvertLabelToInt(self.label_dict, '2t' + str(ilabel[-5:]))}]
-                    QCD_hist_2018 = QCD_unwgt_2018['jetmass'][{'anacat':self.ConvertLabelToInt(self.label_dict, '2t' + str(ilabel[-5:]))}]
+                    QCD_hist_2016 = QCD_unwgt_2016['jetmass']['UL16'+self.vfp+'_QCD', self.ConvertLabelToInt(self.label_dict, '2t' + str(ilabel[-5:])), :]
+                    # QCD_hist_2017 = QCD_unwgt_2017['jetmass']['UL17'+self.vfp+'_QCD', self.ConvertLabelToInt(self.label_dict, '2t' + str(ilabel[-5:])), :]
+                    # QCD_hist_2018 = QCD_unwgt_2018['jetmass']['UL18'+self.vfp+'_QCD', self.ConvertLabelToInt(self.label_dict, '2t' + str(ilabel[-5:])), :]
                     
                     QCD_hist = QCD_hist_2016.copy()
-                    QCD_hist.add(QCD_hist_2017)
-                    QCD_hist.add(QCD_hist_2018)
+                    # QCD_hist.add(QCD_hist_2017)
+                    # QCD_hist.add(QCD_hist_2018)
                     
                 # ---- Extract event counts from QCD MC hist in signal region ---- #
                 # data = QCD_hist.values() # Dictionary of values
-                data = QCD_hist.view()
-
-                QCD_data = [i for i in data.view()][0] # place every element of the dictionary into a numpy array
+                QCD_data = QCD_hist.view().value
 
                 # ---- Re-create Bins from QCD_hist as Numpy Array ---- #
                 bins = np.arange(510) #Re-make bins from the jetmass_axis starting with the appropriate range
