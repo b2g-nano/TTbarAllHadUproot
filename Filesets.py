@@ -262,9 +262,35 @@ def CollectDatasets(redirector_str):
         else:
             with open(filedir + 'SingleMu/' + filename) as h:
                 singlemudatafiles2018 = [redirector_str + s.strip() for s in h.readlines()] 
+    
+        if 'Run2017B' in filename:
+            with open(filedir + 'SingleMu/' + filename) as b:
+                singlemudatafiles2017b = [redirector_str + s.strip() for s in b.readlines()] 
+        elif 'Run2017C' in filename:
+            with open(filedir + 'SingleMu/' + filename) as c:
+                singlemudatafiles2017c = [redirector_str + s.strip() for s in c.readlines()] 
+        elif 'Run2017D' in filename:
+            with open(filedir + 'SingleMu/' + filename) as d:
+                singlemudatafiles2017d = [redirector_str + s.strip() for s in d.readlines()]
+        elif 'Run2017E' in filename:
+            with open(filedir + 'SingleMu/' + filename) as e:
+                singlemudatafiles2017e = [redirector_str + s.strip() for s in e.readlines()]
+        elif 'Run2017F' in filename:
+            with open(filedir + 'SingleMu/' + filename) as f:
+                singlemudatafiles2017f = [redirector_str + s.strip() for s in f.readlines()]
+        
+                
     filesets['SingleMu2016_Data'] = singlemudatafiles2016            
     filesets['SingleMu2017_Data'] = singlemudatafiles2017
-    filesets['SingleMu2018_Data'] = singlemudatafiles2018  
+    filesets['SingleMu2018_Data'] = singlemudatafiles2018 
+    singlemudatafiles = singlemudatafiles2016 + singlemudatafiles2017 + singlemudatafiles2018 # All data
+    filesets['SingleMu_Data'] = singlemudatafiles
+    
+    filesets['SingleMu2017B_Data'] = singlemudatafiles2017b            
+    filesets['SingleMu2017C_Data'] = singlemudatafiles2017c
+    filesets['SingleMu2017D_Data'] = singlemudatafiles2017d
+    filesets['SingleMu2017E_Data'] = singlemudatafiles2017e           
+    filesets['SingleMu2017F_Data'] = singlemudatafiles2017f
     
     return filesets
 

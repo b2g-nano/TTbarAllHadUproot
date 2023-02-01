@@ -490,8 +490,9 @@ if not Testing:
                         filesets_to_run['JetHT'+str(args.year)+L+'_Data'] = filesets['JetHT'+str(args.year)+L+'_Data'] # include JetHT dataset read in from Filesets
                         SaveLocation['JetHT'+str(args.year)+L+'_Data'] = 'JetHT/' + BDiscDirectory + str(args.year) + '/TTbarRes_0l_' # file where output will be saved
                 elif ('SingleMu' in a): 
-                    filesets_to_run['SingleMu'+str(args.year)+'_Data'] = filesets['SingleMu'+str(args.year)+'_Data'] # include JetHT dataset read in from Filesets
-                    SaveLocation['SingleMu'+str(args.year)+'_Data'] = 'SingleMu/' + BDiscDirectory + str(args.year) + '/TTbarRes_0l_' # file where output will be saved
+                    for L in Letters:
+                        filesets_to_run['SingleMu'+str(args.year)+L+'_Data'] = filesets['SingleMu'+str(args.year)+L+'_Data'] # include JetHT dataset read in from Filesets
+                        SaveLocation['SingleMu'+str(args.year)+L+'_Data'] = 'SingleMu/' + BDiscDirectory + str(args.year) + '/TTbarRes_0l_' # file where output will be saved
             else: # All Years
                 if ('JetHT' in a): 
                     filesets_to_run['JetHT_Data'] = filesets['JetHT_Data'] # include JetHT dataset read in from Filesets
@@ -676,8 +677,9 @@ if not Testing:
             SaveLocation['JetHT_Data'] = 'JetHT/' + BDiscDirectory + '/TTbarRes_0l_'
     elif isTrigEffArg: # just run over data
         if args.year > 0:
-            filesets_to_run['SingleMu'+str(args.year)+'_Data'] = filesets['SingleMu'+str(args.year)+'_Data']
-            SaveLocation['SingleMu'+str(args.year)+'_Data'] = 'SingleMu/' + BDiscDirectory + str(args.year) + '/TTbarRes_0l_'
+            for L in Letters:
+                filesets_to_run['SingleMu'+str(args.year)+L+'_Data'] = filesets['SingleMu'+str(args.year)+L+'_Data'] # include JetHT dataset read in from Filesets
+                SaveLocation['SingleMu'+str(args.year)+L+'_Data'] = 'SingleMu/' + BDiscDirectory + str(args.year) + '/TTbarRes_0l_'
         else:
             filesets_to_run['SingleMu_Data'] = filesets['SingleMu_Data']
             SaveLocation['SingleMu_Data'] = 'SingleMu/' + BDiscDirectory + '/TTbarRes_0l_'
