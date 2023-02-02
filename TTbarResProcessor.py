@@ -91,7 +91,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         dataset_axis = hist.axis.StrCategory([], growth=True, name="dataset", label="Primary Dataset")
 
         # map analysis categories to array #
-        cats_axis = hist.axis.Regular(48, 0, 47, name="anacat", label="Analysis Category")
+        cats_axis = hist.axis.StrCategory(range(48), name="anacat", label="Analysis Category")
 
         # axes for jets and ttbar candidates #
         ttbarmass_axis = hist.axis.Regular(50, 800, 8000, name="ttbarmass", label=r"$m_{t\bar{t}}$ [GeV]")
@@ -1159,7 +1159,7 @@ class TTbarResProcessor(processor.ProcessorABC):
             ###---------------------------------------------------------------------------------------------###
             ### ----------------------------------- Mod-mass Procedure ------------------------------------ ###
             ###---------------------------------------------------------------------------------------------###
-            if (self.ModMass == True and (isData or ('TTbar' in dataset))) and ('pret' in ilabel or 'at' in ilabel): # Make sure this is only applied to pre-tag region's jet1 for bkg est and anti-tag region for closure test
+            if (self.ModMass == True and (isData or ('TTbar' in dataset))):
                 QCD_hist = None # Higher scope declaration
                 if self.year > 0:
                     QCD_unweighted = util.load(self.extraDaskDirectory+'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/QCD/'
