@@ -91,7 +91,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         dataset_axis = hist.axis.StrCategory([], growth=True, name="dataset", label="Primary Dataset")
 
         # map analysis categories to array #
-        cats_axis = hist.axis.StrCategory(range(48), name="anacat", label="Analysis Category")
+        cats_axis = hist.axis.IntCategory(range(48), name="anacat", label="Analysis Category")
 
         # axes for jets and ttbar candidates #
         ttbarmass_axis = hist.axis.Regular(50, 800, 8000, name="ttbarmass", label=r"$m_{t\bar{t}}$ [GeV]")
