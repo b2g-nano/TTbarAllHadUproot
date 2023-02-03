@@ -234,13 +234,14 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
         ttbar_sf = 1.
 
         if 'UL16' and 'TTbar' in Outputs.items():
-            ttbar2016_sf = ttbar_xs*Lum2016/Outputs['UL16'+VFP+'_TTbar']['cutflow']['sumw']
+            ttbar2016_sf = ttbar_xs*ttbar_BR*Lum2016/Outputs['UL16'+VFP+'_TTbar']['cutflow']['sumw']
+            print('\n\nProperly Scaled 2016 ttbar simulation\n\n')
         if 'UL17' and 'TTbar' in Outputs.items():
-            ttbar2017_sf = ttbar_xs*Lum2017/Outputs['UL17'+VFP+'_TTbar']['cutflow']['sumw']
+            ttbar2017_sf = ttbar_xs*ttbar_BR*Lum2017/Outputs['UL17'+VFP+'_TTbar']['cutflow']['sumw']
         if 'UL18' and 'TTbar' in Outputs.items():
-            ttbar2018_sf = ttbar_xs*Lum2018/Outputs['UL18'+VFP+'_TTbar']['cutflow']['sumw']
+            ttbar2018_sf = ttbar_xs*ttbar_BR*Lum2018/Outputs['UL18'+VFP+'_TTbar']['cutflow']['sumw']
         if ('TTbar' in Outputs.items()) and (Year == 0):
-            ttbar_sf = ttbar_xs*Lum/Outputs[VFP+'_TTbar']['cutflow']['all events']
+            ttbar_sf = ttbar_xs*ttbar_BR*Lum/Outputs[VFP+'_TTbar']['cutflow']['all events']
 
     #     -------------------------------------------------------------------------------------------
     #     M     M IIIIIII   SSSSS TTTTTTT    A    GGGGGGG     RRRRRR     A    TTTTTTT EEEEEEE   SSSSS     
@@ -313,7 +314,7 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
                     mistag_vals = np.where(D_vals_diff > 0, N_vals_diff/D_vals_diff, 0)
 
                     # ---- Define Momentum values ---- #
-                    p_vals = pd.IntervalIndex.from_tuples([(400, 500), (500, 600), (600, 800), (800, 1000), (1000, 1500), (1500, 2000), (2000, 3000), (3000, 7000), (7000, 10000), ])
+                    p_vals = pd.IntervalIndex.from_tuples([(400, 500), (500, 600), (600, 800), (800, 1000), (1000, 1500), (1500, 2000), (2000, 3000), (3000, 7000), (7000, 10000)])
                     # for iden in : #Find a new way to not have this hard-coded
                     #     p_vals.append(iden)
 
@@ -349,7 +350,7 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
                     # print(mistag_vals)
 
                     # p_vals = [] # Momentum values
-                    p_vals = pd.IntervalIndex.from_tuples([(400, 500), (500, 600), (600, 800), (800, 1000), (1000, 1500), (1500, 2000), (2000, 3000), (3000, 7000), (7000, 10000), ])
+                    p_vals = pd.IntervalIndex.from_tuples([(400, 500), (500, 600), (600, 800), (800, 1000), (1000, 1500), (1500, 2000), (2000, 3000), (3000, 7000), (7000, 10000)])
                     # for iden in Numerator.identifiers():
                     #     p_vals.append(iden)
                     # print('fileset:  ' + iset)
