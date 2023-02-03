@@ -43,7 +43,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                  year=None, apv='', vfp='', UseLookUpTables=False, lu=None, extraDaskDirectory='',
                  ModMass=False, RandomDebugMode=False, UseEfficiencies=False, xsSystematicWeight=1., lumSystematicWeight=1.,
                  ApplybtagSF=False, ScaleFactorFile='', ApplyttagSF=False, ApplyTopReweight=False, 
-                 ApplyJer=False, ApplyJes=False, ApplyPdf=False, sysType=None):
+                 ApplyJer=False, ApplyJes=False, ApplyJec=False, ApplyPdf=False, sysType=None):
         
         self.prng = prng
         self.htCut = htCut
@@ -67,6 +67,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         self.ApplyTopReweight = ApplyTopReweight
         self.ApplyJes = ApplyJes
         self.ApplyJer = ApplyJer
+        self.ApplyJec = ApplyJec
         self.ApplyPdf = ApplyPdf
         self.sysType = sysType # string for btag SF evaluator --> "central", "up", or "down"
         self.UseEfficiencies = UseEfficiencies
@@ -414,31 +415,85 @@ class TTbarResProcessor(processor.ProcessorABC):
         return EffStuff
     
     
-    def GetJERUncertainties(self, FatJets, GenJets, events, Weights):
+    
+    
+    def GetJECUncertainties(self, FatJets, GenJets, events, Weights):
+        
+        # https://gitlab.cern.ch/gagarwal/ttbardileptonic/-/blob/master/jmeCorrections.py
         
         ext = extractor()
-        ext.add_weight_sets([
-            "* * TTbarAllHadUproot/data/Fall17_17Nov2017_V32_MC_L2Relative_AK4PFPuppi.jec.txt",
-            "* * TTbarAllHadUproot/data/Fall17_17Nov2017_V32_MC_Uncertainty_AK4PFPuppi.junc.txt",
-        ])
+        
+        if self.year == '2016':
+            
+            jec_tag="Summer19UL16_V5_MC"
+            jec_tag_data={
+            "RunF": "Summer19UL16_RunFGH_V7_DATA",
+            "RunG": "Summer19UL16_RunFGH_V7_DATA",
+            "RunH": "Summer19UL16_RunFGH_V7_DATA",
+            }
+            jer_tag = "Summer20UL16_JRV3_MC"
+            
+            
+        if self.year == '2017':
+            jec_tag="Summer19UL17_V5_MC"
+            jec_tag_data={
+                "RunB": "Summer19UL17_RunB_V5_DATA",
+                "RunC": "Summer19UL17_RunC_V5_DATA",
+                "RunD": "Summer19UL17_RunD_V5_DATA",
+                "RunE": "Summer19UL17_RunE_V5_DATA",
+                "RunF": "Summer19UL17_RunF_V5_DATA",
+            }
+            jer_tag = "Summer19UL17_JRV2_MC"
+            
+            
+        if self.year == 2018:
+         
+            jec_tag="Summer19UL16_V5_MC"
+            jec_tag_data={
+                "RunF": "Summer19UL16_RunFGH_V7_DATA",
+                "RunG": "Summer19UL16_RunFGH_V7_DATA",
+                "RunH": "Summer19UL16_RunFGH_V7_DATA",
+            }
+            jer_tag = "Summer20UL16_JRV3_MC"
+
+        
+        
+        
+        tags = []
+        for run, tag in jec_tag_data.items():
+            if not (tag in tags): # to remove duplicates
+                ext.add_weight_sets([
+                '* * data/JEC/{0}/{0}_L1FastJet_AK4PFchs.txt'.format(tag),
+                '* * data/JEC/{0}/{0}_L2Relative_AK4PFchs.txt'.format(tag),
+                '* * data/JEC/{0}/{0}_L3Absolute_AK4PFchs.txt'.format(tag),
+                '* * data/JEC/{0}/{0}_L2L3Residual_AK4PFchs.txt'.format(tag),
+                ])
+                tags += [tag]
+
+    
         ext.finalize()
-
-        jec_stack_names = [
-            "Fall17_17Nov2017_V32_MC_L2Relative_AK4PFPuppi",
-            "Fall17_17Nov2017_V32_MC_Uncertainty_AK4PFPuppi"
-        ]
-
         evaluator = ext.make_evaluator()
+        
+        jec_names={}
+        for run, tag in jec_tag_data.items():
+            jec_names[run] = [
+                '{0}_L1FastJet_AK4PFchs'.format(tag),
+                '{0}_L3Absolute_AK4PFchs'.format(tag),
+                '{0}_L2Relative_AK4PFchs'.format(tag),
+                '{0}_L2L3Residual_AK4PFchs'.format(tag),]
+            
+            
+        jec_inputs = {name: evaluator[name] for name in jec_names}
+        jec_stack_names = JECStack[jec_inputs]
+        
+        # jec_stack_names = [
+        #     "Fall17_17Nov2017_V32_MC_L2Relative_AK4PFPuppi",
+        #     "Fall17_17Nov2017_V32_MC_Uncertainty_AK4PFPuppi"
+        # ]
 
         jec_inputs = {name: evaluator[name] for name in jec_stack_names}
         jec_stack = JECStack(jec_inputs)
-
-        name_map = jec_stack.blank_name_map
-        name_map['JetPt'] = 'pt'
-        name_map['JetMass'] = 'mass'
-        name_map['JetEta'] = 'eta'
-        name_map['JetA'] = 'area'
-
+        
         
         # match gen jets to AK4 jets
         matched_genjet_index = ak.mask(FatJets.genJetIdx, (FatJets.genJetIdx != -1) & (FatJets.genJetIdx < ak.count(GenJets.pt, axis=1)))
@@ -448,20 +503,24 @@ class TTbarResProcessor(processor.ProcessorABC):
         FatJets['mass_raw'] = (1 - FatJets['rawFactor']) * FatJets['mass']
         FatJets['pt_gen'] = matched_GenJet_pt
         FatJets['rho'] = ak.broadcast_arrays(events.fixedGridRhoFastjetAll, FatJets.pt)[0]
-        
+
+        name_map = jec_stack.blank_name_map
+        name_map['JetPt'] = 'pt'
+        name_map['JetMass'] = 'mass'
+        name_map['JetEta'] = 'eta'
+        name_map['JetA'] = 'area'
         name_map['ptGenJet'] = 'pt_gen'
         name_map['ptRaw'] = 'pt_raw'
         name_map['massRaw'] = 'mass_raw'
         name_map['Rho'] = 'rho'
-
-
+        
         events_cache = events.caches[0]
-        corrector = FactorizedJetCorrector(
-            Fall17_17Nov2017_V32_MC_L2Relative_AK4PFPuppi=evaluator['Fall17_17Nov2017_V32_MC_L2Relative_AK4PFPuppi'],
-        )
-        uncertainties = JetCorrectionUncertainty(
-            Fall17_17Nov2017_V32_MC_Uncertainty_AK4PFPuppi=evaluator['Fall17_17Nov2017_V32_MC_Uncertainty_AK4PFPuppi']
-        )
+        # corrector = FactorizedJetCorrector(
+        #     Fall17_17Nov2017_V32_MC_L2Relative_AK4PFPuppi=evaluator['Fall17_17Nov2017_V32_MC_L2Relative_AK4PFPuppi'],
+        # )
+        # uncertainties = JetCorrectionUncertainty(
+        #     Fall17_17Nov2017_V32_MC_Uncertainty_AK4PFPuppi=evaluator['Fall17_17Nov2017_V32_MC_Uncertainty_AK4PFPuppi']
+        # )
 
         jet_factory = CorrectedJetsFactory(name_map, jec_stack)
         corrected_jets = jet_factory.build(FatJets, lazy_cache=events_cache)
@@ -1227,29 +1286,29 @@ class TTbarResProcessor(processor.ProcessorABC):
                 # if self.ApplyJes:
                 #     print("JES not finished yet")
                     
-                if self.ApplyJer:
+                if self.ApplyJec:
                     
-                    jerUp, jerDown, jerNom = self.GetJERUncertainties(FatJets, GenJets, events, Weights)
+                    jecUp, jecDown, jecNom = self.GetJECUncertainties(FatJets, GenJets, events, Weights)
                 
-                    Weights_jerUp = ak.flatten(Weights * jerUp)
-                    Weights_jerDown = ak.flatten(Weights * jerDown)
-                    Weights_jerNom = ak.flatten(Weights * jerNom)
+                    Weights_jecUp = ak.flatten(Weights * jerUp)
+                    Weights_jecDown = ak.flatten(Weights * jerDown)
+                    Weights_jecNom = ak.flatten(Weights * jerNom)
                     
                         
                     output['ttbarmass_jerNom'].fill(dataset = dataset,
                                      anacat = self.ConvertLabelToInt(self.label_dict, ilabel),
                                      ttbarmass = ak.to_numpy(ttbarmass[icat]),
-                                     weight = ak.to_numpy(Weights_jerNom[icat]),
+                                     weight = ak.to_numpy(Weights_jecNom[icat]),
                                     )
                     output['ttbarmass_jerUp'].fill(dataset = dataset,
                                      anacat = self.ConvertLabelToInt(self.label_dict, ilabel),
                                      ttbarmass = ak.to_numpy(ttbarmass[icat]),
-                                     weight = ak.to_numpy(Weights_jerUp[icat]),
+                                     weight = ak.to_numpy(Weights_jecUp[icat]),
                                     )
                     output['ttbarmass_jerDown'].fill(dataset = dataset,
                                      anacat = self.ConvertLabelToInt(self.label_dict, ilabel),
                                      ttbarmass = ak.to_numpy(ttbarmass[icat]),
-                                     weight = ak.to_numpy(Weights_jerDown[icat]),
+                                     weight = ak.to_numpy(Weights_jecDown[icat]),
                                     )
                     
                 if self.ApplyPdf:
