@@ -120,7 +120,7 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
     bdiscDirectory  --> string; Directory path for chosen b discriminator
     Year            --> Integer for the year of datasets used in the 1st uproot run
     VFP             --> string; either preVFP or postVFP
-    RemoveContam    --> bool; Remove the ttbar contamination from mistag when selecting --mistag option in TTbarResCoffeaOutputs.py
+    RemoveContam    --> bool; Remove the ttbar contamination from mistag when selecting --mistag option in Run.py
     ListOfLetters   --> List; List of the letters corresponding to each run year (if that was chosen for the processor run)
     Save            --> bool; Save mistag rates or not
     '''
@@ -232,16 +232,21 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
         ttbar2017_sf = 1.
         ttbar2018_sf = 1.
         ttbar_sf = 1.
-
-        if 'UL16' and 'TTbar' in Outputs.items():
-            ttbar2016_sf = ttbar_xs*ttbar_BR*Lum2016/Outputs['UL16'+VFP+'_TTbar']['cutflow']['sumw']
+        # print(Outputs.keys())
+        if 'UL16'+VFP+'_TTbar' in Outputs.keys():
+            ttbar2016_sf = ttbar_xs*Lum2016/Outputs['UL16'+VFP+'_TTbar']['cutflow']['sumw']
             print('\n\nProperly Scaled 2016 ttbar simulation\n\n')
-        if 'UL17' and 'TTbar' in Outputs.items():
-            ttbar2017_sf = ttbar_xs*ttbar_BR*Lum2017/Outputs['UL17'+VFP+'_TTbar']['cutflow']['sumw']
-        if 'UL18' and 'TTbar' in Outputs.items():
-            ttbar2018_sf = ttbar_xs*ttbar_BR*Lum2018/Outputs['UL18'+VFP+'_TTbar']['cutflow']['sumw']
-        if ('TTbar' in Outputs.items()) and (Year == 0):
-            ttbar_sf = ttbar_xs*ttbar_BR*Lum/Outputs[VFP+'_TTbar']['cutflow']['all events']
+        elif 'UL17'+VFP+'_TTbar' in Outputs.keys():
+            ttbar2017_sf = ttbar_xs*Lum2017/Outputs['UL17'+VFP+'_TTbar']['cutflow']['sumw']
+            print('\n\nProperly Scaled 2017 ttbar simulation\n\n')
+        elif 'UL18'+VFP+'_TTbar' in Outputs.keys():
+            ttbar2018_sf = ttbar_xs*Lum2018/Outputs['UL18'+VFP+'_TTbar']['cutflow']['sumw']
+            print('\n\nProperly Scaled 2018 ttbar simulation\n\n')
+        elif ('TTbar' in Outputs.items()) and (Year == 0):
+            ttbar_sf = ttbar_xs*Lum/Outputs[VFP+'_TTbar']['cutflow']['all events']
+            print('\n\nProperly Scaled All Years of ttbar simulation\n\n')
+        else:
+            print('\n\nNO TTBAR SIMULATION FOUND IN RUN\n\n')
 
     #     -------------------------------------------------------------------------------------------
     #     M     M IIIIIII   SSSSS TTTTTTT    A    GGGGGGG     RRRRRR     A    TTTTTTT EEEEEEE   SSSSS     
@@ -314,25 +319,23 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
                     mistag_vals = np.where(D_vals_diff > 0, N_vals_diff/D_vals_diff, 0)
 
                     # ---- Define Momentum values ---- #
-                    p_vals = pd.IntervalIndex.from_tuples([(400, 500), (500, 600), (600, 800), (800, 1000), (1000, 1500), (1500, 2000), (2000, 3000), (3000, 7000), (7000, 10000)])
-                    # for iden in : #Find a new way to not have this hard-coded
-                    #     p_vals.append(iden)
+                    p_vals = []
+                    for iden in Numerator.axes['jetp']:
+                        p_vals.append(iden)
 
                     # ---- Display and Save Dataframe, df, as Look-up Table ---- #
-                    # print('fileset:  ' + iset + '_ttContaminationRemoved')
-                    # print('category: ' + icat)
-                    # print('________________________________________________\n')
+                    print('fileset:  ' + iset + '_ttContaminationRemoved')
+                    print('category: ' + catmap[icat])
+                    print('________________________________________________\n')
 
                     d = {'p': p_vals, 'M(p)': mistag_vals} # 'data'
-
-                    # print("d vals = ", d)
-                    # print()
+                    
                     df = pd.DataFrame(data=d)
                     luts[iset][catmap[icat]] = df
 
-                    # with pd.option_context('display.max_rows', None, 'display.max_columns', None): 
-                    #     print(df)
-                    # print('\n')
+                    with pd.option_context('display.max_rows', None, 'display.max_columns', None): 
+                        print(df)
+                    print('\n')
                     if Save:
                         df.to_csv(SaveDirectory+filename) # use later to collect bins and weights for re-scaling
             else: # Make mistag rate of any dataset that was run in the 1st uproot job
@@ -349,10 +352,9 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
                     mistag_vals = np.where(D_vals > 0, N_vals/D_vals, 0)
                     # print(mistag_vals)
 
-                    # p_vals = [] # Momentum values
-                    p_vals = pd.IntervalIndex.from_tuples([(400, 500), (500, 600), (600, 800), (800, 1000), (1000, 1500), (1500, 2000), (2000, 3000), (3000, 7000), (7000, 10000)])
-                    # for iden in Numerator.identifiers():
-                    #     p_vals.append(iden)
+                    p_vals = [] # Momentum values
+                    for iden in Numerator.axes['jetp']:
+                        p_vals.append(iden)
                     # print('fileset:  ' + iset)
                     # print('category: ' + icat)
                     # print('________________________________________________\n')
@@ -371,7 +373,7 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
                         df.to_csv(SaveDirectory+filename) # use later to collect bins and weights for re-scaling
 
     # print(luts)
-    return(luts)
+    # return(luts)
 
 # def CreateMCEfficiencyLUTS(flavor, Outputs, bdiscDirectory, Save):
 #     """
