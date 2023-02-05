@@ -232,7 +232,7 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
         ttbar2017_sf = 1.
         ttbar2018_sf = 1.
         ttbar_sf = 1.
-        # print(Outputs.keys())
+        
         if 'UL16'+VFP+'_TTbar' in Outputs.keys():
             ttbar2016_sf = ttbar_xs*Lum2016/Outputs['UL16'+VFP+'_TTbar']['cutflow']['sumw']
             print('\n\nProperly Scaled 2016 ttbar simulation\n\n')
@@ -374,58 +374,3 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
 
     # print(luts)
     # return(luts)
-
-# def CreateMCEfficiencyLUTS(flavor, Outputs, bdiscDirectory, Save):
-#     """
-#     flavor          --> string; b, c, udsg
-#     Outputs         --> Dictionary of uproot outputs from flavor run (uproot 1)
-#     bdiscDirectory  --> string; Directory path for chosen b discriminator
-#     Save            --> bool; Save mistag rates or not
-#     """
-    
-#     # if Year != 0:
-#     #     filestring_prefix = 'UL' + str(Year-2000) + VFP + '_'
-#     # else:
-#     #     filestring_prefix = ''
-    
-#     list_of_subjets = ['s01', 's02', 's11', 's12']
-#     SaveDirectory = maindirectory + '/TTbarAllHadUproot/FlavorTagEfficiencies/' + bdiscDirectory + flavor + 'tagEfficiencyTables/'
-#     DoesDirectoryExist(SaveDirectory)
-    
-#     for dataset,output in Outputs.items():
-#         for subjet in list_of_subjets:
-
-#             eff_numerator = output[flavor + '_eff_numerator_' + subjet + binwidth].integrate('dataset', dataset)
-#             eff_denominator = output[flavor + '_eff_denominator_' + subjet + binwidth].integrate('dataset', dataset)
-
-#             eff = plotratio2d(eff_numerator, eff_denominator) #ColormeshArtists object
-
-#             eff_data = eff[0].get_array().data # This is what goes into pandas dataframe
-#             eff_data = np.nan_to_num(eff_data, nan=0.0)
-            
-#             # ---- Define pt and eta bins from the numerator or denominator hist objects ---- #
-#             pt_bins = []
-#             eta_bins = []
-
-#             for iden in eff_numerator.identifiers('subjetpt'):
-#                 pt_bins.append(iden)
-#             for iden in eff_numerator.identifiers('subjeteta'):
-#                 eta_bins.append(iden)
-
-#             # ---- Define the Efficiency List as a Pandas Dataframe ---- #
-#             EfficiencyList = pd.DataFrame(
-#                                 eff_data,
-#                                 pd.MultiIndex.from_product( [pt_bins, eta_bins], names=['pt', 'eta'] ),
-#                                 ['efficiency']
-#                             )
-
-#             # ---- Save the Efficiency List as .csv ---- #
-#             if Save:
-#                 filename = dataset + '_' + subjet + '_' + flavor + 'tageff.csv'
-#                 EfficiencyList.to_csv(SaveDirectory+filename)
-#                 print('\nSaved ' + filename + '\n')
-                
-#     return EfficiencyList
-
-
-#!jupyter nbconvert --to script TTbarResLookUpTables.ipynb

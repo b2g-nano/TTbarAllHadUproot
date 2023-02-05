@@ -224,32 +224,32 @@ args = Parser.parse_args()
 
 if args.step == 1:
     print('\n\nStep 1: Get and Save Mistag Rates\n')
-    args.medium = True
+    # args.medium = True
     args.runmistag = True
     args.saveMistag = True
     # args.chunksize = 20000
 elif args.step == 2: 
     print('\n\nStep 2: Run and Save the First Uproot Job\n')
-    args.medium = True
+    # args.medium = True
     args.rundataset = ['QCD', 'TTbar', 'JetHT', 'DM', 'RSGluon']
     args.save = True
     # args.chunksize = 20000
     args.uproot = 1
 elif args.step == 3: 
     print('\n\nStep 3: Run and Save the Second Uproot Job with Only Mistag Rate Application\n')
-    args.medium = True
+    # args.medium = True
     args.runAMO = ['QCD', 'TTbar', 'JetHT', 'DM', 'RSGluon']
     args.save = True
     # args.chunksize = 20000
 elif args.step == 4: 
     print('\n\nStep 4: Run and Save the Second Uproot Job with Only Mistag Rate and ModMass Applications\n')
-    args.medium = True
+    # args.medium = True
     args.runMMO = ['QCD', 'TTbar', 'JetHT', 'DM', 'RSGluon']
     args.save = True
     # args.chunksize = 20000
 elif args.step == 5: 
     print('\n\nStep 5: Run and Save the Second Uproot Job\n')
-    args.medium = True
+    # args.medium = True
     args.rundataset = ['QCD', 'TTbar', 'JetHT', 'DM', 'RSGluon']
     args.save = True
     # args.chunksize = 20000
@@ -264,7 +264,7 @@ if not np.any(StartGroupList): #if user forgets to assign something here or does
     print('\n\nDefault run; No available dataset selected\n\n')
     args.rundataset = ['QCD']
     args.uproot = 1
-    args.medium = True
+    # args.medium = True
 if not np.any(BDiscriminatorGroupList): #if user forgets to assign something here or does not pick a specific step
     print('\n\nDefault Btag; No available btag WP selected\n\n')
     args.medium = True
