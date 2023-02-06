@@ -120,7 +120,7 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
     bdiscDirectory  --> string; Directory path for chosen b discriminator
     Year            --> Integer for the year of datasets used in the 1st uproot run
     VFP             --> string; either preVFP or postVFP
-    RemoveContam    --> bool; Remove the ttbar contamination from mistag when selecting --mistag option in TTbarResCoffeaOutputs.py
+    RemoveContam    --> bool; Remove the ttbar contamination from mistag when selecting --mistag option in Run.py
     ListOfLetters   --> List; List of the letters corresponding to each run year (if that was chosen for the processor run)
     Save            --> bool; Save mistag rates or not
     '''
@@ -209,14 +209,18 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
     Nevts_sf = 1.
     
     for letter in ListOfLetters:
-        if ('JetHT2016' + letter + '_Data') in Filesets:
+        if 'JetHT2016'+letter+'_Data' in Outputs.keys():
             Nevts2016_sf = Nevts2016/Outputs['JetHT2016' + letter + '_Data']['cutflow']['all events']
-        if ('JetHT2017' + letter + '_Data') in Filesets:
+            print('\n\nFound 2016 Data')
+        if 'JetHT2017'+letter+'_Data' in Outputs.keys():
             Nevts2017_sf = Nevts2017/Outputs['JetHT2017' + letter + '_Data']['cutflow']['all events']
-        if ('JetHT2018' + letter + '_Data') in Filesets:
+            print('\n\nFound 2017 Data')
+        if 'JetHT2018'+letter+'_Data' in Outputs.keys():
             Nevts2018_sf = Nevts2018/Outputs['JetHT2018' + letter + '_Data']['cutflow']['all events']
+            print('\n\nFound 2018 Data')
         if 'JetHT_Data' in Filesets:
             Nevts_sf = Nevts / Outputs['JetHT_Data']['cutflow']['all events']
+            print('\n\nFound All Years of Data')
 
         """ ---------------- Luminosities, Cross Sections, Scale-Factors ---------------- """ 
         Lum2016 = 35920./Nevts2016_sf # Division by scale factor: Correction for blinding/choice of era # pb^-1 from https://twiki.cern.ch/twiki/bin/viewauth/CMS/PdmVAnalysisSummaryTable
@@ -232,15 +236,21 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
         ttbar2017_sf = 1.
         ttbar2018_sf = 1.
         ttbar_sf = 1.
-
-        if 'UL16' and 'TTbar' in Outputs.items():
-            ttbar2016_sf = ttbar_xs*Lum2016/Outputs['UL16'+VFP+'_TTbar']['cutflow']['sumw']
-        if 'UL17' and 'TTbar' in Outputs.items():
-            ttbar2017_sf = ttbar_xs*Lum2017/Outputs['UL17'+VFP+'_TTbar']['cutflow']['sumw']
-        if 'UL18' and 'TTbar' in Outputs.items():
-            ttbar2018_sf = ttbar_xs*Lum2018/Outputs['UL18'+VFP+'_TTbar']['cutflow']['sumw']
-        if ('TTbar' in Outputs.items()) and (Year == 0):
-            ttbar_sf = ttbar_xs*Lum/Outputs[VFP+'_TTbar']['cutflow']['all events']
+        
+        if 'UL16'+VFP+'_TTbar' in Outputs.keys():
+            ttbar2016_sf = ttbar_BR*Lum2016/Outputs['UL16'+VFP+'_TTbar']['cutflow']['all events']
+            print('\n\nProperly Scaled 2016 ttbar simulation\n\n')
+        elif 'UL17'+VFP+'_TTbar' in Outputs.keys():
+            ttbar2017_sf = ttbar_BR*Lum2017/Outputs['UL17'+VFP+'_TTbar']['cutflow']['all events']
+            print('\n\nProperly Scaled 2017 ttbar simulation\n\n')
+        elif 'UL18'+VFP+'_TTbar' in Outputs.keys():
+            ttbar2018_sf = ttbar_BR*Lum2018/Outputs['UL18'+VFP+'_TTbar']['cutflow']['all events']
+            print('\n\nProperly Scaled 2018 ttbar simulation\n\n')
+        elif ('TTbar' in Outputs.items()) and (Year == 0):
+            ttbar_sf = ttbar_BR*Lum/Outputs[VFP+'_TTbar']['cutflow']['all events']
+            print('\n\nProperly Scaled All Years of ttbar simulation\n\n')
+        else:
+            print('\n\nNO TTBAR SIMULATION FOUND IN RUN\n\n')
 
     #     -------------------------------------------------------------------------------------------
     #     M     M IIIIIII   SSSSS TTTTTTT    A    GGGGGGG     RRRRRR     A    TTTTTTT EEEEEEE   SSSSS     
@@ -313,25 +323,23 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
                     mistag_vals = np.where(D_vals_diff > 0, N_vals_diff/D_vals_diff, 0)
 
                     # ---- Define Momentum values ---- #
-                    p_vals = pd.IntervalIndex.from_tuples([(400, 500), (500, 600), (600, 800), (800, 1000), (1000, 1500), (1500, 2000), (2000, 3000), (3000, 7000), (7000, 10000), ])
-                    # for iden in : #Find a new way to not have this hard-coded
-                    #     p_vals.append(iden)
+                    p_vals = []
+                    for iden in Numerator.axes['jetp']:
+                        p_vals.append(iden)
 
                     # ---- Display and Save Dataframe, df, as Look-up Table ---- #
-                    # print('fileset:  ' + iset + '_ttContaminationRemoved')
-                    # print('category: ' + icat)
-                    # print('________________________________________________\n')
+                    print('fileset:  ' + iset + '_ttContaminationRemoved')
+                    print('category: ' + catmap[icat])
+                    print('________________________________________________\n')
 
                     d = {'p': p_vals, 'M(p)': mistag_vals} # 'data'
-
-                    # print("d vals = ", d)
-                    # print()
+                    
                     df = pd.DataFrame(data=d)
                     luts[iset][catmap[icat]] = df
 
-                    # with pd.option_context('display.max_rows', None, 'display.max_columns', None): 
-                    #     print(df)
-                    # print('\n')
+                    with pd.option_context('display.max_rows', None, 'display.max_columns', None): 
+                        print(df)
+                    print('\n')
                     if Save:
                         df.to_csv(SaveDirectory+filename) # use later to collect bins and weights for re-scaling
             else: # Make mistag rate of any dataset that was run in the 1st uproot job
@@ -348,10 +356,9 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
                     mistag_vals = np.where(D_vals > 0, N_vals/D_vals, 0)
                     # print(mistag_vals)
 
-                    # p_vals = [] # Momentum values
-                    p_vals = pd.IntervalIndex.from_tuples([(400, 500), (500, 600), (600, 800), (800, 1000), (1000, 1500), (1500, 2000), (2000, 3000), (3000, 7000), (7000, 10000), ])
-                    # for iden in Numerator.identifiers():
-                    #     p_vals.append(iden)
+                    p_vals = [] # Momentum values
+                    for iden in Numerator.axes['jetp']:
+                        p_vals.append(iden)
                     # print('fileset:  ' + iset)
                     # print('category: ' + icat)
                     # print('________________________________________________\n')
@@ -370,59 +377,4 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
                         df.to_csv(SaveDirectory+filename) # use later to collect bins and weights for re-scaling
 
     # print(luts)
-    return(luts)
-
-# def CreateMCEfficiencyLUTS(flavor, Outputs, bdiscDirectory, Save):
-#     """
-#     flavor          --> string; b, c, udsg
-#     Outputs         --> Dictionary of uproot outputs from flavor run (uproot 1)
-#     bdiscDirectory  --> string; Directory path for chosen b discriminator
-#     Save            --> bool; Save mistag rates or not
-#     """
-    
-#     # if Year != 0:
-#     #     filestring_prefix = 'UL' + str(Year-2000) + VFP + '_'
-#     # else:
-#     #     filestring_prefix = ''
-    
-#     list_of_subjets = ['s01', 's02', 's11', 's12']
-#     SaveDirectory = maindirectory + '/TTbarAllHadUproot/FlavorTagEfficiencies/' + bdiscDirectory + flavor + 'tagEfficiencyTables/'
-#     DoesDirectoryExist(SaveDirectory)
-    
-#     for dataset,output in Outputs.items():
-#         for subjet in list_of_subjets:
-
-#             eff_numerator = output[flavor + '_eff_numerator_' + subjet + binwidth].integrate('dataset', dataset)
-#             eff_denominator = output[flavor + '_eff_denominator_' + subjet + binwidth].integrate('dataset', dataset)
-
-#             eff = plotratio2d(eff_numerator, eff_denominator) #ColormeshArtists object
-
-#             eff_data = eff[0].get_array().data # This is what goes into pandas dataframe
-#             eff_data = np.nan_to_num(eff_data, nan=0.0)
-            
-#             # ---- Define pt and eta bins from the numerator or denominator hist objects ---- #
-#             pt_bins = []
-#             eta_bins = []
-
-#             for iden in eff_numerator.identifiers('subjetpt'):
-#                 pt_bins.append(iden)
-#             for iden in eff_numerator.identifiers('subjeteta'):
-#                 eta_bins.append(iden)
-
-#             # ---- Define the Efficiency List as a Pandas Dataframe ---- #
-#             EfficiencyList = pd.DataFrame(
-#                                 eff_data,
-#                                 pd.MultiIndex.from_product( [pt_bins, eta_bins], names=['pt', 'eta'] ),
-#                                 ['efficiency']
-#                             )
-
-#             # ---- Save the Efficiency List as .csv ---- #
-#             if Save:
-#                 filename = dataset + '_' + subjet + '_' + flavor + 'tageff.csv'
-#                 EfficiencyList.to_csv(SaveDirectory+filename)
-#                 print('\nSaved ' + filename + '\n')
-                
-#     return EfficiencyList
-
-
-#!jupyter nbconvert --to script TTbarResLookUpTables.ipynb
+    # return(luts)

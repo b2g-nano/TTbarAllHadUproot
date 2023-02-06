@@ -156,16 +156,19 @@ All objects for each dataset ran can be saved as its own .coffea output file.
 ./Run.py -C -med -F QCD TTbar DM RSGluon -a no -y 2016 --dask --saveFlav
 ./Run.py -C -med -T -a no -y 2016 --dask --saveTrig\n
     1.) Create Mistag Rates that will be used to estimate NTMJ background
-./Run.py -C --step 1
+./Run.py -C -y 2016 --step 1
 python Run.py -C -med -m -a no -y 2016 --saveMistag\n
     2.) Make Outputs for the first Uproot Job with no weights applied (outside of MC weights that come with the nanoAOD)
-./Run.py -C --step 2
+./Run.py -C -y 2016 --step 2
 python Run.py -C -med -d QCD TTbar JetHT DM RSGluon -a no -y 2016 --uproot 1 --save\n
-    3.) Make Outputs for the second Uproot Job with only mistag rate applied to JetHT and TTbar, and mass modification of JetHT and TTbar in pre-tag region
-./Run.py -C --step 3
+    3.) Make Outputs for the second Uproot Job with only mistag rate applied to JetHT and TTbar
+./Run.py -C -y 2016 --step 3
+python Run.py -C -med -A QCD TTbar JetHT DM RSGluon -a no -y 2016 --save\n
+    4.) Make Outputs for the second Uproot Job with only mistag rate applied to JetHT and TTbar, and mass modification of JetHT and TTbar in pre-tag region
+./Run.py -C -y 2016 --step 4
 python Run.py -C -med -M QCD TTbar JetHT DM RSGluon -a no -y 2016 --save\n
-    4.) Make Outputs for the second Uproot Job with systematics, on top of mistag rate application and mass modification
-./Run.py -C --step 4
+    5.) Make Outputs for the second Uproot Job with systematics, on top of mistag rate application and mass modification
+./Run.py -C -y 2016 --step 5
 python Run.py -C -med -d QCD TTbar JetHT DM RSGluon -a no -y 2016 --uproot 2 --bTagSyst central --useEff --save\n
   ''')
 # ---- Necessary arguments ---- #
@@ -175,6 +178,7 @@ StartGroup.add_argument('-m', '--runmistag', action='store_true',help='Make data
 StartGroup.add_argument('-T', '--runtrigeff', action='store_true', help='Create trigger efficiency hist coffea output objects for chosen condition') 
 StartGroup.add_argument('-F', '--runflavoreff', type=str, nargs='+', help='Create flavor efficiency hist coffea output objects for chosen MC datasets')
 StartGroup.add_argument('-M', '--runMMO', type=str, nargs='+', help='Run Mistag-weight and Mass modification Only (no other systematics for uproot 2)')
+StartGroup.add_argument('-A', '--runAMO', type=str, nargs='+', help='Run (Apply) Mistag-weight Only (no other systematics for uproot 2)')
 StartGroup.add_argument('-d', '--rundataset', type=str, nargs='+', help='List of datasets to be ran/loaded')
 
 RedirectorGroup = Parser.add_mutually_exclusive_group(required=True)
@@ -204,7 +208,7 @@ Parser.add_argument('--timeout', type=float, help='How many seconds should dask 
 Parser.add_argument('--useEff', action='store_true', help='Use MC bTag efficiencies for bTagging systematics')
 Parser.add_argument('--tpt', action='store_true', help='Apply top pT re-weighting for uproot 2')
 
-Parser.add_argument('--step', type=int, choices=[1, 2, 3, 4], help='Easily run a certain step of the workflow')
+Parser.add_argument('--step', type=int, choices=[1, 2, 3, 4, 5], help='Easily run a certain step of the workflow')
 
 UncertaintyGroup = Parser.add_mutually_exclusive_group()
 UncertaintyGroup.add_argument('--bTagSyst', type=str, choices=['central', 'up', 'down'], help='Choose Unc.')
@@ -219,42 +223,50 @@ UncertaintyGroup.add_argument('--pileup', type=str, choices=['central', 'up', 'd
 args = Parser.parse_args()
 
 if args.step == 1:
-    print('\nStep 1: Get and Save Mistag Rates\n')
-    args.medium = True
+    print('\n\nStep 1: Get and Save Mistag Rates\n')
+    # args.medium = True
     args.runmistag = True
     args.saveMistag = True
-    args.chunksize = 20000
+    # args.chunksize = 20000
 elif args.step == 2: 
-    print('\nStep 2: Run and Save the First Uproot Job\n')
-    args.medium = True
+    print('\n\nStep 2: Run and Save the First Uproot Job\n')
+    # args.medium = True
     args.rundataset = ['QCD', 'TTbar', 'JetHT', 'DM', 'RSGluon']
     args.save = True
-    args.chunksize = 20000
+    # args.chunksize = 20000
     args.uproot = 1
 elif args.step == 3: 
-    print('\nStep 3: Run and Save the Second Uproot Job with Only Mistag Rate and ModMass Application\n')
-    args.medium = True
+    print('\n\nStep 3: Run and Save the Second Uproot Job with Only Mistag Rate Application\n')
+    # args.medium = True
+    args.runAMO = ['QCD', 'TTbar', 'JetHT', 'DM', 'RSGluon']
+    args.save = True
+    # args.chunksize = 20000
+elif args.step == 4: 
+    print('\n\nStep 4: Run and Save the Second Uproot Job with Only Mistag Rate and ModMass Applications\n')
+    # args.medium = True
     args.runMMO = ['QCD', 'TTbar', 'JetHT', 'DM', 'RSGluon']
     args.save = True
-    args.chunksize = 20000
-elif args.step == 4: 
-    print('\nStep 4: Run and Save the Second Uproot Job\n')
-    args.medium = True
+    # args.chunksize = 20000
+elif args.step == 5: 
+    print('\n\nStep 5: Run and Save the Second Uproot Job\n')
+    # args.medium = True
     args.rundataset = ['QCD', 'TTbar', 'JetHT', 'DM', 'RSGluon']
     args.save = True
-    args.chunksize = 20000
+    # args.chunksize = 20000
     args.uproot = 2
 else:
-    print('\nManual Job Being Performed Below:\n')
+    print('\n\nManual Job Being Performed Below:')
 
-StartGroupList = np.array([args.runtesting, args.runmistag, args.runtrigeff, args.runflavoreff, args.runMMO, args.rundataset], dtype=object)
+StartGroupList = np.array([args.runtesting, args.runmistag, args.runtrigeff, args.runflavoreff, args.runMMO, args.runAMO, args.rundataset], dtype=object)
 BDiscriminatorGroupList = np.array([args.loose, args.medium, args.medium2016], dtype=object)
 
 if not np.any(StartGroupList): #if user forgets to assign something here or does not pick a specific step
+    print('\n\nDefault run; No available dataset selected')
     args.rundataset = ['QCD']
     args.uproot = 1
-    args.medium = True
+    # args.medium = True
 if not np.any(BDiscriminatorGroupList): #if user forgets to assign something here or does not pick a specific step
+    print('\n\nDefault Btag; No available btag WP selected')
     args.medium = True
     
 TimeOut = 30.
@@ -270,8 +282,8 @@ if isTrigEffArg and args.uproot:
 if isTrigEffArg == False and args.saveTrig:
     Parser.error('When not running some --runtrigeff option do not specify --saveTrig.')
     quit()
-if args.runMMO and args.uproot:
-    Parser.error('When running --runMMO option do not specify --uproot.')
+if (args.runMMO or args.runAMO) and args.uproot:
+    Parser.error('When running --runMMO or --runAMO option do not specify --uproot.')
     quit()
     
 #    -------------------------------------------------------
@@ -329,7 +341,7 @@ LoadingUnweightedFiles = False
 OnlyCreateLookupTables = False 
 if (args.uproot == 1 or args.runmistag) or (isTrigEffArg or args.runflavoreff):
     OnlyCreateLookupTables = True # stop the code after LUTs are displayed on the terminal; after 1st uproot job
-elif (args.uproot == 2 or args.runMMO):
+elif (args.uproot == 2 or args.runMMO or args.runAMO):
     LoadingUnweightedFiles = True # Load the 1st uproot job's coffea outputs if you only want to run the 2nd uproot job.
 else: # Default for running both 1st and 2nd uproot job
     LoadingUnweightedFiles = False 
@@ -446,7 +458,7 @@ elif args.pileup:
     
 UncArgs = np.array([args.bTagSyst, args.tTagSyst, args.jes, args.jer, args.ttXSSyst, args.lumSyst, args.pileup])
 SystOpts = np.any(UncArgs) # Check to see if any uncertainty argument is used
-if (not OnlyCreateLookupTables) and (not SystOpts and not args.runMMO) :
+if (not OnlyCreateLookupTables) and (not SystOpts and (not args.runMMO and not args.runAMO)) :
     Parser.error('Only run second uproot job with a Systematic application (like --bTagSyst, --jes, etc.)')
     quit()
 #    -------------------------------------------------------    # 
@@ -551,6 +563,72 @@ if not Testing:
             
     elif args.runMMO:
         for a in args.runMMO: # for any dataset included as user argument...
+            if args.year > 0:
+                if ('JetHT' in a): 
+                    filesets_to_run['JetHT'+str(args.year)+'_Data'] = filesets['JetHT'+str(args.year)+'_Data'] # include JetHT dataset read in from Filesets
+                    SaveLocation['JetHT'+str(args.year)+'_Data'] = 'JetHT/' + BDiscDirectory + str(args.year) + '/TTbarRes_0l_' # file where output will be saved
+                elif ('SingleMu' in a): 
+                    filesets_to_run['SingleMu'+str(args.year)+'_Data'] = filesets['SingleMu'+str(args.year)+'_Data'] # include JetHT dataset read in from Filesets
+                    SaveLocation['SingleMu'+str(args.year)+'_Data'] = 'SingleMu/' + BDiscDirectory + str(args.year) + '/TTbarRes_0l_' # file where output will be saved
+            else: # All Years
+                if ('JetHT' in a): 
+                    filesets_to_run['JetHT_Data'] = filesets['JetHT_Data'] # include JetHT dataset read in from Filesets
+                    SaveLocation['JetHT_Data'] = 'JetHT/' + BDiscDirectory + '/TTbarRes_0l_' # file where output will be saved
+                elif ('SingleMu' in a): 
+                    filesets_to_run['SingleMu_Data'] = filesets['SingleMu_Data'] # include JetHT dataset read in from Filesets
+                    SaveLocation['SingleMu_Data'] = 'SingleMu/' + BDiscDirectory + '/TTbarRes_0l_' # file where output will be saved
+            # Signal MC (then TTbar and QCD MC)
+            if 'RSGluon' in a:
+                if a == 'RSGluon':
+                    SaveLocation[namingConvention+'_'+a+'1000'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
+                    SaveLocation[namingConvention+'_'+a+'1500'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
+                    SaveLocation[namingConvention+'_'+a+'2000'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
+                    SaveLocation[namingConvention+'_'+a+'2500'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
+                    SaveLocation[namingConvention+'_'+a+'3000'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
+                    SaveLocation[namingConvention+'_'+a+'3500'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
+                    SaveLocation[namingConvention+'_'+a+'4000'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
+                    SaveLocation[namingConvention+'_'+a+'4500'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
+                    SaveLocation[namingConvention+'_'+a+'5000'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
+                    filesets_to_run[namingConvention+'_'+a+'1000'] = filesets[namingConvention+'_'+a+'1000']
+                    filesets_to_run[namingConvention+'_'+a+'1500'] = filesets[namingConvention+'_'+a+'1500']
+                    filesets_to_run[namingConvention+'_'+a+'2000'] = filesets[namingConvention+'_'+a+'2000']
+                    filesets_to_run[namingConvention+'_'+a+'2500'] = filesets[namingConvention+'_'+a+'2500']
+                    filesets_to_run[namingConvention+'_'+a+'3000'] = filesets[namingConvention+'_'+a+'3000']
+                    filesets_to_run[namingConvention+'_'+a+'3500'] = filesets[namingConvention+'_'+a+'3500']
+                    filesets_to_run[namingConvention+'_'+a+'4000'] = filesets[namingConvention+'_'+a+'4000']
+                    filesets_to_run[namingConvention+'_'+a+'4500'] = filesets[namingConvention+'_'+a+'4500']
+                    filesets_to_run[namingConvention+'_'+a+'5000'] = filesets[namingConvention+'_'+a+'5000']
+                else:
+                    SaveLocation[namingConvention+'_'+a] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
+                    filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a]
+            elif 'DM' in a:
+                if a == 'DM':
+                    SaveLocation[namingConvention+'_'+a+'1000'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
+                    SaveLocation[namingConvention+'_'+a+'1500'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
+                    SaveLocation[namingConvention+'_'+a+'2000'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
+                    SaveLocation[namingConvention+'_'+a+'2500'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
+                    SaveLocation[namingConvention+'_'+a+'3000'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
+                    SaveLocation[namingConvention+'_'+a+'3500'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
+                    SaveLocation[namingConvention+'_'+a+'4000'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
+                    SaveLocation[namingConvention+'_'+a+'4500'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
+                    SaveLocation[namingConvention+'_'+a+'5000'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
+                    filesets_to_run[namingConvention+'_'+a+'1000'] = filesets[namingConvention+'_'+a+'1000']
+                    filesets_to_run[namingConvention+'_'+a+'1500'] = filesets[namingConvention+'_'+a+'1500']
+                    filesets_to_run[namingConvention+'_'+a+'2000'] = filesets[namingConvention+'_'+a+'2000']
+                    filesets_to_run[namingConvention+'_'+a+'2500'] = filesets[namingConvention+'_'+a+'2500']
+                    filesets_to_run[namingConvention+'_'+a+'3000'] = filesets[namingConvention+'_'+a+'3000']
+                    filesets_to_run[namingConvention+'_'+a+'3500'] = filesets[namingConvention+'_'+a+'3500']
+                    filesets_to_run[namingConvention+'_'+a+'4000'] = filesets[namingConvention+'_'+a+'4000']
+                    filesets_to_run[namingConvention+'_'+a+'4500'] = filesets[namingConvention+'_'+a+'4500']
+                    filesets_to_run[namingConvention+'_'+a+'5000'] = filesets[namingConvention+'_'+a+'5000']
+                else:
+                    SaveLocation[namingConvention+'_'+a] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
+                    filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a]
+            elif 'TTbar' in a or 'QCD' in a:
+                filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a] # include MC dataset read in from Filesets
+                
+    elif args.runAMO:
+        for a in args.runAMO: # for any dataset included as user argument...
             if args.year > 0:
                 if ('JetHT' in a): 
                     filesets_to_run['JetHT'+str(args.year)+'_Data'] = filesets['JetHT'+str(args.year)+'_Data'] # include JetHT dataset read in from Filesets
@@ -1204,11 +1282,10 @@ import TTbarResLookUpTables
 
 from TTbarResLookUpTables import CreateLUTS, LoadDataLUTS #, CreateMCEfficiencyLUTS
 
-each_mistag_luts = None
 mistag_luts = None
 
-if not args.runMMO:
-    each_mistag_luts = CreateLUTS(filesets_to_run, outputs_unweighted, BDiscDirectory, args.year, VFP, args.runmistag, Letters, args.saveMistag)
+if args.runmistag:
+    CreateLUTS(filesets_to_run, outputs_unweighted, BDiscDirectory, args.year, VFP, args.runmistag, Letters, args.saveMistag)
     mistag_luts = LoadDataLUTS(BDiscDirectory, args.year, Letters) # Specifically get data mistag rates with ttContam. corrections
 else:
     mistag_luts = LoadDataLUTS(BDiscDirectory, args.year, Letters) # Specifically get data mistag rates with ttContam. corrections
@@ -1240,7 +1317,7 @@ outputs_weighted = {}
 seed = 1234577890
 prng = RandomState(seed)
 
-if not OnlyCreateLookupTables and not args.runMMO:
+if not OnlyCreateLookupTables and (not args.runMMO and not args.runAMO):
     for name,files in filesets_to_run.items(): 
         print('Processing', name)
         if not RunAllRootFiles:
@@ -1469,7 +1546,7 @@ if args.runMMO:
                                                       processor_instance=TTbarResProcessor(UseLookUpTables=True,
                                                                                            lu=mistag_luts,
                                                                                            extraDaskDirectory = daskDirectory,
-                                                                                           ModMass=True, #switch to true later after test! 
+                                                                                           ModMass=True, 
                                                                                            RandomDebugMode=False,
                                                                                            BDirect = BDiscDirectory,
                                                                                            bdisc = BDisc,
@@ -1566,4 +1643,146 @@ else:
 
 if args.dask and args.newCluster:
     cluster.close()
+    
+    
+
+if args.runAMO:
+    tstart = time.time()
+
+    outputs_weighted = {}
+
+    seed = 1234577890
+    prng = RandomState(seed)
+
+    for name,files in filesets_to_run.items(): 
+        if not OnlyCreateLookupTables:
+            print('Processing', name)
+            if not RunAllRootFiles:
+                if not UsingDaskExecutor:
+                    chosen_exec = 'futures'
+                    output = processor.run_uproot_job({name:files},
+                                                      treename='Events',
+                                                      processor_instance=TTbarResProcessor(UseLookUpTables=True,
+                                                                                           lu=mistag_luts,
+                                                                                           ModMass=False, 
+                                                                                           RandomDebugMode=False,
+                                                                                           BDirect = BDiscDirectory,
+                                                                                           bdisc = BDisc,
+                                                                                           year=args.year,
+                                                                                           apv=convertLabel[VFP],
+                                                                                           vfp=VFP,
+                                                                                           prng=prng),
+                                                      #executor=processor.iterative_executor,
+                                                      executor=processor.futures_executor,
+                                                      executor_args={
+                                                          'skipbadfiles':False,
+                                                          'schema': BaseSchema, #NanoAODSchema,
+                                                          'workers': 2},
+                                                      chunksize=Chunk[0], maxchunks=Chunk[1])
+                else:
+                    chosen_exec = 'dask'
+                    client.wait_for_workers(timeout=TimeOut)
+                    output = processor.run_uproot_job({name:files},
+                                                      treename='Events',
+                                                      processor_instance=TTbarResProcessor(UseLookUpTables=True,
+                                                                                           lu=mistag_luts,
+                                                                                           extraDaskDirectory = daskDirectory,
+                                                                                           ModMass=False, 
+                                                                                           RandomDebugMode=False,
+                                                                                           BDirect = BDiscDirectory,
+                                                                                           bdisc = BDisc,
+                                                                                           year=args.year,
+                                                                                           apv=convertLabel[VFP],
+                                                                                           vfp=VFP,
+                                                                                           prng=prng),
+                                                      executor=processor.dask_executor,
+                                                      executor_args={
+                                                          'client': client,
+                                                          'skipbadfiles':False,
+                                                          'schema': BaseSchema},
+                                                      chunksize=Chunk[0], maxchunks=Chunk[1])
+                    # client.restart()
+                elapsed = time.time() - tstart
+                outputs_weighted[name] = output
+                print(output)
+                if SaveSecondRun:
+                    mkdir_p('TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/'
+                              + SaveLocation[name])
+                                          
+                    savefilename = 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/' + SaveLocation[name] + name  + '_weighted_MistagOnly' + UncType  + SystType + method + TPT + OldDisc + '.coffea'
+                    util.save(output, savefilename)
+                    print('saving ' + savefilename)
+
+
+            else: # Run all Root Files
+                if not UsingDaskExecutor:
+                    chosen_exec = 'futures'
+                    output = processor.run_uproot_job({name:files},
+                                                      treename='Events',
+                                                      processor_instance=TTbarResProcessor(UseLookUpTables=True,
+                                                                                           lu=mistag_luts,
+                                                                                           ModMass=False, 
+                                                                                           RandomDebugMode=False,
+                                                                                           BDirect = BDiscDirectory,
+                                                                                           bdisc = BDisc,
+                                                                                           year=args.year,
+                                                                                           apv=convertLabel[VFP],
+                                                                                           vfp=VFP,
+                                                                                           prng=prng),
+                                                      #executor=processor.iterative_executor,
+                                                      executor=processor.futures_executor,
+                                                      executor_args={
+                                                          'skipbadfiles':False,
+                                                          'schema': BaseSchema, #NanoAODSchema,
+                                                          'workers': 2})
+
+                else:
+                    chosen_exec = 'dask'
+                    client.wait_for_workers(timeout=TimeOut)
+                    output = processor.run_uproot_job({name:files},
+                                                      treename='Events',
+                                                      processor_instance=TTbarResProcessor(UseLookUpTables=True,
+                                                                                           lu=mistag_luts,
+                                                                                           extraDaskDirectory = daskDirectory,
+                                                                                           ModMass=False, 
+                                                                                           RandomDebugMode=False,
+                                                                                           BDirect = BDiscDirectory,
+                                                                                           bdisc = BDisc,
+                                                                                           year=args.year,
+                                                                                           apv=convertLabel[VFP],
+                                                                                           vfp=VFP,
+                                                                                           prng=prng),
+                                                      executor=processor.dask_executor,
+                                                      executor_args={
+                                                          'client': client,
+                                                          'skipbadfiles':False,
+                                                          'schema': BaseSchema})
+                    # client.restart()
+                elapsed = time.time() - tstart
+                outputs_weighted[name] = output
+                print(output)
+                if SaveSecondRun:
+                    mkdir_p('TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/'
+                              + SaveLocation[name])
+                                          
+                    savefilename = 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/' + SaveLocation[name] + name  + '_weighted_MistagOnly' + UncType + SystType + method + TPT + OldDisc + '.coffea'                    
+                    util.save(output, savefilename)
+                    print('saving ' + savefilename)
+            print('Elapsed time = ', elapsed, ' sec.')
+            print('Elapsed time = ', elapsed/60., ' min.')
+            print('Elapsed time = ', elapsed/3600., ' hrs.') 
+        
+        else:
+            continue
+    for name,output in outputs_weighted.items(): 
+        print("-------Weighted " + name + "--------")
+        for i,j in output['cutflow'].items():        
+            print( '%20s : %1s' % (i,j) )
+    print("\n\nWe\'re done here!!\n")
+else:
+    pass
+
+if args.dask and args.newCluster:
+    cluster.close()
+    
 exit()
