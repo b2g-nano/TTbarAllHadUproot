@@ -255,18 +255,18 @@ elif args.step == 5:
     # args.chunksize = 20000
     args.uproot = 2
 else:
-    print('\n\nManual Job Being Performed Below:\n')
+    print('\n\nManual Job Being Performed Below:')
 
 StartGroupList = np.array([args.runtesting, args.runmistag, args.runtrigeff, args.runflavoreff, args.runMMO, args.runAMO, args.rundataset], dtype=object)
 BDiscriminatorGroupList = np.array([args.loose, args.medium, args.medium2016], dtype=object)
 
 if not np.any(StartGroupList): #if user forgets to assign something here or does not pick a specific step
-    print('\n\nDefault run; No available dataset selected\n\n')
+    print('\n\nDefault run; No available dataset selected')
     args.rundataset = ['QCD']
     args.uproot = 1
     # args.medium = True
 if not np.any(BDiscriminatorGroupList): #if user forgets to assign something here or does not pick a specific step
-    print('\n\nDefault Btag; No available btag WP selected\n\n')
+    print('\n\nDefault Btag; No available btag WP selected')
     args.medium = True
     
 TimeOut = 30.

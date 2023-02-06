@@ -209,14 +209,18 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
     Nevts_sf = 1.
     
     for letter in ListOfLetters:
-        if ('JetHT2016' + letter + '_Data') in Filesets:
+        if 'JetHT2016'+letter+'_Data' in Outputs.keys():
             Nevts2016_sf = Nevts2016/Outputs['JetHT2016' + letter + '_Data']['cutflow']['all events']
-        if ('JetHT2017' + letter + '_Data') in Filesets:
+            print('\n\nFound 2016 Data')
+        if 'JetHT2017'+letter+'_Data' in Outputs.keys():
             Nevts2017_sf = Nevts2017/Outputs['JetHT2017' + letter + '_Data']['cutflow']['all events']
-        if ('JetHT2018' + letter + '_Data') in Filesets:
+            print('\n\nFound 2017 Data')
+        if 'JetHT2018'+letter+'_Data' in Outputs.keys():
             Nevts2018_sf = Nevts2018/Outputs['JetHT2018' + letter + '_Data']['cutflow']['all events']
+            print('\n\nFound 2018 Data')
         if 'JetHT_Data' in Filesets:
             Nevts_sf = Nevts / Outputs['JetHT_Data']['cutflow']['all events']
+            print('\n\nFound All Years of Data')
 
         """ ---------------- Luminosities, Cross Sections, Scale-Factors ---------------- """ 
         Lum2016 = 35920./Nevts2016_sf # Division by scale factor: Correction for blinding/choice of era # pb^-1 from https://twiki.cern.ch/twiki/bin/viewauth/CMS/PdmVAnalysisSummaryTable
@@ -234,16 +238,16 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
         ttbar_sf = 1.
         
         if 'UL16'+VFP+'_TTbar' in Outputs.keys():
-            ttbar2016_sf = ttbar_xs*Lum2016/Outputs['UL16'+VFP+'_TTbar']['cutflow']['sumw']
+            ttbar2016_sf = ttbar_BR*Lum2016/Outputs['UL16'+VFP+'_TTbar']['cutflow']['all events']
             print('\n\nProperly Scaled 2016 ttbar simulation\n\n')
         elif 'UL17'+VFP+'_TTbar' in Outputs.keys():
-            ttbar2017_sf = ttbar_xs*Lum2017/Outputs['UL17'+VFP+'_TTbar']['cutflow']['sumw']
+            ttbar2017_sf = ttbar_BR*Lum2017/Outputs['UL17'+VFP+'_TTbar']['cutflow']['all events']
             print('\n\nProperly Scaled 2017 ttbar simulation\n\n')
         elif 'UL18'+VFP+'_TTbar' in Outputs.keys():
-            ttbar2018_sf = ttbar_xs*Lum2018/Outputs['UL18'+VFP+'_TTbar']['cutflow']['sumw']
+            ttbar2018_sf = ttbar_BR*Lum2018/Outputs['UL18'+VFP+'_TTbar']['cutflow']['all events']
             print('\n\nProperly Scaled 2018 ttbar simulation\n\n')
         elif ('TTbar' in Outputs.items()) and (Year == 0):
-            ttbar_sf = ttbar_xs*Lum/Outputs[VFP+'_TTbar']['cutflow']['all events']
+            ttbar_sf = ttbar_BR*Lum/Outputs[VFP+'_TTbar']['cutflow']['all events']
             print('\n\nProperly Scaled All Years of ttbar simulation\n\n')
         else:
             print('\n\nNO TTBAR SIMULATION FOUND IN RUN\n\n')

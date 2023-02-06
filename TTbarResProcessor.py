@@ -599,49 +599,6 @@ class TTbarResProcessor(processor.ProcessorABC):
             Jets["genJetIdx"] = events.Jet_genJetIdx
             SubJets['hadronFlavour'] = events.SubJet_hadronFlavour
         
-            
-#    ================================================================
-#    TTTTTTT RRRRRR  IIIIIII GGGGGGG GGGGGGG EEEEEEE RRRRRR    SSSSS     
-#       T    R     R    I    G       G       E       R     R  S          
-#       T    R     R    I    G       G       E       R     R S           
-#       T    RRRRRR     I    G  GGGG G  GGGG EEEEEEE RRRRRR   SSSSS      
-#       T    R   R      I    G     G G     G E       R   R         S     
-#       T    R    R     I    G     G G     G E       R    R       S      
-#       T    R     R IIIIIII  GGGGG   GGGGG  EEEEEEE R     R SSSSS  
-#    ================================================================
-        
-#         Dataset_info = events.fields # All nanoaod events
-#         listOfTriggers = np.array([name for name in Dataset_info if 'HLT' in name]) # Find event name info that have HLT to find all relevant triggers
-        
-#         isHLT_PF = np.array(['HLT_PF' in i for i in listOfTriggers])
-#         isHLT_AK8 = np.array(['HLT_AK8' in i for i in listOfTriggers])
-        
-#         HLT_PF_triggers = listOfTriggers[isHLT_PF]
-#         HLT_AK8_triggers = listOfTriggers[isHLT_AK8]
-        
-        
-#         trigDenom = events.HLT_Mu50 | events.HLT_IsoMu24 # WHY!!!!!????
-#         print(events.HLT_Mu50)
-#         print(events.HLT_IsoMu24)
-#         print(trigDenom)
-#         print('-----------------------------------------------')
-        
-#         if self.year == 2016:
-#             triggers2016_1 = events.HLT_PFHT900
-#             triggers2016_2 = events.HLT_AK8PFHT700_TrimR0p1PT0p03Mass50
-#             triggers2016_3 = events.HLT_AK8PFJet450
-#             triggers2016_4 = events.HLT_AK8PFJet360_TrimMass30
-
-#    ===================================================================================
-#    PPPPPP  RRRRRR  EEEEEEE L       IIIIIII M     M       CCCC  U     U TTTTTTT   SSSSS     
-#    P     P R     R E       L          I    MM   MM      C      U     U    T     S          
-#    P     P R     R E       L          I    M M M M     C       U     U    T    S           
-#    PPPPPP  RRRRRR  EEEEEEE L          I    M  M  M     C       U     U    T     SSSSS      
-#    P       R   R   E       L          I    M     M     C       U     U    T          S     
-#    P       R    R  E       L          I    M     M      C       U   U     T         S      
-#    P       R     R EEEEEEE LLLLLLL IIIIIII M     M       CCCC    UUU      T    SSSSS
-#    ===================================================================================
-        
         # ---- Get event weights from dataset ---- #
         if isData: # If data is used...
             # print('if isData command works')
@@ -655,38 +612,89 @@ class TTbarResProcessor(processor.ProcessorABC):
         output['cutflow']['sumw'] += np.sum(evtweights)
         output['cutflow']['sumw2'] += np.sum(evtweights**2)
         
-        # ---- Setup Trigger Cut Here ---- #
+#    ================================================================
+#    TTTTTTT RRRRRR  IIIIIII GGGGGGG GGGGGGG EEEEEEE RRRRRR    SSSSS     
+#       T    R     R    I    G       G       E       R     R  S          
+#       T    R     R    I    G       G       E       R     R S           
+#       T    RRRRRR     I    G  GGGG G  GGGG EEEEEEE RRRRRR   SSSSS      
+#       T    R   R      I    G     G G     G E       R   R         S     
+#       T    R    R     I    G     G G     G E       R    R       S      
+#       T    R     R IIIIIII  GGGGG   GGGGG  EEEEEEE R     R SSSSS  
+#    ================================================================
+        
+#         if isData:
+#             Dataset_info = events.fields # All nanoaod events
+#             listOfTriggers = np.array([name for name in Dataset_info if 'HLT' in name]) # Find event name info that have HLT to find all relevant triggers
+
+#             isHLT_PF = np.array(['HLT_PF' in i for i in listOfTriggers])
+#             isHLT_AK8 = np.array(['HLT_AK8' in i for i in listOfTriggers])
+
+#             HLT_PF_triggers = listOfTriggers[isHLT_PF]
+#             HLT_AK8_triggers = listOfTriggers[isHLT_AK8]
+
+#             print(HLT_PF_triggers)
+#             print(HLT_AK8_triggers)
+#             print('-----------------------------------------------')
+
+        condition = None
+        trigger1 = trigger2 = trigger3 = None
+        
+        if self.year == 2016 and isData: 
+            # trigger1 = events.HLT_PFHT800
+            trigger1 = events.HLT_PFHT900
+            trigger2 = events.HLT_AK8PFJet450
+            trigger3 = events.HLT_AK8PFJet360_TrimMass30
+            condition = ((trigger1 | trigger2) | (trigger3))# | trigger4))
+            
+        if isData:
+            FatJets = FatJets[condition]
+            Jets = Jets[condition]
+            SubJets = SubJets[condition]
+            evtweights = evtweights[condition]
+            events = events[condition]
+            
+            output['cutflow']['Passed Trigger'] += ak.to_awkward0(condition).sum()
+            
+#    ===================================================================================
+#    PPPPPP  RRRRRR  EEEEEEE L       IIIIIII M     M       CCCC  U     U TTTTTTT   SSSSS     
+#    P     P R     R E       L          I    MM   MM      C      U     U    T     S          
+#    P     P R     R E       L          I    M M M M     C       U     U    T    S           
+#    PPPPPP  RRRRRR  EEEEEEE L          I    M  M  M     C       U     U    T     SSSSS      
+#    P       R   R   E       L          I    M     M     C       U     U    T          S     
+#    P       R    R  E       L          I    M     M      C       U   U     T         S      
+#    P       R     R EEEEEEE LLLLLLL IIIIIII M     M       CCCC    UUU      T    SSSSS
+#    ===================================================================================
 
         # ---- Apply HT Cut ---- #
         # ---- This gives the analysis 99.8% efficiency (see 2016 AN) ---- #
         hT = ak.to_awkward0(Jets.pt).sum()
         passhT = (hT > self.htCut)
         FatJets = FatJets[passhT]
-        Jets = Jets[passhT] # this used to not be here
+        Jets = Jets[passhT]
         SubJets = SubJets[passhT]
         evtweights = evtweights[passhT]
         events = events[passhT]
         if not isData:
             GenJets = GenJets[passhT]
         
-        output['cutflow']['HT Cut'] += ak.to_awkward0(passhT).sum()
+        output['cutflow']['Passed HT Cut'] += ak.to_awkward0(passhT).sum()
           
         # ---- Jets that satisfy Jet ID ---- #
         jet_id = (FatJets.jetId > 0) # Loose jet ID
         FatJets = FatJets[jet_id]
-        output['cutflow']['Loose Jet ID'] += ak.to_awkward0(jet_id).any().sum()
+        output['cutflow']['Passed Loose Jet ID'] += ak.to_awkward0(jet_id).any().sum()
         
         # ---- Apply pT Cut and Rapidity Window ---- #
         FatJets_rapidity = .5*np.log( (FatJets.p4.energy + FatJets.p4.pz)/(FatJets.p4.energy - FatJets.p4.pz) )
         jetkincut_index = (FatJets.pt > self.ak8PtMin) & (np.abs(FatJets_rapidity) < 2.4)
         FatJets = FatJets[ jetkincut_index ]
-        output['cutflow']['pT,y Cut'] += ak.to_awkward0(jetkincut_index).any().sum()
+        output['cutflow']['Passed pT,y Cut'] += ak.to_awkward0(jetkincut_index).any().sum()
         
         # ---- Find two AK8 Jets ---- #
         twoFatJetsKin = (ak.num(FatJets, axis=-1) == 2)
         FatJets = FatJets[twoFatJetsKin]
         SubJets = SubJets[twoFatJetsKin]
-        Jets = Jets[twoFatJetsKin] # this used to not be here
+        Jets = Jets[twoFatJetsKin]
         events = events[twoFatJetsKin]
         evtweights = evtweights[twoFatJetsKin]
         if not isData:
@@ -731,7 +739,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         output['cutflow']['>= oneTTbar'] += ak.to_awkward0(oneTTbar).sum()
         ttbarcands = ttbarcands[oneTTbar]
         FatJets = FatJets[oneTTbar]
-        Jets = Jets[oneTTbar] # this used to not be here
+        Jets = Jets[oneTTbar]
         SubJets = SubJets[oneTTbar]
         events = events[oneTTbar]
         evtweights = evtweights[oneTTbar]
@@ -742,10 +750,10 @@ class TTbarResProcessor(processor.ProcessorABC):
         """ NOTE: Should find function for this; avoids 2pi problem """
         dPhiCut = ttbarcands.slot0.p4.delta_phi(ttbarcands.slot1.p4) > 2.1
         dPhiCut = ak.flatten(dPhiCut)
-        output['cutflow']['dPhi Cut'] += ak.to_awkward0(dPhiCut).sum()
+        output['cutflow']['Passed dPhi Cut'] += ak.to_awkward0(dPhiCut).sum()
         ttbarcands = ttbarcands[dPhiCut]
         FatJets = FatJets[dPhiCut] 
-        Jets = Jets[dPhiCut] # this used to not be here
+        Jets = Jets[dPhiCut]
         SubJets = SubJets[dPhiCut] 
         events = events[dPhiCut]
         evtweights = evtweights[dPhiCut]
@@ -761,7 +769,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         FatJets = FatJets[GoodSubjets]
         SubJets = SubJets[GoodSubjets]
         events = events[GoodSubjets]
-        Jets = Jets[GoodSubjets] # this used to not be here
+        Jets = Jets[GoodSubjets]
         evtweights = evtweights[GoodSubjets]
         if not isData:
             GenJets = GenJets[GoodSubjets]
@@ -805,14 +813,14 @@ class TTbarResProcessor(processor.ProcessorABC):
         mcut_s0 = (self.minMSD < ttbarcands.slot0.msoftdrop) & (ttbarcands.slot0.msoftdrop < self.maxMSD) 
         mcut_s1 = (self.minMSD < ttbarcands.slot1.msoftdrop) & (ttbarcands.slot1.msoftdrop < self.maxMSD) 
 
-        ttag_s0 = (taucut_s0) & (mcut_s0)
-        ttag_s1 = (taucut_s1) & (mcut_s1)
-        antitag = (~taucut_s0) & (mcut_s0) # The Probe jet will always be ttbarcands.slot1 (at)
+        # ttag_s0 = (taucut_s0) & (mcut_s0)
+        # ttag_s1 = (taucut_s1) & (mcut_s1)
+        # antitag = (~taucut_s0) & (mcut_s0) # The Probe jet will always be ttbarcands.slot1 (at)
 
         # ----------- DeepAK8 Tagger (Discriminator Cut) ----------- #
-        # ttag_s0 = ttbarcands.slot0.deepTag_TvsQCD > self.deepAK8Cut
-        # ttag_s1 = ttbarcands.slot1.deepTag_TvsQCD > self.deepAK8Cut
-        # antitag = ttbarcands.slot0.deepTag_TvsQCD < self.deepAK8Cut # The Probe jet will always be ttbarcands.slot1 (at)
+        ttag_s0 = ttbarcands.slot0.deepTag_TvsQCD > self.deepAK8Cut
+        ttag_s1 = ttbarcands.slot1.deepTag_TvsQCD > self.deepAK8Cut
+        antitag = ttbarcands.slot0.deepTag_TvsQCD < self.deepAK8Cut # The Probe jet will always be ttbarcands.slot1 (at)
         
         # ---- Define "Top Tag" Regions ---- #
         antitag_probe = np.logical_and(antitag, ttag_s1) # Found an antitag and ttagged probe pair for mistag rate (AT&Pt)
