@@ -152,8 +152,8 @@ class TTbarResProcessor(processor.ProcessorABC):
             'jety'  : hist.Hist(dataset_axis, cats_axis, jety_axis, storage="weight", name="Counts"),
             'jetdy' : hist.Hist(dataset_axis, cats_axis, jetdy_axis, storage="weight", name="Counts"),
 
-            'deepTag_TvsQCD'   : hist.Hist(dataset_axis, cats_axis, jetpt_axis, tagger_axis, storage="weight", name="Counts"),
-            'deepTagMD_TvsQCD' : hist.Hist(dataset_axis, cats_axis, jetpt_axis, tagger_axis, storage="weight", name="Counts"),
+            'deepTag_TvsQCD'   : hist.Hist(dataset_axis, cats_axis, jetpt_axis, jetmass_axis, tagger_axis, storage="weight", name="Counts"),
+            'deepTagMD_TvsQCD' : hist.Hist(dataset_axis, cats_axis, jetpt_axis, jetmass_axis, tagger_axis, storage="weight", name="Counts"),
 
             'tau32'        : hist.Hist(dataset_axis, cats_axis, tau32_axis, storage="weight", name="Counts"),
             'tau32_2D'     : hist.Hist(dataset_axis, cats_axis, jetpt_axis, tau32_axis, storage="weight", name="Counts"),
@@ -578,7 +578,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                 "mass": events.SubJet_mass,
                 }, with_name="PtEtaPhiMLorentzVector"),
             })
-        
+            
         if not isData:
             # ---- Define GenJets ---- #
             GenJets = ak.zip({
@@ -621,31 +621,44 @@ class TTbarResProcessor(processor.ProcessorABC):
 #       T    R    R     I    G     G G     G E       R    R       S      
 #       T    R     R IIIIIII  GGGGG   GGGGG  EEEEEEE R     R SSSSS  
 #    ================================================================
-        
-#         if isData:
-#             Dataset_info = events.fields # All nanoaod events
-#             listOfTriggers = np.array([name for name in Dataset_info if 'HLT' in name]) # Find event name info that have HLT to find all relevant triggers
-
-#             isHLT_PF = np.array(['HLT_PF' in i for i in listOfTriggers])
-#             isHLT_AK8 = np.array(['HLT_AK8' in i for i in listOfTriggers])
-
-#             HLT_PF_triggers = listOfTriggers[isHLT_PF]
-#             HLT_AK8_triggers = listOfTriggers[isHLT_AK8]
-
-#             print(HLT_PF_triggers)
-#             print(HLT_AK8_triggers)
-#             print('-----------------------------------------------')
 
         condition = None
-        trigger1 = trigger2 = trigger3 = None
+        Triggers = []
         
         if self.year == 2016 and isData: 
-            # trigger1 = events.HLT_PFHT800
-            trigger1 = events.HLT_PFHT900
-            trigger2 = events.HLT_AK8PFJet450
-            trigger3 = events.HLT_AK8PFJet360_TrimMass30
-            condition = ((trigger1 | trigger2) | (trigger3))# | trigger4))
-            
+            try:
+                Triggers.append(events.HLT_PFHT800)
+            except AttributeError as AE:
+                pass
+                # print('\n')
+                # print(AE)
+                # print('\nTrigger Excluded for this era')
+            try:
+                Triggers.append(events.HLT_PFHT900)
+            except AttributeError as AE:
+                pass
+                # print('\n')
+                # print(AE)
+                # print('\nTrigger Excluded for this era')
+            try:
+                Triggers.append(events.HLT_AK8PFJet450)
+            except AttributeError as AE:
+                pass
+                # print('\n')
+                # print(AE)
+                # print('\nTrigger Excluded for this era')
+                
+            # try:
+            #     Triggers.append(events.HLT_AK8PFJet360_TrimMass30)
+            # except AttributeError as AE:
+            #     continue
+            #     print('\n')
+            #     print(AE)
+            #     print('\nTrigger Excluded for this era')
+                
+            condition = ak.flatten(ak.any(Triggers, axis=0, keepdims=True))
+            # print(condition)
+                
         if isData:
             FatJets = FatJets[condition]
             Jets = Jets[condition]
@@ -653,7 +666,7 @@ class TTbarResProcessor(processor.ProcessorABC):
             evtweights = evtweights[condition]
             events = events[condition]
             
-            output['cutflow']['Passed Trigger'] += ak.to_awkward0(condition).sum()
+            output['cutflow']['Passed Trigger'] += ak.sum(condition)
             
 #    ===================================================================================
 #    PPPPPP  RRRRRR  EEEEEEE L       IIIIIII M     M       CCCC  U     U TTTTTTT   SSSSS     
@@ -1075,6 +1088,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         
         SDmass = ak.flatten(ttbarcands.slot1.msoftdrop)
         Tau32 = ak.flatten((ttbarcands.slot1.tau3/ttbarcands.slot1.tau2))
+        ak8tagger = ak.flatten(ttbarcands.slot1.deepTagMD_TvsQCD)
 
         """ Add 4-vectors and get its total mass """
         ttbarp4sum = ttbarcands.slot0.p4.add(ttbarcands.slot1.p4)
@@ -1345,6 +1359,14 @@ class TTbarResProcessor(processor.ProcessorABC):
             output['jetdy'].fill(dataset = dataset,
                                      anacat = self.ConvertLabelToInt(self.label_dict, ilabel),
                                      jetdy = ak.to_numpy(jetdy[icat]),
+                                     weight = ak.to_numpy(Weights[icat]),
+                                    )
+            # 'deepTagMD_TvsQCD' : hist.Hist(dataset_axis, cats_axis, jetpt_axis, jetmass_axis, tagger_axis, storage="weight", name="Counts"),
+            output['deepTagMD_TvsQCD'].fill(dataset = dataset,
+                                     anacat = self.ConvertLabelToInt(self.label_dict, ilabel),
+                                     jetpt = ak.to_numpy(jetpt[icat]),
+                                     jetmass = ak.to_numpy(jetmass[icat]),
+                                     tagger = ak.to_numpy(ak8tagger[icat]),       
                                      weight = ak.to_numpy(Weights[icat]),
                                     )
             output['jetmass'].fill(dataset = dataset,
