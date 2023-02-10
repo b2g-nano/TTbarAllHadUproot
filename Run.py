@@ -369,6 +369,7 @@ ApplybSF = False
 ApplytSF = False
 ApplyJES = False
 ApplyJER = False
+ApplyJEC = False
 ApplyPDF = False
 xsSystwgt = 1.
 lumSystwgt = 1.
@@ -432,6 +433,12 @@ elif args.jer:
     ApplyJER = True
 #    ---------------------------------------------------------------------------------------------------------------------    #
  
+elif args.jec:
+    UncType = "_jecUnc_"
+    # SystType = 'jec'
+    ApplyJEC = True
+#    ---------------------------------------------------------------------------------------------------------------------    #
+
 elif args.pdf:
     UncType = "_pdfUnc_"
     # SystType = 'pdf'
@@ -1259,6 +1266,7 @@ if not OnlyCreateLookupTables and not args.runMMO:
                                                                                        ApplybtagSF=ApplybSF,
                                                                                        ApplyJes=ApplyJES,
                                                                                        ApplyJer=ApplyJER,
+                                                                                       ApplyJec=ApplyJEC,
                                                                                        ApplyPdf=ApplyPDF,
                                                                                        sysType=SystType,
                                                                                        ScaleFactorFile=SFfile,
@@ -1292,6 +1300,7 @@ if not OnlyCreateLookupTables and not args.runMMO:
                                                                                        ApplybtagSF=ApplybSF,
                                                                                        ApplyJes=ApplyJES,
                                                                                        ApplyJer=ApplyJER,
+                                                                                       ApplyJer=ApplyJEC,
                                                                                        ApplyPdf=ApplyPDF,
                                                                                        sysType=SystType,
                                                                                        ScaleFactorFile=SFfile,
@@ -1338,6 +1347,7 @@ if not OnlyCreateLookupTables and not args.runMMO:
                                                                                        ApplybtagSF=ApplybSF,
                                                                                        ApplyJes=ApplyJES,
                                                                                        ApplyJer=ApplyJER,
+                                                                                       ApplyJer=ApplyJEC,
                                                                                        ApplyPdf=ApplyPDF,
                                                                                        sysType=SystType,
                                                                                        ScaleFactorFile=SFfile,
@@ -1371,6 +1381,7 @@ if not OnlyCreateLookupTables and not args.runMMO:
                                                                                        ApplybtagSF=ApplybSF,
                                                                                        ApplyJes=ApplyJES,
                                                                                        ApplyJer=ApplyJER,
+                                                                                       ApplyJer=ApplyJEC,
                                                                                        ApplyPdf=ApplyPDF,
                                                                                        sysType=SystType,
                                                                                        ScaleFactorFile=SFfile,
