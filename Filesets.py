@@ -68,6 +68,16 @@ def CollectDatasets(redirector_str):
  
     # ---- Before concatenation with +=, lists should be declard ---- #
     
+    filesets['JetHT2016_Data'] = []
+    filesets['JetHT2017_Data'] = []
+    filesets['JetHT2018_Data'] = []
+    filesets['SingleMu2016_Data'] = [] 
+    filesets['SingleMu2017_Data'] = [] 
+    filesets['SingleMu2018_Data'] = [] 
+    
+    filesets['JetHT2016B_Data'] = []
+    # filesets['SingleMu2016B_Data'] = [] 
+    
     for v in VFP:
         filesets['UL'+v+'_QCD'] = []
         filesets['UL'+v+'_TTbar'] = []
@@ -167,16 +177,20 @@ def CollectDatasets(redirector_str):
         if 'Run2016' in filename:
             with open(filedir + 'JetHT/' + filename) as f:
                 jetdatafiles2016 = [redirector_str + s.strip() for s in f.readlines()] 
+            filesets['JetHT2016_Data'] += jetdatafiles2016 
         elif 'Run2017' in filename:
             with open(filedir + 'JetHT/' + filename) as g:
                 jetdatafiles2017 = [redirector_str + s.strip() for s in g.readlines()[::3]] # Every third datafile
+            filesets['JetHT2017_Data'] += jetdatafiles2017 
         else:
             with open(filedir + 'JetHT/' + filename) as h:
                 jetdatafiles2018 = [redirector_str + s.strip() for s in h.readlines()[::3]] 
+            filesets['JetHT2018_Data'] += jetdatafiles2018 
         
         if 'Run2016B' in filename:
             with open(filedir + 'JetHT/' + filename) as b:
                 jetdatafiles2016b = [redirector_str + s.strip() for s in b.readlines()] 
+            filesets['JetHT2016B_Data'] += jetdatafiles2016b
         elif 'Run2016C' in filename:
             with open(filedir + 'JetHT/' + filename) as c:
                 jetdatafiles2016c = [redirector_str + s.strip() for s in c.readlines()] 
@@ -225,13 +239,9 @@ def CollectDatasets(redirector_str):
             with open(filedir + 'JetHT/' + filename) as d:
                 jetdatafiles2018d = [redirector_str + s.strip() for s in d.readlines()[::3]] 
                 
-    filesets['JetHT2016_Data'] = jetdatafiles2016   
-    filesets['JetHT2017_Data'] = jetdatafiles2017 
-    filesets['JetHT2018_Data'] = jetdatafiles2018 
-    jetdatafiles = jetdatafiles2016 + jetdatafiles2017 + jetdatafiles2018 # All data
-    filesets['JetHT_Data'] = jetdatafiles
+          
+    filesets['JetHT_Data'] = filesets['JetHT2016_Data'] + filesets['JetHT2017_Data'] + filesets['JetHT2018_Data']
     
-    filesets['JetHT2016B_Data'] = jetdatafiles2016b
     filesets['JetHT2016C_Data'] = jetdatafiles2016c
     filesets['JetHT2016D_Data'] = jetdatafiles2016d
     filesets['JetHT2016E_Data'] = jetdatafiles2016e
@@ -256,15 +266,16 @@ def CollectDatasets(redirector_str):
         if 'Run2016' in filename:
             with open(filedir + 'SingleMu/' + filename) as f:
                 singlemudatafiles2016 = [redirector_str + s.strip() for s in f.readlines()]
+            filesets['SingleMu2016_Data'] += singlemudatafiles2016
         elif 'Run2017' in filename:
             with open(filedir + 'SingleMu/' + filename) as g:
                 singlemudatafiles2017 = [redirector_str + s.strip() for s in g.readlines()]
+            filesets['SingleMu2017_Data'] += singlemudatafiles2017
         else:
             with open(filedir + 'SingleMu/' + filename) as h:
                 singlemudatafiles2018 = [redirector_str + s.strip() for s in h.readlines()] 
-    filesets['SingleMu2016_Data'] = singlemudatafiles2016            
-    filesets['SingleMu2017_Data'] = singlemudatafiles2017
-    filesets['SingleMu2018_Data'] = singlemudatafiles2018 
+            filesets['SingleMu2018_Data'] += singlemudatafiles2018 
+                
     
     return filesets
 

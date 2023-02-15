@@ -877,7 +877,7 @@ if args.runflavoreff:
                                                                                        vfp=VFP,
                                                                                        bdisc=BDisc,
                                                                                        prng=prng),
-                                                  executor=processor.futures_executor,
+                                                  executor=processor.iterative_executor,
                                                   executor_args={
                                                       #'client': client,
                                                       'skipbadfiles':False,
@@ -927,7 +927,7 @@ if args.runflavoreff:
                                                                                        vfp=VFP,
                                                                                        bdisc=BDisc,
                                                                                        prng=prng),
-                                                  executor=processor.futures_executor,
+                                                  executor=processor.iterative_executor,
                                                   executor_args={
                                                       #'client': client,
                                                       'skipbadfiles':False,
@@ -1015,7 +1015,7 @@ if isTrigEffArg:
                                                                                        apv=convertLabel[VFP],
                                                                                        vfp=VFP,
                                                                                        prng=prng),
-                                                  executor=processor.futures_executor,
+                                                  executor=processor.iterative_executor,
                                                   executor_args={
                                                       #'client': client,
                                                       'skipbadfiles':False,
@@ -1064,7 +1064,7 @@ if isTrigEffArg:
                                                                                        apv=convertLabel[VFP],
                                                                                        vfp=VFP,
                                                                                        prng=prng),
-                                                  executor=processor.futures_executor,
+                                                  executor=processor.iterative_executor,
                                                   executor_args={
                                                       #'client': client,
                                                       'skipbadfiles':False,
@@ -1152,7 +1152,7 @@ for name,files in filesets_to_run.items():
                                                                                        vfp=VFP,
                                                                                        # triggerAnalysisObjects = isTrigEffArg,
                                                                                        prng=prng),
-                                                  executor=processor.futures_executor,
+                                                  executor=processor.iterative_executor,
                                                   executor_args={
                                                       #'client': client,
                                                       'skipbadfiles':False,
@@ -1207,7 +1207,7 @@ for name,files in filesets_to_run.items():
                                                                                        vfp=VFP,
                                                                                        # triggerAnalysisObjects = isTrigEffArg,
                                                                                        prng=prng),
-                                                  executor=processor.futures_executor,
+                                                  executor=processor.iterative_executor,
                                                   executor_args={
                                                       #'client': client,
                                                       'skipbadfiles':False,
@@ -1346,7 +1346,7 @@ if not OnlyCreateLookupTables and (not args.runMMO and not args.runAMO):
                                                                                        vfp=VFP,
                                                                                        prng=prng),
                                                   #executor=processor.iterative_executor,
-                                                  executor=processor.futures_executor,
+                                                  executor=processor.iterative_executor,
                                                   executor_args={
                                                       'skipbadfiles':False,
                                                       'schema': BaseSchema, #NanoAODSchema,
@@ -1425,7 +1425,7 @@ if not OnlyCreateLookupTables and (not args.runMMO and not args.runAMO):
                                                                                        vfp=VFP,
                                                                                        prng=prng),
                                                   #executor=processor.iterative_executor,
-                                                  executor=processor.futures_executor,
+                                                  executor=processor.iterative_executor,
                                                   executor_args={
                                                       'skipbadfiles':False,
                                                       'schema': BaseSchema, #NanoAODSchema,
@@ -1532,7 +1532,7 @@ if args.runMMO:
                                                                                            vfp=VFP,
                                                                                            prng=prng),
                                                       #executor=processor.iterative_executor,
-                                                      executor=processor.futures_executor,
+                                                      executor=processor.iterative_executor,
                                                       executor_args={
                                                           'skipbadfiles':False,
                                                           'schema': BaseSchema, #NanoAODSchema,
@@ -1589,7 +1589,7 @@ if args.runMMO:
                                                                                            vfp=VFP,
                                                                                            prng=prng),
                                                       #executor=processor.iterative_executor,
-                                                      executor=processor.futures_executor,
+                                                      executor=processor.iterative_executor,
                                                       executor_args={
                                                           'skipbadfiles':False,
                                                           'schema': BaseSchema, #NanoAODSchema,
@@ -1673,7 +1673,7 @@ if args.runAMO:
                                                                                            vfp=VFP,
                                                                                            prng=prng),
                                                       #executor=processor.iterative_executor,
-                                                      executor=processor.futures_executor,
+                                                      executor=processor.iterative_executor,
                                                       executor_args={
                                                           'skipbadfiles':False,
                                                           'schema': BaseSchema, #NanoAODSchema,
@@ -1730,7 +1730,7 @@ if args.runAMO:
                                                                                            vfp=VFP,
                                                                                            prng=prng),
                                                       #executor=processor.iterative_executor,
-                                                      executor=processor.futures_executor,
+                                                      executor=processor.iterative_executor,
                                                       executor_args={
                                                           'skipbadfiles':False,
                                                           'schema': BaseSchema, #NanoAODSchema,

@@ -111,7 +111,7 @@ dask_client_cert.pem
 *.png
 
 # nohup logs
-nohup.out
+*.out
 
 # root files
 # *.root
