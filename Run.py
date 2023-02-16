@@ -184,6 +184,7 @@ StartGroup.add_argument('-d', '--rundataset', type=str, nargs='+', help='List of
 RedirectorGroup = Parser.add_mutually_exclusive_group(required=True)
 RedirectorGroup.add_argument('-C', '--casa', action='store_true', help='Use Coffea-Casa redirector: root://xcache/')
 RedirectorGroup.add_argument('-L', '--lpc', action='store_true', help='Use CMSLPC redirector: root://cmsxrootd.fnal.gov/')
+RedirectorGroup.add_argument('-W', '--winterfell', action='store_true', help='Get available files from UB Winterfell /mnt/data/cms')
 
 BDiscriminatorGroup = Parser.add_mutually_exclusive_group()
 BDiscriminatorGroup.add_argument('-l', '--loose', action='store_true', help='Apply loose bTag discriminant cut')
@@ -304,6 +305,8 @@ if args.casa:
     envirDirectory = 'dask-worker-space/'
 elif args.lpc:
     Redirector = 'root://cmsxrootd.fnal.gov/'
+elif args.winterfell:
+    Redirector = '/mnt/data/cms'
 else:
     print('Redirector not selected properly; code should have terminated earlier!  Terminating now!')
     quit()
@@ -762,11 +765,7 @@ if not Testing:
     else: # if somehow, the initial needed arguments are not used
         print("Something is wrong.  Please come and investigate what the problem could be")
 else:
-    TestRootFiles = [#"TTbarAllHadUproot/SMttbar_nEvents10.root",
-                     #"TTbarAllHadUproot/SMttbar_nEvents10000.root",
-                     #"TTbarAllHadUproot/SMttbar_nEvents60000.root",
-                     "TTbarAllHadUproot/ttbar_Mtt-1000toInf_nEvents50000.root"]
-                     #"TTbarAllHadUproot/QCD_pt600to800_customNano_numEvents79200.root"]
+    TestRootFiles = ['']
     filesets = {
         'TestSample_ttbarRES':TestRootFiles
     }

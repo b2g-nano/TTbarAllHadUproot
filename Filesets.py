@@ -59,6 +59,7 @@ def CollectDatasets(redirector_str):
         redirector_str --> string for either running over lpc of coffea-casa
             Two acceptable inputs: 'root://xcache/' Only works in Coffea-Casa Environment
                                    'root://cmsxrootd.fnal.gov/'
+            UBWinterFell tests:    '/mnt/data/cms'
     """
     filedir = 'TTbarAllHadUproot/nanoAODv9Files/'
     Years = ['UL16', 'UL17', 'UL18']
