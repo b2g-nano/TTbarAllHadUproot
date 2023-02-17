@@ -1058,7 +1058,12 @@ class TTbarResProcessor(processor.ProcessorABC):
                     btag0 = (~btag_s0) & (~btag_s1) #(0b)
                     btag1 = btag_s0 ^ btag_s1 #(1b)
                     btag2 = btag_s0 & btag_s1 #(2b)
-                    
+             
+            # if self.ApplyttagSF == True and 'TTbar' in dataset: # Apply t Tag Scale Factors for signal region
+            #     twgt = 0.85**2
+            #     twgt_up = twgt + 2.*twgt
+            #     twgt_down = twgt - 2.*twgt
+                
 #    ================================================================
 #       A    N     N    A    L       Y     Y   SSSSS IIIIIII   SSSSS 
 #      A A   NN    N   A A   L        Y   Y   S         I     S      
