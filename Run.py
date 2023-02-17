@@ -876,10 +876,10 @@ if args.runflavoreff:
                                                                                        vfp=VFP,
                                                                                        bdisc=BDisc,
                                                                                        prng=prng),
-                                                  executor=processor.iterative_executor,
+                                                  executor=processor.futures_executor,
                                                   executor_args={
                                                       #'client': client,
-                                                      'skipbadfiles':False,
+                                                      'skipbadfiles':True,
                                                       'schema': BaseSchema, #NanoAODSchema,
                                                       'workers': 2},
                                                   chunksize=Chunk[0], maxchunks=Chunk[1])
@@ -897,7 +897,7 @@ if args.runflavoreff:
                                                   executor=processor.dask_executor,
                                                   executor_args={
                                                       'client': client,
-                                                      'skipbadfiles':False,
+                                                      'skipbadfiles':True,
                                                       'schema': BaseSchema},
                                                   chunksize=Chunk[0], maxchunks=Chunk[1])
                 # client.restart()
@@ -926,7 +926,7 @@ if args.runflavoreff:
                                                                                        vfp=VFP,
                                                                                        bdisc=BDisc,
                                                                                        prng=prng),
-                                                  executor=processor.iterative_executor,
+                                                  executor=processor.futures_executor,
                                                   executor_args={
                                                       #'client': client,
                                                       'skipbadfiles':False,
@@ -1014,10 +1014,10 @@ if isTrigEffArg:
                                                                                        apv=convertLabel[VFP],
                                                                                        vfp=VFP,
                                                                                        prng=prng),
-                                                  executor=processor.iterative_executor,
+                                                  executor=processor.futures_executor,
                                                   executor_args={
                                                       #'client': client,
-                                                      'skipbadfiles':False,
+                                                      'skipbadfiles':True,
                                                       'schema': BaseSchema, #NanoAODSchema,
                                                       'workers': 2},
                                                   chunksize=Chunk[0], maxchunks=Chunk[1])
@@ -1035,7 +1035,7 @@ if isTrigEffArg:
                                                   executor=processor.dask_executor,
                                                   executor_args={
                                                       'client': client,
-                                                      'skipbadfiles':False,
+                                                      'skipbadfiles':True,
                                                       'schema': BaseSchema},
                                                   chunksize=Chunk[0], maxchunks=Chunk[1])
                 # client.restart()
@@ -1063,10 +1063,10 @@ if isTrigEffArg:
                                                                                        apv=convertLabel[VFP],
                                                                                        vfp=VFP,
                                                                                        prng=prng),
-                                                  executor=processor.iterative_executor,
+                                                  executor=processor.futures_executor,
                                                   executor_args={
                                                       #'client': client,
-                                                      'skipbadfiles':False,
+                                                      'skipbadfiles':True,
                                                       'schema': BaseSchema, #NanoAODSchema,
                                                       'workers': 2})
 
@@ -1084,7 +1084,7 @@ if isTrigEffArg:
                                                   executor=processor.dask_executor,
                                                   executor_args={
                                                       'client': client,
-                                                      'skipbadfiles':False,
+                                                      'skipbadfiles':True,
                                                       'schema': BaseSchema})
                 # client.restart()
 
@@ -1151,10 +1151,10 @@ for name,files in filesets_to_run.items():
                                                                                        vfp=VFP,
                                                                                        # triggerAnalysisObjects = isTrigEffArg,
                                                                                        prng=prng),
-                                                  executor=processor.iterative_executor,
+                                                  executor=processor.futures_executor,
                                                   executor_args={
                                                       #'client': client,
-                                                      'skipbadfiles':False,
+                                                      'skipbadfiles':True,
                                                       'schema': BaseSchema, #NanoAODSchema,
                                                       'workers': 2},
                                                   chunksize=Chunk[0], maxchunks=Chunk[1])
@@ -1175,7 +1175,7 @@ for name,files in filesets_to_run.items():
                                                   executor=processor.dask_executor,
                                                   executor_args={
                                                       'client': client,
-                                                      'skipbadfiles':False,
+                                                      'skipbadfiles':True,
                                                       'schema': BaseSchema},
                                                   chunksize=Chunk[0], maxchunks=Chunk[1])
                 # client.restart()
@@ -1206,10 +1206,10 @@ for name,files in filesets_to_run.items():
                                                                                        vfp=VFP,
                                                                                        # triggerAnalysisObjects = isTrigEffArg,
                                                                                        prng=prng),
-                                                  executor=processor.iterative_executor,
+                                                  executor=processor.futures_executor,
                                                   executor_args={
                                                       #'client': client,
-                                                      'skipbadfiles':False,
+                                                      'skipbadfiles':True,
                                                       'schema': BaseSchema, #NanoAODSchema,
                                                       'workers': 2})
 
@@ -1230,7 +1230,7 @@ for name,files in filesets_to_run.items():
                                                   executor=processor.dask_executor,
                                                   executor_args={
                                                       'client': client,
-                                                      'skipbadfiles':False,
+                                                      'skipbadfiles':True,
                                                       'schema': BaseSchema})
                 # client.restart()
 
@@ -1345,9 +1345,9 @@ if not OnlyCreateLookupTables and (not args.runMMO and not args.runAMO):
                                                                                        vfp=VFP,
                                                                                        prng=prng),
                                                   #executor=processor.iterative_executor,
-                                                  executor=processor.iterative_executor,
+                                                  executor=processor.futures_executor,
                                                   executor_args={
-                                                      'skipbadfiles':False,
+                                                      'skipbadfiles':True,
                                                       'schema': BaseSchema, #NanoAODSchema,
                                                       'workers': 2},
                                                   chunksize=Chunk[0], maxchunks=Chunk[1])
@@ -1380,7 +1380,7 @@ if not OnlyCreateLookupTables and (not args.runMMO and not args.runAMO):
                                                   executor=processor.dask_executor,
                                                   executor_args={
                                                       'client': client,
-                                                      'skipbadfiles':False,
+                                                      'skipbadfiles':True,
                                                       'schema': BaseSchema,
                                                       'heavy_input': 'TTbarResCoffea/data',
                                                       'function_name': 'correctionlib.CorrectionSet.from_file'},
@@ -1424,9 +1424,9 @@ if not OnlyCreateLookupTables and (not args.runMMO and not args.runAMO):
                                                                                        vfp=VFP,
                                                                                        prng=prng),
                                                   #executor=processor.iterative_executor,
-                                                  executor=processor.iterative_executor,
+                                                  executor=processor.futures_executor,
                                                   executor_args={
-                                                      'skipbadfiles':False,
+                                                      'skipbadfiles':True,
                                                       'schema': BaseSchema, #NanoAODSchema,
                                                       'workers': 2})
 
@@ -1459,7 +1459,7 @@ if not OnlyCreateLookupTables and (not args.runMMO and not args.runAMO):
                                                   executor=processor.dask_executor,
                                                   executor_args={
                                                       'client': client,
-                                                      'skipbadfiles':False,
+                                                      'skipbadfiles':True,
                                                       'schema': BaseSchema})
                 # client.restart()
             elapsed = time.time() - tstart
@@ -1531,9 +1531,9 @@ if args.runMMO:
                                                                                            vfp=VFP,
                                                                                            prng=prng),
                                                       #executor=processor.iterative_executor,
-                                                      executor=processor.iterative_executor,
+                                                      executor=processor.futures_executor,
                                                       executor_args={
-                                                          'skipbadfiles':False,
+                                                          'skipbadfiles':True,
                                                           'schema': BaseSchema, #NanoAODSchema,
                                                           'workers': 2},
                                                       chunksize=Chunk[0], maxchunks=Chunk[1])
@@ -1556,7 +1556,7 @@ if args.runMMO:
                                                       executor=processor.dask_executor,
                                                       executor_args={
                                                           'client': client,
-                                                          'skipbadfiles':False,
+                                                          'skipbadfiles':True,
                                                           'schema': BaseSchema},
                                                       chunksize=Chunk[0], maxchunks=Chunk[1])
                     # client.restart()
@@ -1588,9 +1588,9 @@ if args.runMMO:
                                                                                            vfp=VFP,
                                                                                            prng=prng),
                                                       #executor=processor.iterative_executor,
-                                                      executor=processor.iterative_executor,
+                                                      executor=processor.futures_executor,
                                                       executor_args={
-                                                          'skipbadfiles':False,
+                                                          'skipbadfiles':True,
                                                           'schema': BaseSchema, #NanoAODSchema,
                                                           'workers': 2})
 
@@ -1613,7 +1613,7 @@ if args.runMMO:
                                                       executor=processor.dask_executor,
                                                       executor_args={
                                                           'client': client,
-                                                          'skipbadfiles':False,
+                                                          'skipbadfiles':True,
                                                           'schema': BaseSchema})
                     # client.restart()
                 elapsed = time.time() - tstart
@@ -1672,9 +1672,9 @@ if args.runAMO:
                                                                                            vfp=VFP,
                                                                                            prng=prng),
                                                       #executor=processor.iterative_executor,
-                                                      executor=processor.iterative_executor,
+                                                      executor=processor.futures_executor,
                                                       executor_args={
-                                                          'skipbadfiles':False,
+                                                          'skipbadfiles':True,
                                                           'schema': BaseSchema, #NanoAODSchema,
                                                           'workers': 2},
                                                       chunksize=Chunk[0], maxchunks=Chunk[1])
@@ -1697,7 +1697,7 @@ if args.runAMO:
                                                       executor=processor.dask_executor,
                                                       executor_args={
                                                           'client': client,
-                                                          'skipbadfiles':False,
+                                                          'skipbadfiles':True,
                                                           'schema': BaseSchema},
                                                       chunksize=Chunk[0], maxchunks=Chunk[1])
                     # client.restart()
@@ -1729,9 +1729,9 @@ if args.runAMO:
                                                                                            vfp=VFP,
                                                                                            prng=prng),
                                                       #executor=processor.iterative_executor,
-                                                      executor=processor.iterative_executor,
+                                                      executor=processor.futures_executor,
                                                       executor_args={
-                                                          'skipbadfiles':False,
+                                                          'skipbadfiles':True,
                                                           'schema': BaseSchema, #NanoAODSchema,
                                                           'workers': 2})
 
@@ -1754,7 +1754,7 @@ if args.runAMO:
                                                       executor=processor.dask_executor,
                                                       executor_args={
                                                           'client': client,
-                                                          'skipbadfiles':False,
+                                                          'skipbadfiles':True,
                                                           'schema': BaseSchema})
                     # client.restart()
                 elapsed = time.time() - tstart
