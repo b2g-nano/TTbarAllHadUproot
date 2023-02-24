@@ -95,17 +95,17 @@ def CollectDatasets(redirector_str):
                 # ---- QCD ---- #
                 ulqcdfilename = filedir + 'QCD/QCD_NanoAODv9_' + y + '_' + v + '.txt'
                 with open(ulqcdfilename) as f:
-                    ulqcdfiles = [redirector_str + s.strip() for s in f.readlines()]
+                    ulqcdfiles = [redirector_str + s.strip() for s in f.readlines() if not s.startswith('#')]
                 filesets[y+v+'_QCD'] = ulqcdfiles
                 filesets['UL'+v+'_QCD'] += ulqcdfiles # Combine files of all three years for both VFP conditions
 
                 # ---- TTbar ---- #
                 ulttbar700to1000filename = filedir + 'TT/TT_Mtt-700to1000_NanoAODv9_' + y + '_' + v + '.txt'
                 with open(ulttbar700to1000filename) as f:
-                    ulttbar700to1000files = [redirector_str + s.strip() for s in f.readlines()]
+                    ulttbar700to1000files = [redirector_str + s.strip() for s in f.readlines() if not s.startswith('#')]
                 ulttbar1000toInffilename = filedir + 'TT/TT_Mtt-1000toInf_NanoAODv9_' + y + '_' + v + '.txt'
                 with open(ulttbar1000toInffilename) as f:
-                    ulttbar1000toInffiles = [redirector_str + s.strip() for s in f.readlines()]
+                    ulttbar1000toInffiles = [redirector_str + s.strip() for s in f.readlines() if not s.startswith('#')]
                 ulttbarfiles = ulttbar700to1000files + ulttbar1000toInffiles # inclusion of both biased samples
                 filesets[y+v+'_TTbar'] = ulttbarfiles
                 filesets['UL'+v+'_TTbar'] += ulttbarfiles # Combine files of all three years for both VFP conditions
@@ -142,10 +142,10 @@ def CollectDatasets(redirector_str):
             # ---- TTbar ---- #
             ulttbar700to1000filename = filedir + 'TT/TT_Mtt-700to1000_NanoAODv9_' + y + '_' + v + '.txt'
             with open(ulttbar700to1000filename) as f:
-                ulttbar700to1000files = [redirector_str + s.strip() for s in f.readlines()]
+                ulttbar700to1000files = [redirector_str + s.strip() for s in f.readlines() if not s.startswith('#')]
             ulttbar1000toInffilename = filedir + 'TT/TT_Mtt-1000toInf_NanoAODv9_' + y + '_' + v + '.txt'
             with open(ulttbar1000toInffilename) as f:
-                ulttbar1000toInffiles = [redirector_str + s.strip() for s in f.readlines()]
+                ulttbar1000toInffiles = [redirector_str + s.strip() for s in f.readlines() if not s.startswith('#')]
             ulttbarfiles = ulttbar700to1000files + ulttbar1000toInffiles # inclusion of both biased samples
             filesets[y+v+'_TTbar'] = ulttbarfiles
             filesets['UL'+v+'_TTbar'] += ulttbarfiles # Combine files of all three years for both VFP conditions
@@ -177,68 +177,68 @@ def CollectDatasets(redirector_str):
     for filename in datafilelist:
         if 'Run2016' in filename:
             with open(filedir + 'JetHT/' + filename) as f:
-                jetdatafiles2016 = [redirector_str + s.strip() for s in f.readlines()] 
+                jetdatafiles2016 = [redirector_str + s.strip() for s in f.readlines() if not s.startswith('#')] 
             filesets['JetHT2016_Data'] += jetdatafiles2016 
         elif 'Run2017' in filename:
             with open(filedir + 'JetHT/' + filename) as g:
-                jetdatafiles2017 = [redirector_str + s.strip() for s in g.readlines()[::3]] # Every third datafile
+                jetdatafiles2017 = [redirector_str + s.strip() for s in g.readlines()[::3] if not s.startswith('#')] # Every third datafile
             filesets['JetHT2017_Data'] += jetdatafiles2017 
         else:
             with open(filedir + 'JetHT/' + filename) as h:
-                jetdatafiles2018 = [redirector_str + s.strip() for s in h.readlines()[::3]] 
+                jetdatafiles2018 = [redirector_str + s.strip() for s in h.readlines()[::3] if not s.startswith('#')] 
             filesets['JetHT2018_Data'] += jetdatafiles2018 
         
         if 'Run2016B' in filename:
             with open(filedir + 'JetHT/' + filename) as b:
-                jetdatafiles2016b = [redirector_str + s.strip() for s in b.readlines()] 
+                jetdatafiles2016b = [redirector_str + s.strip() for s in b.readlines() if not s.startswith('#')] 
             filesets['JetHT2016B_Data'] += jetdatafiles2016b
         elif 'Run2016C' in filename:
             with open(filedir + 'JetHT/' + filename) as c:
-                jetdatafiles2016c = [redirector_str + s.strip() for s in c.readlines()] 
+                jetdatafiles2016c = [redirector_str + s.strip() for s in c.readlines() if not s.startswith('#')] 
         elif 'Run2016D' in filename:
             with open(filedir + 'JetHT/' + filename) as d:
-                jetdatafiles2016d = [redirector_str + s.strip() for s in d.readlines()] 
+                jetdatafiles2016d = [redirector_str + s.strip() for s in d.readlines() if not s.startswith('#')] 
         elif 'Run2016E' in filename:
             with open(filedir + 'JetHT/' + filename) as e:
-                jetdatafiles2016e = [redirector_str + s.strip() for s in e.readlines()] 
+                jetdatafiles2016e = [redirector_str + s.strip() for s in e.readlines() if not s.startswith('#')] 
         elif 'Run2016F' in filename:
             with open(filedir + 'JetHT/' + filename) as f:
-                jetdatafiles2016f = [redirector_str + s.strip() for s in f.readlines()] 
+                jetdatafiles2016f = [redirector_str + s.strip() for s in f.readlines() if not s.startswith('#')] 
         elif 'Run2016G' in filename:
             with open(filedir + 'JetHT/' + filename) as g:
-                jetdatafiles2016g = [redirector_str + s.strip() for s in g.readlines()] 
+                jetdatafiles2016g = [redirector_str + s.strip() for s in g.readlines() if not s.startswith('#')] 
         elif 'Run2016H' in filename:
             with open(filedir + 'JetHT/' + filename) as h:
-                jetdatafiles2016h = [redirector_str + s.strip() for s in h.readlines()] 
+                jetdatafiles2016h = [redirector_str + s.strip() for s in h.readlines() if not s.startswith('#')] 
                 
         if 'Run2017B' in filename:
             with open(filedir + 'JetHT/' + filename) as b:
-                jetdatafiles2017b = [redirector_str + s.strip() for s in b.readlines()[::3]] 
+                jetdatafiles2017b = [redirector_str + s.strip() for s in b.readlines()[::3] if not s.startswith('#')] 
         elif 'Run2017C' in filename:
             with open(filedir + 'JetHT/' + filename) as c:
-                jetdatafiles2017c = [redirector_str + s.strip() for s in c.readlines()[::3]] 
+                jetdatafiles2017c = [redirector_str + s.strip() for s in c.readlines()[::3] if not s.startswith('#')] 
         elif 'Run2017D' in filename:
             with open(filedir + 'JetHT/' + filename) as d:
-                jetdatafiles2017d = [redirector_str + s.strip() for s in d.readlines()[::3]] 
+                jetdatafiles2017d = [redirector_str + s.strip() for s in d.readlines()[::3] if not s.startswith('#')] 
         elif 'Run2017E' in filename:
             with open(filedir + 'JetHT/' + filename) as e:
-                jetdatafiles2017e = [redirector_str + s.strip() for s in e.readlines()[::3]] 
+                jetdatafiles2017e = [redirector_str + s.strip() for s in e.readlines()[::3] if not s.startswith('#')] 
         elif 'Run2017F' in filename:
             with open(filedir + 'JetHT/' + filename) as f:
-                jetdatafiles2017f = [redirector_str + s.strip() for s in f.readlines()[::3]] 
+                jetdatafiles2017f = [redirector_str + s.strip() for s in f.readlines()[::3] if not s.startswith('#')] 
                 
         if 'Run2018A' in filename:
             with open(filedir + 'JetHT/' + filename) as a:
-                jetdatafiles2018a = [redirector_str + s.strip() for s in a.readlines()[::3]] 
+                jetdatafiles2018a = [redirector_str + s.strip() for s in a.readlines()[::3] if not s.startswith('#')] 
         elif 'Run2018B' in filename:
             with open(filedir + 'JetHT/' + filename) as b:
-                jetdatafiles2018b = [redirector_str + s.strip() for s in b.readlines()[::3]] 
+                jetdatafiles2018b = [redirector_str + s.strip() for s in b.readlines()[::3] if not s.startswith('#')] 
         elif 'Run2018C' in filename:
             with open(filedir + 'JetHT/' + filename) as c:
-                jetdatafiles2018c = [redirector_str + s.strip() for s in c.readlines()[::3]] 
+                jetdatafiles2018c = [redirector_str + s.strip() for s in c.readlines()[::3] if not s.startswith('#')] 
         elif 'Run2018D' in filename:
             with open(filedir + 'JetHT/' + filename) as d:
-                jetdatafiles2018d = [redirector_str + s.strip() for s in d.readlines()[::3]] 
+                jetdatafiles2018d = [redirector_str + s.strip() for s in d.readlines()[::3] if not s.startswith('#')] 
                 
           
     filesets['JetHT_Data'] = filesets['JetHT2016_Data'] + filesets['JetHT2017_Data'] + filesets['JetHT2018_Data']
@@ -266,15 +266,15 @@ def CollectDatasets(redirector_str):
     for filename in datafilelist:
         if 'Run2016' in filename:
             with open(filedir + 'SingleMu/' + filename) as f:
-                singlemudatafiles2016 = [redirector_str + s.strip() for s in f.readlines()]
+                singlemudatafiles2016 = [redirector_str + s.strip() for s in f.readlines() if not s.startswith('#')]
             filesets['SingleMu2016_Data'] += singlemudatafiles2016
         elif 'Run2017' in filename:
             with open(filedir + 'SingleMu/' + filename) as g:
-                singlemudatafiles2017 = [redirector_str + s.strip() for s in g.readlines()]
+                singlemudatafiles2017 = [redirector_str + s.strip() for s in g.readlines() if not s.startswith('#')]
             filesets['SingleMu2017_Data'] += singlemudatafiles2017
         else:
             with open(filedir + 'SingleMu/' + filename) as h:
-                singlemudatafiles2018 = [redirector_str + s.strip() for s in h.readlines()] 
+                singlemudatafiles2018 = [redirector_str + s.strip() for s in h.readlines() if not s.startswith('#')] 
             filesets['SingleMu2018_Data'] += singlemudatafiles2018 
                 
     
