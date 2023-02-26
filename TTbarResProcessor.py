@@ -2144,6 +2144,7 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
                                                           
         dataset_axis = hist.axis.StrCategory([], growth=True, name = "dataset", label = "Primary Dataset")
         cats_axis = hist.axis.IntCategory(range(2), name = "anacat", label = "Analysis Category")
+        jetpt_axis = hist.axis.Regular(50, 0, 1000, name="jetpt", label=r"Jet $p_{T}$ [GeV]")
         jetht_axis = hist.axis.Variable(manual_jetht_bins, name = "Jet_HT", label = r'$AK4\ Jet\ HT [GeV]$') # Used for Trigger Analysis
         sdMass_axis = hist.axis.Variable(manual_sdMass_bins, name = "Jet_sdMass", label = r'$AK8\ M_{SD}$ [GeV]')
         ttbarMass_axis = hist.axis.Variable(manual_ttbarbins, name = "ttbarmass", label = r"$m_{t\bar{t}}$ [GeV]")
@@ -2159,18 +2160,18 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
 #    ===================================================================================================
         
         self.histo_dict = {
-           'condition1_numerator': hist.Hist(dataset_axis, cats_axis, jetht_axis, sdMass_axis, ttbarMass_axis, storage = "weight", name = "Counts"),
-           'condition2_numerator': hist.Hist(dataset_axis, cats_axis, jetht_axis, sdMass_axis, ttbarMass_axis, storage = "weight", name = "Counts"),
-           'condition3_numerator': hist.Hist(dataset_axis, cats_axis, jetht_axis, sdMass_axis, ttbarMass_axis, storage = "weight", name = "Counts"),
-           'condition4_numerator': hist.Hist(dataset_axis, cats_axis, jetht_axis, sdMass_axis, ttbarMass_axis, storage = "weight", name = "Counts"),
-           'condition5_numerator': hist.Hist(dataset_axis, cats_axis, jetht_axis, sdMass_axis, ttbarMass_axis, storage = "weight", name = "Counts"),
-           'condition_denominator':hist.Hist(dataset_axis, cats_axis, jetht_axis, sdMass_axis, ttbarMass_axis, storage = "weight", name = "Counts"),
+           'condition1_numerator': hist.Hist(dataset_axis, cats_axis, jetht_axis, jetpt_axis, sdMass_axis, ttbarMass_axis, storage = "weight", name = "Counts"),
+           'condition2_numerator': hist.Hist(dataset_axis, cats_axis, jetht_axis, jetpt_axis, sdMass_axis, ttbarMass_axis, storage = "weight", name = "Counts"),
+           'condition3_numerator': hist.Hist(dataset_axis, cats_axis, jetht_axis, jetpt_axis, sdMass_axis, ttbarMass_axis, storage = "weight", name = "Counts"),
+           'condition4_numerator': hist.Hist(dataset_axis, cats_axis, jetht_axis, jetpt_axis, sdMass_axis, ttbarMass_axis, storage = "weight", name = "Counts"),
+           'condition5_numerator': hist.Hist(dataset_axis, cats_axis, jetht_axis, jetpt_axis, sdMass_axis, ttbarMass_axis, storage = "weight", name = "Counts"),
+           'condition_denominator':hist.Hist(dataset_axis, cats_axis, jetht_axis, jetpt_axis, sdMass_axis, ttbarMass_axis, storage = "weight", name = "Counts"),
             
-           'trigger1_numerator': hist.Hist(dataset_axis, cats_axis, jetht_axis, sdMass_axis, ttbarMass_axis, storage = "weight", name = "Counts"),
-           'trigger2_numerator': hist.Hist(dataset_axis, cats_axis, jetht_axis, sdMass_axis, ttbarMass_axis, storage = "weight", name = "Counts"),
-           'trigger3_numerator': hist.Hist(dataset_axis, cats_axis, jetht_axis, sdMass_axis, ttbarMass_axis, storage = "weight", name = "Counts"),
-           'trigger4_numerator': hist.Hist(dataset_axis, cats_axis, jetht_axis, sdMass_axis, ttbarMass_axis, storage = "weight", name = "Counts"),
-           'trigger5_numerator': hist.Hist(dataset_axis, cats_axis, jetht_axis, sdMass_axis, ttbarMass_axis, storage = "weight", name = "Counts"),
+           'trigger1_numerator': hist.Hist(dataset_axis, cats_axis, jetht_axis, jetpt_axis, sdMass_axis, ttbarMass_axis, storage = "weight", name = "Counts"),
+           'trigger2_numerator': hist.Hist(dataset_axis, cats_axis, jetht_axis, jetpt_axis, sdMass_axis, ttbarMass_axis, storage = "weight", name = "Counts"),
+           'trigger3_numerator': hist.Hist(dataset_axis, cats_axis, jetht_axis, jetpt_axis, sdMass_axis, ttbarMass_axis, storage = "weight", name = "Counts"),
+           'trigger4_numerator': hist.Hist(dataset_axis, cats_axis, jetht_axis, jetpt_axis, sdMass_axis, ttbarMass_axis, storage = "weight", name = "Counts"),
+           'trigger5_numerator': hist.Hist(dataset_axis, cats_axis, jetht_axis, jetpt_axis, sdMass_axis, ttbarMass_axis, storage = "weight", name = "Counts"),
             
            'cutflow': processor.defaultdict_accumulator(int),
         }
@@ -2644,6 +2645,7 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         """ Add 4-vectors and get its total mass """
         ttbarp4sum = ttbarcands.slot0.p4.add(ttbarcands.slot1.p4)
         ttbarmass = ak.flatten(ttbarp4sum.mass)
+        JetPT = ak.flatten(ttbarcands.slot0.p4.pt)
         
         
         # ---- Defining ttbarmass Collections for Trigger Analysis Numerator and Denominator ---- #
@@ -2662,6 +2664,22 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
             ttbarmass_NumCondition3 = ttbarmass[condition3]
             
         ttbarmass_DenomCondition = ttbarmass[trigDenom] # contains ttbarmass to be used as denominator for trigger eff
+        
+        jet_pT_numerator1_trig = JetPT[Trigger1]
+        jet_pT_numerator2_trig = JetPT[Trigger2]
+        jet_pT_numerator1 = JetPT[condition1]
+        jet_pT_numerator2 = JetPT[condition2]
+        
+        if (self.year == 2016) or ((self.year == 2017) and ('Run2017B' not in dataset)):
+            jet_pT_numerator3_trig = JetPT[Trigger3]
+            jet_pT_numerator4_trig = JetPT[Trigger4]
+            jet_pT_numerator3 = JetPT[condition3]
+            jet_pT_numerator4 = JetPT[condition4]
+        elif self.year == 2018:
+            jet_pT_numerator3_trig = JetPT[Trigger3]
+            jet_pT_numerator3 = JetPT[condition3]
+            
+        jet_pT_denominator = JetPT[trigDenom]
         
         output['cutflow']['events with jets cond1'] +=  ak.to_awkward0(condition1).sum()
         output['cutflow']['events with jets cond2'] +=  ak.to_awkward0(condition2).sum()
@@ -2769,6 +2787,24 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         jet_HT_denominator = ak.sum(Jets_DenomCondition[passAK4_denom].pt, axis=-1) # Sum over each AK4 Jet per event
         
         
+        jet_pT_numeratorTrigDict = {
+            '1': jet_pT_numerator1_trig,
+            '2': jet_pT_numerator2_trig
+        }
+        
+        jet_pT_numeratorDict = {
+            '1': jet_pT_numerator1,
+            '2': jet_pT_numerator2
+        }
+        
+        if (self.year == 2016) or ((self.year == 2017) and ('Run2017B' not in dataset)):
+            jet_pT_numeratorTrigDict['3'] = jet_pT_numerator3_trig
+            jet_pT_numeratorTrigDict['4'] = jet_pT_numerator4_trig
+            jet_pT_numeratorDict['3'] = jet_pT_numerator3
+            jet_pT_numeratorDict['4'] = jet_pT_numerator4
+        elif self.year == 2018:
+            jet_pT_numeratorTrigDict['3'] = jet_pT_numerator3_trig
+            jet_pT_numeratorDict['3'] = jet_pT_numerator3
         
         ttbarmass_numeratorTrigDict = {
             '1': ttbarmass_NumTrigger1,
@@ -2871,6 +2907,7 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
             output['cutflow'][ilabel] += np.sum(icat)
             output['condition_denominator'].fill(dataset = dataset, anacat = self.ConvertLabelToInt(self.label_dict, ilabel), 
                                                 Jet_HT = ak.to_numpy(jet_HT_denominator[icat]),
+                                                jetpt = ak.to_numpy(jet_pT_denominator[icat]),
                                                 Jet_sdMass = ak.to_numpy(jet_SD_denominator[icat]),
                                                 ttbarmass = ak.to_numpy(ttbarmass_DenomCondition[icat]),
                                                 weight = ak.to_numpy(DenomWgt[icat]))
@@ -2879,9 +2916,11 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
             c = ConditionsDict[str(i)]
             ct = TriggersDict[str(i)]
             n_HT = jet_HT_numeratorDict[str(i)]
+            n_pT = jet_pT_numeratorDict[str(i)]
             n_SD = jet_SD_numeratorDict[str(i)]
             n_ttbar = ttbarmass_numeratorDict[str(i)]
             nt_HT = jet_HT_numeratorTrigDict[str(i)]
+            nt_pT = jet_pT_numeratorTrigDict[str(i)]
             nt_SD = jet_SD_numeratorTrigDict[str(i)]
             nt_ttbar = ttbarmass_numeratorTrigDict[str(i)]
             w = NumWgtDict[str(i)]
@@ -2896,12 +2935,14 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
             for ilabel,icat in labels_and_categories_cond.items():
                 output['condition' + str(i) + '_numerator'].fill(dataset = dataset, anacat = self.ConvertLabelToInt(self.label_dict, ilabel), 
                                                                 Jet_HT = ak.to_numpy(n_HT[icat]),
+                                                                jetpt = ak.to_numpy(n_pT[icat]),
                                                                 Jet_sdMass = ak.to_numpy(n_SD[icat]),
                                                                 ttbarmass = ak.to_numpy(n_ttbar[icat]),
                                                                 weight = ak.to_numpy(w[icat]))
             for ilabel,icat in labels_and_categories_trig.items():
                 output['trigger' + str(i) + '_numerator'].fill(dataset = dataset, anacat = self.ConvertLabelToInt(self.label_dict, ilabel), 
                                                                 Jet_HT = ak.to_numpy(nt_HT[icat]),
+                                                                jetpt = ak.to_numpy(nt_pT[icat]),
                                                                 Jet_sdMass = ak.to_numpy(nt_SD[icat]),
                                                                 ttbarmass = ak.to_numpy(nt_ttbar[icat]),
                                                                 weight = ak.to_numpy(wt[icat]))
