@@ -71,10 +71,13 @@ optional arguments:
                         Create flavor efficiency hist coffea output objects for chosen MC datasets
   -M RUNMMO [RUNMMO ...], --runMMO RUNMMO [RUNMMO ...]
                         Run Mistag-weight and Mass modification Only (no other systematics for uproot 2)
+  -A RUNAMO [RUNAMO ...], --runAMO RUNAMO [RUNAMO ...]
+                        Run (Apply) Mistag-weight Only (no other systematics for uproot 2)
   -d RUNDATASET [RUNDATASET ...], --rundataset RUNDATASET [RUNDATASET ...]
                         List of datasets to be ran/loaded
   -C, --casa            Use Coffea-Casa redirector: root://xcache/
   -L, --lpc             Use CMSLPC redirector: root://cmsxrootd.fnal.gov/
+  -W, --winterfell      Get available files from UB Winterfell /mnt/data/cms
   -l, --loose           Apply loose bTag discriminant cut
   -med, --medium        Apply medium bTag discriminant cut
   -med2016, --medium2016
@@ -98,8 +101,7 @@ optional arguments:
   --timeout TIMEOUT     How many seconds should dask wait for scheduler to connect
   --useEff              Use MC bTag efficiencies for bTagging systematics
   --tpt                 Apply top pT re-weighting for uproot 2
-  --useHist             use scikit-hep/hist for histograms
-  --step {1,2,3,4}      Easily run a certain step of the workflow
+  --step {1,2,3,4,5}    Easily run a certain step of the workflow
   --bTagSyst {central,up,down}
                         Choose Unc.
   --tTagSyst {central,up,down}
@@ -137,25 +139,29 @@ optional arguments:
 
     Example of a usual workflow on Coffea-Casa to make the relevant coffea outputs:
 
-    0.) Make Outputs for Flavor and Trigger Efficiencies
-./Run.py -C -med -F QCD TTbar DM RSGluon -a no -y 2016 --dask --saveFlav
-./Run.py -C -med -T -a no -y 2016 --dask --saveTrig
+        0.) Make Outputs for Flavor and Trigger Efficiencies
+    ./Run.py -C -med -F QCD TTbar DM RSGluon -a no -y 2016 --dask --saveFlav
+    ./Run.py -C -med -T -a no -y 2016 --dask --saveTrig
 
-    1.) Create Mistag Rates that will be used to estimate NTMJ background
-./Run.py -C --step 1
-python Run.py -C -med -m -a no -y 2016 --saveMistag
+        1.) Create Mistag Rates that will be used to estimate NTMJ background
+    ./Run.py -C -y 2016 --step 1
+    python Run.py -C -med -m -a no -y 2016 --saveMistag
 
-    2.) Make Outputs for the first Uproot Job with no weights applied (outside of MC weights that come with the nanoAOD)
-./Run.py -C --step 2
-python Run.py -C -med -d QCD TTbar JetHT DM RSGluon -a no -y 2016 --uproot 1 --save
+        2.) Make Outputs for the first Uproot Job with no weights applied (outside of MC weights that come with the nanoAOD)
+    ./Run.py -C -y 2016 --step 2
+    python Run.py -C -med -d QCD TTbar JetHT DM RSGluon -a no -y 2016 --uproot 1 --save
 
-    3.) Make Outputs for the second Uproot Job with only mistag rate applied to JetHT and TTbar, and mass modification of JetHT and TTbar in pre-tag region
-./Run.py -C --step 3
-python Run.py -C -med -M QCD TTbar JetHT DM RSGluon -a no -y 2016 --save
+        3.) Make Outputs for the second Uproot Job with only mistag rate applied to JetHT and TTbar
+    ./Run.py -C -y 2016 --step 3
+    python Run.py -C -med -A QCD TTbar JetHT DM RSGluon -a no -y 2016 --save
 
-    4.) Make Outputs for the second Uproot Job with systematics, on top of mistag rate application and mass modification
-./Run.py -C --step 4
-python Run.py -C -med -d QCD TTbar JetHT DM RSGluon -a no -y 2016 --uproot 2 --bTagSyst central --useEff --save
+        4.) Make Outputs for the second Uproot Job with only mistag rate applied to JetHT and TTbar, and mass modification of JetHT and TTbar in pre-tag region
+    ./Run.py -C -y 2016 --step 4
+    python Run.py -C -med -M QCD TTbar JetHT DM RSGluon -a no -y 2016 --save
+
+        5.) Make Outputs for the second Uproot Job with systematics, on top of mistag rate application and mass modification
+    ./Run.py -C -y 2016 --step 5
+    python Run.py -C -med -d QCD TTbar JetHT DM RSGluon -a no -y 2016 --uproot 2 --bTagSyst central --useEff --save
 ```
 ***
 # How it works
