@@ -38,7 +38,7 @@
 /SingleMuon/Run2016E-HIPM_UL2016_MiniAODv2_NanoAODv9-v2/NANOAOD,       73.3 GB,  47 files,   90984718 events
 /SingleMuon/Run2016F-HIPM_UL2016_MiniAODv2_NanoAODv9-v2/NANOAOD,       48.6 GB,  43 files,   57465359 events
 -----------------------------------------------------------------------------------------------------------
-                                                                                                      events total
+                                                                                            474844346 events total
 ===========================================================================================================
 /SingleMuon/Run2017B-UL2017_MiniAODv2_NanoAODv9-v1/NANOAOD,            102.1 GB, 79 files,  136300266 events
 /SingleMuon/Run2017C-UL2017_MiniAODv2_NanoAODv9-v1/NANOAOD,            133.0 GB, 117 files, 165652756 events
@@ -175,7 +175,7 @@ def CollectDatasets(redirector_str):
     # ---- JetHT ---- #
     datafilelist = os.listdir(filedir + 'JetHT/')
     for filename in datafilelist:
-        if 'Run2016' in filename:
+        if 'Run2016' in filename and 'Run2016H' not in filename:
             with open(filedir + 'JetHT/' + filename) as f:
                 jetdatafiles2016 = [redirector_str + s.strip() for s in f.readlines() if not s.startswith('#')] 
             filesets['JetHT2016_Data'] += jetdatafiles2016 

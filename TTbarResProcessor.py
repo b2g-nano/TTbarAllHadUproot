@@ -95,7 +95,7 @@ class TTbarResProcessor(processor.ProcessorABC):
 
         # axes for jets and ttbar candidates #
         ttbarmass_axis = hist.axis.Regular(50, 800, 8000, name="ttbarmass", label=r"$m_{t\bar{t}}$ [GeV]")
-        jetmass_axis   = hist.axis.Regular(50, 0, 500, name="jetmass", label=r"Jet $m$ [GeV]")
+        jetmass_axis   = hist.axis.Regular(50, 400, 1000, name="jetmass", label=r"Jet $m$ [GeV]")
         jetpt_axis     = hist.axis.Regular(50, 0, 500, name="jetpt", label=r"Jet $p_{T}$ [GeV]")
         jeteta_axis    = hist.axis.Regular(50, -2.4, 2.4, name="jeteta", label=r"Jet $\eta$")
         jetphi_axis    = hist.axis.Regular(50, -np.pi, np.pi, name="jetphi", label=r"Jet $\phi$")
@@ -826,14 +826,14 @@ class TTbarResProcessor(processor.ProcessorABC):
         mcut_s0 = (self.minMSD < ttbarcands.slot0.msoftdrop) & (ttbarcands.slot0.msoftdrop < self.maxMSD) 
         mcut_s1 = (self.minMSD < ttbarcands.slot1.msoftdrop) & (ttbarcands.slot1.msoftdrop < self.maxMSD) 
 
-        # ttag_s0 = (taucut_s0) & (mcut_s0)
-        # ttag_s1 = (taucut_s1) & (mcut_s1)
-        # antitag = (~taucut_s0) & (mcut_s0) # The Probe jet will always be ttbarcands.slot1 (at)
+        ttag_s0 = (taucut_s0) & (mcut_s0)
+        ttag_s1 = (taucut_s1) & (mcut_s1)
+        antitag = (~taucut_s0) & (mcut_s0) # The Probe jet will always be ttbarcands.slot1 (at)
 
         # ----------- DeepAK8 Tagger (Discriminator Cut) ----------- #
-        ttag_s0 = ttbarcands.slot0.deepTag_TvsQCD > self.deepAK8Cut
-        ttag_s1 = ttbarcands.slot1.deepTag_TvsQCD > self.deepAK8Cut
-        antitag = ttbarcands.slot0.deepTag_TvsQCD < self.deepAK8Cut # The Probe jet will always be ttbarcands.slot1 (at)
+        # ttag_s0 = ttbarcands.slot0.deepTag_TvsQCD > self.deepAK8Cut
+        # ttag_s1 = ttbarcands.slot1.deepTag_TvsQCD > self.deepAK8Cut
+        # antitag = ttbarcands.slot0.deepTag_TvsQCD < self.deepAK8Cut # The Probe jet will always be ttbarcands.slot1 (at)
         
         # ---- Define "Top Tag" Regions ---- #
         antitag_probe = np.logical_and(antitag, ttag_s1) # Found an antitag and ttagged probe pair for mistag rate (AT&Pt)
@@ -1365,7 +1365,7 @@ class TTbarResProcessor(processor.ProcessorABC):
             output['deepTagMD_TvsQCD'].fill(dataset = dataset,
                                      anacat = self.ConvertLabelToInt(self.label_dict, ilabel),
                                      jetpt = ak.to_numpy(jetpt[icat]),
-                                     jetmass = ak.to_numpy(jetmass[icat]),
+                                     jetmass = ak.to_numpy(SDmass[icat]),
                                      tagger = ak.to_numpy(ak8tagger[icat]),       
                                      weight = ak.to_numpy(Weights[icat]),
                                     )
