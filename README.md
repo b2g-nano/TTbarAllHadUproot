@@ -176,7 +176,8 @@ Next, specify the btagging working point, WP, that you want to run the processor
 You can choose the datasets you want for the first and second uproot run by specifying `--rundataset` or `-d` followed by the names of the datasets you'd like to run.  When running the code with this `-d` option (selecting the datasets you want from the terminal) it is mandatory to give the names of the dataset according to the key listed in the help message's epilogue.  For any run option selected to run the program (`-t`, `-m`, `-T`, `-F`, `-M`, `-d`) you must also specify the year, `---year` or `-y`, and whether or not the datasets have APV or not, `--APV` or `-a` (*Default choice is `--APV no`*).  All other arguments are optional, but should still be carefully considered depending on what you want to do.
 ***
 ## Main Example:
-To get all outputs needed for the entire analysis for a given year (for all datasets) simply execute steps 1 - 3. For this example, let's assume we are using Coffea Casa and we want to perform the analysis for the 2017 run.
+To get all outputs needed for the entire analysis for a given year (for all datasets) simply execute steps 1 - 3. Steps 4 and 5 include additional corrections, but the first three gives the bare minimum requirements necessary to make plots with a data-driven background estimate.  
+For this example, let's assume we are using Coffea Casa and we want to perform the analysis for the 2017 run.
 
 > ./Run.py --step 1 -C -y 2017
 
@@ -192,9 +193,9 @@ For faster processing with dask, you would run the previous lines with additiona
 
 > ./Run.py --step 3 -C -y 2017 --dask
 
-For step 4, specify the systematic that you would like to run.  For this example, let's say we want coffea outputs with b-tag 'up' systematic correction
+For step 5, specify the systematic that you would like to run.  For this example, let's say we want coffea outputs with b-tag 'up' systematic correction
 
-> ./Run.py --step 4 -C -y 2017 --bTagSyst up
+> ./Run.py --step 5 -C -y 2017 --bTagSyst up
 
 ***
 # Specific Examples:
