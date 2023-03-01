@@ -63,8 +63,8 @@ def CollectDatasets(redirector_str):
     """
     filedir = 'TTbarAllHadUproot/nanoAODv9WinterFell/'
     Years = ['UL16', 'UL17', 'UL18']
-    VFP = ['preVFP', 'postVFP']
-
+    # VFP = ['preVFP', 'postVFP'] # preVFP unavailable in Winterfell for the moment
+    VFP = ['postVFP'] # Only for simple test in WinterFell
     filesets = {} # To be filled and returned by this function
  
     # ---- Before concatenation with +=, lists should be declard ---- #
@@ -80,9 +80,9 @@ def CollectDatasets(redirector_str):
     # filesets['SingleMu2016B_Data'] = [] 
     
 
-#     for v in VFP:
-#         filesets['UL'+v+'_QCD'] = []
-#         filesets['UL'+v+'_TTbar'] = []
+    for v in VFP:
+        # filesets['UL'+v+'_QCD'] = []
+        filesets['UL'+v+'_TTbar'] = []
         
 #         for i in range(1000, 5500, 500):
 #             filesets['UL'+v+'_DM'+str(i)] = []
@@ -90,9 +90,9 @@ def CollectDatasets(redirector_str):
     
     # ---- Loop through years and VFP status, filling the filesets dictionary with the MC file locations from corresponding txt files ---- #
     
-#     for y in Years:
-#         if '16' in y:
-#             for v in VFP:
+    for y in Years:
+        if '16' in y:
+            for v in VFP:
 #                 # ---- QCD ---- #
 #                 ulqcdfilename = filedir + 'QCD/QCD_NanoAODv9_' + y + '_' + v + '.txt'
 #                 with open(ulqcdfilename) as f:
@@ -100,16 +100,16 @@ def CollectDatasets(redirector_str):
 #                 filesets[y+v+'_QCD'] = ulqcdfiles
 #                 filesets['UL'+v+'_QCD'] += ulqcdfiles # Combine files of all three years for both VFP conditions
 
-#                 # ---- TTbar ---- #
-#                 ulttbar700to1000filename = filedir + 'TT/TT_Mtt-700to1000_NanoAODv9_' + y + '_' + v + '.txt'
-#                 with open(ulttbar700to1000filename) as f:
-#                     ulttbar700to1000files = [redirector_str + s.strip() for s in f.readlines()]
-#                 ulttbar1000toInffilename = filedir + 'TT/TT_Mtt-1000toInf_NanoAODv9_' + y + '_' + v + '.txt'
-#                 with open(ulttbar1000toInffilename) as f:
-#                     ulttbar1000toInffiles = [redirector_str + s.strip() for s in f.readlines()]
-#                 ulttbarfiles = ulttbar700to1000files + ulttbar1000toInffiles # inclusion of both biased samples
-#                 filesets[y+v+'_TTbar'] = ulttbarfiles
-#                 filesets['UL'+v+'_TTbar'] += ulttbarfiles # Combine files of all three years for both VFP conditions
+                # ---- TTbar ---- #
+                ulttbar700to1000filename = filedir + 'TT/TT_Mtt-700to1000_NanoAODv9_' + y + '_' + v + '.txt'
+                with open(ulttbar700to1000filename) as f:
+                    ulttbar700to1000files = [redirector_str + s.strip() for s in f.readlines()]
+                ulttbar1000toInffilename = filedir + 'TT/TT_Mtt-1000toInf_NanoAODv9_' + y + '_' + v + '.txt'
+                with open(ulttbar1000toInffilename) as f:
+                    ulttbar1000toInffiles = [redirector_str + s.strip() for s in f.readlines()]
+                ulttbarfiles = ulttbar700to1000files + ulttbar1000toInffiles # inclusion of both biased samples
+                filesets[y+v+'_TTbar'] = ulttbarfiles
+                filesets['UL'+v+'_TTbar'] += ulttbarfiles # Combine files of all three years for both VFP conditions
 
 #                 # ---- Z' Dark Matter Mediator ---- #
 #                 ulZprimeDMfilename = filedir + 'ZprimeDMToTTbar/ZprimeDMToTTbar_NanoAODv9_' + y + '_' + v + '.txt'
