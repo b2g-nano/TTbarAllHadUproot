@@ -2389,7 +2389,7 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         output['cutflow']['events with pT,y Cut'] += ak.to_awkward0(jetkincut_index).any().sum()
         
         # ---- Find two AK8 Jets ---- #
-        twoFatJetsKin = (ak.num(FatJets, axis=-1) == 2)
+        twoFatJetsKin = (ak.num(FatJets, axis=-1) >= 2)
         FatJets = FatJets[twoFatJetsKin]
         SubJets = SubJets[twoFatJetsKin]
         Jets = Jets[twoFatJetsKin] # this used to not be here
@@ -2786,7 +2786,7 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
             
         jet_HT_denominator = ak.sum(Jets_DenomCondition[passAK4_denom].pt, axis=-1) # Sum over each AK4 Jet per event
         
-        
+            
         jet_pT_numeratorTrigDict = {
             '1': jet_pT_numerator1_trig,
             '2': jet_pT_numerator2_trig
