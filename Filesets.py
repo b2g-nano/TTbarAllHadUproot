@@ -81,7 +81,7 @@ def CollectDatasets(redirector_str):
     
 
     for v in VFP:
-        # filesets['UL'+v+'_QCD'] = []
+        filesets['UL'+v+'_QCD'] = []
         filesets['UL'+v+'_TTbar'] = []
         
 #         for i in range(1000, 5500, 500):
@@ -93,12 +93,12 @@ def CollectDatasets(redirector_str):
     for y in Years:
         if '16' in y:
             for v in VFP:
-#                 # ---- QCD ---- #
-#                 ulqcdfilename = filedir + 'QCD/QCD_NanoAODv9_' + y + '_' + v + '.txt'
-#                 with open(ulqcdfilename) as f:
-#                     ulqcdfiles = [redirector_str + s.strip() for s in f.readlines()]
-#                 filesets[y+v+'_QCD'] = ulqcdfiles
-#                 filesets['UL'+v+'_QCD'] += ulqcdfiles # Combine files of all three years for both VFP conditions
+                # ---- QCD ---- #
+                ulqcdfilename = filedir + 'QCD/QCD_NanoAODv9_' + y + '_' + v + '.txt'
+                with open(ulqcdfilename) as f:
+                    ulqcdfiles = [redirector_str + s.strip() for s in f.readlines()]
+                filesets[y+v+'_QCD'] = ulqcdfiles
+                filesets['UL'+v+'_QCD'] += ulqcdfiles # Combine files of all three years for both VFP conditions
 
                 # ---- TTbar ---- #
                 ulttbar700to1000filename = filedir + 'TT/TT_Mtt-700to1000_NanoAODv9_' + y + '_' + v + '.txt'
