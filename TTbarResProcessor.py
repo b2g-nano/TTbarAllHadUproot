@@ -1184,8 +1184,11 @@ class TTbarResProcessor(processor.ProcessorABC):
             if (self.ModMass == True and (isData or ('TTbar' in dataset))):
                 QCD_hist = None # Higher scope declaration
                 if self.year > 0:
-                    QCD_unweighted = util.load(self.extraDaskDirectory+'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/QCD/'
-                                               +self.BDirect+str(self.year)+'/'+self.apv+'/TTbarRes_0l_UL'+str(self.year-2000)+self.vfp+'_QCD.coffea') 
+                    # QCD_unweighted = util.load(self.extraDaskDirectory+'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/QCD/'
+                    #                            +self.BDirect+str(self.year)+'/'+self.apv+'/TTbarRes_0l_UL'+str(self.year-2000)+self.vfp+'_QCD.coffea') 
+                    # -- Temporarily Borrow This From This File, Since Winterfell Doesn't Have All QCD Stats. -- #
+                    QCD_unweighted = util.load(self.extraDaskDirectory+'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/QCD/MediumBTag/'
+                                               +str(self.year)+'/'+self.apv+'/TTbarRes_0l_UL'+str(self.year-2000)+self.vfp+'_QCD.coffea') 
                     # ---- Define Histogram ---- #
                     # QCD_hist = QCD_unweighted['jetmass'].integrate('anacat', '2t' + str(ilabel[-5:]))
                     loaded_dataset = 'UL'+str(self.year-2000)+self.vfp+'_QCD'
