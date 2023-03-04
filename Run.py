@@ -845,6 +845,24 @@ def main():
             # client.upload_file('TTbarAllHadUproot/TTbarResProcessor.py')
             # client.upload_file('TTbarAllHadUproot/TTbarResLookUpTables.py')
 
+    if UsingDaskExecutor == True and args.winterfell:
+        from dask.distributed import Client #, Scheduler, SchedulerPlugin
+        from dask.distributed.diagnostics.plugin import UploadDirectory
+
+        if __name__ == "__main__":       
+
+            cluster = '128.205.11.158:8885'
+            uploadDir = 'TTbarAllHadUproot'#/CoffeaOutputsForCombine/Coffea_firstRun'
+            client = Client(cluster)
+
+            try:
+                client.register_worker_plugin(UploadDirectory(uploadDir,restart=True,update_path=True),nanny=True)
+            except OSError as ose:
+                print('\n', ose)    
+                print('\nFor some reason, Dask did not work as intended\n')
+                exit
+                if args.newCluster:
+                    cluster.close()
 
 
 
