@@ -96,6 +96,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         # axes for jets and ttbar candidates #
         ttbarmass_axis = hist.axis.Regular(50, 800, 8000, name="ttbarmass", label=r"$m_{t\bar{t}}$ [GeV]")
         jetmass_axis   = hist.axis.Regular(50, 400, 1000, name="jetmass", label=r"Jet $m$ [GeV]")
+        SDjetmass_axis = hist.axis.Regular(50, 0, 500, name="SDjetmass", label=r"Jet $m$ [GeV]")
         jetpt_axis     = hist.axis.Regular(50, 0, 500, name="jetpt", label=r"Jet $p_{T}$ [GeV]")
         jeteta_axis    = hist.axis.Regular(50, -2.4, 2.4, name="jeteta", label=r"Jet $\eta$")
         jetphi_axis    = hist.axis.Regular(50, -np.pi, np.pi, name="jetphi", label=r"Jet $\phi$")
@@ -153,7 +154,7 @@ class TTbarResProcessor(processor.ProcessorABC):
             'jetdy' : hist.Hist(dataset_axis, cats_axis, jetdy_axis, storage="weight", name="Counts"),
 
             'deepTag_TvsQCD'   : hist.Hist(dataset_axis, cats_axis, jetpt_axis, jetmass_axis, tagger_axis, storage="weight", name="Counts"),
-            'deepTagMD_TvsQCD' : hist.Hist(dataset_axis, cats_axis, jetpt_axis, jetmass_axis, tagger_axis, storage="weight", name="Counts"),
+            'deepTagMD_TvsQCD' : hist.Hist(dataset_axis, cats_axis, jetpt_axis, SDjetmass_axis, tagger_axis, storage="weight", name="Counts"),
 
             'tau32'        : hist.Hist(dataset_axis, cats_axis, tau32_axis, storage="weight", name="Counts"),
             'tau32_2D'     : hist.Hist(dataset_axis, cats_axis, jetpt_axis, tau32_axis, storage="weight", name="Counts"),
@@ -1368,7 +1369,7 @@ class TTbarResProcessor(processor.ProcessorABC):
             output['deepTagMD_TvsQCD'].fill(dataset = dataset,
                                      anacat = self.ConvertLabelToInt(self.label_dict, ilabel),
                                      jetpt = ak.to_numpy(jetpt[icat]),
-                                     jetmass = ak.to_numpy(SDmass[icat]),
+                                     SDjetmass = ak.to_numpy(SDmass[icat]),
                                      tagger = ak.to_numpy(ak8tagger[icat]),       
                                      weight = ak.to_numpy(Weights[icat]),
                                     )
