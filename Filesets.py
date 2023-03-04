@@ -10,11 +10,11 @@
 /JetHT/Run2016C-HIPM_UL2016_MiniAODv2_NanoAODv9-v2/NANOAOD,            57.9 GB,  45 files,   46495988 events
 /JetHT/Run2016D-HIPM_UL2016_MiniAODv2_NanoAODv9-v2/NANOAOD,            89.8 GB,  65 files,   73330042 events
 /JetHT/Run2016E-HIPM_UL2016_MiniAODv2_NanoAODv9-v2/NANOAOD,            87.1 GB,  49 files,   69219288 events
-/JetHT/Run2016F-UL2016_MiniAODv2_NanoAODv9-v1/NANOAOD,                 8.3 GB,   5 files,     6613811 events
+/JetHT/Run2016F-UL2016_MiniAODv2_NanoAODv9-v1/NANOAOD,                 53.1 GB,  52 files,   41564915 events
 /JetHT/Run2016G-UL2016_MiniAODv2_NanoAODv9-v1/NANOAOD,                 154.2 GB, 70 files,  120688407 events
 /JetHT/Run2016H-UL2016_MiniAODv2_NanoAODv9-v1/NANOAOD,                 156.1 GB, 72 files,  124050331 events
 -----------------------------------------------------------------------------------------------------------
-                                                                                            583876623 events total
+                                                                                            625441538 events total
 ===========================================================================================================
 /JetHT/Run2017B-UL2017_MiniAODv2_NanoAODv9-v1/NANOAOD,                 67.8 GB,  33 files,   63043590 events
 /JetHT/Run2017C-UL2017_MiniAODv2_NanoAODv9-v1/NANOAOD,                 107.8 GB, 66 files,   96264601 events
