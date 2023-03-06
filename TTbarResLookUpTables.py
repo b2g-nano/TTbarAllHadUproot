@@ -101,11 +101,11 @@ def multi_dict(K, type): # definition from https://www.geeksforgeeks.org/python-
 luts = {}
 luts = multi_dict(2, str) #Annoying, but necessary definition of the dictionary
 
-def LoadDataLUTS(bdiscDirectory, Year, ListOfLetters):
+def LoadDataLUTS(bdiscDirectory, Year, VFP, ListOfLetters):
     if Year != 0:
         for letter in ListOfLetters:
             for icat in list_of_cats:
-                df = pd.read_csv('TTbarAllHadUproot/LookupTables/' + bdiscDirectory + 'mistag_JetHT' + str(Year) + letter + '_Data_ttContaminationRemoved_' + icat + '.csv')
+                df = pd.read_csv('TTbarAllHadUproot/LookupTables/' + bdiscDirectory + 'mistag_UL' + str(Year-2000) + VFP + '_JetHT' + letter + '_Data_ttContaminationRemoved_' + icat + '.csv')
                 luts['JetHT' + str(Year) + letter + '_Data'][icat] = df
     else:
         for icat in list_of_cats:
@@ -295,6 +295,12 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
                         D_vals *= Nevts2016_sf
                         N_vals_tt *= ttbar2016_sf
                         D_vals_tt *= ttbar2016_sf
+                        print(f'N_vals = {N_vals}\n')
+                        print(f'N_vals_tt = {N_vals_tt}\n')
+                        print(f'D_vals = {D_vals}\n')
+                        print(f'D_vals_tt = {D_vals_tt}\n')
+                        print(f'N_vals-N_vals_tt = {N_vals-N_vals_tt}\n')
+                        print(f'D_vals-D_vals_tt = {D_vals-D_vals_tt}\n')
                     elif 'UL17' in iset:
                         N_vals *= Nevts2017_sf 
                         D_vals *= Nevts2017_sf
@@ -312,15 +318,15 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
                         D_vals_tt *= ttbar_sf
 
                     # ---- Subtract ttbar MC probe momenta from data's ---- #
-                    N_vals_diff = np.abs(N_vals-N_vals_tt)
-                    D_vals_diff = np.abs(D_vals-D_vals_tt)
+                    N_vals_diff = np.where(N_vals > N_vals_tt, N_vals-N_vals_tt, 0.)
+                    D_vals_diff = np.where(D_vals > D_vals_tt, D_vals-D_vals_tt, 0.)
 
                     # print(N_vals_diff)
                     # print(D_vals_diff)
                     # print()
 
                     # ---- Define Mistag values ---- #
-                    mistag_vals = np.where(D_vals_diff > 0, N_vals_diff/D_vals_diff, 0)
+                    mistag_vals = np.where(D_vals_diff > 0. , N_vals_diff/D_vals_diff, 0.)
 
                     # ---- Define Momentum values ---- #
                     p_vals = []
@@ -328,9 +334,10 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
                         p_vals.append(iden)
 
                     # ---- Display and Save Dataframe, df, as Look-up Table ---- #
-                    print('fileset:  ' + iset + '_ttContaminationRemoved')
-                    print('category: ' + catmap[icat])
-                    print('________________________________________________\n')
+                    if RemoveContam:
+                        print('fileset:  ' + iset + '_ttContaminationRemoved')
+                        print('category: ' + catmap[icat])
+                        print('________________________________________________\n')
 
                     d = {'p': p_vals, 'M(p)': mistag_vals} # 'data'
                     
@@ -338,8 +345,9 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
                     luts[iset][catmap[icat]] = df
 
                     with pd.option_context('display.max_rows', None, 'display.max_columns', None): 
-                        print(df)
-                    print('\n')
+                        if RemoveContam:
+                            print(df)
+                        print('\n')
                     if Save:
                         df.to_csv(SaveDirectory+filename) # use later to collect bins and weights for re-scaling
             else: # Make mistag rate of any dataset that was run in the 1st uproot job

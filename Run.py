@@ -1305,11 +1305,11 @@ def main():
 
     mistag_luts = None
 
-    if args.runmistag:
-        all_mistag_luts = CreateLUTS(filesets_to_run, outputs_unweighted, BDiscDirectory, args.year, VFP, args.runmistag, Letters, args.saveMistag)
-        mistag_luts = LoadDataLUTS(BDiscDirectory, args.year, Letters) # Specifically get data mistag rates with ttContam. corrections
-    else:
-        mistag_luts = LoadDataLUTS(BDiscDirectory, args.year, Letters)
+    # if args.runmistag:
+    all_mistag_luts = CreateLUTS(filesets_to_run, outputs_unweighted, BDiscDirectory, args.year, VFP, args.runmistag, Letters, args.saveMistag)
+    mistag_luts = LoadDataLUTS(BDiscDirectory, args.year, VFP, Letters) # Specifically get data mistag rates with ttContam. corrections
+    # else:
+    #     mistag_luts = LoadDataLUTS(BDiscDirectory, args.year, Letters)
 
     if OnlyCreateLookupTables:
         print("\n\nWe\'re done here!!\n")
