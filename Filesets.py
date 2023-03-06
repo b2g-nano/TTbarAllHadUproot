@@ -127,7 +127,8 @@ def CollectDatasets(redirector_str):
                     elif 'post' in v:
                         if 'Run2016' in filename: #postVFP
                             with open(filedir + 'JetHT/' + filename) as f:
-                                jetdatafiles2016 = [redirector_str + s.strip() for s in f.readlines() if ('HIPM'not in s and not s.startswith('#'))] 
+                                jetdatafiles2016 = [redirector_str + s.strip() for s in f.readlines() if ('HIPM' not in s and not s.startswith('#'))] 
+                            # print(f'{jetdatafiles2016}\n===============================================================\n')
                             filesets[y+v+'_JetHT_Data'] += jetdatafiles2016
                     
 
@@ -299,7 +300,10 @@ def CollectDatasets(redirector_str):
 #                 singlemudatafiles2018 = [redirector_str + s.strip() for s in h.readlines() if not s.startswith('#')] 
 #             filesets['SingleMu2018_Data'] += singlemudatafiles2018 
                 
-    
+    print(filesets['UL16postVFP_JetHT_Data'])
+    print('==========================================================================================================')
+    print(filesets['UL16postVFP_TTbar'])
+                    
     return filesets
 
 # CollectDatasets('root://xcache/')
