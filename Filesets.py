@@ -120,14 +120,14 @@ def CollectDatasets(redirector_str):
                 datafilelist = os.listdir(filedir + 'JetHT/')
                 for filename in datafilelist:
                     if 'pre' in v:
-                        if 'Run2016' in filename and 'HIPM' in filename: #preVFP
+                        if 'Run2016' in filename: #preVFP
                             with open(filedir + 'JetHT/' + filename) as f:
-                                jetdatafiles2016 = [redirector_str + s.strip() for s in f.readlines() if not s.startswith('#')] 
+                                jetdatafiles2016 = [redirector_str + s.strip() for s in f.readlines() if ('HIPM' in s and not s.startswith('#'))] 
                             filesets[y+v+'_JetHT_Data'] += jetdatafiles2016 
                     elif 'post' in v:
-                        if 'Run2016' in filename and 'HIPM' not in filename: #postVFP
+                        if 'Run2016' in filename: #postVFP
                             with open(filedir + 'JetHT/' + filename) as f:
-                                jetdatafiles2016 = [redirector_str + s.strip() for s in f.readlines() if not s.startswith('#')] 
+                                jetdatafiles2016 = [redirector_str + s.strip() for s in f.readlines() if ('HIPM'not in s and not s.startswith('#'))] 
                             filesets[y+v+'_JetHT_Data'] += jetdatafiles2016
                     
 
