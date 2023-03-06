@@ -851,18 +851,18 @@ def main():
 
         if __name__ == "__main__":       
 
-            cluster = '128.205.11.158:8885'
-            uploadDir = 'TTbarAllHadUproot'#/CoffeaOutputsForCombine/Coffea_firstRun'
-            client = Client(cluster)
+            # cluster = '128.205.11.158:8787'
+            # uploadDir = 'TTbarAllHadUproot'#/CoffeaOutputsForCombine/Coffea_firstRun'
+            client = Client()
 
-            try:
-                client.register_worker_plugin(UploadDirectory(uploadDir,restart=True,update_path=True),nanny=True)
-            except OSError as ose:
-                print('\n', ose)    
-                print('\nFor some reason, Dask did not work as intended\n')
-                exit
-                if args.newCluster:
-                    cluster.close()
+            # try:
+            #     client.register_worker_plugin(UploadDirectory(uploadDir,restart=True,update_path=True),nanny=True)
+            # except OSError as ose:
+            #     print('\n', ose)    
+            #     print('\nFor some reason, Dask did not work as intended\n')
+            #     exit
+            #     if args.newCluster:
+            #         cluster.close()
 
 
 
@@ -906,7 +906,7 @@ def main():
                                                       chunksize=Chunk[0], maxchunks=Chunk[1])
                 else: # use dask
                     chosen_exec = 'dask'
-                    client.wait_for_workers(timeout=TimeOut)
+                    client.wait_for_workers(n_workers=1, timeout=TimeOut)
                     output = processor.run_uproot_job({name:files},
                                                       treename='Events',
                                                       processor_instance=MCFlavorEfficiencyProcessor(RandomDebugMode=False,
@@ -956,7 +956,7 @@ def main():
 
                 else: # use dask
                     chosen_exec = 'dask'
-                    client.wait_for_workers(timeout=TimeOut)
+                    client.wait_for_workers(n_workers=1, timeout=TimeOut)
                     output = processor.run_uproot_job({name:files},
                                                       treename='Events',
                                                       processor_instance=MCFlavorEfficiencyProcessor(RandomDebugMode=False,
@@ -1044,7 +1044,7 @@ def main():
                                                       chunksize=Chunk[0], maxchunks=Chunk[1])
                 else: # use dask
                     chosen_exec = 'dask'
-                    client.wait_for_workers(timeout=TimeOut)
+                    client.wait_for_workers(n_workers=1, timeout=TimeOut)
                     output = processor.run_uproot_job({name:files},
                                                       treename='Events',
                                                       processor_instance=TriggerAnalysisProcessor(RandomDebugMode=False,
@@ -1093,7 +1093,7 @@ def main():
 
                 else: # use dask
                     chosen_exec = 'dask'
-                    client.wait_for_workers(1)
+                    client.wait_for_workers(n_workers=1, timeout=TimeOut)
                     output = processor.run_uproot_job({name:files},
                                                       treename='Events',
                                                       processor_instance=TriggerAnalysisProcessor(RandomDebugMode=False,
@@ -1181,7 +1181,7 @@ def main():
                                                       chunksize=Chunk[0], maxchunks=Chunk[1])
                 else: # use dask
                     chosen_exec = 'dask'
-                    client.wait_for_workers(timeout=TimeOut)
+                    client.wait_for_workers(n_workers=1, timeout=TimeOut)
                     output = processor.run_uproot_job({name:files},
                                                       treename='Events',
                                                       processor_instance=TTbarResProcessor(UseLookUpTables=False,
@@ -1236,7 +1236,7 @@ def main():
 
                 else: # use dask
                     chosen_exec = 'dask'
-                    client.wait_for_workers(timeout=TimeOut)
+                    client.wait_for_workers(n_workers=1, timeout=TimeOut)
                     output = processor.run_uproot_job({name:files},
                                                       treename='Events',
                                                       processor_instance=TTbarResProcessor(UseLookUpTables=False,
@@ -1373,7 +1373,7 @@ def main():
                                                       chunksize=Chunk[0], maxchunks=Chunk[1])
                 else:
                     chosen_exec = 'dask'
-                    client.wait_for_workers(timeout=TimeOut)
+                    client.wait_for_workers(n_workers=1, timeout=TimeOut)
                     output = processor.run_uproot_job({name:files},
                                                       treename='Events',
                                                       processor_instance=TTbarResProcessor(UseLookUpTables=True,
@@ -1452,7 +1452,7 @@ def main():
 
                 else:
                     chosen_exec = 'dask'
-                    client.wait_for_workers(timeout=TimeOut)
+                    client.wait_for_workers(n_workers=1, timeout=TimeOut)
                     output = processor.run_uproot_job({name:files},
                                                       treename='Events',
                                                       processor_instance=TTbarResProcessor(UseLookUpTables=True,
@@ -1559,7 +1559,7 @@ def main():
                                                           chunksize=Chunk[0], maxchunks=Chunk[1])
                     else:
                         chosen_exec = 'dask'
-                        client.wait_for_workers(timeout=TimeOut)
+                        client.wait_for_workers(n_workers=1, timeout=TimeOut)
                         output = processor.run_uproot_job({name:files},
                                                           treename='Events',
                                                           processor_instance=TTbarResProcessor(UseLookUpTables=True,
@@ -1616,7 +1616,7 @@ def main():
 
                     else:
                         chosen_exec = 'dask'
-                        client.wait_for_workers(timeout=TimeOut)
+                        client.wait_for_workers(n_workers=1, timeout=TimeOut)
                         output = processor.run_uproot_job({name:files},
                                                           treename='Events',
                                                           processor_instance=TTbarResProcessor(UseLookUpTables=True,
@@ -1700,7 +1700,7 @@ def main():
                                                           chunksize=Chunk[0], maxchunks=Chunk[1])
                     else:
                         chosen_exec = 'dask'
-                        client.wait_for_workers(timeout=TimeOut)
+                        client.wait_for_workers(n_workers=1, timeout=TimeOut)
                         output = processor.run_uproot_job({name:files},
                                                           treename='Events',
                                                           processor_instance=TTbarResProcessor(UseLookUpTables=True,
@@ -1757,7 +1757,7 @@ def main():
 
                     else:
                         chosen_exec = 'dask'
-                        client.wait_for_workers(timeout=TimeOut)
+                        client.wait_for_workers(n_workers=1, timeout=TimeOut)
                         output = processor.run_uproot_job({name:files},
                                                           treename='Events',
                                                           processor_instance=TTbarResProcessor(UseLookUpTables=True,
