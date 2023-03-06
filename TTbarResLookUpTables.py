@@ -238,16 +238,16 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
         ttbar_sf = 1.
         
         if 'UL16'+VFP+'_TTbar' in Outputs.keys():
-            ttbar2016_sf = ttbar_BR*Lum2016/Outputs['UL16'+VFP+'_TTbar']['cutflow']['all events']
+            ttbar2016_sf = Lum2016/Outputs['UL16'+VFP+'_TTbar']['cutflow']['all events']
             print('\n\nProperly Scaled 2016 ttbar simulation\n\n')
         elif 'UL17'+VFP+'_TTbar' in Outputs.keys():
-            ttbar2017_sf = ttbar_BR*Lum2017/Outputs['UL17'+VFP+'_TTbar']['cutflow']['all events']
+            ttbar2017_sf = Lum2017/Outputs['UL17'+VFP+'_TTbar']['cutflow']['all events']
             print('\n\nProperly Scaled 2017 ttbar simulation\n\n')
         elif 'UL18'+VFP+'_TTbar' in Outputs.keys():
-            ttbar2018_sf = ttbar_BR*Lum2018/Outputs['UL18'+VFP+'_TTbar']['cutflow']['all events']
+            ttbar2018_sf = Lum2018/Outputs['UL18'+VFP+'_TTbar']['cutflow']['all events']
             print('\n\nProperly Scaled 2018 ttbar simulation\n\n')
         elif ('TTbar' in Outputs.items()) and (Year == 0):
-            ttbar_sf = ttbar_BR*Lum/Outputs[VFP+'_TTbar']['cutflow']['all events']
+            ttbar_sf = Lum/Outputs[VFP+'_TTbar']['cutflow']['all events']
             print('\n\nProperly Scaled All Years of ttbar simulation\n\n')
         else:
             print('\n\nNO TTBAR SIMULATION FOUND IN RUN\n\n')
