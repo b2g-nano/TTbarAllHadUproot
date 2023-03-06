@@ -209,14 +209,14 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
     Nevts_sf = 1.
     
     for letter in ListOfLetters:
-        if 'JetHT2016'+letter+'_Data' in Outputs.keys():
-            Nevts2016_sf = Nevts2016/Outputs['JetHT2016' + letter + '_Data']['cutflow']['all events']
+        if 'UL16'+VFP+'_JetHT'+letter+'_Data' in Outputs.keys():
+            Nevts2016_sf = Nevts2016/Outputs['UL16'+VFP+'_JetHT'+letter+'_Data']['cutflow']['all events']
             print('\n\nFound 2016 Data')
         if 'JetHT2017'+letter+'_Data' in Outputs.keys():
-            Nevts2017_sf = Nevts2017/Outputs['JetHT2017' + letter + '_Data']['cutflow']['all events']
+            Nevts2017_sf = Nevts2017/Outputs[filestring_prefix + '_JetHT' + letter + '_Data']['cutflow']['all events']
             print('\n\nFound 2017 Data')
         if 'JetHT2018'+letter+'_Data' in Outputs.keys():
-            Nevts2018_sf = Nevts2018/Outputs['JetHT2018' + letter + '_Data']['cutflow']['all events']
+            Nevts2018_sf = Nevts2018/Outputs[filestring_prefix + '_JetHT' + letter + '_Data']['cutflow']['all events']
             print('\n\nFound 2018 Data')
         if 'JetHT_Data' in Filesets:
             Nevts_sf = Nevts / Outputs['JetHT_Data']['cutflow']['all events']
@@ -290,17 +290,17 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
                     D_vals = Denominator.view().value
 
                     # ---- Properly scale chunks of data and ttbar MC according to year of dataset used---- #
-                    if '2016' in iset:
+                    if 'UL16' in iset:
                         N_vals *= Nevts2016_sf 
                         D_vals *= Nevts2016_sf
                         N_vals_tt *= ttbar2016_sf
                         D_vals_tt *= ttbar2016_sf
-                    elif '2017' in iset:
+                    elif 'UL17' in iset:
                         N_vals *= Nevts2017_sf 
                         D_vals *= Nevts2017_sf
                         N_vals_tt *= ttbar2017_sf
                         D_vals_tt *= ttbar2017_sf
-                    elif '2018' in iset:
+                    elif 'UL18' in iset:
                         N_vals *= Nevts2018_sf 
                         D_vals *= Nevts2018_sf
                         N_vals_tt *= ttbar2018_sf

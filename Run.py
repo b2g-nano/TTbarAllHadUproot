@@ -487,14 +487,15 @@ def main():
     if args.letters:
         Letters = args.letters
 
-    namingConvention = 'UL'+VFP # prefix to help name every MC coffea output according to the selected options
-    fileConvention = convertLabel[VFP] + '/TTbarRes_0l_' # direct the saved coffea output to the appropriate directory
+    namingConvention = 'UL'+VFP # prefix to help name every coffea output according to the selected options
+    fileConvention = convertLabel[VFP] + '/TTbarRes_0l_' # direct the saved coffea output to the appropriate directory ex.) postVFP/TTbarRes_0l_blahblah
     if args.year > 0:
-        namingConvention = 'UL'+str(args.year-2000)+VFP # prefix to help name every MC coffea output according to the selected options
+        namingConvention = 'UL'+str(args.year-2000)+VFP # prefix to help name every coffea output according to the selected options
         fileConvention = str(args.year) + '/' + convertLabel[VFP] + '/TTbarRes_0l_' # direct the saved coffea output to the appropriate directory
     SaveLocation={ # Fill this dictionary with each type of dataset; use this dictionary when saving uproot jobs below
         namingConvention+'_TTbar': 'TT/' + BDiscDirectory + fileConvention,
-        namingConvention+'_QCD': 'QCD/' + BDiscDirectory + fileConvention
+        namingConvention+'_QCD': 'QCD/' + BDiscDirectory + fileConvention,
+        namingConvention+'_JetHT_Data': 'JetHT/' + BDiscDirectory + fileConvention
     }
     if not Testing:
         filesets_to_run = {}
@@ -505,14 +506,14 @@ def main():
                 if args.year > 0:
                     if ('JetHT' in a): 
                         for L in Letters:
-                            filesets_to_run['JetHT'+str(args.year)+L+'_Data'] = filesets['JetHT'+str(args.year)+L+'_Data'] # include JetHT dataset read in from Filesets
-                            SaveLocation['JetHT'+str(args.year)+L+'_Data'] = 'JetHT/' + BDiscDirectory + str(args.year) + '/TTbarRes_0l_' # file where output will be saved
+                            filesets_to_run[namingConvention+'_JetHT'+L+'_Data'] = filesets[namingConvention+'_JetHT'+L+'_Data'] # include JetHT dataset read in from Filesets
+                            SaveLocation[namingConvention+'_JetHT'+L+'_Data'] = 'JetHT/' + BDiscDirectory + fileConvention # file where output will be saved
                     elif ('SingleMu' in a): 
                         filesets_to_run['SingleMu'+str(args.year)+'_Data'] = filesets['SingleMu'+str(args.year)+'_Data'] # include JetHT dataset read in from Filesets
                         SaveLocation['SingleMu'+str(args.year)+'_Data'] = 'SingleMu/' + BDiscDirectory + str(args.year) + '/TTbarRes_0l_' # file where output will be saved
                 else: # All Years
                     if ('JetHT' in a): 
-                        filesets_to_run['JetHT_Data'] = filesets['JetHT_Data'] # include JetHT dataset read in from Filesets
+                        filesets_to_run[namingConvention+'JetHT_Data'] = filesets[namingConvention+'JetHT_Data'] # include JetHT dataset read in from Filesets
                         SaveLocation['JetHT_Data'] = 'JetHT/' + BDiscDirectory + '/TTbarRes_0l_' # file where output will be saved
                     elif ('SingleMu' in a): 
                         filesets_to_run['SingleMu_Data'] = filesets['SingleMu_Data'] # include JetHT dataset read in from Filesets
@@ -753,8 +754,8 @@ def main():
             filesets_to_run[namingConvention+'_TTbar'] = filesets[namingConvention+'_TTbar']
             if args.year > 0:
                 for L in Letters:
-                    filesets_to_run['JetHT'+str(args.year)+L+'_Data'] = filesets['JetHT'+str(args.year)+L+'_Data'] # include JetHT dataset read in from Filesets
-                    SaveLocation['JetHT'+str(args.year)+L+'_Data'] = 'JetHT/' + BDiscDirectory + str(args.year) + '/TTbarRes_0l_' # file where output will be saved
+                    filesets_to_run[namingConvention+'_JetHT'+L+'_Data'] = filesets[namingConvention+'_JetHT'+L+'_Data'] # include JetHT dataset read in from Filesets
+                    SaveLocation[namingConvention+'_JetHT'+L+'_Data'] = 'JetHT/' + BDiscDirectory + fileConvention # file where output will be saved
             else:
                 filesets_to_run['JetHT_Data'] = filesets['JetHT_Data']
                 SaveLocation['JetHT_Data'] = 'JetHT/' + BDiscDirectory + '/TTbarRes_0l_'
@@ -1305,9 +1306,10 @@ def main():
     mistag_luts = None
 
     if args.runmistag:
-        mistag_luts = CreateLUTS(filesets_to_run, outputs_unweighted, BDiscDirectory, args.year, VFP, args.runmistag, Letters, args.saveMistag)
-    else:
+        all_mistag_luts = CreateLUTS(filesets_to_run, outputs_unweighted, BDiscDirectory, args.year, VFP, args.runmistag, Letters, args.saveMistag)
         mistag_luts = LoadDataLUTS(BDiscDirectory, args.year, Letters) # Specifically get data mistag rates with ttContam. corrections
+    else:
+        mistag_luts = LoadDataLUTS(BDiscDirectory, args.year, Letters)
 
     if OnlyCreateLookupTables:
         print("\n\nWe\'re done here!!\n")
