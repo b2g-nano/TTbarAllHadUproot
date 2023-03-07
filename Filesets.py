@@ -300,9 +300,9 @@ def CollectDatasets(redirector_str):
 #                 singlemudatafiles2018 = [redirector_str + s.strip() for s in h.readlines() if not s.startswith('#')] 
 #             filesets['SingleMu2018_Data'] += singlemudatafiles2018 
                 
-    print(filesets['UL16postVFP_JetHT_Data'])
-    print('==========================================================================================================')
-    print(filesets['UL16postVFP_TTbar'])
+    # print(filesets['UL16postVFP_JetHT_Data'])
+    # print('==========================================================================================================')
+    # print(filesets['UL16postVFP_TTbar'])
                     
     return filesets
 

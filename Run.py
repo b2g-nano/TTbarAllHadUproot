@@ -853,7 +853,7 @@ def main():
         if __name__ == "__main__":       
 
             # cluster = '128.205.11.158:8787'
-            uploadDir = 'TTbarAllHadUproot'#/CoffeaOutputsForCombine/Coffea_firstRun'
+            uploadDir = 'acwillia/TTbarAllHadUproot/CorrectionFiles/SFs/bquark'
             client = Client()
 
             try:
@@ -865,7 +865,9 @@ def main():
                 if args.newCluster:
                     cluster.close()
 
-
+            print('Worker Directories:\n')
+            # print(client.run(os.listdir))
+            print(client.run(os.listdir,"acwillia/TTbarAllHadUproot/CorrectionFiles/SFs/bquark"))
 
     #    ----------------------------------------------------------------------------------------------------  
     #    U     U PPPPPP  RRRRRR    OOO     OOO   TTTTTTT     FFFFFFF L          A    V     V   OOO   RRRRRR      

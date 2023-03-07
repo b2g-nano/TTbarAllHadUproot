@@ -77,8 +77,8 @@ catmap = dict(zip(list_of_ints, list_of_cats))
 # ---- This Creates Mistag plots for every dataset in every category for debugging if necessary or for curiosity ---- #
 # ---- Look up tables are a bit more sophisticated and much more useful to the analysis ---- #
 
-SaveDirectory = maindirectory + '/TTbarAllHadUproot/MistagPlots/'
-DoesDirectoryExist(SaveDirectory) # no need to create the directory several times
+# SaveDirectory = maindirectory + '/TTbarAllHadUproot/MistagPlots/'
+# DoesDirectoryExist(SaveDirectory) # no need to create the directory several times
 
 # Function sqrt(x)
 def forward(x):
