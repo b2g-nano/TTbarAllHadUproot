@@ -318,8 +318,8 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
                         D_vals_tt *= ttbar_sf
 
                     # ---- Subtract ttbar MC probe momenta from data's ---- #
-                    N_vals_diff = np.where(N_vals > N_vals_tt, N_vals-N_vals_tt, 0.)
-                    D_vals_diff = np.where(D_vals > D_vals_tt, D_vals-D_vals_tt, 0.)
+                    N_vals_diff = np.where(N_vals > N_vals_tt, N_vals-N_vals_tt, N_vals)
+                    D_vals_diff = np.where(D_vals > D_vals_tt, D_vals-D_vals_tt, D_vals)
 
                     # print(N_vals_diff)
                     # print(D_vals_diff)
