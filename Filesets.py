@@ -226,10 +226,11 @@ def CollectDatasets(redirector_str):
             filesets['UL16preVFP_JetHTE_Data'] += jetdatafiles2016e
         elif 'Run2016F' in filename:
             with open(filedir + 'JetHT/' + filename) as f:
-                jetdatafiles2016f = [redirector_str + s.strip() for s in f.readlines() if not s.startswith('#') if ('HIPM' in s and not s.startswith('#'))]
-                jetdatafiles2016ff = [redirector_str + s.strip() for s in f.readlines() if not s.startswith('#') if ('HIPM' not in s and not s.startswith('#'))]
-            filesets['UL16preVFP_JetHTF_Data'] += jetdatafiles2016f
-            filesets['UL16postVFP_JetHTF_Data'] += jetdatafiles2016ff
+                jetdatafiles2016fold = [redirector_str + s.strip() for s in f.readlines() if not s.startswith('#') if ('HIPM' in s and not s.startswith('#'))]
+            with open(filedir + 'JetHT/' + filename) as fnew:
+                jetdatafiles2016fnew = [redirector_str + s.strip() for s in fnew.readlines() if not s.startswith('#') if ('HIPM' not in s and not s.startswith('#'))]
+            filesets['UL16preVFP_JetHTF_Data'] += jetdatafiles2016fold
+            filesets['UL16postVFP_JetHTF_Data'] += jetdatafiles2016fnew
         elif 'Run2016G' in filename:
             with open(filedir + 'JetHT/' + filename) as g:
                 jetdatafiles2016g = [redirector_str + s.strip() for s in g.readlines() if not s.startswith('#')] 
