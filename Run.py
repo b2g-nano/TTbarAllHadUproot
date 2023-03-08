@@ -487,15 +487,16 @@ def main():
     if args.letters:
         Letters = args.letters
 
-    namingConvention = 'UL'+VFP # prefix to help name every coffea output according to the selected options
-    fileConvention = convertLabel[VFP] + '/TTbarRes_0l_' # direct the saved coffea output to the appropriate directory ex.) postVFP/TTbarRes_0l_blahblah
+    namingConvention = 'UL' # prefix to help name every coffea output according to the selected options
+    fileConvention = '/TTbarRes_0l_' # direct the saved coffea output to the appropriate directory ex.) postVFP/TTbarRes_0l_blahblah
     if args.year > 0:
         namingConvention = 'UL'+str(args.year-2000)+VFP # prefix to help name every coffea output according to the selected options
         fileConvention = str(args.year) + '/' + convertLabel[VFP] + '/TTbarRes_0l_' # direct the saved coffea output to the appropriate directory
     SaveLocation={ # Fill this dictionary with each type of dataset; use this dictionary when saving uproot jobs below
         namingConvention+'_TTbar': 'TT/' + BDiscDirectory + fileConvention,
         namingConvention+'_QCD': 'QCD/' + BDiscDirectory + fileConvention,
-        namingConvention+'_JetHT_Data': 'JetHT/' + BDiscDirectory + fileConvention
+        namingConvention+'_DM': 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention,
+        namingConvention+'_RSGluon': 'RSGluonToTT/' + BDiscDirectory + fileConvention
     }
     if not Testing:
         filesets_to_run = {}
@@ -513,14 +514,23 @@ def main():
                         SaveLocation['SingleMu'+str(args.year)+'_Data'] = 'SingleMu/' + BDiscDirectory + str(args.year) + '/TTbarRes_0l_' # file where output will be saved
                 else: # All Years
                     if ('JetHT' in a): 
-                        filesets_to_run[namingConvention+'JetHT_Data'] = filesets[namingConvention+'JetHT_Data'] # include JetHT dataset read in from Filesets
-                        SaveLocation['JetHT_Data'] = 'JetHT/' + BDiscDirectory + '/TTbarRes_0l_' # file where output will be saved
+                        filesets_to_run[namingConvention+'_JetHT_Data'] = filesets[namingConvention+'JetHT_Data'] # include JetHT dataset read in from Filesets
+                        SaveLocation[namingConvention+'_JetHT_Data'] = 'JetHT/' + BDiscDirectory + '/TTbarRes_0l_' # file where output will be saved
                     elif ('SingleMu' in a): 
                         filesets_to_run['SingleMu_Data'] = filesets['SingleMu_Data'] # include JetHT dataset read in from Filesets
                         SaveLocation['SingleMu_Data'] = 'SingleMu/' + BDiscDirectory + '/TTbarRes_0l_' # file where output will be saved
                 # Signal MC (then TTbar and QCD MC)
                 if 'RSGluon' in a:
                     if a == 'RSGluon':
+                        filesets_to_run[namingConvention+'_'+a+'1000'] = filesets[namingConvention+'_'+a+'1000']
+                        filesets_to_run[namingConvention+'_'+a+'1500'] = filesets[namingConvention+'_'+a+'1500']
+                        filesets_to_run[namingConvention+'_'+a+'2000'] = filesets[namingConvention+'_'+a+'2000']
+                        filesets_to_run[namingConvention+'_'+a+'2500'] = filesets[namingConvention+'_'+a+'2500']
+                        filesets_to_run[namingConvention+'_'+a+'3000'] = filesets[namingConvention+'_'+a+'3000']
+                        filesets_to_run[namingConvention+'_'+a+'3500'] = filesets[namingConvention+'_'+a+'3500']
+                        filesets_to_run[namingConvention+'_'+a+'4000'] = filesets[namingConvention+'_'+a+'4000']
+                        filesets_to_run[namingConvention+'_'+a+'4500'] = filesets[namingConvention+'_'+a+'4500']
+                        filesets_to_run[namingConvention+'_'+a+'5000'] = filesets[namingConvention+'_'+a+'5000']
                         SaveLocation[namingConvention+'_'+a+'1000'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'1500'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'2000'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
@@ -530,6 +540,10 @@ def main():
                         SaveLocation[namingConvention+'_'+a+'4000'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'4500'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'5000'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
+                    else:
+                        filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a]
+                elif 'DM' in a:
+                    if a == 'DM':
                         filesets_to_run[namingConvention+'_'+a+'1000'] = filesets[namingConvention+'_'+a+'1000']
                         filesets_to_run[namingConvention+'_'+a+'1500'] = filesets[namingConvention+'_'+a+'1500']
                         filesets_to_run[namingConvention+'_'+a+'2000'] = filesets[namingConvention+'_'+a+'2000']
@@ -539,11 +553,6 @@ def main():
                         filesets_to_run[namingConvention+'_'+a+'4000'] = filesets[namingConvention+'_'+a+'4000']
                         filesets_to_run[namingConvention+'_'+a+'4500'] = filesets[namingConvention+'_'+a+'4500']
                         filesets_to_run[namingConvention+'_'+a+'5000'] = filesets[namingConvention+'_'+a+'5000']
-                    else:
-                        SaveLocation[namingConvention+'_'+a] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
-                        filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a]
-                elif 'DM' in a:
-                    if a == 'DM':
                         SaveLocation[namingConvention+'_'+a+'1000'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'1500'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'2000'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
@@ -553,17 +562,7 @@ def main():
                         SaveLocation[namingConvention+'_'+a+'4000'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'4500'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'5000'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
-                        filesets_to_run[namingConvention+'_'+a+'1000'] = filesets[namingConvention+'_'+a+'1000']
-                        filesets_to_run[namingConvention+'_'+a+'1500'] = filesets[namingConvention+'_'+a+'1500']
-                        filesets_to_run[namingConvention+'_'+a+'2000'] = filesets[namingConvention+'_'+a+'2000']
-                        filesets_to_run[namingConvention+'_'+a+'2500'] = filesets[namingConvention+'_'+a+'2500']
-                        filesets_to_run[namingConvention+'_'+a+'3000'] = filesets[namingConvention+'_'+a+'3000']
-                        filesets_to_run[namingConvention+'_'+a+'3500'] = filesets[namingConvention+'_'+a+'3500']
-                        filesets_to_run[namingConvention+'_'+a+'4000'] = filesets[namingConvention+'_'+a+'4000']
-                        filesets_to_run[namingConvention+'_'+a+'4500'] = filesets[namingConvention+'_'+a+'4500']
-                        filesets_to_run[namingConvention+'_'+a+'5000'] = filesets[namingConvention+'_'+a+'5000']
                     else:
-                        SaveLocation[namingConvention+'_'+a] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
                         filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a]
                 elif 'TTbar' in a or 'QCD' in a:
                     filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a] # include MC dataset read in from Filesets
@@ -572,21 +571,31 @@ def main():
             for a in args.runMMO: # for any dataset included as user argument...
                 if args.year > 0:
                     if ('JetHT' in a): 
-                        filesets_to_run['JetHT'+str(args.year)+'_Data'] = filesets['JetHT'+str(args.year)+'_Data'] # include JetHT dataset read in from Filesets
-                        SaveLocation['JetHT'+str(args.year)+'_Data'] = 'JetHT/' + BDiscDirectory + str(args.year) + '/TTbarRes_0l_' # file where output will be saved
+                        for L in Letters:
+                            filesets_to_run[namingConvention+'_JetHT'+L+'_Data'] = filesets[namingConvention+'_JetHT'+L+'_Data'] # include JetHT dataset read in from Filesets
+                            SaveLocation[namingConvention+'_JetHT'+L+'_Data'] = 'JetHT/' + BDiscDirectory + fileConvention # file where output will be saved
                     elif ('SingleMu' in a): 
                         filesets_to_run['SingleMu'+str(args.year)+'_Data'] = filesets['SingleMu'+str(args.year)+'_Data'] # include JetHT dataset read in from Filesets
                         SaveLocation['SingleMu'+str(args.year)+'_Data'] = 'SingleMu/' + BDiscDirectory + str(args.year) + '/TTbarRes_0l_' # file where output will be saved
                 else: # All Years
                     if ('JetHT' in a): 
-                        filesets_to_run['JetHT_Data'] = filesets['JetHT_Data'] # include JetHT dataset read in from Filesets
-                        SaveLocation['JetHT_Data'] = 'JetHT/' + BDiscDirectory + '/TTbarRes_0l_' # file where output will be saved
+                        filesets_to_run[namingConvention+'_JetHT_Data'] = filesets[namingConvention+'JetHT_Data'] # include JetHT dataset read in from Filesets
+                        SaveLocation[namingConvention+'_JetHT_Data'] = 'JetHT/' + BDiscDirectory + '/TTbarRes_0l_' # file where output will be saved
                     elif ('SingleMu' in a): 
                         filesets_to_run['SingleMu_Data'] = filesets['SingleMu_Data'] # include JetHT dataset read in from Filesets
                         SaveLocation['SingleMu_Data'] = 'SingleMu/' + BDiscDirectory + '/TTbarRes_0l_' # file where output will be saved
                 # Signal MC (then TTbar and QCD MC)
                 if 'RSGluon' in a:
                     if a == 'RSGluon':
+                        filesets_to_run[namingConvention+'_'+a+'1000'] = filesets[namingConvention+'_'+a+'1000']
+                        filesets_to_run[namingConvention+'_'+a+'1500'] = filesets[namingConvention+'_'+a+'1500']
+                        filesets_to_run[namingConvention+'_'+a+'2000'] = filesets[namingConvention+'_'+a+'2000']
+                        filesets_to_run[namingConvention+'_'+a+'2500'] = filesets[namingConvention+'_'+a+'2500']
+                        filesets_to_run[namingConvention+'_'+a+'3000'] = filesets[namingConvention+'_'+a+'3000']
+                        filesets_to_run[namingConvention+'_'+a+'3500'] = filesets[namingConvention+'_'+a+'3500']
+                        filesets_to_run[namingConvention+'_'+a+'4000'] = filesets[namingConvention+'_'+a+'4000']
+                        filesets_to_run[namingConvention+'_'+a+'4500'] = filesets[namingConvention+'_'+a+'4500']
+                        filesets_to_run[namingConvention+'_'+a+'5000'] = filesets[namingConvention+'_'+a+'5000']
                         SaveLocation[namingConvention+'_'+a+'1000'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'1500'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'2000'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
@@ -596,6 +605,10 @@ def main():
                         SaveLocation[namingConvention+'_'+a+'4000'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'4500'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'5000'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
+                    else:
+                        filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a]
+                elif 'DM' in a:
+                    if a == 'DM':
                         filesets_to_run[namingConvention+'_'+a+'1000'] = filesets[namingConvention+'_'+a+'1000']
                         filesets_to_run[namingConvention+'_'+a+'1500'] = filesets[namingConvention+'_'+a+'1500']
                         filesets_to_run[namingConvention+'_'+a+'2000'] = filesets[namingConvention+'_'+a+'2000']
@@ -605,11 +618,6 @@ def main():
                         filesets_to_run[namingConvention+'_'+a+'4000'] = filesets[namingConvention+'_'+a+'4000']
                         filesets_to_run[namingConvention+'_'+a+'4500'] = filesets[namingConvention+'_'+a+'4500']
                         filesets_to_run[namingConvention+'_'+a+'5000'] = filesets[namingConvention+'_'+a+'5000']
-                    else:
-                        SaveLocation[namingConvention+'_'+a] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
-                        filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a]
-                elif 'DM' in a:
-                    if a == 'DM':
                         SaveLocation[namingConvention+'_'+a+'1000'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'1500'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'2000'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
@@ -619,17 +627,7 @@ def main():
                         SaveLocation[namingConvention+'_'+a+'4000'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'4500'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'5000'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
-                        filesets_to_run[namingConvention+'_'+a+'1000'] = filesets[namingConvention+'_'+a+'1000']
-                        filesets_to_run[namingConvention+'_'+a+'1500'] = filesets[namingConvention+'_'+a+'1500']
-                        filesets_to_run[namingConvention+'_'+a+'2000'] = filesets[namingConvention+'_'+a+'2000']
-                        filesets_to_run[namingConvention+'_'+a+'2500'] = filesets[namingConvention+'_'+a+'2500']
-                        filesets_to_run[namingConvention+'_'+a+'3000'] = filesets[namingConvention+'_'+a+'3000']
-                        filesets_to_run[namingConvention+'_'+a+'3500'] = filesets[namingConvention+'_'+a+'3500']
-                        filesets_to_run[namingConvention+'_'+a+'4000'] = filesets[namingConvention+'_'+a+'4000']
-                        filesets_to_run[namingConvention+'_'+a+'4500'] = filesets[namingConvention+'_'+a+'4500']
-                        filesets_to_run[namingConvention+'_'+a+'5000'] = filesets[namingConvention+'_'+a+'5000']
                     else:
-                        SaveLocation[namingConvention+'_'+a] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
                         filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a]
                 elif 'TTbar' in a or 'QCD' in a:
                     filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a] # include MC dataset read in from Filesets
@@ -638,21 +636,31 @@ def main():
             for a in args.runAMO: # for any dataset included as user argument...
                 if args.year > 0:
                     if ('JetHT' in a): 
-                        filesets_to_run['JetHT'+str(args.year)+'_Data'] = filesets['JetHT'+str(args.year)+'_Data'] # include JetHT dataset read in from Filesets
-                        SaveLocation['JetHT'+str(args.year)+'_Data'] = 'JetHT/' + BDiscDirectory + str(args.year) + '/TTbarRes_0l_' # file where output will be saved
+                        for L in Letters:
+                            filesets_to_run[namingConvention+'_JetHT'+L+'_Data'] = filesets[namingConvention+'_JetHT'+L+'_Data'] # include JetHT dataset read in from Filesets
+                            SaveLocation[namingConvention+'_JetHT'+L+'_Data'] = 'JetHT/' + BDiscDirectory + fileConvention # file where output will be saved
                     elif ('SingleMu' in a): 
                         filesets_to_run['SingleMu'+str(args.year)+'_Data'] = filesets['SingleMu'+str(args.year)+'_Data'] # include JetHT dataset read in from Filesets
                         SaveLocation['SingleMu'+str(args.year)+'_Data'] = 'SingleMu/' + BDiscDirectory + str(args.year) + '/TTbarRes_0l_' # file where output will be saved
                 else: # All Years
                     if ('JetHT' in a): 
-                        filesets_to_run['JetHT_Data'] = filesets['JetHT_Data'] # include JetHT dataset read in from Filesets
-                        SaveLocation['JetHT_Data'] = 'JetHT/' + BDiscDirectory + '/TTbarRes_0l_' # file where output will be saved
+                        filesets_to_run[namingConvention+'_JetHT_Data'] = filesets[namingConvention+'JetHT_Data'] # include JetHT dataset read in from Filesets
+                        SaveLocation[namingConvention+'_JetHT_Data'] = 'JetHT/' + BDiscDirectory + '/TTbarRes_0l_' # file where output will be saved
                     elif ('SingleMu' in a): 
                         filesets_to_run['SingleMu_Data'] = filesets['SingleMu_Data'] # include JetHT dataset read in from Filesets
                         SaveLocation['SingleMu_Data'] = 'SingleMu/' + BDiscDirectory + '/TTbarRes_0l_' # file where output will be saved
                 # Signal MC (then TTbar and QCD MC)
                 if 'RSGluon' in a:
                     if a == 'RSGluon':
+                        filesets_to_run[namingConvention+'_'+a+'1000'] = filesets[namingConvention+'_'+a+'1000']
+                        filesets_to_run[namingConvention+'_'+a+'1500'] = filesets[namingConvention+'_'+a+'1500']
+                        filesets_to_run[namingConvention+'_'+a+'2000'] = filesets[namingConvention+'_'+a+'2000']
+                        filesets_to_run[namingConvention+'_'+a+'2500'] = filesets[namingConvention+'_'+a+'2500']
+                        filesets_to_run[namingConvention+'_'+a+'3000'] = filesets[namingConvention+'_'+a+'3000']
+                        filesets_to_run[namingConvention+'_'+a+'3500'] = filesets[namingConvention+'_'+a+'3500']
+                        filesets_to_run[namingConvention+'_'+a+'4000'] = filesets[namingConvention+'_'+a+'4000']
+                        filesets_to_run[namingConvention+'_'+a+'4500'] = filesets[namingConvention+'_'+a+'4500']
+                        filesets_to_run[namingConvention+'_'+a+'5000'] = filesets[namingConvention+'_'+a+'5000']
                         SaveLocation[namingConvention+'_'+a+'1000'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'1500'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'2000'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
@@ -662,6 +670,10 @@ def main():
                         SaveLocation[namingConvention+'_'+a+'4000'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'4500'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'5000'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
+                    else:
+                        filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a]
+                elif 'DM' in a:
+                    if a == 'DM':
                         filesets_to_run[namingConvention+'_'+a+'1000'] = filesets[namingConvention+'_'+a+'1000']
                         filesets_to_run[namingConvention+'_'+a+'1500'] = filesets[namingConvention+'_'+a+'1500']
                         filesets_to_run[namingConvention+'_'+a+'2000'] = filesets[namingConvention+'_'+a+'2000']
@@ -671,11 +683,6 @@ def main():
                         filesets_to_run[namingConvention+'_'+a+'4000'] = filesets[namingConvention+'_'+a+'4000']
                         filesets_to_run[namingConvention+'_'+a+'4500'] = filesets[namingConvention+'_'+a+'4500']
                         filesets_to_run[namingConvention+'_'+a+'5000'] = filesets[namingConvention+'_'+a+'5000']
-                    else:
-                        SaveLocation[namingConvention+'_'+a] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
-                        filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a]
-                elif 'DM' in a:
-                    if a == 'DM':
                         SaveLocation[namingConvention+'_'+a+'1000'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'1500'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'2000'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
@@ -685,17 +692,7 @@ def main():
                         SaveLocation[namingConvention+'_'+a+'4000'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'4500'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'5000'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
-                        filesets_to_run[namingConvention+'_'+a+'1000'] = filesets[namingConvention+'_'+a+'1000']
-                        filesets_to_run[namingConvention+'_'+a+'1500'] = filesets[namingConvention+'_'+a+'1500']
-                        filesets_to_run[namingConvention+'_'+a+'2000'] = filesets[namingConvention+'_'+a+'2000']
-                        filesets_to_run[namingConvention+'_'+a+'2500'] = filesets[namingConvention+'_'+a+'2500']
-                        filesets_to_run[namingConvention+'_'+a+'3000'] = filesets[namingConvention+'_'+a+'3000']
-                        filesets_to_run[namingConvention+'_'+a+'3500'] = filesets[namingConvention+'_'+a+'3500']
-                        filesets_to_run[namingConvention+'_'+a+'4000'] = filesets[namingConvention+'_'+a+'4000']
-                        filesets_to_run[namingConvention+'_'+a+'4500'] = filesets[namingConvention+'_'+a+'4500']
-                        filesets_to_run[namingConvention+'_'+a+'5000'] = filesets[namingConvention+'_'+a+'5000']
                     else:
-                        SaveLocation[namingConvention+'_'+a] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
                         filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a]
                 elif 'TTbar' in a or 'QCD' in a:
                     filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a] # include MC dataset read in from Filesets
@@ -704,6 +701,15 @@ def main():
             for a in args.runflavoreff: # for any dataset included as user argument...
                 if 'RSGluon' in a:
                     if a == 'RSGluon':
+                        filesets_to_run[namingConvention+'_'+a+'1000'] = filesets[namingConvention+'_'+a+'1000']
+                        filesets_to_run[namingConvention+'_'+a+'1500'] = filesets[namingConvention+'_'+a+'1500']
+                        filesets_to_run[namingConvention+'_'+a+'2000'] = filesets[namingConvention+'_'+a+'2000']
+                        filesets_to_run[namingConvention+'_'+a+'2500'] = filesets[namingConvention+'_'+a+'2500']
+                        filesets_to_run[namingConvention+'_'+a+'3000'] = filesets[namingConvention+'_'+a+'3000']
+                        filesets_to_run[namingConvention+'_'+a+'3500'] = filesets[namingConvention+'_'+a+'3500']
+                        filesets_to_run[namingConvention+'_'+a+'4000'] = filesets[namingConvention+'_'+a+'4000']
+                        filesets_to_run[namingConvention+'_'+a+'4500'] = filesets[namingConvention+'_'+a+'4500']
+                        filesets_to_run[namingConvention+'_'+a+'5000'] = filesets[namingConvention+'_'+a+'5000']
                         SaveLocation[namingConvention+'_'+a+'1000'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'1500'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'2000'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
@@ -713,6 +719,10 @@ def main():
                         SaveLocation[namingConvention+'_'+a+'4000'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'4500'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'5000'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
+                    else:
+                        filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a]
+                elif 'DM' in a:
+                    if a == 'DM':
                         filesets_to_run[namingConvention+'_'+a+'1000'] = filesets[namingConvention+'_'+a+'1000']
                         filesets_to_run[namingConvention+'_'+a+'1500'] = filesets[namingConvention+'_'+a+'1500']
                         filesets_to_run[namingConvention+'_'+a+'2000'] = filesets[namingConvention+'_'+a+'2000']
@@ -722,11 +732,6 @@ def main():
                         filesets_to_run[namingConvention+'_'+a+'4000'] = filesets[namingConvention+'_'+a+'4000']
                         filesets_to_run[namingConvention+'_'+a+'4500'] = filesets[namingConvention+'_'+a+'4500']
                         filesets_to_run[namingConvention+'_'+a+'5000'] = filesets[namingConvention+'_'+a+'5000']
-                    else:
-                        SaveLocation[namingConvention+'_'+a] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
-                        filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a]
-                elif 'DM' in a:
-                    if a == 'DM':
                         SaveLocation[namingConvention+'_'+a+'1000'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'1500'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'2000'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
@@ -736,17 +741,7 @@ def main():
                         SaveLocation[namingConvention+'_'+a+'4000'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'4500'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'5000'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
-                        filesets_to_run[namingConvention+'_'+a+'1000'] = filesets[namingConvention+'_'+a+'1000']
-                        filesets_to_run[namingConvention+'_'+a+'1500'] = filesets[namingConvention+'_'+a+'1500']
-                        filesets_to_run[namingConvention+'_'+a+'2000'] = filesets[namingConvention+'_'+a+'2000']
-                        filesets_to_run[namingConvention+'_'+a+'2500'] = filesets[namingConvention+'_'+a+'2500']
-                        filesets_to_run[namingConvention+'_'+a+'3000'] = filesets[namingConvention+'_'+a+'3000']
-                        filesets_to_run[namingConvention+'_'+a+'3500'] = filesets[namingConvention+'_'+a+'3500']
-                        filesets_to_run[namingConvention+'_'+a+'4000'] = filesets[namingConvention+'_'+a+'4000']
-                        filesets_to_run[namingConvention+'_'+a+'4500'] = filesets[namingConvention+'_'+a+'4500']
-                        filesets_to_run[namingConvention+'_'+a+'5000'] = filesets[namingConvention+'_'+a+'5000']
                     else:
-                        SaveLocation[namingConvention+'_'+a] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
                         filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a]
                 elif 'TTbar' in a or 'QCD' in a:
                     filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a] # include MC dataset read in from Filesets
@@ -757,8 +752,8 @@ def main():
                     filesets_to_run[namingConvention+'_JetHT'+L+'_Data'] = filesets[namingConvention+'_JetHT'+L+'_Data'] # include JetHT dataset read in from Filesets
                     SaveLocation[namingConvention+'_JetHT'+L+'_Data'] = 'JetHT/' + BDiscDirectory + fileConvention # file where output will be saved
             else:
-                filesets_to_run['JetHT_Data'] = filesets['JetHT_Data']
-                SaveLocation['JetHT_Data'] = 'JetHT/' + BDiscDirectory + '/TTbarRes_0l_'
+                filesets_to_run[namingConvention+'_JetHT_Data'] = filesets[namingConvention+'JetHT_Data'] # include JetHT dataset read in from Filesets
+                SaveLocation[namingConvention+'_JetHT_Data'] = 'JetHT/' + BDiscDirectory + '/TTbarRes_0l_' # file where output will be saved
         elif isTrigEffArg: # just run over data
             if args.year > 0:
                 filesets_to_run['SingleMu'+str(args.year)+'_Data'] = filesets['SingleMu'+str(args.year)+'_Data']

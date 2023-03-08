@@ -137,12 +137,9 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
         
     
     outputs_unweighted = {}
-    if Year != 0:
-        filestring_prefix = 'UL' + str(Year-2000) + VFP + '_'
-        filestring_prefix_data = str(Year)
-    else:
-        filestring_prefix = 'UL' + VFP + '_'
-        filestring_prefix_data = ''
+    filestring_prefix = 'UL' + str(Year-2000) + VFP
+    if Year == 0:
+        filestring_prefix = 'UL'
 
 #     ---------------------------------------
 #     PPPPPP  L         OOO   TTTTTTT   SSSSS     
@@ -210,7 +207,7 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
     
     for letter in ListOfLetters:
         if 'UL16'+VFP+'_JetHT'+letter+'_Data' in Outputs.keys():
-            Nevts2016_sf = Nevts2016/Outputs['UL16'+VFP+'_JetHT'+letter+'_Data']['cutflow']['all events']
+            Nevts2016_sf = Nevts2016/Outputs[filestring_prefix+'_JetHT'+letter+'_Data']['cutflow']['all events']
             print('\n\nFound 2016 Data')
         if 'JetHT2017'+letter+'_Data' in Outputs.keys():
             Nevts2017_sf = Nevts2017/Outputs[filestring_prefix + '_JetHT' + letter + '_Data']['cutflow']['all events']
@@ -238,16 +235,16 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
         ttbar_sf = 1.
         
         if 'UL16'+VFP+'_TTbar' in Outputs.keys():
-            ttbar2016_sf = ttbar_BR*Lum2016/Outputs['UL16'+VFP+'_TTbar']['cutflow']['all events']
+            ttbar2016_sf = ttbar_BR*toptag_kf*Lum2016/Outputs['UL16'+VFP+'_TTbar']['cutflow']['all events']
             print('\n\nProperly Scaled 2016 ttbar simulation\n\n')
         elif 'UL17'+VFP+'_TTbar' in Outputs.keys():
-            ttbar2017_sf = ttbar_BR*Lum2017/Outputs['UL17'+VFP+'_TTbar']['cutflow']['all events']
+            ttbar2017_sf = ttbar_BR*toptag_kf*Lum2017/Outputs['UL17'+VFP+'_TTbar']['cutflow']['all events']
             print('\n\nProperly Scaled 2017 ttbar simulation\n\n')
         elif 'UL18'+VFP+'_TTbar' in Outputs.keys():
-            ttbar2018_sf = ttbar_BR*Lum2018/Outputs['UL18'+VFP+'_TTbar']['cutflow']['all events']
+            ttbar2018_sf = ttbar_BR*toptag_kf*Lum2018/Outputs['UL18'+VFP+'_TTbar']['cutflow']['all events']
             print('\n\nProperly Scaled 2018 ttbar simulation\n\n')
         elif ('TTbar' in Outputs.items()) and (Year == 0):
-            ttbar_sf = ttbar_BR*Lum/Outputs[VFP+'_TTbar']['cutflow']['all events']
+            ttbar_sf = ttbar_BR*toptag_kf*Lum/Outputs[VFP+'_TTbar']['cutflow']['all events']
             print('\n\nProperly Scaled All Years of ttbar simulation\n\n')
         else:
             print('\n\nNO TTBAR SIMULATION FOUND IN RUN\n\n')
@@ -276,8 +273,8 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
                     # ---- Info from TTbar ---- # ['numerator'][dataset, icat, sum]
                     # Numerator_tt = Outputs[filestring_prefix+'TTbar']['numerator'].project('jetp')
                     # Denominator_tt = Outputs[filestring_prefix+'TTbar']['denominator'].project('jetp')
-                    Numerator_tt = Outputs[filestring_prefix+'TTbar']['numerator'][filestring_prefix+'TTbar', icat, :]
-                    Denominator_tt = Outputs[filestring_prefix+'TTbar']['denominator'][filestring_prefix+'TTbar', icat, :]
+                    Numerator_tt = Outputs[filestring_prefix+'_TTbar']['numerator'][filestring_prefix+'_TTbar', icat, :]
+                    Denominator_tt = Outputs[filestring_prefix+'_TTbar']['denominator'][filestring_prefix+'_TTbar', icat, :]
                     N_vals_tt = Numerator_tt.view().value
                     D_vals_tt = Denominator_tt.view().value
 
