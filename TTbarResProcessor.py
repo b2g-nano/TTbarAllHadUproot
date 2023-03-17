@@ -98,7 +98,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         ttbarmass_axis = hist.axis.Regular(50, 800, 8000, name="ttbarmass", label=r"$m_{t\bar{t}}$ [GeV]")
         jetmass_axis   = hist.axis.Regular(50, 0, 500, name="jetmass", label=r"Jet $m$ [GeV]")
         SDjetmass_axis = hist.axis.Regular(50, 0, 500, name="SDjetmass", label=r"Jet $m_{SD}$ [GeV]")
-        jetpt_axis     = hist.axis.Regular(50, 400, 1000, name="jetpt", label=r"Jet $p_{T}$ [GeV]")
+        jetpt_axis     = hist.axis.Regular(50, 400, 2000, name="jetpt", label=r"Jet $p_{T}$ [GeV]")
         jeteta_axis    = hist.axis.Regular(50, -2.4, 2.4, name="jeteta", label=r"Jet $\eta$")
         jetphi_axis    = hist.axis.Regular(50, -np.pi, np.pi, name="jetphi", label=r"Jet $\phi$")
         jety_axis      = hist.axis.Regular(50, -3, 3, name="jety", label=r"Jet $y$")
@@ -107,12 +107,13 @@ class TTbarResProcessor(processor.ProcessorABC):
         # axes for top tagger #
         manual_axis = hist.axis.Variable(manual_bins, name="jetp", label=r"Jet Momentum [GeV]")
         tagger_axis = hist.axis.Regular(50, 0, 1, name="tagger", label=r"deepTag")
+        subjettagger_axis = hist.axis.Regular(50, -2, 1, name="subjettagger", label=r"deepB")
         tau32_axis  = hist.axis.Regular(50, 0, 2, name="tau32", label=r"$\tau_3/\tau_2$")
 
         # axes for subjets #
         subjetmass_axis = hist.axis.Regular(50, 0, 500, name="subjetmass", label=r"SubJet $m$ [GeV]")
-        subjetpt_axis   = hist.axis.Regular(25, 0, 2000, name="subjetpt", label=r"SubJet $p_{T}$ [GeV]")
-        subjeteta_axis  = hist.axis.Regular(25, 0, 2.4, name="subjeteta", label=r"SubJet $\eta$")
+        subjetpt_axis   = hist.axis.Regular(50, 400, 2000, name="subjetpt", label=r"SubJet $p_{T}$ [GeV]")
+        subjeteta_axis  = hist.axis.Regular(50, -2.4, 2.4, name="subjeteta", label=r"SubJet $\eta$")
         subjetphi_axis  = hist.axis.Regular(50, -np.pi, np.pi, name="subjetphi", label=r"SubJet $\phi$")
         
         
@@ -154,6 +155,7 @@ class TTbarResProcessor(processor.ProcessorABC):
             'jetdy' : hist.Hist(dataset_axis, cats_axis, jetdy_axis, storage="weight", name="Counts"),
 
             'deepTagMD_TvsQCD' : hist.Hist(dataset_axis, cats_axis, jetpt_axis, SDjetmass_axis, tagger_axis, storage="weight", name="Counts"),
+            'deepB' : hist.Hist(dataset_axis, subjetmass_axis, subjetpt_axis, subjeteta_axis, subjetphi_axis, subjettagger_axis, storage="weight", name="Counts"),
 
             'tau32'        : hist.Hist(dataset_axis, cats_axis, tau32_axis, storage="weight", name="Counts"),
 
@@ -769,6 +771,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         # ---- Identify subjets according to subjet ID ---- #
         hasSubjets0 = ((ttbarcands.slot0.subJetIdx1 > -1) & (ttbarcands.slot0.subJetIdx2 > -1)) # 1st candidate has two subjets
         hasSubjets1 = ((ttbarcands.slot1.subJetIdx1 > -1) & (ttbarcands.slot1.subJetIdx2 > -1)) # 2nd candidate has two subjets
+
         GoodSubjets = ak.flatten(((hasSubjets0) & (hasSubjets1))) # Selection of 4 (leading) subjects
         output['cutflow']['Good Subjets'] += ak.to_awkward0(GoodSubjets).sum()
         ttbarcands = ttbarcands[GoodSubjets] # Choose only ttbar candidates with this selection of subjets
@@ -784,6 +787,20 @@ class TTbarResProcessor(processor.ProcessorABC):
         SubJet02 = SubJets[ttbarcands.slot0.subJetIdx2] # ttbarcandidate 0's second subjet
         SubJet11 = SubJets[ttbarcands.slot1.subJetIdx1] # ttbarcandidate 1's first subjet 
         SubJet12 = SubJets[ttbarcands.slot1.subJetIdx2] # ttbarcandidate 1's second subjet
+        print(f'Dataset = {dataset}\n***************************************************************\n')
+        print(f'Jet 0\'s first subjet\'s ID = {ttbarcands.slot0.subJetIdx1}')
+        print(f'Jet 0\'s second subjet\'s ID = {ttbarcands.slot0.subJetIdx2}')
+        print(f'Jet 1\'s first subjet\'s ID = {ttbarcands.slot1.subJetIdx1}')
+        print(f'Jet 1\'s second subjet\'s ID = {ttbarcands.slot1.subJetIdx2}\n-----------------------------------------\n')
+        # 'deepB' : hist.Hist(dataset_axis, cats_axis, subjetmass_axis, subjetpt_axis, subjeteta_axis, subjetphi_axis, SDjetmass_axis, subjettagger_axis, storage="weight", name="Counts"),
+        output['deepB'].fill(dataset = dataset,
+                             subjetmass = ak.to_numpy(ak.flatten(SubJet01.mass)),
+                             subjetpt = ak.to_numpy(ak.flatten(SubJet01.pt)),
+                             subjeteta = ak.to_numpy(ak.flatten(SubJet01.eta)),
+                             subjetphi = ak.to_numpy(ak.flatten(SubJet01.phi)),
+                             subjettagger = ak.to_numpy(ak.flatten(SubJet01.btagDeepB)),
+                             weight = ak.to_numpy(evtweights),
+                                    )	
         
         # ---- Define Rapidity Regions ---- #
         """ NOTE that ttbarcands.i0.p4.energy no longer works after ttbarcands is defined as an old awkward array """
@@ -850,9 +867,21 @@ class TTbarResProcessor(processor.ProcessorABC):
         
         # ---- Pick FatJet that passes btag discriminator cut based on its subjet with the highest btag value ---- #
         # -------------- NOTE: B-discriminator cut must be changed to match BTV POG Recommendations -------------- #
+        
         btag_s0 = ( np.maximum(SubJet01.btagDeepB , SubJet02.btagDeepB) > self.bdisc )
         btag_s1 = ( np.maximum(SubJet11.btagDeepB , SubJet12.btagDeepB) > self.bdisc )
-        
+        print(f'Jet 0\'s first subjet\'s CSVV2 = {SubJet01.btagCSVV2}')
+        print(f'Jet 0\'s second subjet\'s CSVV2 = {SubJet02.btagCSVV2}')
+        print(f'Jet 1\'s first subjet\'s CSVV2 = {SubJet11.btagCSVV2}')
+        print(f'Jet 1\'s second subjet\'s CSVV2 = {SubJet12.btagCSVV2}\n-----------------------------------------\n')
+        print(f'Jet 0\'s first subjet\'s DeepB = {SubJet01.btagDeepB}')
+        print(f'Jet 0\'s second subjet\'s DeepB = {SubJet02.btagDeepB}')
+        print(f'Jet 1\'s first subjet\'s DeepB = {SubJet11.btagDeepB}')
+        print(f'Jet 1\'s second subjet\'s DeepB = {SubJet12.btagDeepB}\n-----------------------------------------\n')
+        print(f'Jet 0\'s largest DeepB? = {np.maximum(SubJet01.btagDeepB , SubJet02.btagDeepB)}')
+        print(f'Jet 1\'s largest DeepB? = {np.maximum(SubJet11.btagDeepB , SubJet12.btagDeepB)}')
+        print(f'is Jet 0 btagged? = {btag_s0}')
+        print(f'is Jet 1 btagged? = {btag_s1}')
         # --- Define "B Tag" Regions ---- #
         btag0 = (~btag_s0) & (~btag_s1) #(0b)
         btag1 = btag_s0 ^ btag_s1 #(1b)
@@ -1368,6 +1397,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                                      weight = ak.to_numpy(Weights[icat]),
                                     )
             # 'deepTagMD_TvsQCD' : hist.Hist(dataset_axis, cats_axis, jetpt_axis, jetmass_axis, tagger_axis, storage="weight", name="Counts"),
+            
             output['deepTagMD_TvsQCD'].fill(dataset = dataset,
                                      anacat = self.ConvertLabelToInt(self.label_dict, ilabel),
                                      jetpt = ak.to_numpy(jetpt[icat]),
