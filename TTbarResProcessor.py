@@ -107,7 +107,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         # axes for top tagger #
         manual_axis = hist.axis.Variable(manual_bins, name="jetp", label=r"Jet Momentum [GeV]")
         tagger_axis = hist.axis.Regular(50, 0, 1, name="tagger", label=r"deepTag")
-        subjettagger_axis = hist.axis.Regular(50, -2, 1, name="subjettagger", label=r"deepB")
+        subjettagger_axis = hist.axis.Regular(50, -2, 1, name="subjettagger", label=r"Deep B")
         tau32_axis  = hist.axis.Regular(50, 0, 2, name="tau32", label=r"$\tau_3/\tau_2$")
 
         # axes for subjets #
@@ -155,7 +155,7 @@ class TTbarResProcessor(processor.ProcessorABC):
             'jetdy' : hist.Hist(dataset_axis, cats_axis, jetdy_axis, storage="weight", name="Counts"),
 
             'deepTagMD_TvsQCD' : hist.Hist(dataset_axis, cats_axis, jetpt_axis, SDjetmass_axis, tagger_axis, storage="weight", name="Counts"),
-            'deepB' : hist.Hist(dataset_axis, subjetmass_axis, subjetpt_axis, subjeteta_axis, subjetphi_axis, subjettagger_axis, storage="weight", name="Counts"),
+            'deepb' : hist.Hist(dataset_axis, subjetmass_axis, subjetpt_axis, subjettagger_axis, storage="weight", name="Counts"),
 
             'tau32'        : hist.Hist(dataset_axis, cats_axis, tau32_axis, storage="weight", name="Counts"),
 
@@ -787,20 +787,20 @@ class TTbarResProcessor(processor.ProcessorABC):
         SubJet02 = SubJets[ttbarcands.slot0.subJetIdx2] # ttbarcandidate 0's second subjet
         SubJet11 = SubJets[ttbarcands.slot1.subJetIdx1] # ttbarcandidate 1's first subjet 
         SubJet12 = SubJets[ttbarcands.slot1.subJetIdx2] # ttbarcandidate 1's second subjet
-        # print(f'Dataset = {dataset}\n***************************************************************\n')
-        # print(f'Jet 0\'s first subjet\'s ID = {ttbarcands.slot0.subJetIdx1}')
-        # print(f'Jet 0\'s second subjet\'s ID = {ttbarcands.slot0.subJetIdx2}')
-        # print(f'Jet 1\'s first subjet\'s ID = {ttbarcands.slot1.subJetIdx1}')
-        # print(f'Jet 1\'s second subjet\'s ID = {ttbarcands.slot1.subJetIdx2}\n-----------------------------------------\n')
-        # 'deepB' : hist.Hist(dataset_axis, cats_axis, subjetmass_axis, subjetpt_axis, subjeteta_axis, subjetphi_axis, SDjetmass_axis, subjettagger_axis, storage="weight", name="Counts"),
-        output['deepB'].fill(dataset = dataset,
-                             subjetmass = ak.to_numpy(ak.flatten(SubJet01.mass)),
-                             subjetpt = ak.to_numpy(ak.flatten(SubJet01.pt)),
-                             subjeteta = ak.to_numpy(ak.flatten(SubJet01.eta)),
-                             subjetphi = ak.to_numpy(ak.flatten(SubJet01.phi)),
-                             subjettagger = ak.to_numpy(ak.flatten(SubJet01.btagDeepB)),
-                             weight = ak.to_numpy(evtweights),
-                                    )	
+        
+        # print(f'Dataset = {dataset}\n***************************************************************\n', flush=True)
+        # print(f'Jet 0\'s first subjet\'s ID = {ttbarcands.slot0.subJetIdx1}', flush=True)
+        # print(f'Jet 0\'s second subjet\'s ID = {ttbarcands.slot0.subJetIdx2}', flush=True)
+        # print(f'Jet 1\'s first subjet\'s ID = {ttbarcands.slot1.subJetIdx1}', flush=True)
+        # print(f'Jet 1\'s second subjet\'s ID = {ttbarcands.slot1.subJetIdx2}\n-----------------------------------------\n', flush=True)
+        
+        # 'deepB' : hist.Hist(dataset_axis, subjetmass_axis, subjetpt_axis, subjeteta_axis, subjetphi_axis, subjettagger_axis, storage="weight", name="Counts"),
+        
+        output["deepb"].fill(dataset = dataset,
+                            subjetmass = ak.to_numpy(ak.flatten(SubJet01.mass)),
+                            subjetpt = ak.to_numpy(ak.flatten(SubJet01.pt)),
+                            subjettagger = ak.to_numpy(ak.flatten(SubJet01.btagDeepB)),
+                            weight = ak.to_numpy(evtweights))
         
         # ---- Define Rapidity Regions ---- #
         """ NOTE that ttbarcands.i0.p4.energy no longer works after ttbarcands is defined as an old awkward array """
@@ -870,18 +870,18 @@ class TTbarResProcessor(processor.ProcessorABC):
         
         btag_s0 = ( np.maximum(SubJet01.btagCSVV2 , SubJet02.btagCSVV2) > self.bdisc )
         btag_s1 = ( np.maximum(SubJet11.btagCSVV2 , SubJet12.btagCSVV2) > self.bdisc )
-        # print(f'Jet 0\'s first subjet\'s CSVV2 = {SubJet01.btagCSVV2}')
-        # print(f'Jet 0\'s second subjet\'s CSVV2 = {SubJet02.btagCSVV2}')
-        # print(f'Jet 1\'s first subjet\'s CSVV2 = {SubJet11.btagCSVV2}')
-        # print(f'Jet 1\'s second subjet\'s CSVV2 = {SubJet12.btagCSVV2}\n-----------------------------------------\n')
-        # print(f'Jet 0\'s first subjet\'s DeepB = {SubJet01.btagDeepB}')
-        # print(f'Jet 0\'s second subjet\'s DeepB = {SubJet02.btagDeepB}')
-        # print(f'Jet 1\'s first subjet\'s DeepB = {SubJet11.btagDeepB}')
-        # print(f'Jet 1\'s second subjet\'s DeepB = {SubJet12.btagDeepB}\n-----------------------------------------\n')
-        # print(f'Jet 0\'s largest DeepB? = {np.maximum(SubJet01.btagDeepB , SubJet02.btagDeepB)}')
-        # print(f'Jet 1\'s largest DeepB? = {np.maximum(SubJet11.btagDeepB , SubJet12.btagDeepB)}')
-        # print(f'is Jet 0 btagged? = {btag_s0}')
-        # print(f'is Jet 1 btagged? = {btag_s1}')
+        # print(f'Jet 0\'s first subjet\'s CSVV2 = {SubJet01.btagCSVV2}', flush=True)
+        # print(f'Jet 0\'s second subjet\'s CSVV2 = {SubJet02.btagCSVV2}', flush=True)
+        # print(f'Jet 1\'s first subjet\'s CSVV2 = {SubJet11.btagCSVV2}', flush=True)
+        # print(f'Jet 1\'s second subjet\'s CSVV2 = {SubJet12.btagCSVV2}\n-----------------------------------------\n', flush=True)
+        # print(f'Jet 0\'s first subjet\'s DeepB = {SubJet01.btagDeepB}', flush=True)
+        # print(f'Jet 0\'s second subjet\'s DeepB = {SubJet02.btagDeepB}', flush=True)
+        # print(f'Jet 1\'s first subjet\'s DeepB = {SubJet11.btagDeepB}', flush=True)
+        # print(f'Jet 1\'s second subjet\'s DeepB = {SubJet12.btagDeepB}\n-----------------------------------------\n', flush=True)
+        # print(f'Jet 0\'s largest DeepB? = {np.maximum(SubJet01.btagDeepB , SubJet02.btagDeepB)}', flush=True)
+        # print(f'Jet 1\'s largest DeepB? = {np.maximum(SubJet11.btagDeepB , SubJet12.btagDeepB)}', flush=True)
+        # print(f'is Jet 0 btagged? = {btag_s0}', flush=True)
+        # print(f'is Jet 1 btagged? = {btag_s1}', flush=True)
         # --- Define "B Tag" Regions ---- #
         btag0 = (~btag_s0) & (~btag_s1) #(0b)
         btag1 = btag_s0 ^ btag_s1 #(1b)
@@ -1160,7 +1160,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         for i in range(len(self.eras)):
             letter = self.eras[i]
             if 'JetHT'+letter in dataset:
-                # print(f'letter {letter} found')
+                # print(f'letter {letter} found', flush=True)
                 continue
         
         for ilabel,icat in labels_and_categories.items():
