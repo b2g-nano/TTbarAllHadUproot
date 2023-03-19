@@ -254,7 +254,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         #https://github.com/rappoccio/usercode/blob/Dev_53x/EDSHyFT/plugins/BTagSFUtil_tprime.h
         
         coin = np.random.uniform(0,1,len(subjet)) # used for randomly deciding which jets' btag status to update or not
-        subjet_btag_status = np.asarray((subjet.btagDeepB > self.bdisc)) # do subjets pass the btagger requirement
+        subjet_btag_status = np.asarray((subjet.btagCSVV2 > self.bdisc)) # do subjets pass the btagger requirement
         
         '''
 *******************************************************************************************************************
@@ -388,7 +388,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         eta = np.abs(ak.flatten(Subjet.eta)) # eta of 1st subjet in ttbarcand 
         flav = np.abs(ak.flatten(Subjet.hadronFlavour)) # either 'normal' or 'anti' quark
         
-        subjet_btagged = (Subjet.btagDeepB > self.bdisc)
+        subjet_btagged = (Subjet.btagCSVV2 > self.bdisc)
         
         Eff_Num_pT = np.where(subjet_btagged & (flav == Flavor), pT, -1) # if not collecting pT of subjet, then put non exisitent bin, i.e. -1
         Eff_Num_eta = np.where(subjet_btagged & (flav == Flavor), eta, -1) # if not collecting eta of subjet, then put non exisitent bin, i.e. 5
@@ -787,11 +787,11 @@ class TTbarResProcessor(processor.ProcessorABC):
         SubJet02 = SubJets[ttbarcands.slot0.subJetIdx2] # ttbarcandidate 0's second subjet
         SubJet11 = SubJets[ttbarcands.slot1.subJetIdx1] # ttbarcandidate 1's first subjet 
         SubJet12 = SubJets[ttbarcands.slot1.subJetIdx2] # ttbarcandidate 1's second subjet
-        print(f'Dataset = {dataset}\n***************************************************************\n')
-        print(f'Jet 0\'s first subjet\'s ID = {ttbarcands.slot0.subJetIdx1}')
-        print(f'Jet 0\'s second subjet\'s ID = {ttbarcands.slot0.subJetIdx2}')
-        print(f'Jet 1\'s first subjet\'s ID = {ttbarcands.slot1.subJetIdx1}')
-        print(f'Jet 1\'s second subjet\'s ID = {ttbarcands.slot1.subJetIdx2}\n-----------------------------------------\n')
+        # print(f'Dataset = {dataset}\n***************************************************************\n')
+        # print(f'Jet 0\'s first subjet\'s ID = {ttbarcands.slot0.subJetIdx1}')
+        # print(f'Jet 0\'s second subjet\'s ID = {ttbarcands.slot0.subJetIdx2}')
+        # print(f'Jet 1\'s first subjet\'s ID = {ttbarcands.slot1.subJetIdx1}')
+        # print(f'Jet 1\'s second subjet\'s ID = {ttbarcands.slot1.subJetIdx2}\n-----------------------------------------\n')
         # 'deepB' : hist.Hist(dataset_axis, cats_axis, subjetmass_axis, subjetpt_axis, subjeteta_axis, subjetphi_axis, SDjetmass_axis, subjettagger_axis, storage="weight", name="Counts"),
         output['deepB'].fill(dataset = dataset,
                              subjetmass = ak.to_numpy(ak.flatten(SubJet01.mass)),
@@ -868,20 +868,20 @@ class TTbarResProcessor(processor.ProcessorABC):
         # ---- Pick FatJet that passes btag discriminator cut based on its subjet with the highest btag value ---- #
         # -------------- NOTE: B-discriminator cut must be changed to match BTV POG Recommendations -------------- #
         
-        btag_s0 = ( np.maximum(SubJet01.btagDeepB , SubJet02.btagDeepB) > self.bdisc )
-        btag_s1 = ( np.maximum(SubJet11.btagDeepB , SubJet12.btagDeepB) > self.bdisc )
-        print(f'Jet 0\'s first subjet\'s CSVV2 = {SubJet01.btagCSVV2}')
-        print(f'Jet 0\'s second subjet\'s CSVV2 = {SubJet02.btagCSVV2}')
-        print(f'Jet 1\'s first subjet\'s CSVV2 = {SubJet11.btagCSVV2}')
-        print(f'Jet 1\'s second subjet\'s CSVV2 = {SubJet12.btagCSVV2}\n-----------------------------------------\n')
-        print(f'Jet 0\'s first subjet\'s DeepB = {SubJet01.btagDeepB}')
-        print(f'Jet 0\'s second subjet\'s DeepB = {SubJet02.btagDeepB}')
-        print(f'Jet 1\'s first subjet\'s DeepB = {SubJet11.btagDeepB}')
-        print(f'Jet 1\'s second subjet\'s DeepB = {SubJet12.btagDeepB}\n-----------------------------------------\n')
-        print(f'Jet 0\'s largest DeepB? = {np.maximum(SubJet01.btagDeepB , SubJet02.btagDeepB)}')
-        print(f'Jet 1\'s largest DeepB? = {np.maximum(SubJet11.btagDeepB , SubJet12.btagDeepB)}')
-        print(f'is Jet 0 btagged? = {btag_s0}')
-        print(f'is Jet 1 btagged? = {btag_s1}')
+        btag_s0 = ( np.maximum(SubJet01.btagCSVV2 , SubJet02.btagCSVV2) > self.bdisc )
+        btag_s1 = ( np.maximum(SubJet11.btagCSVV2 , SubJet12.btagCSVV2) > self.bdisc )
+        # print(f'Jet 0\'s first subjet\'s CSVV2 = {SubJet01.btagCSVV2}')
+        # print(f'Jet 0\'s second subjet\'s CSVV2 = {SubJet02.btagCSVV2}')
+        # print(f'Jet 1\'s first subjet\'s CSVV2 = {SubJet11.btagCSVV2}')
+        # print(f'Jet 1\'s second subjet\'s CSVV2 = {SubJet12.btagCSVV2}\n-----------------------------------------\n')
+        # print(f'Jet 0\'s first subjet\'s DeepB = {SubJet01.btagDeepB}')
+        # print(f'Jet 0\'s second subjet\'s DeepB = {SubJet02.btagDeepB}')
+        # print(f'Jet 1\'s first subjet\'s DeepB = {SubJet11.btagDeepB}')
+        # print(f'Jet 1\'s second subjet\'s DeepB = {SubJet12.btagDeepB}\n-----------------------------------------\n')
+        # print(f'Jet 0\'s largest DeepB? = {np.maximum(SubJet01.btagDeepB , SubJet02.btagDeepB)}')
+        # print(f'Jet 1\'s largest DeepB? = {np.maximum(SubJet11.btagDeepB , SubJet12.btagDeepB)}')
+        # print(f'is Jet 0 btagged? = {btag_s0}')
+        # print(f'is Jet 1 btagged? = {btag_s1}')
         # --- Define "B Tag" Regions ---- #
         btag0 = (~btag_s0) & (~btag_s1) #(0b)
         btag1 = btag_s0 ^ btag_s1 #(1b)
@@ -931,8 +931,8 @@ class TTbarResProcessor(processor.ProcessorABC):
                     """
 
                     # ---- Use the leading subjet again to get the scale factors ---- #
-                    LeadingSubjet_s0 = np.where(SubJet01.btagDeepB>SubJet02.btagDeepB, SubJet01, SubJet02)
-                    LeadingSubjet_s1 = np.where(SubJet11.btagDeepB>SubJet12.btagDeepB, SubJet11, SubJet12)
+                    LeadingSubjet_s0 = np.where(SubJet01.btagCSVV2>SubJet02.btagCSVV2, SubJet01, SubJet02)
+                    LeadingSubjet_s1 = np.where(SubJet11.btagCSVV2>SubJet12.btagCSVV2, SubJet11, SubJet12)
 
                     # ---- Define the BSF for each of the two fatjets ---- #
                     SF_filename = self.ScaleFactorFile    
@@ -1604,7 +1604,7 @@ class MCFlavorEfficiencyProcessor(processor.ProcessorABC):
         eta = np.abs(ak.flatten(Subjet.eta)) # eta of 1st subjet in ttbarcand 
         flav = np.abs(ak.flatten(Subjet.hadronFlavour)) # either 'normal' or 'anti' quark
         
-        subjet_btagged = (Subjet.btagDeepB > self.bdisc)
+        subjet_btagged = (Subjet.btagCSVV2 > self.bdisc)
         
         Eff_Num_pT = np.where(subjet_btagged & (flav == Flavor), pT, -1) # if not collecting pT of subjet, then put non exisitent bin, i.e. -1
         Eff_Num_eta = np.where(subjet_btagged & (flav == Flavor), eta, -1) # if not collecting eta of subjet, then put non exisitent bin, i.e. 5
