@@ -646,7 +646,7 @@ class TTbarResProcessor(processor.ProcessorABC):
             # try:
             #     Triggers.append(events.HLT_AK8PFJet360_TrimMass30)
             # except AttributeError as AE:
-            #     continue
+            #     pass
             #     print('\n')
             #     print(AE)
             #     print('\nTrigger Excluded for this era')
