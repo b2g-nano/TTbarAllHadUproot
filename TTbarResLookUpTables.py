@@ -227,7 +227,7 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
 
         ttbar_BR = 0.4544 # 0.442 from PDG 2018
         ttbar_xs = 831.76 # Monte Carlo already includes some value of the xs in event weight, but maybe not NNLO!!
-        toptag_kf = 0.70 # k-factor from https://github.com/cmsb2g/B2GTTbar/blob/master/test/MakeMistag_SubtractAndDivideAntiTag_B2G2016.cc#L472
+        toptag_kf = 1.0 #0.70 # k-factor from https://github.com/cmsb2g/B2GTTbar/blob/master/test/MakeMistag_SubtractAndDivideAntiTag_B2G2016.cc#L472
 
         ttbar2016_sf = 1.
         ttbar2017_sf = 1.
