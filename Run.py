@@ -848,7 +848,7 @@ def main():
         if __name__ == "__main__":       
 
             # cluster = '128.205.11.158:8787'
-            uploadDir = 'acwillia/TTbarAllHadUproot/CorrectionFiles/SFs/bquark'
+            uploadDir = '/mnt/users/acwillia/TTbarAllHadUproot'
             client = Client()
 
             try:
@@ -862,7 +862,7 @@ def main():
 
             print('Worker Directories:\n')
             # print(client.run(os.listdir))
-            print(client.run(os.listdir,"acwillia/TTbarAllHadUproot/CorrectionFiles/SFs/bquark"))
+            print(client.run(os.listdir,"/mnt/users/acwillia/TTbarAllHadUproot"))
 
     #    ----------------------------------------------------------------------------------------------------  
     #    U     U PPPPPP  RRRRRR    OOO     OOO   TTTTTTT     FFFFFFF L          A    V     V   OOO   RRRRRR      
