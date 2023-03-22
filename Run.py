@@ -219,10 +219,16 @@ def main():
     UncertaintyGroup.add_argument('--tTagSyst', type=str, choices=['central', 'up', 'down'], help='Choose Unc.')
     UncertaintyGroup.add_argument('--ttXSSyst', type=str, choices=['central', 'up', 'down'], help='ttbar cross section systematics.  Choose Unc.')
     UncertaintyGroup.add_argument('--lumSyst', type=str, choices=['central', 'up', 'down'], help='Luminosity systematics.  Choose Unc.')
-    UncertaintyGroup.add_argument('--jes', action='store_true', help='apply jes systematic weights')
-    UncertaintyGroup.add_argument('--jer', action='store_true', help='apply jer systematic weights')
-    UncertaintyGroup.add_argument('--pdf', action='store_true', help='apply pdf systematic weights')
-    UncertaintyGroup.add_argument('--pileup', type=str, choices=['central', 'up', 'down'], help='Choose Unc.')
+    UncertaintyGroup.add_argument('--jes', type=str, choices=['central', 'up', 'down'], help='apply jes systematic weights. Choose Unc.')
+
+    
+    
+    # systematic weights applied in the same processor
+    Parser.add_argument('--pileup', action='store_true', help='apply pileup systematic weights')
+    Parser.add_argument('--prefiring', action='store_true', help='apply prefiring systematic weights')
+    Parser.add_argument('--pdf', action='store_true', help='apply pdf systematic weights')
+    Parser.add_argument('--hem', action='store_true', help='apply HEM cleaning')
+
 
     args = Parser.parse_args()
 
@@ -386,10 +392,12 @@ def main():
     ApplybSF = False
     ApplytSF = False
     ApplyJES = False
-    ApplyJER = False
     ApplyPDF = False
+    ApplyPrefiring = False
+    ApplyPUweights = False
     xsSystwgt = 1.
     lumSystwgt = 1.
+    var="nominal" # nominal, up, or down for jet corrections
 
     # isData = False
     # MCDatasetChoices = ['QCD', 'TTbar', 'RSGluon', 'DM']
@@ -440,15 +448,12 @@ def main():
 
     elif args.jes:
         UncType = "_jesUnc_"
-        # SystType = 'jes' # string for ttag SF correction --> "central", "up", or "down"
+        SystType = args.jes        
         ApplyJES = True
+        var = "nominal"
+        if (args.jes == "up"): var = "up"
+        if (args.jes == "down"): var = "down"
     #    ---------------------------------------------------------------------------------------------------------------------    # 
-
-    elif args.jer:
-        UncType = "_jerUnc_"
-        # SystType = 'jer'
-        ApplyJER = True
-    #    ---------------------------------------------------------------------------------------------------------------------    #
 
     elif args.pdf:
         UncType = "_pdfUnc_"
@@ -458,11 +463,25 @@ def main():
 
     elif args.pileup:
         UncType = "_pileupUnc_"
-        SystType = args.pileup # string --> "central", "up", or "down"
+        # SystType = ""
+        ApplyPUweights = True
+    #    ---------------------------------------------------------------------------------------------------------------------    # 
+    
+    elif args.prefiring:
+        UncType = "_prefiringUnc_"
+        # SystType = ''
+        ApplyPrefiring = True
+    #    ---------------------------------------------------------------------------------------------------------------------    # 
+    
+        
+    elif args.prefiring:
+        UncType = "_hemCleaning_"
+        # SystType = ''
+        ApplyPrefiring = True
     #    ---------------------------------------------------------------------------------------------------------------------    # 
 
 
-    UncArgs = np.array([args.bTagSyst, args.tTagSyst, args.jes, args.jer, args.ttXSSyst, args.lumSyst, args.pileup])
+    UncArgs = np.array([args.bTagSyst, args.tTagSyst, args.jes, args.ttXSSyst, args.lumSyst, args.pdf, args.pileup, args.prefiring])
     SystOpts = np.any(UncArgs) # Check to see if any uncertainty argument is used
     if (not OnlyCreateLookupTables) and (not SystOpts and (not args.runMMO and not args.runAMO)) :
         Parser.error('Only run second uproot job with a Systematic application (like --bTagSyst, --jes, etc.)')
@@ -1337,8 +1356,10 @@ def main():
                                                                                            ApplyTopReweight = args.tpt,
                                                                                            ApplybtagSF=ApplybSF,
                                                                                            ApplyJes=ApplyJES,
-                                                                                           ApplyJer=ApplyJER,
+                                                                                           var=var,
                                                                                            ApplyPdf=ApplyPDF,
+                                                                                           ApplyPrefiring = ApplyPrefiring,
+                                                                                           ApplyPUweights = ApplyPUweights,
                                                                                            sysType=SystType,
                                                                                            ScaleFactorFile=SFfile,
                                                                                            UseEfficiencies=args.useEff,
@@ -1370,8 +1391,10 @@ def main():
                                                                                            ApplyTopReweight = args.tpt,
                                                                                            ApplybtagSF=ApplybSF,
                                                                                            ApplyJes=ApplyJES,
-                                                                                           ApplyJer=ApplyJER,
+                                                                                           var=var,
                                                                                            ApplyPdf=ApplyPDF,
+                                                                                           ApplyPrefiring = ApplyPrefiring,
+                                                                                           ApplyPUweights = ApplyPUweights,
                                                                                            sysType=SystType,
                                                                                            ScaleFactorFile=SFfile,
                                                                                            UseEfficiencies=args.useEff,
@@ -1415,9 +1438,11 @@ def main():
                                                                                            lumSystematicWeight = lumSystwgt,
                                                                                            ApplyTopReweight = args.tpt,
                                                                                            ApplybtagSF=ApplybSF,
-                                                                                           ApplyJes=ApplyJES,
-                                                                                           ApplyJer=ApplyJER,
+                                                                                           ApplyJesc=ApplyJES,
+                                                                                           var=var,
                                                                                            ApplyPdf=ApplyPDF,
+                                                                                           ApplyPrefiring = ApplyPrefiring,
+                                                                                           ApplyPUweights = ApplyPUweights,
                                                                                            sysType=SystType,
                                                                                            ScaleFactorFile=SFfile,
                                                                                            UseEfficiencies=args.useEff,
@@ -1449,8 +1474,8 @@ def main():
                                                                                            ApplyTopReweight = args.tpt,
                                                                                            ApplybtagSF=ApplybSF,
                                                                                            ApplyJes=ApplyJES,
-                                                                                           ApplyJer=ApplyJER,
-                                                                                           ApplyPdf=ApplyPDF,
+                                                                                           var=var,
+                                                                                           ApplyPrefiring = ApplyPrefiring,
                                                                                            sysType=SystType,
                                                                                            ScaleFactorFile=SFfile,
                                                                                            UseEfficiencies=args.useEff,

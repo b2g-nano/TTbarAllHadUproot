@@ -43,7 +43,9 @@ class TTbarResProcessor(processor.ProcessorABC):
                  year=None, apv='', vfp='', UseLookUpTables=False, lu=None, extraDaskDirectory='',
                  ModMass=False, RandomDebugMode=False, UseEfficiencies=False, xsSystematicWeight=1., lumSystematicWeight=1.,
                  ApplybtagSF=False, ScaleFactorFile='', ApplyttagSF=False, ApplyTopReweight=False, 
-                 ApplyJer=False, ApplyJes=False, ApplyPdf=False, sysType=None):
+                 ApplyJes=False, var="nominal", ApplyPdf=False, ApplyPrefiring=False, ApplyPUweights=False,
+                 ApplyHEMCleaning=False,
+                 sysType=None):
         
         self.prng = prng
         self.htCut = htCut
@@ -66,13 +68,17 @@ class TTbarResProcessor(processor.ProcessorABC):
         self.ApplyttagSF = ApplyttagSF
         self.ApplyTopReweight = ApplyTopReweight
         self.ApplyJes = ApplyJes
-        self.ApplyJer = ApplyJer
+        self.var = var
         self.ApplyPdf = ApplyPdf
+        self.ApplyPrefiring = ApplyPrefiring
+        self.ApplyPUweights = ApplyPUweights
+        self.ApplyHEMCleaning = ApplyHEMCleaning
         self.sysType = sysType # string for btag SF evaluator --> "central", "up", or "down"
         self.UseEfficiencies = UseEfficiencies
         self.xsSystematicWeight = xsSystematicWeight
         self.lumSystematicWeight = lumSystematicWeight
         self.lu = lu # Look Up Tables
+        
         
         # --- anti-tag+probe, anti-tag, pre-tag, 0, 1, >=1, 2 ttags, any t-tag (>=0t) --- #
         self.ttagcats = ["AT&Pt", "at", "pret", "0t", "1t", ">=1t", "2t", ">=0t"] 
@@ -113,6 +119,10 @@ class TTbarResProcessor(processor.ProcessorABC):
         subjeteta_axis  = hist.axis.Regular(25, 0, 2.4, name="subjeteta", label=r"SubJet $\eta$")
         subjetphi_axis  = hist.axis.Regular(50, -np.pi, np.pi, name="subjetphi", label=r"SubJet $\phi$")
         
+        # axes for weights #
+        
+        prefiring_axis = hist.axis.Regular(30, 0, 1.5, name="weights", label=r"L1 Prefiring Weight")
+        
         
         #    ===================================================================================================================
         #    K     K IIIIIII N     N EEEEEEE M     M    A    TTTTTTT IIIIIII   CCCC      H     H IIIIIII   SSSSS TTTTTTT   SSSSS     
@@ -128,13 +138,29 @@ class TTbarResProcessor(processor.ProcessorABC):
 
             'ttbarmass' : hist.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
 
-            'ttbarmass_jerUp'   : hist.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
-            'ttbarmass_jerDown' : hist.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
-            'ttbarmass_jerNom'  : hist.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
+            'ttbarmass_jesUp'   : hist.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
+            'ttbarmass_jesDown' : hist.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
+            'ttbarmass_jesNom'  : hist.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
 
             'ttbarmass_pdfUp'   : hist.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
             'ttbarmass_pdfDown' : hist.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
             'ttbarmass_pdfNom'  : hist.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
+
+            'ttbarmass_puUp'   : hist.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
+            'ttbarmass_puDown' : hist.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
+            'ttbarmass_puNom'  : hist.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
+
+            'ttbarmass_hemUp'   : hist.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
+            'ttbarmass_hemDown' : hist.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
+            'ttbarmass_hemNom'  : hist.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
+
+            'ttbarmass_prefiringUp'   : hist.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
+            'ttbarmass_prefiringDown' : hist.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
+            'ttbarmass_prefiringNom'  : hist.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
+            
+            'weights_prefiringUp'  : hist.Hist(dataset_axis, cats_axis, prefiring_axis, storage="weight", name="Counts"),
+            'weights_prefiringDown'  : hist.Hist(dataset_axis, cats_axis, prefiring_axis, storage="weight", name="Counts"),
+            'weights_prefiringNom'  : hist.Hist(dataset_axis, cats_axis, prefiring_axis, storage="weight", name="Counts"),
 
             ######################################
 
@@ -414,18 +440,51 @@ class TTbarResProcessor(processor.ProcessorABC):
         return EffStuff
     
     
-    def GetJERUncertainties(self, FatJets, GenJets, events, Weights):
+    def GetL1PreFiringWeight(self, events):
+        # original code https://gitlab.cern.ch/gagarwal/ttbardileptonic/-/blob/master/TTbarDileptonProcessor.py#L50
+        ## Reference: https://twiki.cern.ch/twiki/bin/viewauth/CMS/L1PrefiringWeightRecipe
+        ## var = "Nom", "Up", "Dn"
+        L1PrefiringWeights = np.ones(len(events))
+        if ("L1PreFiringWeight_Nom" in events.fields):
+            L1PrefiringWeights = [events.L1PreFiringWeight_Nom, events.L1PreFiringWeight_Dn, events.L1PreFiringWeight_Up]
+
+        return L1PrefiringWeights
+    
+    
+    def HEMCleaning(self, JetCollection):
+        # original code https://gitlab.cern.ch/gagarwal/ttbardileptonic/-/blob/master/TTbarDileptonProcessor.py#L58
+
+        ## Reference: https://hypernews.cern.ch/HyperNews/CMS/get/JetMET/2000.html
+        isHEM = ak.ones_like(JetCollection.pt)
+        if (self.year == 2018):
+            detector_region1 = ((JetCollection.phi < -0.87) & (JetCollection.phi > -1.57) &
+                               (JetCollection.eta < -1.3) & (JetCollection.eta > -2.5))
+            detector_region2 = ((JetCollection.phi < -0.87) & (JetCollection.phi > -1.57) &
+                               (JetCollection.eta < -2.5) & (JetCollection.eta > -3.0))
+            jet_selection    = ((JetCollection.jetId > 1) & (JetCollection.pt > 15))
+    
+            isHEM            = ak.where(detector_region1 & jet_selection, 0.80, isHEM)
+            isHEM            = ak.where(detector_region2 & jet_selection, 0.65, isHEM)
+    
+        return isHEM
+    
+    def GetJESUncertainties(self, FatJets, GenJets, events):
         
         ext = extractor()
         ext.add_weight_sets([
-            "* * TTbarAllHadUproot/data/Fall17_17Nov2017_V32_MC_L2Relative_AK4PFPuppi.jec.txt",
-            "* * TTbarAllHadUproot/data/Fall17_17Nov2017_V32_MC_Uncertainty_AK4PFPuppi.junc.txt",
+            "* * TTbarAllHadUproot/CorrectionFiles/JEC/Summer19UL17_V5_MC/Summer19UL17_V5_MC_L1FastJet_AK8PFchs.jec.txt",
+            "* * TTbarAllHadUproot/CorrectionFiles/JEC/Summer19UL17_V5_MC/Summer19UL17_V5_MC_L2Relative_AK8PFchs.jec.txt",
+            "* * TTbarAllHadUproot/CorrectionFiles/JEC/Summer19UL17_V5_MC/Summer19UL17_V5_MC_L3Absolute_AK8PFchs.jec.txt",
+            "* * TTbarAllHadUproot/CorrectionFiles/JEC/Summer19UL17_V5_MC/Summer19UL17_V5_MC_UncertaintySources_AK8PFchs.junc.txt",
+            "* * TTbarAllHadUproot/CorrectionFiles/JEC/Summer19UL17_V5_MC/Summer19UL17_V5_MC_Uncertainty_AK8PFchs.junc.txt",
         ])
         ext.finalize()
 
         jec_stack_names = [
-            "Fall17_17Nov2017_V32_MC_L2Relative_AK4PFPuppi",
-            "Fall17_17Nov2017_V32_MC_Uncertainty_AK4PFPuppi"
+            "Summer19UL17_V5_MC_L1FastJet_AK8PFchs",
+            "Summer19UL17_V5_MC_L2Relative_AK8PFchs",
+            "Summer19UL17_V5_MC_L3Absolute_AK8PFchs",
+            "Summer19UL17_V5_MC_Uncertainty_AK8PFchs",
         ]
 
         evaluator = ext.make_evaluator()
@@ -440,7 +499,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         name_map['JetA'] = 'area'
 
         
-        # match gen jets to AK4 jets
+        # match gen jets to AK8 jets
         matched_genjet_index = ak.mask(FatJets.genJetIdx, (FatJets.genJetIdx != -1) & (FatJets.genJetIdx < ak.count(GenJets.pt, axis=1)))
         matched_GenJet_pt = GenJets.pt[matched_genjet_index]        
 
@@ -457,25 +516,33 @@ class TTbarResProcessor(processor.ProcessorABC):
 
         events_cache = events.caches[0]
         corrector = FactorizedJetCorrector(
-            Fall17_17Nov2017_V32_MC_L2Relative_AK4PFPuppi=evaluator['Fall17_17Nov2017_V32_MC_L2Relative_AK4PFPuppi'],
+            Fall17_17Nov2017_V32_MC_L2Relative_AK8PFPuppi=evaluator['Summer19UL17_V5_MC_L2Relative_AK8PFchs'],
         )
         uncertainties = JetCorrectionUncertainty(
-            Fall17_17Nov2017_V32_MC_Uncertainty_AK4PFPuppi=evaluator['Fall17_17Nov2017_V32_MC_Uncertainty_AK4PFPuppi']
+            Fall17_17Nov2017_V32_MC_Uncertainty_AK8PFPuppi=evaluator['Summer19UL17_V5_MC_Uncertainty_AK8PFchs']
         )
 
         jet_factory = CorrectedJetsFactory(name_map, jec_stack)
         corrected_jets = jet_factory.build(FatJets, lazy_cache=events_cache)
         
+        # nominal jes
+        jes_correction = corrected_jets.pt/corrected_jets.pt_raw
+        CorrectedJets = corrected_jets
+
+        if (self.var == "up"):
+            jes_correction = corrected_jets.JES_jes.up.pt/corrected_jets.pt_raw
+            CorrectedJets = corrected_jets.JES_jes.up
+            
+        elif (self.var == "down"):
+            jes_correction = corrected_jets.JES_jes.down.pt/corrected_jets.pt_raw
+            CorrectedJets = corrected_jets.JES_jes.up
+
         
-        jer_up = corrected_jets.JES_jes.up.pt/corrected_jets.pt_raw
-        jer_down = corrected_jets.JES_jes.down.pt/corrected_jets.pt_raw
-        jer_nom = corrected_jets.pt/corrected_jets.pt_raw
         
-        return [jer_up, jer_down, jer_nom]
+        return CorrectedJets
     
     
     def GetPDFWeights(self, events):
-        
         if "LHEPdfWeight" in events.fields:
                 LHEPdfWeight = events.LHEPdfWeight
                 pdf_up   = ak.flatten(LHEPdfWeight[2::2])
@@ -489,6 +556,36 @@ class TTbarResProcessor(processor.ProcessorABC):
             pdf_nom = np.ones(len(events))            
             
         return [pdf_up, pdf_down, pdf_nom]
+    
+    
+    
+    def GetPUSF(self, events):
+        # original code https://gitlab.cern.ch/gagarwal/ttbardileptonic/-/blob/master/TTbarDileptonProcessor.py#L38
+        ## json files from: https://gitlab.cern.ch/cms-nanoAOD/jsonpog-integration/-/tree/master/POG/LUM
+        if (self.year == 2016):
+            fname = "TTbarAllHadUproot/CorrectionFiles/puWeights/{0}{1}_UL/puWeights.json.gz".format(self.year, self.vfp)
+        else:
+            fname = "TTbarAllHadUproot/CorrectionFiles/puWeights/{0}_UL/puWeights.json.gz".format(self.year)
+        hname = {
+            "2016APV": "Collisions16_UltraLegacy_goldenJSON",
+            "2016"   : "Collisions16_UltraLegacy_goldenJSON",
+            "2017"   : "Collisions17_UltraLegacy_goldenJSON",
+            "2018"   : "Collisions18_UltraLegacy_goldenJSON"
+        }
+        evaluator = correctionlib.CorrectionSet.from_file(fname)
+        
+        puUp = evaluator[hname[str(self.year)]].evaluate(np.array(events.Pileup_nTrueInt), "up")
+        puDown = evaluator[hname[str(self.year)]].evaluate(np.array(events.Pileup_nTrueInt), "down")
+        puNom = evaluator[hname[str(self.year)]].evaluate(np.array(events.Pileup_nTrueInt), "nominal")
+        
+        return [puNom, puDown, puUp]
+    
+    
+    
+    
+    
+
+    
 
     @property
     def accumulator(self):
@@ -515,6 +612,9 @@ class TTbarResProcessor(processor.ProcessorABC):
         
         # ---- Define AK8 Jets as FatJets ---- #
         #FatJets = events.FatJet # Everything should already be defined in here.  example) df['FatJet_pt] -> events.FatJet.pt
+        
+        
+        
         FatJets = ak.zip({
             "run": events.run,
             "nFatJet": events.nFatJet,
@@ -537,6 +637,7 @@ class TTbarResProcessor(processor.ProcessorABC):
             "subJetIdx1": events.FatJet_subJetIdx1,
             "subJetIdx2": events.FatJet_subJetIdx2,
             "rawFactor": events.FatJet_rawFactor,
+            "genJetIdx": events.FatJet_genJetAK8Idx,
             "p4": ak.zip({
                 "pt": events.FatJet_pt,
                 "eta": events.FatJet_eta,
@@ -544,6 +645,14 @@ class TTbarResProcessor(processor.ProcessorABC):
                 "mass": events.FatJet_mass,
                 }, with_name="PtEtaPhiMLorentzVector"),
             })
+        
+        
+            
+            
+            
+            
+            
+            
 
         # ---- Define AK4 jets as Jets ---- #
         Jets = ak.zip({
@@ -611,6 +720,42 @@ class TTbarResProcessor(processor.ProcessorABC):
         # ---- Define the SumW2 for MC Datasets (Probably unnecessary now) ---- #
         output['cutflow']['sumw'] += np.sum(evtweights)
         output['cutflow']['sumw2'] += np.sum(evtweights**2)
+        
+        
+        
+        # Jet Corrections #
+        
+        
+        if(self.ApplyJes):
+                                
+            CorrectedJets = self.GetJESUncertainties(FatJets, GenJets, events)
+            
+            FatJets['pt'] = CorrectedJets['pt']
+            FatJets['eta'] = CorrectedJets['eta']
+            FatJets['phi'] = CorrectedJets['phi']
+            FatJets['mass'] = CorrectedJets['mass']
+
+        
+        if self.ApplyHEMCleaning:
+                    
+            Weights_HEM = self.HEMCleaning(events)
+
+            output['weights_HEM'].fill(dataset = dataset,
+                             anacat = self.ConvertLabelToInt(self.label_dict, ilabel),
+                             weights = isHEM,
+                            )
+
+            Jets = ak.with_field(Jets, Weights_HEM*Jets.pt, 'pt')
+            FatJets = ak.with_field(FatJets, Weights_HEM*FatJets.pt, 'pt')
+            SubJets = ak.with_field(SubJets, Weights_HEM*SubJets.pt, 'pt')
+            
+        
+
+            
+
+            
+        
+        
         
 #    ================================================================
 #    TTTTTTT RRRRRR  IIIIIII GGGGGGG GGGGGGG EEEEEEE RRRRRR    SSSSS     
@@ -1230,34 +1375,64 @@ class TTbarResProcessor(processor.ProcessorABC):
             if not isData:
                 if (self.ApplybtagSF == True) and (self.UseEfficiencies == False):
                     Weights = Weights*Btag_wgts[str(ilabel[-5:-3])]
-                    
-                # if self.ApplyJes:
-                #     print("JES not finished yet")
-                    
-                if self.ApplyJer:
-                    
-                    jerUp, jerDown, jerNom = self.GetJERUncertainties(FatJets, GenJets, events, Weights)
                 
-                    Weights_jerUp = ak.flatten(Weights * jerUp)
-                    Weights_jerDown = ak.flatten(Weights * jerDown)
-                    Weights_jerNom = ak.flatten(Weights * jerNom)
+                
+                if self.ApplyHEMCleaning:
                     
-                        
-                    output['ttbarmass_jerNom'].fill(dataset = dataset,
+                    Weights_HEM = self.HEMCleaning(events)
+
+                    output['weights_HEM'].fill(dataset = dataset,
+                                     anacat = self.ConvertLabelToInt(self.label_dict, ilabel),
+                                     weights = isHEM,
+                                    )
+                    
+                    Jets = ak.with_field(Jets, Weights_HEM*Jets.pt, 'pt')
+                    FatJets = ak.with_field(FatJets, Weights_HEM*FatJets.pt, 'pt')
+                    SubJets = ak.with_field(SubJets, Weights_HEM*SubJets.pt, 'pt')
+
+
+
+                
+                
+                
+                if self.ApplyPrefiring:
+                    
+                    prefiringNom, prefiringDown, prefiringUp = self.GetL1PreFiringWeight(events)
+
+                    Weights_prefiringUp = Weights * prefiringUp
+                    Weights_prefiringDown = Weights * prefiringDown
+                    Weights_prefiringNom = Weights * prefiringNom
+
+                    output['ttbarmass_prefiringNom'].fill(dataset = dataset,
                                      anacat = self.ConvertLabelToInt(self.label_dict, ilabel),
                                      ttbarmass = ak.to_numpy(ttbarmass[icat]),
-                                     weight = ak.to_numpy(Weights_jerNom[icat]),
+                                     weight = ak.to_numpy(Weights_prefiringNom[icat]),
                                     )
-                    output['ttbarmass_jerUp'].fill(dataset = dataset,
+                    output['ttbarmass_prefiringUp'].fill(dataset = dataset,
                                      anacat = self.ConvertLabelToInt(self.label_dict, ilabel),
                                      ttbarmass = ak.to_numpy(ttbarmass[icat]),
-                                     weight = ak.to_numpy(Weights_jerUp[icat]),
+                                     weight = ak.to_numpy(Weights_prefiringUp[icat]),
                                     )
-                    output['ttbarmass_jerDown'].fill(dataset = dataset,
+                    output['ttbarmass_prefiringDown'].fill(dataset = dataset,
                                      anacat = self.ConvertLabelToInt(self.label_dict, ilabel),
                                      ttbarmass = ak.to_numpy(ttbarmass[icat]),
-                                     weight = ak.to_numpy(Weights_jerDown[icat]),
+                                     weight = ak.to_numpy(Weights_prefiringDown[icat]),
                                     )
+
+                    output['weights_prefiringNom'].fill(dataset = dataset,
+                                     anacat = self.ConvertLabelToInt(self.label_dict, ilabel),
+                                     weights = prefiringNom,
+                                    )
+                    output['weights_prefiringUp'].fill(dataset = dataset,
+                                     anacat = self.ConvertLabelToInt(self.label_dict, ilabel),
+                                     weights = prefiringUp,
+                                    )
+                    output['weights_prefiringDown'].fill(dataset = dataset,
+                                     anacat = self.ConvertLabelToInt(self.label_dict, ilabel),
+                                     weights = prefiringDown,
+                                    )
+                    
+                
                     
                 if self.ApplyPdf:
                     
@@ -1290,6 +1465,32 @@ class TTbarResProcessor(processor.ProcessorABC):
                                      ttbarmass = ak.to_numpy(ttbarmass[icat]),
                                      weight = ak.to_numpy(Weights_pdfDown[icat]),
                                     )
+                    
+                if self.ApplyPUweights:
+                    
+                    puNom, puDown, puUp = self.GetPUSF(events)
+
+                    Weights_puUp = Weights * puUp
+                    Weights_puDown = Weights * puDown
+                    Weights_puNom = Weights * puNom
+
+                    output['ttbarmass_puNom'].fill(dataset = dataset,
+                                     anacat = self.ConvertLabelToInt(self.label_dict, ilabel),
+                                     ttbarmass = ak.to_numpy(ttbarmass[icat]),
+                                     weight = ak.to_numpy(Weights_puNom[icat]),
+                                    )
+                    output['ttbarmass_puUp'].fill(dataset = dataset,
+                                     anacat = self.ConvertLabelToInt(self.label_dict, ilabel),
+                                     ttbarmass = ak.to_numpy(ttbarmass[icat]),
+                                     weight = ak.to_numpy(Weights_puUp[icat]),
+                                    )
+                    output['ttbarmass_puDown'].fill(dataset = dataset,
+                                     anacat = self.ConvertLabelToInt(self.label_dict, ilabel),
+                                     ttbarmass = ak.to_numpy(ttbarmass[icat]),
+                                     weight = ak.to_numpy(Weights_puDown[icat]),
+                                    )
+                    
+                    
                         
                     
                                     
