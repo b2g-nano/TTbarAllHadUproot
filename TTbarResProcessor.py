@@ -33,7 +33,7 @@ manual_bins = [400, 500, 600, 800, 1000, 1500, 2000, 3000, 7000, 10000]
 # --- Define 'Manual pT bins' to use for mc flavor efficiency plots for higher stats per bin--- # 
 manual_subjetpt_bins = [0, 300, 600, 1200] # Used on 6/17/22 for ttbar (3 bins)
 manual_subjeteta_bins = [0., 0.6, 1.2, 2.4] # Used on 6/17/22 for ttbar (3 bins)
-manual_jetht_bins = [200, 800, 840, 880, 920, 960, 1000, 1200, 1400, 1600, 1800, 2000]
+manual_jetht_bins = [200, 800, 840, 880, 920, 960, 1000, 1050, 1100, 1150, 1200, 1250,1300,1350, 1400, 1600, 1800, 2000]
 manual_sdMass_bins = [0, 25, 50, 75, 100, 125, 150, 175, 200, 225, 250, 300, 350, 400]
 manual_ttbarbins = [800, 1160, 1520, 1880, 2240, 2600, 3000, 4000, 5000, 6000, 8000]
 
@@ -2324,18 +2324,18 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
             Trigger2 = trigger2 & trigDenom
             Trigger3 = trigger3 & trigDenom
             Trigger4 = trigger4 & trigDenom
-        elif (self.year == 2017) or ('Run2017B' in dataset): # if 2017 full year or 2017 era B
+        #elif (self.year == 2017) and ('SingleMu2017B_Data' in dataset): # if 2017 full year or 2017 era B
+            #trigger1 = events.HLT_PFHT1050
+            #trigger2 = events.HLT_AK8PFJet550 
+            #condition1 = trigger1 & trigDenom
+            #condition2 = (trigger1 | trigger2) & trigDenom
+            #Trigger1 = trigger1 & trigDenom
+            #Trigger2 = trigger2 & trigDenom
+        elif (self.year == 2017): #and ('SingleMu2017B_Data' not in dataset): # if 2017 and not era B
             trigger1 = events.HLT_PFHT1050
             trigger2 = events.HLT_AK8PFJet550 
-            condition1 = trigger1 & trigDenom
-            condition2 = (trigger1 | trigger2) & trigDenom
-            Trigger1 = trigger1 & trigDenom
-            Trigger2 = trigger2 & trigDenom
-        elif (self.year == 2017) and ('Run2017B' not in dataset): # if 2017 and not era B
-            trigger1 = events.HLT_PFHT1050
-            trigger2 = events.HLT_AK8PFJet550 
-            trigger3 = evennts.HLT_AK8PFHT750_TrimMass50
-            trigger4 = evennts.HLT_AK8PFHT800_TrimMass50
+            trigger3 = events.HLT_AK8PFHT750_TrimMass50
+            trigger4 = events.HLT_AK8PFHT800_TrimMass50
             condition1 = trigger1 & trigDenom
             condition2 = (trigger1 | trigger2) & trigDenom
             condition3 = ((trigger1 | trigger2) | trigger3) & trigDenom
@@ -2393,7 +2393,7 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         SubJets = SubJets[twoFatJetsKin]
         Jets = Jets[twoFatJetsKin] # this used to not be here
         
-        if (self.year == 2016) or ((self.year == 2017) and ('Run2017B' not in dataset)):
+        if (self.year == 2016) or (self.year == 2017): #and ('SingleMu2017B_Data' not in dataset)):
             Trigger1 = Trigger1[twoFatJetsKin]
             Trigger2 = Trigger2[twoFatJetsKin]
             Trigger3 = Trigger3[twoFatJetsKin]
@@ -2403,11 +2403,11 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
             condition3 = condition3[twoFatJetsKin]
             condition4 = condition4[twoFatJetsKin]
 
-        elif (self.year == 2017) or ('Run2017B' in dataset):
-            Trigger1 = Trigger1[twoFatJetsKin]
-            Trigger2 = Trigger2[twoFatJetsKin]
-            condition1 = condition1[twoFatJetsKin]
-            condition2 = condition2[twoFatJetsKin]
+        # elif (self.year == 2017) or ('SingleMu2017B_Data' in dataset):
+        #     Trigger1 = Trigger1[twoFatJetsKin]
+        #     Trigger2 = Trigger2[twoFatJetsKin]
+        #     condition1 = condition1[twoFatJetsKin]
+        #     condition2 = condition2[twoFatJetsKin]
             
         else:
             Trigger1 = Trigger1[twoFatJetsKin]
@@ -2462,7 +2462,7 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         FatJets = FatJets[oneTTbar]
         Jets = Jets[oneTTbar] # this used to not be here
         
-        if (self.year == 2016) or ((self.year == 2017) and ('Run2017B' not in dataset)):
+        if (self.year == 2016) or (self.year == 2017): #and ('SingleMu2017B_Data' not in dataset)):
             Trigger1 = Trigger1[oneTTbar]
             Trigger2 = Trigger2[oneTTbar]
             Trigger3 = Trigger3[oneTTbar]
@@ -2472,11 +2472,11 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
             condition3 = condition3[oneTTbar]
             condition4 = condition4[oneTTbar]
 
-        elif (self.year == 2017) or ('Run2017B' in dataset):
-            Trigger1 = Trigger1[oneTTbar]
-            Trigger2 = Trigger2[oneTTbar]
-            condition1 = condition1[oneTTbar]
-            condition2 = condition2[oneTTbar]
+        # elif (self.year == 2017) or ('SingleMu2017B_Data' in dataset):
+        #     Trigger1 = Trigger1[oneTTbar]
+        #     Trigger2 = Trigger2[oneTTbar]
+        #     condition1 = condition1[oneTTbar]
+        #     condition2 = condition2[oneTTbar]
             
         else:
             Trigger1 = Trigger1[oneTTbar]
@@ -2499,7 +2499,7 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         FatJets = FatJets[dPhiCut] 
         Jets = Jets[dPhiCut] # this used to not be here
         
-        if (self.year == 2016) or ((self.year == 2017) and ('Run2017B' not in dataset)):
+        if (self.year == 2016) or (self.year == 2017): #and ('SingleMu2017B_Data' not in dataset)):
             Trigger1 = Trigger1[dPhiCut]
             Trigger2 = Trigger2[dPhiCut]
             Trigger3 = Trigger3[dPhiCut]
@@ -2509,11 +2509,11 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
             condition3 = condition3[dPhiCut]
             condition4 = condition4[dPhiCut]
 
-        elif (self.year == 2017) or ('Run2017B' in dataset):
-            Trigger1 = Trigger1[dPhiCut]
-            Trigger2 = Trigger2[dPhiCut]
-            condition1 = condition1[dPhiCut]
-            condition2 = condition2[dPhiCut]
+        # elif (self.year == 2017) or ('SingleMu2017B_Data' in dataset):
+        #     Trigger1 = Trigger1[dPhiCut]
+        #     Trigger2 = Trigger2[dPhiCut]
+        #     condition1 = condition1[dPhiCut]
+        #     condition2 = condition2[dPhiCut]
             
         else:
             Trigger1 = Trigger1[dPhiCut]
@@ -2536,7 +2536,7 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         SubJets = SubJets[GoodSubjets]
         Jets = Jets[GoodSubjets] # this used to not be here
         
-        if (self.year == 2016) or ((self.year == 2017) and ('Run2017B' not in dataset)):
+        if (self.year == 2016) or (self.year == 2017): #and ('SingleMu2017B_Data' not in dataset)):
             Trigger1 = Trigger1[GoodSubjets]
             Trigger2 = Trigger2[GoodSubjets]
             Trigger3 = Trigger3[GoodSubjets]
@@ -2546,11 +2546,11 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
             condition3 = condition3[GoodSubjets]
             condition4 = condition4[GoodSubjets]
 
-        elif (self.year == 2017) or ('Run2017B' in dataset):
-            Trigger1 = Trigger1[GoodSubjets]
-            Trigger2 = Trigger2[GoodSubjets]
-            condition1 = condition1[GoodSubjets]
-            condition2 = condition2[GoodSubjets]
+        # elif (self.year == 2017) or ('SingleMu2017B_Data' in dataset):
+        #     Trigger1 = Trigger1[GoodSubjets]
+        #     Trigger2 = Trigger2[GoodSubjets]
+        #     condition1 = condition1[GoodSubjets]
+        #     condition2 = condition2[GoodSubjets]
             
         else:
             Trigger1 = Trigger1[GoodSubjets]
@@ -2614,7 +2614,7 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
             '1': condition1,
             '2': condition2
         } 
-        if (self.year == 2016) or ((self.year == 2017) and ('Run2017B' not in dataset)):
+        if (self.year == 2016) or (self.year == 2017): #and ('SingleMu2017B_Data' not in dataset)):
             TriggersDict['3'] = Trigger3
             TriggersDict['4'] = Trigger4
             ConditionsDict['3'] = condition3
@@ -2629,7 +2629,7 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         Jets_NumCondition1 = Jets[condition1] # contains jets to be used as numerator for trigger eff
         Jets_NumCondition2 = Jets[condition2]
         
-        if (self.year == 2016) or ((self.year == 2017) and ('Run2017B' not in dataset)):
+        if (self.year == 2016) or (self.year == 2017): #and ('SingleMu2017B_Data' not in dataset)):
             Jets_NumTrigger3 = Jets[Trigger3]
             Jets_NumTrigger4 = Jets[Trigger4]
             Jets_NumCondition3 = Jets[condition3]
@@ -2652,7 +2652,7 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         ttbarmass_NumCondition1 = ttbarmass[condition1] # contains ttbarmass to be used as numerator for trigger eff
         ttbarmass_NumCondition2 = ttbarmass[condition2]
         
-        if (self.year == 2016) or ((self.year == 2017) and ('Run2017B' not in dataset)):
+        if (self.year == 2016) or (self.year == 2017): #and ('SingleMu2017B_Data' not in dataset)):
             ttbarmass_NumTrigger3 = ttbarmass[Trigger3]
             ttbarmass_NumTrigger4 = ttbarmass[Trigger4]
             ttbarmass_NumCondition3 = ttbarmass[condition3]
@@ -2666,7 +2666,7 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         output['cutflow']['events with jets cond1'] +=  ak.to_awkward0(condition1).sum()
         output['cutflow']['events with jets cond2'] +=  ak.to_awkward0(condition2).sum()
         
-        if (self.year == 2016) or ((self.year == 2017) and ('Run2017B' not in dataset)):
+        if (self.year == 2016) or (self.year == 2017): #and ('SingleMu2017B_Data' not in dataset)):
             output['cutflow']['events with jets cond3'] +=  ak.to_awkward0(condition3).sum()
             output['cutflow']['events with jets cond4'] +=  ak.to_awkward0(condition4).sum()
         elif self.year == 2018:
@@ -2680,7 +2680,7 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         passAK4_num1 = (Jets_NumCondition1.pt > 30.) & (np.abs(Jets_NumCondition1.eta) < 3.0) 
         passAK4_num2 = (Jets_NumCondition2.pt > 30.) & (np.abs(Jets_NumCondition2.eta) < 3.0)
         
-        if (self.year == 2016) or ((self.year == 2017) and ('Run2017B' not in dataset)):
+        if (self.year == 2016) or (self.year == 2017): #and ('SingleMu2017B_Data' not in dataset)):
             passAK4_num3_trig = (Jets_NumTrigger3.pt > 30.) & (np.abs(Jets_NumTrigger3.eta) < 3.0) 
             passAK4_num4_trig = (Jets_NumTrigger4.pt > 30.) & (np.abs(Jets_NumTrigger4.eta) < 3.0)
             passAK4_num3 = (Jets_NumCondition3.pt > 30.) & (np.abs(Jets_NumCondition3.eta) < 3.0)
@@ -2703,7 +2703,7 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         Num1Wgt = evtweights[condition1]
         Num2Wgt = evtweights[condition2]
         
-        if (self.year == 2016) or ((self.year == 2017) and ('Run2017B' not in dataset)):
+        if (self.year == 2016) or (self.year == 2017): #and ('SingleMu2017B_Data' not in dataset)):
             Num3Wgt_trig = evtweights[Trigger3]
             Num4Wgt_trig = evtweights[Trigger4]
             Num3Wgt = evtweights[condition3]
@@ -2721,7 +2721,7 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
             '2': Num2Wgt
         }
         
-        if (self.year == 2016) or ((self.year == 2017) and ('Run2017B' not in dataset)):
+        if (self.year == 2016) or (self.year == 2017): #and ('SingleMu2017B_Data' not in dataset)):
             NumWgtTrigDict['3'] = Num3Wgt_trig
             NumWgtTrigDict['4'] = Num4Wgt_trig
             NumWgtDict['3'] = Num3Wgt
@@ -2738,7 +2738,7 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         jet_HT_numerator1 = ak.sum(Jets_NumCondition1[passAK4_num1].pt, axis=-1) # Sum over each AK4 Jet per event
         jet_HT_numerator2 = ak.sum(Jets_NumCondition2[passAK4_num2].pt, axis=-1)
         
-        if (self.year == 2016) or ((self.year == 2017) and ('Run2017B' not in dataset)):
+        if (self.year == 2016) or (self.year == 2017): #and ('SingleMu2017B_Data' not in dataset)):
             jet_HT_numerator3_trig = ak.sum(Jets_NumTrigger3[passAK4_num3_trig].pt, axis=-1)
             jet_HT_numerator4_trig = ak.sum(Jets_NumTrigger4[passAK4_num4_trig].pt, axis=-1)
             jet_HT_numerator3 = ak.sum(Jets_NumCondition3[passAK4_num3].pt, axis=-1)
@@ -2757,7 +2757,7 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
             '2': jet_HT_numerator2
         }
         
-        if (self.year == 2016) or ((self.year == 2017) and ('Run2017B' not in dataset)):
+        if (self.year == 2016) or (self.year == 2017): #and ('SingleMu2017B_Data' not in dataset)):
             jet_HT_numeratorTrigDict['3'] = jet_HT_numerator3_trig
             jet_HT_numeratorTrigDict['4'] = jet_HT_numerator4_trig
             jet_HT_numeratorDict['3'] = jet_HT_numerator3
@@ -2780,7 +2780,7 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
             '2': ttbarmass_NumCondition2
         }
         
-        if (self.year == 2016) or ((self.year == 2017) and ('Run2017B' not in dataset)):
+        if (self.year == 2016) or (self.year == 2017): #and ('SingleMu2017B_Data' not in dataset)):
             ttbarmass_numeratorTrigDict['3'] = ttbarmass_NumTrigger3
             ttbarmass_numeratorTrigDict['4'] = ttbarmass_NumTrigger4
             ttbarmass_numeratorDict['3'] = ttbarmass_NumCondition3
@@ -2798,7 +2798,7 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         jet_SD_numerator1 = sdMass[condition1]
         jet_SD_numerator2 = sdMass[condition2]
 
-        if (self.year == 2016) or ((self.year == 2017) and ('Run2017B' not in dataset)):
+        if (self.year == 2016) or (self.year == 2017): #and ('SingleMu2017B_Data' not in dataset)):
             jet_SD_numerator3_trig = sdMass[Trigger3]
             jet_SD_numerator4_trig = sdMass[Trigger4]
             jet_SD_numerator3 = sdMass[condition3]
@@ -2819,7 +2819,7 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
             '2': jet_SD_numerator2
         }
         
-        if (self.year == 2016) or ((self.year == 2017) and ('Run2017B' not in dataset)):
+        if (self.year == 2016) or (self.year == 2017): #and ('SingleMu2017B_Data' not in dataset)):
             jet_SD_numeratorTrigDict['3'] = jet_SD_numerator3_trig
             jet_SD_numeratorTrigDict['4'] = jet_SD_numerator4_trig
             jet_SD_numeratorDict['3'] = jet_SD_numerator3
@@ -2831,7 +2831,7 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         output['cutflow']['jets cond1 with ak4cut'] += ak.to_awkward0(ak.flatten(passAK4_num1)).sum()
         output['cutflow']['jets cond2 with ak4cut'] += ak.to_awkward0(ak.flatten(passAK4_num2)).sum()
         
-        if (self.year == 2016) or ((self.year == 2017) and ('Run2017B' not in dataset)):
+        if (self.year == 2016) or (self.year == 2017): #and ('SingleMu2017B_Data' not in dataset)):
             output['cutflow']['jets cond3 with ak4cut'] += ak.to_awkward0(ak.flatten(passAK4_num3)).sum()
             output['cutflow']['jets cond4 with ak4cut'] += ak.to_awkward0(ak.flatten(passAK4_num4)).sum()
         elif self.year == 2018:

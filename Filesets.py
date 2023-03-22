@@ -266,7 +266,7 @@ def CollectDatasets(redirector_str):
         if 'Run2017B' in filename:
             with open(filedir + 'SingleMu/' + filename) as b:
                 singlemudatafiles2017b = [redirector_str + s.strip() for s in b.readlines()] 
-        elif 'Run2017C' in filename:
+        if 'Run2017C' in filename:
             with open(filedir + 'SingleMu/' + filename) as c:
                 singlemudatafiles2017c = [redirector_str + s.strip() for s in c.readlines()] 
         elif 'Run2017D' in filename:
