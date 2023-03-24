@@ -506,14 +506,16 @@ def main():
     if args.letters:
         Letters = args.letters
 
-    namingConvention = 'UL'+VFP # prefix to help name every MC coffea output according to the selected options
-    fileConvention = convertLabel[VFP] + '/TTbarRes_0l_' # direct the saved coffea output to the appropriate directory
+    namingConvention = 'UL' # prefix to help name every coffea output according to the selected options
+    fileConvention = '/TTbarRes_0l_' # direct the saved coffea output to the appropriate directory ex.) postVFP/TTbarRes_0l_blahblah
     if args.year > 0:
-        namingConvention = 'UL'+str(args.year-2000)+VFP # prefix to help name every MC coffea output according to the selected options
+        namingConvention = 'UL'+str(args.year-2000)+VFP # prefix to help name every coffea output according to the selected options
         fileConvention = str(args.year) + '/' + convertLabel[VFP] + '/TTbarRes_0l_' # direct the saved coffea output to the appropriate directory
     SaveLocation={ # Fill this dictionary with each type of dataset; use this dictionary when saving uproot jobs below
         namingConvention+'_TTbar': 'TT/' + BDiscDirectory + fileConvention,
-        namingConvention+'_QCD': 'QCD/' + BDiscDirectory + fileConvention
+        namingConvention+'_QCD': 'QCD/' + BDiscDirectory + fileConvention,
+        namingConvention+'_DM': 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention,
+        namingConvention+'_RSGluon': 'RSGluonToTT/' + BDiscDirectory + fileConvention
     }
     if not Testing:
         filesets_to_run = {}
@@ -524,21 +526,30 @@ def main():
                 if args.year > 0:
                     if ('JetHT' in a): 
                         for L in Letters:
-                            filesets_to_run['JetHT'+str(args.year)+L+'_Data'] = filesets['JetHT'+str(args.year)+L+'_Data'] # include JetHT dataset read in from Filesets
-                            SaveLocation['JetHT'+str(args.year)+L+'_Data'] = 'JetHT/' + BDiscDirectory + str(args.year) + '/TTbarRes_0l_' # file where output will be saved
+                            filesets_to_run[namingConvention+'_JetHT'+L+'_Data'] = filesets[namingConvention+'_JetHT'+L+'_Data'] # include JetHT dataset read in from Filesets
+                            SaveLocation[namingConvention+'_JetHT'+L+'_Data'] = 'JetHT/' + BDiscDirectory + fileConvention # file where output will be saved
                     elif ('SingleMu' in a): 
                         filesets_to_run['SingleMu'+str(args.year)+'_Data'] = filesets['SingleMu'+str(args.year)+'_Data'] # include JetHT dataset read in from Filesets
                         SaveLocation['SingleMu'+str(args.year)+'_Data'] = 'SingleMu/' + BDiscDirectory + str(args.year) + '/TTbarRes_0l_' # file where output will be saved
                 else: # All Years
                     if ('JetHT' in a): 
-                        filesets_to_run['JetHT_Data'] = filesets['JetHT_Data'] # include JetHT dataset read in from Filesets
-                        SaveLocation['JetHT_Data'] = 'JetHT/' + BDiscDirectory + '/TTbarRes_0l_' # file where output will be saved
+                        filesets_to_run[namingConvention+'_JetHT_Data'] = filesets[namingConvention+'JetHT_Data'] # include JetHT dataset read in from Filesets
+                        SaveLocation[namingConvention+'_JetHT_Data'] = 'JetHT/' + BDiscDirectory + '/TTbarRes_0l_' # file where output will be saved
                     elif ('SingleMu' in a): 
                         filesets_to_run['SingleMu_Data'] = filesets['SingleMu_Data'] # include JetHT dataset read in from Filesets
                         SaveLocation['SingleMu_Data'] = 'SingleMu/' + BDiscDirectory + '/TTbarRes_0l_' # file where output will be saved
                 # Signal MC (then TTbar and QCD MC)
                 if 'RSGluon' in a:
                     if a == 'RSGluon':
+                        filesets_to_run[namingConvention+'_'+a+'1000'] = filesets[namingConvention+'_'+a+'1000']
+                        filesets_to_run[namingConvention+'_'+a+'1500'] = filesets[namingConvention+'_'+a+'1500']
+                        filesets_to_run[namingConvention+'_'+a+'2000'] = filesets[namingConvention+'_'+a+'2000']
+                        filesets_to_run[namingConvention+'_'+a+'2500'] = filesets[namingConvention+'_'+a+'2500']
+                        filesets_to_run[namingConvention+'_'+a+'3000'] = filesets[namingConvention+'_'+a+'3000']
+                        filesets_to_run[namingConvention+'_'+a+'3500'] = filesets[namingConvention+'_'+a+'3500']
+                        filesets_to_run[namingConvention+'_'+a+'4000'] = filesets[namingConvention+'_'+a+'4000']
+                        filesets_to_run[namingConvention+'_'+a+'4500'] = filesets[namingConvention+'_'+a+'4500']
+                        filesets_to_run[namingConvention+'_'+a+'5000'] = filesets[namingConvention+'_'+a+'5000']
                         SaveLocation[namingConvention+'_'+a+'1000'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'1500'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'2000'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
@@ -548,6 +559,10 @@ def main():
                         SaveLocation[namingConvention+'_'+a+'4000'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'4500'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'5000'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
+                    else:
+                        filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a]
+                elif 'DM' in a:
+                    if a == 'DM':
                         filesets_to_run[namingConvention+'_'+a+'1000'] = filesets[namingConvention+'_'+a+'1000']
                         filesets_to_run[namingConvention+'_'+a+'1500'] = filesets[namingConvention+'_'+a+'1500']
                         filesets_to_run[namingConvention+'_'+a+'2000'] = filesets[namingConvention+'_'+a+'2000']
@@ -557,11 +572,6 @@ def main():
                         filesets_to_run[namingConvention+'_'+a+'4000'] = filesets[namingConvention+'_'+a+'4000']
                         filesets_to_run[namingConvention+'_'+a+'4500'] = filesets[namingConvention+'_'+a+'4500']
                         filesets_to_run[namingConvention+'_'+a+'5000'] = filesets[namingConvention+'_'+a+'5000']
-                    else:
-                        SaveLocation[namingConvention+'_'+a] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
-                        filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a]
-                elif 'DM' in a:
-                    if a == 'DM':
                         SaveLocation[namingConvention+'_'+a+'1000'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'1500'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'2000'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
@@ -571,17 +581,7 @@ def main():
                         SaveLocation[namingConvention+'_'+a+'4000'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'4500'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'5000'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
-                        filesets_to_run[namingConvention+'_'+a+'1000'] = filesets[namingConvention+'_'+a+'1000']
-                        filesets_to_run[namingConvention+'_'+a+'1500'] = filesets[namingConvention+'_'+a+'1500']
-                        filesets_to_run[namingConvention+'_'+a+'2000'] = filesets[namingConvention+'_'+a+'2000']
-                        filesets_to_run[namingConvention+'_'+a+'2500'] = filesets[namingConvention+'_'+a+'2500']
-                        filesets_to_run[namingConvention+'_'+a+'3000'] = filesets[namingConvention+'_'+a+'3000']
-                        filesets_to_run[namingConvention+'_'+a+'3500'] = filesets[namingConvention+'_'+a+'3500']
-                        filesets_to_run[namingConvention+'_'+a+'4000'] = filesets[namingConvention+'_'+a+'4000']
-                        filesets_to_run[namingConvention+'_'+a+'4500'] = filesets[namingConvention+'_'+a+'4500']
-                        filesets_to_run[namingConvention+'_'+a+'5000'] = filesets[namingConvention+'_'+a+'5000']
                     else:
-                        SaveLocation[namingConvention+'_'+a] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
                         filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a]
                 elif 'TTbar' in a or 'QCD' in a:
                     filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a] # include MC dataset read in from Filesets
@@ -590,21 +590,31 @@ def main():
             for a in args.runMMO: # for any dataset included as user argument...
                 if args.year > 0:
                     if ('JetHT' in a): 
-                        filesets_to_run['JetHT'+str(args.year)+'_Data'] = filesets['JetHT'+str(args.year)+'_Data'] # include JetHT dataset read in from Filesets
-                        SaveLocation['JetHT'+str(args.year)+'_Data'] = 'JetHT/' + BDiscDirectory + str(args.year) + '/TTbarRes_0l_' # file where output will be saved
+                        for L in Letters:
+                            filesets_to_run[namingConvention+'_JetHT'+L+'_Data'] = filesets[namingConvention+'_JetHT'+L+'_Data'] # include JetHT dataset read in from Filesets
+                            SaveLocation[namingConvention+'_JetHT'+L+'_Data'] = 'JetHT/' + BDiscDirectory + fileConvention # file where output will be saved
                     elif ('SingleMu' in a): 
                         filesets_to_run['SingleMu'+str(args.year)+'_Data'] = filesets['SingleMu'+str(args.year)+'_Data'] # include JetHT dataset read in from Filesets
                         SaveLocation['SingleMu'+str(args.year)+'_Data'] = 'SingleMu/' + BDiscDirectory + str(args.year) + '/TTbarRes_0l_' # file where output will be saved
                 else: # All Years
                     if ('JetHT' in a): 
-                        filesets_to_run['JetHT_Data'] = filesets['JetHT_Data'] # include JetHT dataset read in from Filesets
-                        SaveLocation['JetHT_Data'] = 'JetHT/' + BDiscDirectory + '/TTbarRes_0l_' # file where output will be saved
+                        filesets_to_run[namingConvention+'_JetHT_Data'] = filesets[namingConvention+'JetHT_Data'] # include JetHT dataset read in from Filesets
+                        SaveLocation[namingConvention+'_JetHT_Data'] = 'JetHT/' + BDiscDirectory + '/TTbarRes_0l_' # file where output will be saved
                     elif ('SingleMu' in a): 
                         filesets_to_run['SingleMu_Data'] = filesets['SingleMu_Data'] # include JetHT dataset read in from Filesets
                         SaveLocation['SingleMu_Data'] = 'SingleMu/' + BDiscDirectory + '/TTbarRes_0l_' # file where output will be saved
                 # Signal MC (then TTbar and QCD MC)
                 if 'RSGluon' in a:
                     if a == 'RSGluon':
+                        filesets_to_run[namingConvention+'_'+a+'1000'] = filesets[namingConvention+'_'+a+'1000']
+                        filesets_to_run[namingConvention+'_'+a+'1500'] = filesets[namingConvention+'_'+a+'1500']
+                        filesets_to_run[namingConvention+'_'+a+'2000'] = filesets[namingConvention+'_'+a+'2000']
+                        filesets_to_run[namingConvention+'_'+a+'2500'] = filesets[namingConvention+'_'+a+'2500']
+                        filesets_to_run[namingConvention+'_'+a+'3000'] = filesets[namingConvention+'_'+a+'3000']
+                        filesets_to_run[namingConvention+'_'+a+'3500'] = filesets[namingConvention+'_'+a+'3500']
+                        filesets_to_run[namingConvention+'_'+a+'4000'] = filesets[namingConvention+'_'+a+'4000']
+                        filesets_to_run[namingConvention+'_'+a+'4500'] = filesets[namingConvention+'_'+a+'4500']
+                        filesets_to_run[namingConvention+'_'+a+'5000'] = filesets[namingConvention+'_'+a+'5000']
                         SaveLocation[namingConvention+'_'+a+'1000'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'1500'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'2000'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
@@ -614,6 +624,10 @@ def main():
                         SaveLocation[namingConvention+'_'+a+'4000'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'4500'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'5000'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
+                    else:
+                        filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a]
+                elif 'DM' in a:
+                    if a == 'DM':
                         filesets_to_run[namingConvention+'_'+a+'1000'] = filesets[namingConvention+'_'+a+'1000']
                         filesets_to_run[namingConvention+'_'+a+'1500'] = filesets[namingConvention+'_'+a+'1500']
                         filesets_to_run[namingConvention+'_'+a+'2000'] = filesets[namingConvention+'_'+a+'2000']
@@ -623,11 +637,6 @@ def main():
                         filesets_to_run[namingConvention+'_'+a+'4000'] = filesets[namingConvention+'_'+a+'4000']
                         filesets_to_run[namingConvention+'_'+a+'4500'] = filesets[namingConvention+'_'+a+'4500']
                         filesets_to_run[namingConvention+'_'+a+'5000'] = filesets[namingConvention+'_'+a+'5000']
-                    else:
-                        SaveLocation[namingConvention+'_'+a] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
-                        filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a]
-                elif 'DM' in a:
-                    if a == 'DM':
                         SaveLocation[namingConvention+'_'+a+'1000'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'1500'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'2000'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
@@ -637,17 +646,7 @@ def main():
                         SaveLocation[namingConvention+'_'+a+'4000'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'4500'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'5000'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
-                        filesets_to_run[namingConvention+'_'+a+'1000'] = filesets[namingConvention+'_'+a+'1000']
-                        filesets_to_run[namingConvention+'_'+a+'1500'] = filesets[namingConvention+'_'+a+'1500']
-                        filesets_to_run[namingConvention+'_'+a+'2000'] = filesets[namingConvention+'_'+a+'2000']
-                        filesets_to_run[namingConvention+'_'+a+'2500'] = filesets[namingConvention+'_'+a+'2500']
-                        filesets_to_run[namingConvention+'_'+a+'3000'] = filesets[namingConvention+'_'+a+'3000']
-                        filesets_to_run[namingConvention+'_'+a+'3500'] = filesets[namingConvention+'_'+a+'3500']
-                        filesets_to_run[namingConvention+'_'+a+'4000'] = filesets[namingConvention+'_'+a+'4000']
-                        filesets_to_run[namingConvention+'_'+a+'4500'] = filesets[namingConvention+'_'+a+'4500']
-                        filesets_to_run[namingConvention+'_'+a+'5000'] = filesets[namingConvention+'_'+a+'5000']
                     else:
-                        SaveLocation[namingConvention+'_'+a] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
                         filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a]
                 elif 'TTbar' in a or 'QCD' in a:
                     filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a] # include MC dataset read in from Filesets
@@ -656,21 +655,31 @@ def main():
             for a in args.runAMO: # for any dataset included as user argument...
                 if args.year > 0:
                     if ('JetHT' in a): 
-                        filesets_to_run['JetHT'+str(args.year)+'_Data'] = filesets['JetHT'+str(args.year)+'_Data'] # include JetHT dataset read in from Filesets
-                        SaveLocation['JetHT'+str(args.year)+'_Data'] = 'JetHT/' + BDiscDirectory + str(args.year) + '/TTbarRes_0l_' # file where output will be saved
+                        for L in Letters:
+                            filesets_to_run[namingConvention+'_JetHT'+L+'_Data'] = filesets[namingConvention+'_JetHT'+L+'_Data'] # include JetHT dataset read in from Filesets
+                            SaveLocation[namingConvention+'_JetHT'+L+'_Data'] = 'JetHT/' + BDiscDirectory + fileConvention # file where output will be saved
                     elif ('SingleMu' in a): 
                         filesets_to_run['SingleMu'+str(args.year)+'_Data'] = filesets['SingleMu'+str(args.year)+'_Data'] # include JetHT dataset read in from Filesets
                         SaveLocation['SingleMu'+str(args.year)+'_Data'] = 'SingleMu/' + BDiscDirectory + str(args.year) + '/TTbarRes_0l_' # file where output will be saved
                 else: # All Years
                     if ('JetHT' in a): 
-                        filesets_to_run['JetHT_Data'] = filesets['JetHT_Data'] # include JetHT dataset read in from Filesets
-                        SaveLocation['JetHT_Data'] = 'JetHT/' + BDiscDirectory + '/TTbarRes_0l_' # file where output will be saved
+                        filesets_to_run[namingConvention+'_JetHT_Data'] = filesets[namingConvention+'JetHT_Data'] # include JetHT dataset read in from Filesets
+                        SaveLocation[namingConvention+'_JetHT_Data'] = 'JetHT/' + BDiscDirectory + '/TTbarRes_0l_' # file where output will be saved
                     elif ('SingleMu' in a): 
                         filesets_to_run['SingleMu_Data'] = filesets['SingleMu_Data'] # include JetHT dataset read in from Filesets
                         SaveLocation['SingleMu_Data'] = 'SingleMu/' + BDiscDirectory + '/TTbarRes_0l_' # file where output will be saved
                 # Signal MC (then TTbar and QCD MC)
                 if 'RSGluon' in a:
                     if a == 'RSGluon':
+                        filesets_to_run[namingConvention+'_'+a+'1000'] = filesets[namingConvention+'_'+a+'1000']
+                        filesets_to_run[namingConvention+'_'+a+'1500'] = filesets[namingConvention+'_'+a+'1500']
+                        filesets_to_run[namingConvention+'_'+a+'2000'] = filesets[namingConvention+'_'+a+'2000']
+                        filesets_to_run[namingConvention+'_'+a+'2500'] = filesets[namingConvention+'_'+a+'2500']
+                        filesets_to_run[namingConvention+'_'+a+'3000'] = filesets[namingConvention+'_'+a+'3000']
+                        filesets_to_run[namingConvention+'_'+a+'3500'] = filesets[namingConvention+'_'+a+'3500']
+                        filesets_to_run[namingConvention+'_'+a+'4000'] = filesets[namingConvention+'_'+a+'4000']
+                        filesets_to_run[namingConvention+'_'+a+'4500'] = filesets[namingConvention+'_'+a+'4500']
+                        filesets_to_run[namingConvention+'_'+a+'5000'] = filesets[namingConvention+'_'+a+'5000']
                         SaveLocation[namingConvention+'_'+a+'1000'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'1500'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'2000'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
@@ -680,6 +689,10 @@ def main():
                         SaveLocation[namingConvention+'_'+a+'4000'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'4500'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'5000'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
+                    else:
+                        filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a]
+                elif 'DM' in a:
+                    if a == 'DM':
                         filesets_to_run[namingConvention+'_'+a+'1000'] = filesets[namingConvention+'_'+a+'1000']
                         filesets_to_run[namingConvention+'_'+a+'1500'] = filesets[namingConvention+'_'+a+'1500']
                         filesets_to_run[namingConvention+'_'+a+'2000'] = filesets[namingConvention+'_'+a+'2000']
@@ -689,11 +702,6 @@ def main():
                         filesets_to_run[namingConvention+'_'+a+'4000'] = filesets[namingConvention+'_'+a+'4000']
                         filesets_to_run[namingConvention+'_'+a+'4500'] = filesets[namingConvention+'_'+a+'4500']
                         filesets_to_run[namingConvention+'_'+a+'5000'] = filesets[namingConvention+'_'+a+'5000']
-                    else:
-                        SaveLocation[namingConvention+'_'+a] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
-                        filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a]
-                elif 'DM' in a:
-                    if a == 'DM':
                         SaveLocation[namingConvention+'_'+a+'1000'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'1500'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'2000'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
@@ -703,17 +711,7 @@ def main():
                         SaveLocation[namingConvention+'_'+a+'4000'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'4500'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'5000'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
-                        filesets_to_run[namingConvention+'_'+a+'1000'] = filesets[namingConvention+'_'+a+'1000']
-                        filesets_to_run[namingConvention+'_'+a+'1500'] = filesets[namingConvention+'_'+a+'1500']
-                        filesets_to_run[namingConvention+'_'+a+'2000'] = filesets[namingConvention+'_'+a+'2000']
-                        filesets_to_run[namingConvention+'_'+a+'2500'] = filesets[namingConvention+'_'+a+'2500']
-                        filesets_to_run[namingConvention+'_'+a+'3000'] = filesets[namingConvention+'_'+a+'3000']
-                        filesets_to_run[namingConvention+'_'+a+'3500'] = filesets[namingConvention+'_'+a+'3500']
-                        filesets_to_run[namingConvention+'_'+a+'4000'] = filesets[namingConvention+'_'+a+'4000']
-                        filesets_to_run[namingConvention+'_'+a+'4500'] = filesets[namingConvention+'_'+a+'4500']
-                        filesets_to_run[namingConvention+'_'+a+'5000'] = filesets[namingConvention+'_'+a+'5000']
                     else:
-                        SaveLocation[namingConvention+'_'+a] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
                         filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a]
                 elif 'TTbar' in a or 'QCD' in a:
                     filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a] # include MC dataset read in from Filesets
@@ -722,6 +720,15 @@ def main():
             for a in args.runflavoreff: # for any dataset included as user argument...
                 if 'RSGluon' in a:
                     if a == 'RSGluon':
+                        filesets_to_run[namingConvention+'_'+a+'1000'] = filesets[namingConvention+'_'+a+'1000']
+                        filesets_to_run[namingConvention+'_'+a+'1500'] = filesets[namingConvention+'_'+a+'1500']
+                        filesets_to_run[namingConvention+'_'+a+'2000'] = filesets[namingConvention+'_'+a+'2000']
+                        filesets_to_run[namingConvention+'_'+a+'2500'] = filesets[namingConvention+'_'+a+'2500']
+                        filesets_to_run[namingConvention+'_'+a+'3000'] = filesets[namingConvention+'_'+a+'3000']
+                        filesets_to_run[namingConvention+'_'+a+'3500'] = filesets[namingConvention+'_'+a+'3500']
+                        filesets_to_run[namingConvention+'_'+a+'4000'] = filesets[namingConvention+'_'+a+'4000']
+                        filesets_to_run[namingConvention+'_'+a+'4500'] = filesets[namingConvention+'_'+a+'4500']
+                        filesets_to_run[namingConvention+'_'+a+'5000'] = filesets[namingConvention+'_'+a+'5000']
                         SaveLocation[namingConvention+'_'+a+'1000'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'1500'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'2000'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
@@ -731,6 +738,10 @@ def main():
                         SaveLocation[namingConvention+'_'+a+'4000'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'4500'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'5000'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
+                    else:
+                        filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a]
+                elif 'DM' in a:
+                    if a == 'DM':
                         filesets_to_run[namingConvention+'_'+a+'1000'] = filesets[namingConvention+'_'+a+'1000']
                         filesets_to_run[namingConvention+'_'+a+'1500'] = filesets[namingConvention+'_'+a+'1500']
                         filesets_to_run[namingConvention+'_'+a+'2000'] = filesets[namingConvention+'_'+a+'2000']
@@ -740,11 +751,6 @@ def main():
                         filesets_to_run[namingConvention+'_'+a+'4000'] = filesets[namingConvention+'_'+a+'4000']
                         filesets_to_run[namingConvention+'_'+a+'4500'] = filesets[namingConvention+'_'+a+'4500']
                         filesets_to_run[namingConvention+'_'+a+'5000'] = filesets[namingConvention+'_'+a+'5000']
-                    else:
-                        SaveLocation[namingConvention+'_'+a] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
-                        filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a]
-                elif 'DM' in a:
-                    if a == 'DM':
                         SaveLocation[namingConvention+'_'+a+'1000'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'1500'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'2000'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
@@ -754,17 +760,7 @@ def main():
                         SaveLocation[namingConvention+'_'+a+'4000'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'4500'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'5000'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
-                        filesets_to_run[namingConvention+'_'+a+'1000'] = filesets[namingConvention+'_'+a+'1000']
-                        filesets_to_run[namingConvention+'_'+a+'1500'] = filesets[namingConvention+'_'+a+'1500']
-                        filesets_to_run[namingConvention+'_'+a+'2000'] = filesets[namingConvention+'_'+a+'2000']
-                        filesets_to_run[namingConvention+'_'+a+'2500'] = filesets[namingConvention+'_'+a+'2500']
-                        filesets_to_run[namingConvention+'_'+a+'3000'] = filesets[namingConvention+'_'+a+'3000']
-                        filesets_to_run[namingConvention+'_'+a+'3500'] = filesets[namingConvention+'_'+a+'3500']
-                        filesets_to_run[namingConvention+'_'+a+'4000'] = filesets[namingConvention+'_'+a+'4000']
-                        filesets_to_run[namingConvention+'_'+a+'4500'] = filesets[namingConvention+'_'+a+'4500']
-                        filesets_to_run[namingConvention+'_'+a+'5000'] = filesets[namingConvention+'_'+a+'5000']
                     else:
-                        SaveLocation[namingConvention+'_'+a] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
                         filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a]
                 elif 'TTbar' in a or 'QCD' in a:
                     filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a] # include MC dataset read in from Filesets
@@ -772,11 +768,11 @@ def main():
             filesets_to_run[namingConvention+'_TTbar'] = filesets[namingConvention+'_TTbar']
             if args.year > 0:
                 for L in Letters:
-                    filesets_to_run['JetHT'+str(args.year)+L+'_Data'] = filesets['JetHT'+str(args.year)+L+'_Data'] # include JetHT dataset read in from Filesets
-                    SaveLocation['JetHT'+str(args.year)+L+'_Data'] = 'JetHT/' + BDiscDirectory + str(args.year) + '/TTbarRes_0l_' # file where output will be saved
+                    filesets_to_run[namingConvention+'_JetHT'+L+'_Data'] = filesets[namingConvention+'_JetHT'+L+'_Data'] # include JetHT dataset read in from Filesets
+                    SaveLocation[namingConvention+'_JetHT'+L+'_Data'] = 'JetHT/' + BDiscDirectory + fileConvention # file where output will be saved
             else:
-                filesets_to_run['JetHT_Data'] = filesets['JetHT_Data']
-                SaveLocation['JetHT_Data'] = 'JetHT/' + BDiscDirectory + '/TTbarRes_0l_'
+                filesets_to_run[namingConvention+'_JetHT_Data'] = filesets[namingConvention+'JetHT_Data'] # include JetHT dataset read in from Filesets
+                SaveLocation[namingConvention+'_JetHT_Data'] = 'JetHT/' + BDiscDirectory + '/TTbarRes_0l_' # file where output will be saved
         elif isTrigEffArg: # just run over data
             if args.year > 0:
                 filesets_to_run['SingleMu'+str(args.year)+'_Data'] = filesets['SingleMu'+str(args.year)+'_Data']
@@ -864,8 +860,28 @@ def main():
             # client.upload_file('TTbarAllHadUproot/TTbarResProcessor.py')
             # client.upload_file('TTbarAllHadUproot/TTbarResLookUpTables.py')
 
+    elif UsingDaskExecutor == True and args.winterfell:
+        from dask.distributed import Client
+        from dask.distributed.diagnostics.plugin import UploadDirectory
 
+        if __name__ == "__main__":       
 
+            # cluster = '128.205.11.158:8787'
+            # uploadDir = '/mnt/users/acwillia/TTbarAllHadUproot'
+            client = Client()
+
+            # try:
+            #     client.register_worker_plugin(UploadDirectory(uploadDir,restart=True,update_path=True),nanny=True)
+            # except OSError as ose:
+            #     print('\n', ose)    
+            #     print('\nFor some reason, Dask did not work as intended\n')
+            #     exit
+            #     if args.newCluster:
+            #         cluster.close()
+
+            # print('Worker Directories:\n')
+            # # print(client.run(os.listdir))
+            # print(client.run(os.listdir,"/mnt/users/acwillia/TTbarAllHadUproot"))
 
     #    ----------------------------------------------------------------------------------------------------  
     #    U     U PPPPPP  RRRRRR    OOO     OOO   TTTTTTT     FFFFFFF L          A    V     V   OOO   RRRRRR      
@@ -907,7 +923,7 @@ def main():
                                                       chunksize=Chunk[0], maxchunks=Chunk[1])
                 else: # use dask
                     chosen_exec = 'dask'
-                    client.wait_for_workers(timeout=TimeOut)
+                    client.wait_for_workers(n_workers=1, timeout=TimeOut)
                     output = processor.run_uproot_job({name:files},
                                                       treename='Events',
                                                       processor_instance=MCFlavorEfficiencyProcessor(RandomDebugMode=False,
@@ -957,7 +973,7 @@ def main():
 
                 else: # use dask
                     chosen_exec = 'dask'
-                    client.wait_for_workers(timeout=TimeOut)
+                    client.wait_for_workers(n_workers=1, timeout=TimeOut)
                     output = processor.run_uproot_job({name:files},
                                                       treename='Events',
                                                       processor_instance=MCFlavorEfficiencyProcessor(RandomDebugMode=False,
@@ -1045,7 +1061,7 @@ def main():
                                                       chunksize=Chunk[0], maxchunks=Chunk[1])
                 else: # use dask
                     chosen_exec = 'dask'
-                    client.wait_for_workers(timeout=TimeOut)
+                    client.wait_for_workers(n_workers=1, timeout=TimeOut)
                     output = processor.run_uproot_job({name:files},
                                                       treename='Events',
                                                       processor_instance=TriggerAnalysisProcessor(RandomDebugMode=False,
@@ -1094,7 +1110,7 @@ def main():
 
                 else: # use dask
                     chosen_exec = 'dask'
-                    client.wait_for_workers(1)
+                    client.wait_for_workers(n_workers=1, timeout=TimeOut)
                     output = processor.run_uproot_job({name:files},
                                                       treename='Events',
                                                       processor_instance=TriggerAnalysisProcessor(RandomDebugMode=False,
@@ -1182,7 +1198,7 @@ def main():
                                                       chunksize=Chunk[0], maxchunks=Chunk[1])
                 else: # use dask
                     chosen_exec = 'dask'
-                    client.wait_for_workers(timeout=TimeOut)
+                    client.wait_for_workers(n_workers=1, timeout=TimeOut)
                     output = processor.run_uproot_job({name:files},
                                                       treename='Events',
                                                       processor_instance=TTbarResProcessor(UseLookUpTables=False,
@@ -1237,7 +1253,7 @@ def main():
 
                 else: # use dask
                     chosen_exec = 'dask'
-                    client.wait_for_workers(timeout=TimeOut)
+                    client.wait_for_workers(n_workers=1, timeout=TimeOut)
                     output = processor.run_uproot_job({name:files},
                                                       treename='Events',
                                                       processor_instance=TTbarResProcessor(UseLookUpTables=False,
@@ -1307,9 +1323,9 @@ def main():
 
     if args.runmistag:
         CreateLUTS(filesets_to_run, outputs_unweighted, BDiscDirectory, args.year, VFP, args.runmistag, Letters, args.saveMistag)
-        mistag_luts = LoadDataLUTS(BDiscDirectory, args.year, Letters) # Specifically get data mistag rates with ttContam. corrections
+        mistag_luts = LoadDataLUTS(BDiscDirectory, args.year, VFP, Letters) # Specifically get data mistag rates with ttContam. corrections
     else:
-        mistag_luts = LoadDataLUTS(BDiscDirectory, args.year, Letters) # Specifically get data mistag rates with ttContam. corrections
+        mistag_luts = LoadDataLUTS(BDiscDirectory, args.year, VFP, Letters)
 
     if OnlyCreateLookupTables:
         print("\n\nWe\'re done here!!\n")
@@ -1367,6 +1383,7 @@ def main():
                                                                                            year=args.year,
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
+                                                                                           eras=Letters,
                                                                                            prng=prng),
                                                       #executor=processor.iterative_executor,
                                                       executor=processor.futures_executor,
@@ -1377,7 +1394,7 @@ def main():
                                                       chunksize=Chunk[0], maxchunks=Chunk[1])
                 else:
                     chosen_exec = 'dask'
-                    client.wait_for_workers(timeout=TimeOut)
+                    client.wait_for_workers(n_workers=1, timeout=TimeOut)
                     output = processor.run_uproot_job({name:files},
                                                       treename='Events',
                                                       processor_instance=TTbarResProcessor(UseLookUpTables=True,
@@ -1402,6 +1419,7 @@ def main():
                                                                                            year=args.year,
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
+                                                                                           eras=Letters,
                                                                                            prng=prng),
                                                       executor=processor.dask_executor,
                                                       executor_args={
@@ -1450,6 +1468,7 @@ def main():
                                                                                            year=args.year,
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
+                                                                                           eras=Letters,
                                                                                            prng=prng),
                                                       #executor=processor.iterative_executor,
                                                       executor=processor.futures_executor,
@@ -1460,7 +1479,7 @@ def main():
 
                 else:
                     chosen_exec = 'dask'
-                    client.wait_for_workers(timeout=TimeOut)
+                    client.wait_for_workers(n_workers=1, timeout=TimeOut)
                     output = processor.run_uproot_job({name:files},
                                                       treename='Events',
                                                       processor_instance=TTbarResProcessor(UseLookUpTables=True,
@@ -1483,6 +1502,7 @@ def main():
                                                                                            year=args.year,
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
+                                                                                           eras=Letters,
                                                                                            prng=prng),
                                                       executor=processor.dask_executor,
                                                       executor_args={
@@ -1557,6 +1577,7 @@ def main():
                                                                                                year=args.year,
                                                                                                apv=convertLabel[VFP],
                                                                                                vfp=VFP,
+                                                                                               eras=Letters,
                                                                                                prng=prng),
                                                           #executor=processor.iterative_executor,
                                                           executor=processor.futures_executor,
@@ -1567,7 +1588,7 @@ def main():
                                                           chunksize=Chunk[0], maxchunks=Chunk[1])
                     else:
                         chosen_exec = 'dask'
-                        client.wait_for_workers(timeout=TimeOut)
+                        client.wait_for_workers(n_workers=1, timeout=TimeOut)
                         output = processor.run_uproot_job({name:files},
                                                           treename='Events',
                                                           processor_instance=TTbarResProcessor(UseLookUpTables=True,
@@ -1580,6 +1601,7 @@ def main():
                                                                                                year=args.year,
                                                                                                apv=convertLabel[VFP],
                                                                                                vfp=VFP,
+                                                                                               eras=Letters,
                                                                                                prng=prng),
                                                           executor=processor.dask_executor,
                                                           executor_args={
@@ -1614,6 +1636,7 @@ def main():
                                                                                                year=args.year,
                                                                                                apv=convertLabel[VFP],
                                                                                                vfp=VFP,
+                                                                                               eras=Letters,
                                                                                                prng=prng),
                                                           #executor=processor.iterative_executor,
                                                           executor=processor.futures_executor,
@@ -1624,7 +1647,7 @@ def main():
 
                     else:
                         chosen_exec = 'dask'
-                        client.wait_for_workers(timeout=TimeOut)
+                        client.wait_for_workers(n_workers=1, timeout=TimeOut)
                         output = processor.run_uproot_job({name:files},
                                                           treename='Events',
                                                           processor_instance=TTbarResProcessor(UseLookUpTables=True,
@@ -1637,6 +1660,7 @@ def main():
                                                                                                year=args.year,
                                                                                                apv=convertLabel[VFP],
                                                                                                vfp=VFP,
+                                                                                               eras=Letters,
                                                                                                prng=prng),
                                                           executor=processor.dask_executor,
                                                           executor_args={
@@ -1698,6 +1722,7 @@ def main():
                                                                                                year=args.year,
                                                                                                apv=convertLabel[VFP],
                                                                                                vfp=VFP,
+                                                                                               eras=Letters,
                                                                                                prng=prng),
                                                           #executor=processor.iterative_executor,
                                                           executor=processor.futures_executor,
@@ -1708,7 +1733,7 @@ def main():
                                                           chunksize=Chunk[0], maxchunks=Chunk[1])
                     else:
                         chosen_exec = 'dask'
-                        client.wait_for_workers(timeout=TimeOut)
+                        client.wait_for_workers(n_workers=1, timeout=TimeOut)
                         output = processor.run_uproot_job({name:files},
                                                           treename='Events',
                                                           processor_instance=TTbarResProcessor(UseLookUpTables=True,
@@ -1721,6 +1746,7 @@ def main():
                                                                                                year=args.year,
                                                                                                apv=convertLabel[VFP],
                                                                                                vfp=VFP,
+                                                                                               eras=Letters,
                                                                                                prng=prng),
                                                           executor=processor.dask_executor,
                                                           executor_args={
@@ -1755,6 +1781,7 @@ def main():
                                                                                                year=args.year,
                                                                                                apv=convertLabel[VFP],
                                                                                                vfp=VFP,
+                                                                                               eras=Letters,
                                                                                                prng=prng),
                                                           #executor=processor.iterative_executor,
                                                           executor=processor.futures_executor,
@@ -1765,7 +1792,7 @@ def main():
 
                     else:
                         chosen_exec = 'dask'
-                        client.wait_for_workers(timeout=TimeOut)
+                        client.wait_for_workers(n_workers=1, timeout=TimeOut)
                         output = processor.run_uproot_job({name:files},
                                                           treename='Events',
                                                           processor_instance=TTbarResProcessor(UseLookUpTables=True,
@@ -1778,6 +1805,7 @@ def main():
                                                                                                year=args.year,
                                                                                                apv=convertLabel[VFP],
                                                                                                vfp=VFP,
+                                                                                               eras=Letters,
                                                                                                prng=prng),
                                                           executor=processor.dask_executor,
                                                           executor_args={

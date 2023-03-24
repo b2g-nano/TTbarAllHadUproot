@@ -39,8 +39,8 @@ manual_sdMass_bins = [0, 25, 50, 75, 100, 125, 150, 175, 200, 225, 250]
 """Package to perform the data-driven mistag-rate-based ttbar hadronic analysis. """
 class TTbarResProcessor(processor.ProcessorABC):
     def __init__(self, prng=RandomState(1234567890), htCut=950., minMSD=105., maxMSD=210.,
-                 tau32Cut=0.65, ak8PtMin=400., bdisc=0.8484, deepAK8Cut=0.435, BDirect='',
-                 year=None, apv='', vfp='', UseLookUpTables=False, lu=None, extraDaskDirectory='',
+                 tau32Cut=0.65, ak8PtMin=400., bdisc=0.5847, deepAK8Cut=0.435, BDirect='',
+                 year=None, apv='', vfp='',eras=[], UseLookUpTables=False, lu=None, extraDaskDirectory='',
                  ModMass=False, RandomDebugMode=False, UseEfficiencies=False, xsSystematicWeight=1., lumSystematicWeight=1.,
                  ApplybtagSF=False, ScaleFactorFile='', ApplyttagSF=False, ApplyTopReweight=False, 
                  ApplyJes=False, var="nominal", ApplyPdf=False, ApplyPrefiring=False, ApplyPUweights=False,
@@ -59,6 +59,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         self.year = year
         self.apv = apv
         self.vfp = vfp
+        self.eras = eras
         self.extraDaskDirectory = extraDaskDirectory
         self.UseLookUpTables = UseLookUpTables
         self.ModMass = ModMass
@@ -102,7 +103,8 @@ class TTbarResProcessor(processor.ProcessorABC):
         # axes for jets and ttbar candidates #
         ttbarmass_axis = hist.axis.Regular(50, 800, 8000, name="ttbarmass", label=r"$m_{t\bar{t}}$ [GeV]")
         jetmass_axis   = hist.axis.Regular(50, 0, 500, name="jetmass", label=r"Jet $m$ [GeV]")
-        jetpt_axis     = hist.axis.Regular(50, 0, 500, name="jetpt", label=r"Jet $p_{T}$ [GeV]")
+        SDjetmass_axis = hist.axis.Regular(50, 0, 500, name="SDjetmass", label=r"Jet $m_{SD}$ [GeV]")
+        jetpt_axis     = hist.axis.Regular(50, 400, 2000, name="jetpt", label=r"Jet $p_{T}$ [GeV]")
         jeteta_axis    = hist.axis.Regular(50, -2.4, 2.4, name="jeteta", label=r"Jet $\eta$")
         jetphi_axis    = hist.axis.Regular(50, -np.pi, np.pi, name="jetphi", label=r"Jet $\phi$")
         jety_axis      = hist.axis.Regular(50, -3, 3, name="jety", label=r"Jet $y$")
@@ -111,12 +113,13 @@ class TTbarResProcessor(processor.ProcessorABC):
         # axes for top tagger #
         manual_axis = hist.axis.Variable(manual_bins, name="jetp", label=r"Jet Momentum [GeV]")
         tagger_axis = hist.axis.Regular(50, 0, 1, name="tagger", label=r"deepTag")
+        subjettagger_axis = hist.axis.Regular(50, -2, 1, name="subjettagger", label=r"Deep B")
         tau32_axis  = hist.axis.Regular(50, 0, 2, name="tau32", label=r"$\tau_3/\tau_2$")
 
         # axes for subjets #
         subjetmass_axis = hist.axis.Regular(50, 0, 500, name="subjetmass", label=r"SubJet $m$ [GeV]")
-        subjetpt_axis   = hist.axis.Regular(25, 0, 2000, name="subjetpt", label=r"SubJet $p_{T}$ [GeV]")
-        subjeteta_axis  = hist.axis.Regular(25, 0, 2.4, name="subjeteta", label=r"SubJet $\eta$")
+        subjetpt_axis   = hist.axis.Regular(50, 400, 2000, name="subjetpt", label=r"SubJet $p_{T}$ [GeV]")
+        subjeteta_axis  = hist.axis.Regular(50, -2.4, 2.4, name="subjeteta", label=r"SubJet $\eta$")
         subjetphi_axis  = hist.axis.Regular(50, -np.pi, np.pi, name="subjetphi", label=r"SubJet $\phi$")
         
         # axes for weights #
@@ -178,17 +181,10 @@ class TTbarResProcessor(processor.ProcessorABC):
             'jety'  : hist.Hist(dataset_axis, cats_axis, jety_axis, storage="weight", name="Counts"),
             'jetdy' : hist.Hist(dataset_axis, cats_axis, jetdy_axis, storage="weight", name="Counts"),
 
-            'deepTag_TvsQCD'   : hist.Hist(dataset_axis, cats_axis, jetpt_axis, tagger_axis, storage="weight", name="Counts"),
-            'deepTagMD_TvsQCD' : hist.Hist(dataset_axis, cats_axis, jetpt_axis, tagger_axis, storage="weight", name="Counts"),
+            'deepTagMD_TvsQCD' : hist.Hist(dataset_axis, cats_axis, jetpt_axis, SDjetmass_axis, tagger_axis, storage="weight", name="Counts"),
+            'deepb' : hist.Hist(dataset_axis, subjetmass_axis, subjetpt_axis, subjettagger_axis, storage="weight", name="Counts"),
 
             'tau32'        : hist.Hist(dataset_axis, cats_axis, tau32_axis, storage="weight", name="Counts"),
-            'tau32_2D'     : hist.Hist(dataset_axis, cats_axis, jetpt_axis, tau32_axis, storage="weight", name="Counts"),
-            'tau32_precat' : hist.Hist(dataset_axis, jetpt_axis, tau32_axis, storage="weight", name="Counts"),
-
-            'subjetmass' : hist.Hist(dataset_axis, cats_axis, subjetmass_axis, storage="weight", name="Counts"), # not yet used
-            'subjetpt'   : hist.Hist(dataset_axis, cats_axis, subjetpt_axis, storage="weight", name="Counts"),
-            'subjeteta'  : hist.Hist(dataset_axis, cats_axis, subjeteta_axis, storage="weight", name="Counts"),
-            'subjetphi'  : hist.Hist(dataset_axis, cats_axis, subjetphi_axis, storage="weight", name="Counts"), # not yet used
 
             'numerator'  : hist.Hist(dataset_axis, cats_axis, manual_axis, storage="weight", name="Counts"),
             'denominator': hist.Hist(dataset_axis, cats_axis, manual_axis, storage="weight", name="Counts"),
@@ -285,7 +281,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         #https://github.com/rappoccio/usercode/blob/Dev_53x/EDSHyFT/plugins/BTagSFUtil_tprime.h
         
         coin = np.random.uniform(0,1,len(subjet)) # used for randomly deciding which jets' btag status to update or not
-        subjet_btag_status = np.asarray((subjet.btagDeepB > self.bdisc)) # do subjets pass the btagger requirement
+        subjet_btag_status = np.asarray((subjet.btagCSVV2 > self.bdisc)) # do subjets pass the btagger requirement
         
         '''
 *******************************************************************************************************************
@@ -419,7 +415,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         eta = np.abs(ak.flatten(Subjet.eta)) # eta of 1st subjet in ttbarcand 
         flav = np.abs(ak.flatten(Subjet.hadronFlavour)) # either 'normal' or 'anti' quark
         
-        subjet_btagged = (Subjet.btagDeepB > self.bdisc)
+        subjet_btagged = (Subjet.btagCSVV2 > self.bdisc)
         
         Eff_Num_pT = np.where(subjet_btagged & (flav == Flavor), pT, -1) # if not collecting pT of subjet, then put non exisitent bin, i.e. -1
         Eff_Num_eta = np.where(subjet_btagged & (flav == Flavor), eta, -1) # if not collecting eta of subjet, then put non exisitent bin, i.e. 5
@@ -766,31 +762,44 @@ class TTbarResProcessor(processor.ProcessorABC):
 #       T    R    R     I    G     G G     G E       R    R       S      
 #       T    R     R IIIIIII  GGGGG   GGGGG  EEEEEEE R     R SSSSS  
 #    ================================================================
-        
-#         if isData:
-#             Dataset_info = events.fields # All nanoaod events
-#             listOfTriggers = np.array([name for name in Dataset_info if 'HLT' in name]) # Find event name info that have HLT to find all relevant triggers
-
-#             isHLT_PF = np.array(['HLT_PF' in i for i in listOfTriggers])
-#             isHLT_AK8 = np.array(['HLT_AK8' in i for i in listOfTriggers])
-
-#             HLT_PF_triggers = listOfTriggers[isHLT_PF]
-#             HLT_AK8_triggers = listOfTriggers[isHLT_AK8]
-
-#             print(HLT_PF_triggers)
-#             print(HLT_AK8_triggers)
-#             print('-----------------------------------------------')
 
         condition = None
-        trigger1 = trigger2 = trigger3 = None
+        Triggers = []
         
         if self.year == 2016 and isData: 
-            # trigger1 = events.HLT_PFHT800
-            trigger1 = events.HLT_PFHT900
-            trigger2 = events.HLT_AK8PFJet450
-            trigger3 = events.HLT_AK8PFJet360_TrimMass30
-            condition = ((trigger1 | trigger2) | (trigger3))# | trigger4))
-            
+            try:
+                Triggers.append(events.HLT_PFHT800)
+            except AttributeError as AE:
+                pass
+                # print('\n')
+                # print(AE)
+                # print('\nTrigger Excluded for this era')
+            try:
+                Triggers.append(events.HLT_PFHT900)
+            except AttributeError as AE:
+                pass
+                # print('\n')
+                # print(AE)
+                # print('\nTrigger Excluded for this era')
+            try:
+                Triggers.append(events.HLT_AK8PFJet450)
+            except AttributeError as AE:
+                pass
+                # print('\n')
+                # print(AE)
+                # print('\nTrigger Excluded for this era')
+                
+            try:
+                Triggers.append(events.HLT_AK8PFJet360_TrimMass30)
+            except AttributeError as AE:
+                pass
+            #     print('\n')
+            #     print(AE)
+            #     print('\nTrigger Excluded for this era')
+                
+            condition = ak.flatten(ak.any(Triggers, axis=0, keepdims=True))
+            # print(condition)
+                
         if isData:
             FatJets = FatJets[condition]
             Jets = Jets[condition]
@@ -798,7 +807,7 @@ class TTbarResProcessor(processor.ProcessorABC):
             evtweights = evtweights[condition]
             events = events[condition]
             
-            output['cutflow']['Passed Trigger'] += ak.to_awkward0(condition).sum()
+            output['cutflow']['Passed Trigger'] += ak.sum(condition)
             
 #    ===================================================================================
 #    PPPPPP  RRRRRR  EEEEEEE L       IIIIIII M     M       CCCC  U     U TTTTTTT   SSSSS     
@@ -908,6 +917,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         # ---- Identify subjets according to subjet ID ---- #
         hasSubjets0 = ((ttbarcands.slot0.subJetIdx1 > -1) & (ttbarcands.slot0.subJetIdx2 > -1)) # 1st candidate has two subjets
         hasSubjets1 = ((ttbarcands.slot1.subJetIdx1 > -1) & (ttbarcands.slot1.subJetIdx2 > -1)) # 2nd candidate has two subjets
+
         GoodSubjets = ak.flatten(((hasSubjets0) & (hasSubjets1))) # Selection of 4 (leading) subjects
         output['cutflow']['Good Subjets'] += ak.to_awkward0(GoodSubjets).sum()
         ttbarcands = ttbarcands[GoodSubjets] # Choose only ttbar candidates with this selection of subjets
@@ -923,6 +933,20 @@ class TTbarResProcessor(processor.ProcessorABC):
         SubJet02 = SubJets[ttbarcands.slot0.subJetIdx2] # ttbarcandidate 0's second subjet
         SubJet11 = SubJets[ttbarcands.slot1.subJetIdx1] # ttbarcandidate 1's first subjet 
         SubJet12 = SubJets[ttbarcands.slot1.subJetIdx2] # ttbarcandidate 1's second subjet
+        
+        # print(f'Dataset = {dataset}\n***************************************************************\n', flush=True)
+        # print(f'Jet 0\'s first subjet\'s ID = {ttbarcands.slot0.subJetIdx1}', flush=True)
+        # print(f'Jet 0\'s second subjet\'s ID = {ttbarcands.slot0.subJetIdx2}', flush=True)
+        # print(f'Jet 1\'s first subjet\'s ID = {ttbarcands.slot1.subJetIdx1}', flush=True)
+        # print(f'Jet 1\'s second subjet\'s ID = {ttbarcands.slot1.subJetIdx2}\n-----------------------------------------\n', flush=True)
+        
+        # 'deepB' : hist.Hist(dataset_axis, subjetmass_axis, subjetpt_axis, subjeteta_axis, subjetphi_axis, subjettagger_axis, storage="weight", name="Counts"),
+        
+        output["deepb"].fill(dataset = dataset,
+                            subjetmass = ak.to_numpy(ak.flatten(SubJet01.mass)),
+                            subjetpt = ak.to_numpy(ak.flatten(SubJet01.pt)),
+                            subjettagger = ak.to_numpy(ak.flatten(SubJet01.btagDeepB)),
+                            weight = ak.to_numpy(evtweights))
         
         # ---- Define Rapidity Regions ---- #
         """ NOTE that ttbarcands.i0.p4.energy no longer works after ttbarcands is defined as an old awkward array """
@@ -958,14 +982,14 @@ class TTbarResProcessor(processor.ProcessorABC):
         mcut_s0 = (self.minMSD < ttbarcands.slot0.msoftdrop) & (ttbarcands.slot0.msoftdrop < self.maxMSD) 
         mcut_s1 = (self.minMSD < ttbarcands.slot1.msoftdrop) & (ttbarcands.slot1.msoftdrop < self.maxMSD) 
 
-        # ttag_s0 = (taucut_s0) & (mcut_s0)
-        # ttag_s1 = (taucut_s1) & (mcut_s1)
-        # antitag = (~taucut_s0) & (mcut_s0) # The Probe jet will always be ttbarcands.slot1 (at)
+        ttag_s0 = (taucut_s0) & (mcut_s0)
+        ttag_s1 = (taucut_s1) & (mcut_s1)
+        antitag = (~taucut_s0) & (mcut_s0) # The Probe jet will always be ttbarcands.slot1 (at)
 
         # ----------- DeepAK8 Tagger (Discriminator Cut) ----------- #
-        ttag_s0 = ttbarcands.slot0.deepTag_TvsQCD > self.deepAK8Cut
-        ttag_s1 = ttbarcands.slot1.deepTag_TvsQCD > self.deepAK8Cut
-        antitag = ttbarcands.slot0.deepTag_TvsQCD < self.deepAK8Cut # The Probe jet will always be ttbarcands.slot1 (at)
+        # ttag_s0 = ttbarcands.slot0.deepTag_TvsQCD > self.deepAK8Cut
+        # ttag_s1 = ttbarcands.slot1.deepTag_TvsQCD > self.deepAK8Cut
+        # antitag = ttbarcands.slot0.deepTag_TvsQCD < self.deepAK8Cut # The Probe jet will always be ttbarcands.slot1 (at)
         
         # ---- Define "Top Tag" Regions ---- #
         antitag_probe = np.logical_and(antitag, ttag_s1) # Found an antitag and ttagged probe pair for mistag rate (AT&Pt)
@@ -989,9 +1013,21 @@ class TTbarResProcessor(processor.ProcessorABC):
         
         # ---- Pick FatJet that passes btag discriminator cut based on its subjet with the highest btag value ---- #
         # -------------- NOTE: B-discriminator cut must be changed to match BTV POG Recommendations -------------- #
-        btag_s0 = ( np.maximum(SubJet01.btagDeepB , SubJet02.btagDeepB) > self.bdisc )
-        btag_s1 = ( np.maximum(SubJet11.btagDeepB , SubJet12.btagDeepB) > self.bdisc )
         
+        btag_s0 = ( np.maximum(SubJet01.btagCSVV2 , SubJet02.btagCSVV2) > self.bdisc )
+        btag_s1 = ( np.maximum(SubJet11.btagCSVV2 , SubJet12.btagCSVV2) > self.bdisc )
+        # print(f'Jet 0\'s first subjet\'s CSVV2 = {SubJet01.btagCSVV2}', flush=True)
+        # print(f'Jet 0\'s second subjet\'s CSVV2 = {SubJet02.btagCSVV2}', flush=True)
+        # print(f'Jet 1\'s first subjet\'s CSVV2 = {SubJet11.btagCSVV2}', flush=True)
+        # print(f'Jet 1\'s second subjet\'s CSVV2 = {SubJet12.btagCSVV2}\n-----------------------------------------\n', flush=True)
+        # print(f'Jet 0\'s first subjet\'s DeepB = {SubJet01.btagDeepB}', flush=True)
+        # print(f'Jet 0\'s second subjet\'s DeepB = {SubJet02.btagDeepB}', flush=True)
+        # print(f'Jet 1\'s first subjet\'s DeepB = {SubJet11.btagDeepB}', flush=True)
+        # print(f'Jet 1\'s second subjet\'s DeepB = {SubJet12.btagDeepB}\n-----------------------------------------\n', flush=True)
+        # print(f'Jet 0\'s largest DeepB? = {np.maximum(SubJet01.btagDeepB , SubJet02.btagDeepB)}', flush=True)
+        # print(f'Jet 1\'s largest DeepB? = {np.maximum(SubJet11.btagDeepB , SubJet12.btagDeepB)}', flush=True)
+        # print(f'is Jet 0 btagged? = {btag_s0}', flush=True)
+        # print(f'is Jet 1 btagged? = {btag_s1}', flush=True)
         # --- Define "B Tag" Regions ---- #
         btag0 = (~btag_s0) & (~btag_s1) #(0b)
         btag1 = btag_s0 ^ btag_s1 #(1b)
@@ -1041,8 +1077,8 @@ class TTbarResProcessor(processor.ProcessorABC):
                     """
 
                     # ---- Use the leading subjet again to get the scale factors ---- #
-                    LeadingSubjet_s0 = np.where(SubJet01.btagDeepB>SubJet02.btagDeepB, SubJet01, SubJet02)
-                    LeadingSubjet_s1 = np.where(SubJet11.btagDeepB>SubJet12.btagDeepB, SubJet11, SubJet12)
+                    LeadingSubjet_s0 = np.where(SubJet01.btagCSVV2>SubJet02.btagCSVV2, SubJet01, SubJet02)
+                    LeadingSubjet_s1 = np.where(SubJet11.btagCSVV2>SubJet12.btagCSVV2, SubJet11, SubJet12)
 
                     # ---- Define the BSF for each of the two fatjets ---- #
                     SF_filename = self.ScaleFactorFile    
@@ -1220,6 +1256,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         
         SDmass = ak.flatten(ttbarcands.slot1.msoftdrop)
         Tau32 = ak.flatten((ttbarcands.slot1.tau3/ttbarcands.slot1.tau2))
+        ak8tagger = ak.flatten(ttbarcands.slot1.deepTagMD_TvsQCD)
 
         """ Add 4-vectors and get its total mass """
         ttbarp4sum = ttbarcands.slot0.p4.add(ttbarcands.slot1.p4)
@@ -1257,6 +1294,9 @@ class TTbarResProcessor(processor.ProcessorABC):
         numerator = np.where(antitag_probe, p, -1) # If no antitag and tagged probe, move event to useless bin
         denominator = np.where(antitag, p, -1) # If no antitag, move event to useless bin
         
+        # print(f'antitag and t-tagged probe:\n{antitag_probe}')
+        # print(f'antitag and all probes:\n{antitag}')
+        
         numerator = ak.flatten(numerator)
         denominator = ak.flatten(denominator)
         
@@ -1264,6 +1304,13 @@ class TTbarResProcessor(processor.ProcessorABC):
         file_df = None # Initial Declaration
         
         # print(self.lu[])
+        
+        letter = ''
+        for i in range(len(self.eras)):
+            letter = self.eras[i]
+            if 'JetHT'+letter in dataset:
+                # print(f'letter {letter} found', flush=True)
+                continue
         
         for ilabel,icat in labels_and_categories.items():
             
@@ -1275,13 +1322,16 @@ class TTbarResProcessor(processor.ProcessorABC):
                 # ---- Pick out proper JetHT year mistag for TTbar sim. ---- #
                 
                 if self.year > 0: # this UL string should only appear in MC dataset name when year is either 2016, 2017 or 2018
-                    file_df = self.lu['JetHT' + str(self.year) + '_Data']['at' + str(ilabel[-5:])] # Only the corresponding JetHT year mistag rate
+                    file_df = self.lu['JetHT'+str(self.year)+letter+'_Data']['at' + str(ilabel[-5:])] # Only the corresponding JetHT year mistag rate
                 elif self.year == 0: # all years; not just 2016, 17 or 18 alone
                     file_df = self.lu['JetHT_Data']['at' + str(ilabel[-5:])] # All JetHT years mistag rate
                 else:
                     print('Something is wrong...\n\nNecessary JetHT LUT(s) not found')
                     quit()
                
+                # with pd.option_context('display.max_rows', None, 'display.max_columns', None): 
+                #     print(file_df)
+                
                 bin_widths = file_df['p'].values # collect bins as written in .csv file
                 mtr = file_df['M(p)'].values # collect mistag rate as function of p as written in file
                 wgts = mtr # Define weights based on mistag rates
@@ -1315,8 +1365,11 @@ class TTbarResProcessor(processor.ProcessorABC):
             if (self.ModMass == True and (isData or ('TTbar' in dataset))):
                 QCD_hist = None # Higher scope declaration
                 if self.year > 0:
-                    QCD_unweighted = util.load(self.extraDaskDirectory+'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/QCD/'
-                                               +self.BDirect+str(self.year)+'/'+self.apv+'/TTbarRes_0l_UL'+str(self.year-2000)+self.vfp+'_QCD.coffea') 
+                    # QCD_unweighted = util.load(self.extraDaskDirectory+'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/QCD/'
+                    #                            +self.BDirect+str(self.year)+'/'+self.apv+'/TTbarRes_0l_UL'+str(self.year-2000)+self.vfp+'_QCD.coffea') 
+                    # -- Temporarily Borrow This From This File, Since Winterfell Doesn't Have All QCD Stats. -- #
+                    QCD_unweighted = util.load(self.extraDaskDirectory+'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/QCD/MediumBTag/'
+                                               +str(self.year)+'/'+self.apv+'/TTbarRes_0l_UL'+str(self.year-2000)+self.vfp+'_QCD.coffea') 
                     # ---- Define Histogram ---- #
                     # QCD_hist = QCD_unweighted['jetmass'].integrate('anacat', '2t' + str(ilabel[-5:]))
                     loaded_dataset = 'UL'+str(self.year-2000)+self.vfp+'_QCD'
@@ -1548,6 +1601,15 @@ class TTbarResProcessor(processor.ProcessorABC):
                                      jetdy = ak.to_numpy(jetdy[icat]),
                                      weight = ak.to_numpy(Weights[icat]),
                                     )
+            # 'deepTagMD_TvsQCD' : hist.Hist(dataset_axis, cats_axis, jetpt_axis, jetmass_axis, tagger_axis, storage="weight", name="Counts"),
+            
+            output['deepTagMD_TvsQCD'].fill(dataset = dataset,
+                                     anacat = self.ConvertLabelToInt(self.label_dict, ilabel),
+                                     jetpt = ak.to_numpy(jetpt[icat]),
+                                     SDjetmass = ak.to_numpy(SDmass[icat]),
+                                     tagger = ak.to_numpy(ak8tagger[icat]),       
+                                     weight = ak.to_numpy(Weights[icat]),
+                                    )
             output['jetmass'].fill(dataset = dataset,
                                      anacat = self.ConvertLabelToInt(self.label_dict, ilabel),
                                      jetmass = ak.to_numpy(jetmass[icat]),
@@ -1747,7 +1809,7 @@ class MCFlavorEfficiencyProcessor(processor.ProcessorABC):
         eta = np.abs(ak.flatten(Subjet.eta)) # eta of 1st subjet in ttbarcand 
         flav = np.abs(ak.flatten(Subjet.hadronFlavour)) # either 'normal' or 'anti' quark
         
-        subjet_btagged = (Subjet.btagDeepB > self.bdisc)
+        subjet_btagged = (Subjet.btagCSVV2 > self.bdisc)
         
         Eff_Num_pT = np.where(subjet_btagged & (flav == Flavor), pT, -1) # if not collecting pT of subjet, then put non exisitent bin, i.e. -1
         Eff_Num_eta = np.where(subjet_btagged & (flav == Flavor), eta, -1) # if not collecting eta of subjet, then put non exisitent bin, i.e. 5
