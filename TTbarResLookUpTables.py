@@ -208,13 +208,13 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
     for letter in ListOfLetters:
         if 'UL16'+VFP+'_JetHT'+letter+'_Data' in Outputs.keys():
             Nevts2016_sf = Nevts2016/Outputs[filestring_prefix+'_JetHT'+letter+'_Data']['cutflow']['all events']
-            print('\n\nFound 2016 Data and scaled properly')
+            print('\n\nFound 2016 Data')
         if 'JetHT2017'+letter+'_Data' in Outputs.keys():
             Nevts2017_sf = Nevts2017/Outputs[filestring_prefix + '_JetHT' + letter + '_Data']['cutflow']['all events']
-            print('\n\nFound 2017 Data and scaled properly')
+            print('\n\nFound 2017 Data')
         if 'JetHT2018'+letter+'_Data' in Outputs.keys():
             Nevts2018_sf = Nevts2018/Outputs[filestring_prefix + '_JetHT' + letter + '_Data']['cutflow']['all events']
-            print('\n\nFound 2018 Data and scaled properly')
+            print('\n\nFound 2018 Data')
         if 'JetHT_Data' in Filesets:
             Nevts_sf = Nevts / Outputs['JetHT_Data']['cutflow']['all events']
             print('\n\nFound All Years of Data and scaled properly')
@@ -227,7 +227,9 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
 
         ttbar_BR = 0.4544 # 0.442 from PDG 2018
         ttbar_xs = 831.76 # Monte Carlo already includes some value of the xs in event weight, but maybe not NNLO!!
-        toptag_kf = 0.70 # k-factor from https://github.com/cmsb2g/B2GTTbar/blob/master/test/MakeMistag_SubtractAndDivideAntiTag_B2G2016.cc#L472
+        toptag_kf = 0.49 # nominal
+        toptag_kf_up = 0.70
+        toptag_kf_down = 0.28
 
         ttbar2016_sf = 1.
         ttbar2017_sf = 1.
@@ -235,16 +237,16 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
         ttbar_sf = 1.
         
         if 'UL16'+VFP+'_TTbar' in Outputs.keys():
-            ttbar2016_sf = ttbar_xs*Lum2016/Outputs['UL16'+VFP+'_TTbar']['cutflow']['sumw']
+            ttbar2016_sf = ttbar_BR*toptag_kf*Lum2016/Outputs['UL16'+VFP+'_TTbar']['cutflow']['all events']
             print('\n\nProperly Scaled 2016 ttbar simulation\n\n')
         elif 'UL17'+VFP+'_TTbar' in Outputs.keys():
-            ttbar2017_sf = ttbar_xs*Lum2017/Outputs['UL17'+VFP+'_TTbar']['cutflow']['sumw']
+            ttbar2017_sf = toptag_kf*Lum2017/Outputs['UL17'+VFP+'_TTbar']['cutflow']['all events']
             print('\n\nProperly Scaled 2017 ttbar simulation\n\n')
         elif 'UL18'+VFP+'_TTbar' in Outputs.keys():
-            ttbar2018_sf = ttbar_xs*Lum2018/Outputs['UL18'+VFP+'_TTbar']['cutflow']['sumw']
+            ttbar2018_sf = toptag_kf*Lum2018/Outputs['UL18'+VFP+'_TTbar']['cutflow']['all events']
             print('\n\nProperly Scaled 2018 ttbar simulation\n\n')
         elif ('TTbar' in Outputs.items()) and (Year == 0):
-            ttbar_sf = ttbar_xs*Lum/Outputs[VFP+'_TTbar']['cutflow']['sumw']
+            ttbar_sf = toptag_kf*Lum/Outputs[VFP+'_TTbar']['cutflow']['all events']
             print('\n\nProperly Scaled All Years of ttbar simulation\n\n')
         else:
             print('\n\nNO TTBAR SIMULATION FOUND IN RUN\n\n')

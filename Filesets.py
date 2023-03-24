@@ -81,10 +81,10 @@ def CollectDatasets(redirector_str):
             for v in VFP:
                 filesets[y+v+'_QCD'] = []
                 filesets[y+v+'_TTbar'] = []
-            for l in ['', 'B', 'C', 'D', 'E', 'F']:
-                filesets[y+'preVFP_JetHT'+l+'_Data'] = []
-            for l in ['', 'F', 'G', 'H']:
-                filesets[y+'postVFP_JetHT'+l+'_Data'] = []
+        for l in ['', 'B', 'C', 'D', 'E', 'F']:
+            filesets[y+'preVFP_JetHT'+l+'_Data'] = []
+        for l in ['', 'F', 'G', 'H']:
+            filesets[y+'postVFP_JetHT'+l+'_Data'] = []
         # elif '17' in y:
         #     filesets[y+'postVFP_QCD'] = []
         #     filesets[y+'postVFP_TTbar'] = []

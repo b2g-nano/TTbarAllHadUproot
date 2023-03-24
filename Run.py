@@ -848,21 +848,21 @@ def main():
         if __name__ == "__main__":       
 
             # cluster = '128.205.11.158:8787'
-            uploadDir = '/mnt/users/acwillia/TTbarAllHadUproot'
+            # uploadDir = '/mnt/users/acwillia/TTbarAllHadUproot'
             client = Client()
 
-            try:
-                client.register_worker_plugin(UploadDirectory(uploadDir,restart=True,update_path=True),nanny=True)
-            except OSError as ose:
-                print('\n', ose)    
-                print('\nFor some reason, Dask did not work as intended\n')
-                exit
-                if args.newCluster:
-                    cluster.close()
+            # try:
+            #     client.register_worker_plugin(UploadDirectory(uploadDir,restart=True,update_path=True),nanny=True)
+            # except OSError as ose:
+            #     print('\n', ose)    
+            #     print('\nFor some reason, Dask did not work as intended\n')
+            #     exit
+            #     if args.newCluster:
+            #         cluster.close()
 
-            print('Worker Directories:\n')
-            # print(client.run(os.listdir))
-            print(client.run(os.listdir,"/mnt/users/acwillia/TTbarAllHadUproot"))
+            # print('Worker Directories:\n')
+            # # print(client.run(os.listdir))
+            # print(client.run(os.listdir,"/mnt/users/acwillia/TTbarAllHadUproot"))
 
     #    ----------------------------------------------------------------------------------------------------  
     #    U     U PPPPPP  RRRRRR    OOO     OOO   TTTTTTT     FFFFFFF L          A    V     V   OOO   RRRRRR      

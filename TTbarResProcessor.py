@@ -1148,6 +1148,9 @@ class TTbarResProcessor(processor.ProcessorABC):
         numerator = np.where(antitag_probe, p, -1) # If no antitag and tagged probe, move event to useless bin
         denominator = np.where(antitag, p, -1) # If no antitag, move event to useless bin
         
+        # print(f'antitag and t-tagged probe:\n{antitag_probe}')
+        # print(f'antitag and all probes:\n{antitag}')
+        
         numerator = ak.flatten(numerator)
         denominator = ak.flatten(denominator)
         
