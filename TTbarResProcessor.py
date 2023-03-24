@@ -633,7 +633,6 @@ class TTbarResProcessor(processor.ProcessorABC):
             "subJetIdx1": events.FatJet_subJetIdx1,
             "subJetIdx2": events.FatJet_subJetIdx2,
             "rawFactor": events.FatJet_rawFactor,
-            "genJetIdx": events.FatJet_genJetAK8Idx,
             "p4": ak.zip({
                 "pt": events.FatJet_pt,
                 "eta": events.FatJet_eta,
@@ -642,11 +641,6 @@ class TTbarResProcessor(processor.ProcessorABC):
                 }, with_name="PtEtaPhiMLorentzVector"),
             })
         
-        
-            
-            
-            
-            
             
             
 
@@ -703,6 +697,7 @@ class TTbarResProcessor(processor.ProcessorABC):
             Jets['hadronFlavour'] = events.Jet_hadronFlavour
             Jets["genJetIdx"] = events.Jet_genJetIdx
             SubJets['hadronFlavour'] = events.SubJet_hadronFlavour
+            FatJets["genJetIdx"] = events.FatJet_genJetAK8Idx
         
         # ---- Get event weights from dataset ---- #
         if isData: # If data is used...
