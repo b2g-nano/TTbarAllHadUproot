@@ -245,9 +245,10 @@ def main():
         defaultTriggers.append("HLT_PFHT900")
     print(f'\nDefault Triggers: {defaultTriggers}\n')
     Trigs_to_run = defaultTriggers
-    for itrig in args.triggers:
-        if itrig not in defaultTriggers:
-            Trigs_to_run.append(itrig)    
+    if args.triggers:
+        for itrig in args.triggers:
+            if itrig not in defaultTriggers:
+                Trigs_to_run.append(itrig)    
     print(f'All Triggers Chosen: {Trigs_to_run}\n\n')
 
     if args.step == 1:
