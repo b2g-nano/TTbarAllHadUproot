@@ -13,6 +13,7 @@ import numpy as np
 import glob as glob
 import pandas as pd
 import argparse as ap
+import re
 from coffea import processor, nanoevents, util
 from coffea.nanoevents.methods import candidate
 from coffea.nanoevents import NanoAODSchema, BaseSchema

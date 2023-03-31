@@ -21,8 +21,11 @@ from numpy.random import RandomState
 import correctionlib
 import hist
 # from correctionlib.schemav2 import Correction
+import re as regularexpressions
 
 import awkward as ak
+
+from cms_utils import getLumiMaskRun2
 
 ak.behavior.update(candidate.behavior)
 ak.behavior.update(vector.behavior)
@@ -593,6 +596,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         
         # ---- Define dataset ---- #
         dataset = events.metadata['dataset']
+        filename = events.metadata['filename']
 
 #    ===========================================================================================    
 #    N     N    A    N     N   OOO      A      OOO   DDDD          OOO   BBBBBB  JJJJJJJ   SSSSS     
@@ -606,9 +610,17 @@ class TTbarResProcessor(processor.ProcessorABC):
 
         isData = ('JetHT' in dataset) or ('SingleMu' in dataset)
         
-        # ---- Define AK8 Jets as FatJets ---- #
-        #FatJets = events.FatJet # Everything should already be defined in here.  example) df['FatJet_pt] -> events.FatJet.pt
-        
+        #####################################
+        #### Find the IOV from the dataset name
+        #####################################
+        IOV = ('2016APV' if any(regularexpressions.findall(r'APV', dataset))
+               else '2018' if any(regularexpressions.findall(r'UL18', dataset))
+               else '2017' if any(regularexpressions.findall(r'UL17', dataset))
+               else '2016')
+                
+        if isData: 
+            lumi_mask = np.array(self.lumimasks[IOV](events.run, events.luminosityBlock), dtype=bool)
+            events = events[lumi_mask]
         
         
         FatJets = ak.zip({
@@ -762,6 +774,15 @@ class TTbarResProcessor(processor.ProcessorABC):
         Triggers = []
         
         if self.year == 2016 and isData: 
+            
+            ### Somewhere upstream : "HLT_PFHT800", "HLT_PFHT900", "HLT_AK8PFJet450", "HLT_AK8PFJet360_TrimMass30"
+            
+            
+            trigs = []
+            for itrig in trigs_to_run: 
+                thetrig = getattr( events, "HLT_PFHT900" )
+                trigs.append(thetrig)
+            
             try:
                 Triggers.append(events.HLT_PFHT800)
             except AttributeError as AE:
