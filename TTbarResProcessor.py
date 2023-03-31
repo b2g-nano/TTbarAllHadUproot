@@ -47,7 +47,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                  ModMass=False, RandomDebugMode=False, UseEfficiencies=False, xsSystematicWeight=1., lumSystematicWeight=1.,
                  ApplybtagSF=False, ScaleFactorFile='', ApplyttagSF=False, ApplyTopReweight=False, 
                  ApplyJes=False, var="nominal", ApplyPdf=False, ApplyPrefiring=False, ApplyPUweights=False,
-                 ApplyHEMCleaning=False,
+                 ApplyHEMCleaning=False, trigs_to_run=[''],
                  sysType=None):
         
         self.prng = prng
@@ -63,6 +63,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         self.apv = apv
         self.vfp = vfp
         self.eras = eras
+        self.trigs_to_run = trigs_to_run
         self.extraDaskDirectory = extraDaskDirectory
         self.UseLookUpTables = UseLookUpTables
         self.ModMass = ModMass
@@ -613,14 +614,16 @@ class TTbarResProcessor(processor.ProcessorABC):
         #####################################
         #### Find the IOV from the dataset name
         #####################################
-        IOV = ('2016APV' if any(regularexpressions.findall(r'APV', dataset))
+        IOV = ('2016APV' if any(regularexpressions.findall(r'preVFP', dataset))
                else '2018' if any(regularexpressions.findall(r'UL18', dataset))
                else '2017' if any(regularexpressions.findall(r'UL17', dataset))
                else '2016')
                 
-        if isData: 
-            lumi_mask = np.array(self.lumimasks[IOV](events.run, events.luminosityBlock), dtype=bool)
-            events = events[lumi_mask]
+        # ---- Define lumimasks to be initialized as an input to the processor before this point ---- #
+        
+        # if isData: 
+        #     lumi_mask = np.array(self.lumimasks[IOV](events.run, events.luminosityBlock), dtype=bool)
+        #     events = events[lumi_mask]
         
         
         FatJets = ak.zip({
@@ -758,8 +761,6 @@ class TTbarResProcessor(processor.ProcessorABC):
 
             
         
-        
-        
 #    ================================================================
 #    TTTTTTT RRRRRR  IIIIIII GGGGGGG GGGGGGG EEEEEEE RRRRRR    SSSSS     
 #       T    R     R    I    G       G       E       R     R  S          
@@ -773,45 +774,13 @@ class TTbarResProcessor(processor.ProcessorABC):
         condition = None
         Triggers = []
         
-        if self.year == 2016 and isData: 
+        if isData: 
             
-            ### Somewhere upstream : "HLT_PFHT800", "HLT_PFHT900", "HLT_AK8PFJet450", "HLT_AK8PFJet360_TrimMass30"
+            ### 2016 triggers : "HLT_PFHT800", "HLT_PFHT900", "HLT_AK8PFJet450", "HLT_AK8PFJet360_TrimMass30"
             
-            
-            trigs = []
-            for itrig in trigs_to_run: 
-                thetrig = getattr( events, "HLT_PFHT900" )
-                trigs.append(thetrig)
-            
-            try:
-                Triggers.append(events.HLT_PFHT800)
-            except AttributeError as AE:
-                pass
-                # print('\n')
-                # print(AE)
-                # print('\nTrigger Excluded for this era')
-            try:
-                Triggers.append(events.HLT_PFHT900)
-            except AttributeError as AE:
-                pass
-                # print('\n')
-                # print(AE)
-                # print('\nTrigger Excluded for this era')
-            try:
-                Triggers.append(events.HLT_AK8PFJet450)
-            except AttributeError as AE:
-                pass
-                # print('\n')
-                # print(AE)
-                # print('\nTrigger Excluded for this era')
-                
-            try:
-                Triggers.append(events.HLT_AK8PFJet360_TrimMass30)
-            except AttributeError as AE:
-                pass
-            #     print('\n')
-            #     print(AE)
-            #     print('\nTrigger Excluded for this era')
+            for itrig in self.trigs_to_run: 
+                thetrig = getattr( events, itrig )
+                Triggers.append(thetrig)
                 
             condition = ak.flatten(ak.any(Triggers, axis=0, keepdims=True))
             # print(condition)
@@ -823,7 +792,7 @@ class TTbarResProcessor(processor.ProcessorABC):
             evtweights = evtweights[condition]
             events = events[condition]
             
-            output['cutflow']['Passed Trigger'] += ak.sum(condition)
+            output['cutflow']['Passed Trigger(s)'] += ak.sum(condition)
             
 #    ===================================================================================
 #    PPPPPP  RRRRRR  EEEEEEE L       IIIIIII M     M       CCCC  U     U TTTTTTT   SSSSS     

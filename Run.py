@@ -155,6 +155,11 @@ def main():
                                         JetHT 2017 letters: B - F
                                         JetHT 2018 letters: A - D
                                         =========================\n
+                                        =============================================================================
+                                        JetHT 2016 triggers: HLT_PFHT900 (default), HLT_PFHT800, HLT_AK8PFJet450, HLT_AK8PFJet360_TrimMass30
+                                        JetHT 2017 triggers:
+                                        JetHT 2018 triggers:
+                                        =============================================================================\n
         Example of a usual workflow on Coffea-Casa to make the relevant coffea outputs:\n
         0.) Make Outputs for Flavor and Trigger Efficiencies
     ./Run.py -C -med -F QCD TTbar DM RSGluon -a no -y 2016 --dask --saveFlav
@@ -196,7 +201,8 @@ def main():
     BDiscriminatorGroup.add_argument('-med2016', '--medium2016', action='store_true', help='Apply medium bTag discriminant cut from 2016 AN')
 
     Parser.add_argument('-a', '--APV', type=str, choices=['yes', 'no'], help='Do datasets have APV?', default='no')
-    Parser.add_argument('-y', '--year', type=int, choices=[2016, 2017, 2018, 0], help='Year(s) of data/MC of the datasets you want to run uproot with.  Choose 0 for all years simultaneously.', default=0)
+    Parser.add_argument('-trigs', '--triggers', type=str, nargs='+', help='Triggers to Apply')
+    Parser.add_argument('-y', '--year', type=int, choices=[2016, 2017, 2018, 0], help='Year(s) of data/MC of the datasets you want to run uproot with.  Choose 0 for all years simultaneously (0 option not yet finished; TBA).', default=2016)
 
     # ---- Other arguments ---- #
     Parser.add_argument('--uproot', type=int, choices=[1, 2], help='1st run or 2nd run of uproot job.  If not specified, both the 1st and 2nd job will be run one after the other.')
@@ -232,6 +238,17 @@ def main():
 
 
     args = Parser.parse_args()
+    
+    Trigs_to_run = []
+    defaultTriggers = []
+    if args.year == 2016:
+        defaultTriggers.append("HLT_PFHT900")
+    print(f'\nDefault Triggers: {defaultTriggers}\n')
+    Trigs_to_run = defaultTriggers
+    for itrig in args.triggers:
+        if itrig not in defaultTriggers:
+            Trigs_to_run.append(itrig)    
+    print(f'All Triggers Chosen: {Trigs_to_run}\n\n')
 
     if args.step == 1:
         print('\n\nStep 1: Get and Save Mistag Rates\n')
@@ -914,6 +931,7 @@ def main():
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
                                                                                            bdisc=BDisc,
+                                                                                           trigs_to_run=Trigs_to_run,
                                                                                            prng=prng),
                                                       executor=processor.futures_executor,
                                                       executor_args={
@@ -932,6 +950,7 @@ def main():
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
                                                                                            bdisc=BDisc,
+                                                                                           trigs_to_run=Trigs_to_run,
                                                                                            prng=prng),
                                                       executor=processor.dask_executor,
                                                       executor_args={
@@ -964,6 +983,7 @@ def main():
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
                                                                                            bdisc=BDisc,
+                                                                                           trigs_to_run=Trigs_to_run,
                                                                                            prng=prng),
                                                       executor=processor.futures_executor,
                                                       executor_args={
@@ -982,6 +1002,7 @@ def main():
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
                                                                                            bdisc=BDisc,
+                                                                                           trigs_to_run=Trigs_to_run,
                                                                                            prng=prng),
                                                       executor=processor.dask_executor,
                                                       executor_args={
@@ -1052,6 +1073,7 @@ def main():
                                                                                            year=args.year,
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
+                                                                                           trigs_to_run=Trigs_to_run,
                                                                                            prng=prng),
                                                       executor=processor.futures_executor,
                                                       executor_args={
@@ -1070,6 +1092,7 @@ def main():
                                                                                            year=args.year,
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
+                                                                                           trigs_to_run=Trigs_to_run,
                                                                                            prng=prng),
                                                       executor=processor.dask_executor,
                                                       executor_args={
@@ -1101,6 +1124,7 @@ def main():
                                                                                            year=args.year,
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
+                                                                                           trigs_to_run=Trigs_to_run,
                                                                                            prng=prng),
                                                       executor=processor.futures_executor,
                                                       executor_args={
@@ -1119,6 +1143,7 @@ def main():
                                                                                            year=args.year,
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
+                                                                                           trigs_to_run=Trigs_to_run,
                                                                                            prng=prng),
                                                       executor=processor.dask_executor,
                                                       executor_args={
@@ -1189,6 +1214,7 @@ def main():
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
                                                                                            # triggerAnalysisObjects = isTrigEffArg,
+                                                                                           trigs_to_run=Trigs_to_run,
                                                                                            prng=prng),
                                                       executor=processor.futures_executor,
                                                       executor_args={
@@ -1210,6 +1236,7 @@ def main():
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
                                                                                            # triggerAnalysisObjects = isTrigEffArg,
+                                                                                           trigs_to_run=Trigs_to_run,
                                                                                            prng=prng),
                                                       executor=processor.dask_executor,
                                                       executor_args={
@@ -1244,6 +1271,7 @@ def main():
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
                                                                                            # triggerAnalysisObjects = isTrigEffArg,
+                                                                                           trigs_to_run=Trigs_to_run,
                                                                                            prng=prng),
                                                       executor=processor.futures_executor,
                                                       executor_args={
@@ -1265,6 +1293,7 @@ def main():
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
                                                                                            # triggerAnalysisObjects = isTrigEffArg,
+                                                                                           trigs_to_run=Trigs_to_run,
                                                                                            prng=prng),
                                                       executor=processor.dask_executor,
                                                       executor_args={
@@ -1385,6 +1414,7 @@ def main():
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
                                                                                            eras=Letters,
+                                                                                           trigs_to_run=Trigs_to_run,
                                                                                            prng=prng),
                                                       #executor=processor.iterative_executor,
                                                       executor=processor.futures_executor,
@@ -1421,6 +1451,7 @@ def main():
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
                                                                                            eras=Letters,
+                                                                                           trigs_to_run=Trigs_to_run,
                                                                                            prng=prng),
                                                       executor=processor.dask_executor,
                                                       executor_args={
@@ -1470,6 +1501,7 @@ def main():
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
                                                                                            eras=Letters,
+                                                                                           trigs_to_run=Trigs_to_run,
                                                                                            prng=prng),
                                                       #executor=processor.iterative_executor,
                                                       executor=processor.futures_executor,
@@ -1504,6 +1536,7 @@ def main():
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
                                                                                            eras=Letters,
+                                                                                           trigs_to_run=Trigs_to_run,
                                                                                            prng=prng),
                                                       executor=processor.dask_executor,
                                                       executor_args={
@@ -1579,6 +1612,7 @@ def main():
                                                                                                apv=convertLabel[VFP],
                                                                                                vfp=VFP,
                                                                                                eras=Letters,
+                                                                                               trigs_to_run=Trigs_to_run,
                                                                                                prng=prng),
                                                           #executor=processor.iterative_executor,
                                                           executor=processor.futures_executor,
@@ -1603,6 +1637,7 @@ def main():
                                                                                                apv=convertLabel[VFP],
                                                                                                vfp=VFP,
                                                                                                eras=Letters,
+                                                                                               trigs_to_run=Trigs_to_run,
                                                                                                prng=prng),
                                                           executor=processor.dask_executor,
                                                           executor_args={
@@ -1638,6 +1673,7 @@ def main():
                                                                                                apv=convertLabel[VFP],
                                                                                                vfp=VFP,
                                                                                                eras=Letters,
+                                                                                               trigs_to_run=Trigs_to_run,
                                                                                                prng=prng),
                                                           #executor=processor.iterative_executor,
                                                           executor=processor.futures_executor,
@@ -1662,6 +1698,7 @@ def main():
                                                                                                apv=convertLabel[VFP],
                                                                                                vfp=VFP,
                                                                                                eras=Letters,
+                                                                                               trigs_to_run=Trigs_to_run,
                                                                                                prng=prng),
                                                           executor=processor.dask_executor,
                                                           executor_args={
@@ -1724,6 +1761,7 @@ def main():
                                                                                                apv=convertLabel[VFP],
                                                                                                vfp=VFP,
                                                                                                eras=Letters,
+                                                                                               trigs_to_run=Trigs_to_run,
                                                                                                prng=prng),
                                                           #executor=processor.iterative_executor,
                                                           executor=processor.futures_executor,
@@ -1748,6 +1786,7 @@ def main():
                                                                                                apv=convertLabel[VFP],
                                                                                                vfp=VFP,
                                                                                                eras=Letters,
+                                                                                               trigs_to_run=Trigs_to_run,
                                                                                                prng=prng),
                                                           executor=processor.dask_executor,
                                                           executor_args={
@@ -1783,6 +1822,7 @@ def main():
                                                                                                apv=convertLabel[VFP],
                                                                                                vfp=VFP,
                                                                                                eras=Letters,
+                                                                                               trigs_to_run=Trigs_to_run,
                                                                                                prng=prng),
                                                           #executor=processor.iterative_executor,
                                                           executor=processor.futures_executor,
@@ -1807,6 +1847,7 @@ def main():
                                                                                                apv=convertLabel[VFP],
                                                                                                vfp=VFP,
                                                                                                eras=Letters,
+                                                                                               trigs_to_run=Trigs_to_run,
                                                                                                prng=prng),
                                                           executor=processor.dask_executor,
                                                           executor_args={
