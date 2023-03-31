@@ -3,6 +3,18 @@ Uproot-based analysis of the ttbar all-hadronic analysis that uses a COFFEA base
 
 For this analysis, create an environment which comes with the latest versions of Coffea and Awkward1.
 
+
+## Important: Check out POG packages
+
+To run the systematics for various POGs, use the jsonpog-integration package. This has 
+the correct jet corrections, b-tagging SFs, (also other SFs that we don't use), etc. 
+
+From within the `TTBarAllHadUproot` directory: 
+
+```
+git clone https://gitlab.cern.ch/cms-nanoAOD/jsonpog-integration
+```
+
 ### For LPC:
 ``` 
 ssh <username>@cmslpc-sl7.fnal.gov 
