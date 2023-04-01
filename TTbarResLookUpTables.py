@@ -77,8 +77,8 @@ catmap = dict(zip(list_of_ints, list_of_cats))
 # ---- This Creates Mistag plots for every dataset in every category for debugging if necessary or for curiosity ---- #
 # ---- Look up tables are a bit more sophisticated and much more useful to the analysis ---- #
 
-SaveDirectory = maindirectory + '/TTbarAllHadUproot/MistagPlots/'
-DoesDirectoryExist(SaveDirectory) # no need to create the directory several times
+# SaveDirectory = maindirectory + '/TTbarAllHadUproot/MistagPlots/'
+# DoesDirectoryExist(SaveDirectory) # no need to create the directory several times
 
 # Function sqrt(x)
 def forward(x):
@@ -101,11 +101,11 @@ def multi_dict(K, type): # definition from https://www.geeksforgeeks.org/python-
 luts = {}
 luts = multi_dict(2, str) #Annoying, but necessary definition of the dictionary
 
-def LoadDataLUTS(bdiscDirectory, Year, ListOfLetters):
+def LoadDataLUTS(bdiscDirectory, Year, VFP, ListOfLetters):
     if Year != 0:
         for letter in ListOfLetters:
             for icat in list_of_cats:
-                df = pd.read_csv('TTbarAllHadUproot/LookupTables/' + bdiscDirectory + 'mistag_JetHT' + str(Year) + letter + '_Data_ttContaminationRemoved_' + icat + '.csv')
+                df = pd.read_csv('TTbarAllHadUproot/LookupTables/' + bdiscDirectory + 'mistag_UL' + str(Year-2000) + VFP + '_JetHT' + letter + '_Data_ttContaminationRemoved_' + icat + '.csv')
                 luts['JetHT' + str(Year) + letter + '_Data'][icat] = df
     else:
         for icat in list_of_cats:
@@ -137,12 +137,9 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
         
     
     outputs_unweighted = {}
-    if Year != 0:
-        filestring_prefix = 'UL' + str(Year-2000) + VFP + '_'
-        filestring_prefix_data = str(Year)
-    else:
-        filestring_prefix = 'UL' + VFP + '_'
-        filestring_prefix_data = ''
+    filestring_prefix = 'UL' + str(Year-2000) + VFP
+    if Year == 0:
+        filestring_prefix = 'UL'
 
 #     ---------------------------------------
 #     PPPPPP  L         OOO   TTTTTTT   SSSSS     
@@ -198,7 +195,7 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
 #     -------------------------------------------------------   
     
     """ ---------------- Scale-Factors for JetHT Data According to Year---------------- """
-    Nevts2016 = 583876623. # from dasgoclient
+    Nevts2016 = 625441538. # from dasgoclient
     Nevts2017 = 410514138. # from dasgoclient
     Nevts2018 = 676743923. # from dasgoclient 
     Nevts = Nevts2016 + Nevts2017 + Nevts2018 # for all three years
@@ -209,18 +206,18 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
     Nevts_sf = 1.
     
     for letter in ListOfLetters:
-        if 'JetHT2016'+letter+'_Data' in Outputs.keys():
-            Nevts2016_sf = Nevts2016/Outputs['JetHT2016' + letter + '_Data']['cutflow']['all events']
+        if 'UL16'+VFP+'_JetHT'+letter+'_Data' in Outputs.keys():
+            Nevts2016_sf = Nevts2016/Outputs[filestring_prefix+'_JetHT'+letter+'_Data']['cutflow']['all events']
             print('\n\nFound 2016 Data')
         if 'JetHT2017'+letter+'_Data' in Outputs.keys():
-            Nevts2017_sf = Nevts2017/Outputs['JetHT2017' + letter + '_Data']['cutflow']['all events']
+            Nevts2017_sf = Nevts2017/Outputs[filestring_prefix + '_JetHT' + letter + '_Data']['cutflow']['all events']
             print('\n\nFound 2017 Data')
         if 'JetHT2018'+letter+'_Data' in Outputs.keys():
-            Nevts2018_sf = Nevts2018/Outputs['JetHT2018' + letter + '_Data']['cutflow']['all events']
+            Nevts2018_sf = Nevts2018/Outputs[filestring_prefix + '_JetHT' + letter + '_Data']['cutflow']['all events']
             print('\n\nFound 2018 Data')
         if 'JetHT_Data' in Filesets:
             Nevts_sf = Nevts / Outputs['JetHT_Data']['cutflow']['all events']
-            print('\n\nFound All Years of Data')
+            print('\n\nFound All Years of Data and scaled properly')
 
         """ ---------------- Luminosities, Cross Sections, Scale-Factors ---------------- """ 
         Lum2016 = 35920./Nevts2016_sf # Division by scale factor: Correction for blinding/choice of era # pb^-1 from https://twiki.cern.ch/twiki/bin/viewauth/CMS/PdmVAnalysisSummaryTable
@@ -230,7 +227,9 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
 
         ttbar_BR = 0.4544 # 0.442 from PDG 2018
         ttbar_xs = 831.76 # Monte Carlo already includes some value of the xs in event weight, but maybe not NNLO!!
-        toptag_kf = 0.70 # k-factor from https://github.com/cmsb2g/B2GTTbar/blob/master/test/MakeMistag_SubtractAndDivideAntiTag_B2G2016.cc#L472
+        toptag_kf = 0.49 # nominal
+        toptag_kf_up = 0.70
+        toptag_kf_down = 0.28
 
         ttbar2016_sf = 1.
         ttbar2017_sf = 1.
@@ -238,16 +237,16 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
         ttbar_sf = 1.
         
         if 'UL16'+VFP+'_TTbar' in Outputs.keys():
-            ttbar2016_sf = ttbar_BR*Lum2016/Outputs['UL16'+VFP+'_TTbar']['cutflow']['all events']
+            ttbar2016_sf = ttbar_BR*toptag_kf*Lum2016/Outputs['UL16'+VFP+'_TTbar']['cutflow']['all events']
             print('\n\nProperly Scaled 2016 ttbar simulation\n\n')
         elif 'UL17'+VFP+'_TTbar' in Outputs.keys():
-            ttbar2017_sf = ttbar_BR*Lum2017/Outputs['UL17'+VFP+'_TTbar']['cutflow']['all events']
+            ttbar2017_sf = toptag_kf*Lum2017/Outputs['UL17'+VFP+'_TTbar']['cutflow']['all events']
             print('\n\nProperly Scaled 2017 ttbar simulation\n\n')
         elif 'UL18'+VFP+'_TTbar' in Outputs.keys():
-            ttbar2018_sf = ttbar_BR*Lum2018/Outputs['UL18'+VFP+'_TTbar']['cutflow']['all events']
+            ttbar2018_sf = toptag_kf*Lum2018/Outputs['UL18'+VFP+'_TTbar']['cutflow']['all events']
             print('\n\nProperly Scaled 2018 ttbar simulation\n\n')
         elif ('TTbar' in Outputs.items()) and (Year == 0):
-            ttbar_sf = ttbar_BR*Lum/Outputs[VFP+'_TTbar']['cutflow']['all events']
+            ttbar_sf = toptag_kf*Lum/Outputs[VFP+'_TTbar']['cutflow']['all events']
             print('\n\nProperly Scaled All Years of ttbar simulation\n\n')
         else:
             print('\n\nNO TTBAR SIMULATION FOUND IN RUN\n\n')
@@ -276,8 +275,8 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
                     # ---- Info from TTbar ---- # ['numerator'][dataset, icat, sum]
                     # Numerator_tt = Outputs[filestring_prefix+'TTbar']['numerator'].project('jetp')
                     # Denominator_tt = Outputs[filestring_prefix+'TTbar']['denominator'].project('jetp')
-                    Numerator_tt = Outputs[filestring_prefix+'TTbar']['numerator'][filestring_prefix+'TTbar', icat, :]
-                    Denominator_tt = Outputs[filestring_prefix+'TTbar']['denominator'][filestring_prefix+'TTbar', icat, :]
+                    Numerator_tt = Outputs[filestring_prefix+'_TTbar']['numerator'][filestring_prefix+'_TTbar', icat, :]
+                    Denominator_tt = Outputs[filestring_prefix+'_TTbar']['denominator'][filestring_prefix+'_TTbar', icat, :]
                     N_vals_tt = Numerator_tt.view().value
                     D_vals_tt = Denominator_tt.view().value
 
@@ -290,17 +289,23 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
                     D_vals = Denominator.view().value
 
                     # ---- Properly scale chunks of data and ttbar MC according to year of dataset used---- #
-                    if '2016' in iset:
+                    if 'UL16' in iset:
                         N_vals *= Nevts2016_sf 
                         D_vals *= Nevts2016_sf
                         N_vals_tt *= ttbar2016_sf
                         D_vals_tt *= ttbar2016_sf
-                    elif '2017' in iset:
+                        print(f'N_vals = {N_vals}\n')
+                        print(f'N_vals_tt = {N_vals_tt}\n')
+                        print(f'D_vals = {D_vals}\n')
+                        print(f'D_vals_tt = {D_vals_tt}\n')
+                        print(f'N_vals-N_vals_tt = {N_vals-N_vals_tt}\n')
+                        print(f'D_vals-D_vals_tt = {D_vals-D_vals_tt}\n')
+                    elif 'UL17' in iset:
                         N_vals *= Nevts2017_sf 
                         D_vals *= Nevts2017_sf
                         N_vals_tt *= ttbar2017_sf
                         D_vals_tt *= ttbar2017_sf
-                    elif '2018' in iset:
+                    elif 'UL18' in iset:
                         N_vals *= Nevts2018_sf 
                         D_vals *= Nevts2018_sf
                         N_vals_tt *= ttbar2018_sf
@@ -312,15 +317,15 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
                         D_vals_tt *= ttbar_sf
 
                     # ---- Subtract ttbar MC probe momenta from data's ---- #
-                    N_vals_diff = np.abs(N_vals-N_vals_tt)
-                    D_vals_diff = np.abs(D_vals-D_vals_tt)
+                    N_vals_diff = np.where(N_vals > N_vals_tt, N_vals-N_vals_tt, N_vals)
+                    D_vals_diff = np.where(D_vals > D_vals_tt, D_vals-D_vals_tt, D_vals)
 
                     # print(N_vals_diff)
                     # print(D_vals_diff)
                     # print()
 
                     # ---- Define Mistag values ---- #
-                    mistag_vals = np.where(D_vals_diff > 0, N_vals_diff/D_vals_diff, 0)
+                    mistag_vals = np.where(D_vals_diff > 0. , N_vals_diff/D_vals_diff, 0.)
 
                     # ---- Define Momentum values ---- #
                     p_vals = []
@@ -328,9 +333,10 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
                         p_vals.append(iden)
 
                     # ---- Display and Save Dataframe, df, as Look-up Table ---- #
-                    print('fileset:  ' + iset + '_ttContaminationRemoved')
-                    print('category: ' + catmap[icat])
-                    print('________________________________________________\n')
+                    if RemoveContam:
+                        print('fileset:  ' + iset + '_ttContaminationRemoved')
+                        print('category: ' + catmap[icat])
+                        print('________________________________________________\n')
 
                     d = {'p': p_vals, 'M(p)': mistag_vals} # 'data'
                     
@@ -338,8 +344,9 @@ def CreateLUTS(Filesets, Outputs, bdiscDirectory, Year, VFP, RemoveContam, ListO
                     luts[iset][catmap[icat]] = df
 
                     with pd.option_context('display.max_rows', None, 'display.max_columns', None): 
-                        print(df)
-                    print('\n')
+                        if RemoveContam:
+                            print(df)
+                        print('\n')
                     if Save:
                         df.to_csv(SaveDirectory+filename) # use later to collect bins and weights for re-scaling
             else: # Make mistag rate of any dataset that was run in the 1st uproot job

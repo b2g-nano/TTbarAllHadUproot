@@ -3,6 +3,18 @@ Uproot-based analysis of the ttbar all-hadronic analysis that uses a COFFEA base
 
 For this analysis, create an environment which comes with the latest versions of Coffea and Awkward1.
 
+
+## Important: Check out POG packages
+
+To run the systematics for various POGs, use the jsonpog-integration package. This has 
+the correct jet corrections, b-tagging SFs, (also other SFs that we don't use), etc. 
+
+From within the `TTBarAllHadUproot` directory: 
+
+```
+git clone https://gitlab.cern.ch/cms-nanoAOD/jsonpog-integration
+```
+
 ### For LPC:
 ``` 
 ssh <username>@cmslpc-sl7.fnal.gov 
@@ -71,10 +83,13 @@ optional arguments:
                         Create flavor efficiency hist coffea output objects for chosen MC datasets
   -M RUNMMO [RUNMMO ...], --runMMO RUNMMO [RUNMMO ...]
                         Run Mistag-weight and Mass modification Only (no other systematics for uproot 2)
+  -A RUNAMO [RUNAMO ...], --runAMO RUNAMO [RUNAMO ...]
+                        Run (Apply) Mistag-weight Only (no other systematics for uproot 2)
   -d RUNDATASET [RUNDATASET ...], --rundataset RUNDATASET [RUNDATASET ...]
                         List of datasets to be ran/loaded
   -C, --casa            Use Coffea-Casa redirector: root://xcache/
   -L, --lpc             Use CMSLPC redirector: root://cmsxrootd.fnal.gov/
+  -W, --winterfell      Get available files from UB Winterfell /mnt/data/cms
   -l, --loose           Apply loose bTag discriminant cut
   -med, --medium        Apply medium bTag discriminant cut
   -med2016, --medium2016
@@ -98,8 +113,7 @@ optional arguments:
   --timeout TIMEOUT     How many seconds should dask wait for scheduler to connect
   --useEff              Use MC bTag efficiencies for bTagging systematics
   --tpt                 Apply top pT re-weighting for uproot 2
-  --useHist             use scikit-hep/hist for histograms
-  --step {1,2,3,4}      Easily run a certain step of the workflow
+  --step {1,2,3,4,5}    Easily run a certain step of the workflow
   --bTagSyst {central,up,down}
                         Choose Unc.
   --tTagSyst {central,up,down}
@@ -137,25 +151,29 @@ optional arguments:
 
     Example of a usual workflow on Coffea-Casa to make the relevant coffea outputs:
 
-    0.) Make Outputs for Flavor and Trigger Efficiencies
-./Run.py -C -med -F QCD TTbar DM RSGluon -a no -y 2016 --dask --saveFlav
-./Run.py -C -med -T -a no -y 2016 --dask --saveTrig
+        0.) Make Outputs for Flavor and Trigger Efficiencies
+    ./Run.py -C -med -F QCD TTbar DM RSGluon -a no -y 2016 --dask --saveFlav
+    ./Run.py -C -med -T -a no -y 2016 --dask --saveTrig
 
-    1.) Create Mistag Rates that will be used to estimate NTMJ background
-./Run.py -C --step 1
-python Run.py -C -med -m -a no -y 2016 --saveMistag
+        1.) Create Mistag Rates that will be used to estimate NTMJ background
+    ./Run.py -C -y 2016 --step 1
+    python Run.py -C -med -m -a no -y 2016 --saveMistag
 
-    2.) Make Outputs for the first Uproot Job with no weights applied (outside of MC weights that come with the nanoAOD)
-./Run.py -C --step 2
-python Run.py -C -med -d QCD TTbar JetHT DM RSGluon -a no -y 2016 --uproot 1 --save
+        2.) Make Outputs for the first Uproot Job with no weights applied (outside of MC weights that come with the nanoAOD)
+    ./Run.py -C -y 2016 --step 2
+    python Run.py -C -med -d QCD TTbar JetHT DM RSGluon -a no -y 2016 --uproot 1 --save
 
-    3.) Make Outputs for the second Uproot Job with only mistag rate applied to JetHT and TTbar, and mass modification of JetHT and TTbar in pre-tag region
-./Run.py -C --step 3
-python Run.py -C -med -M QCD TTbar JetHT DM RSGluon -a no -y 2016 --save
+        3.) Make Outputs for the second Uproot Job with only mistag rate applied to JetHT and TTbar
+    ./Run.py -C -y 2016 --step 3
+    python Run.py -C -med -A QCD TTbar JetHT DM RSGluon -a no -y 2016 --save
 
-    4.) Make Outputs for the second Uproot Job with systematics, on top of mistag rate application and mass modification
-./Run.py -C --step 4
-python Run.py -C -med -d QCD TTbar JetHT DM RSGluon -a no -y 2016 --uproot 2 --bTagSyst central --useEff --save
+        4.) Make Outputs for the second Uproot Job with only mistag rate applied to JetHT and TTbar, and mass modification of JetHT and TTbar in pre-tag region
+    ./Run.py -C -y 2016 --step 4
+    python Run.py -C -med -M QCD TTbar JetHT DM RSGluon -a no -y 2016 --save
+
+        5.) Make Outputs for the second Uproot Job with systematics, on top of mistag rate application and mass modification
+    ./Run.py -C -y 2016 --step 5
+    python Run.py -C -med -d QCD TTbar JetHT DM RSGluon -a no -y 2016 --uproot 2 --bTagSyst central --useEff --save
 ```
 ***
 # How it works
@@ -170,7 +188,8 @@ Next, specify the btagging working point, WP, that you want to run the processor
 You can choose the datasets you want for the first and second uproot run by specifying `--rundataset` or `-d` followed by the names of the datasets you'd like to run.  When running the code with this `-d` option (selecting the datasets you want from the terminal) it is mandatory to give the names of the dataset according to the key listed in the help message's epilogue.  For any run option selected to run the program (`-t`, `-m`, `-T`, `-F`, `-M`, `-d`) you must also specify the year, `---year` or `-y`, and whether or not the datasets have APV or not, `--APV` or `-a` (*Default choice is `--APV no`*).  All other arguments are optional, but should still be carefully considered depending on what you want to do.
 ***
 ## Main Example:
-To get all outputs needed for the entire analysis for a given year (for all datasets) simply execute steps 1 - 3. For this example, let's assume we are using Coffea Casa and we want to perform the analysis for the 2017 run.
+To get all outputs needed for the entire analysis for a given year (for all datasets) simply execute steps 1 - 3. Steps 4 and 5 include additional corrections, but the first three gives the bare minimum requirements necessary to make plots with a data-driven background estimate.  
+For this example, let's assume we are using Coffea Casa and we want to perform the analysis for the 2017 run.
 
 > ./Run.py --step 1 -C -y 2017
 
@@ -186,9 +205,9 @@ For faster processing with dask, you would run the previous lines with additiona
 
 > ./Run.py --step 3 -C -y 2017 --dask
 
-For step 4, specify the systematic that you would like to run.  For this example, let's say we want coffea outputs with b-tag 'up' systematic correction
+For step 5, specify the systematic that you would like to run.  For this example, let's say we want coffea outputs with b-tag 'up' systematic correction
 
-> ./Run.py --step 4 -C -y 2017 --bTagSyst up
+> ./Run.py --step 5 -C -y 2017 --bTagSyst up
 
 ***
 # Specific Examples:

@@ -10,11 +10,11 @@
 /JetHT/Run2016C-HIPM_UL2016_MiniAODv2_NanoAODv9-v2/NANOAOD,            57.9 GB,  45 files,   46495988 events
 /JetHT/Run2016D-HIPM_UL2016_MiniAODv2_NanoAODv9-v2/NANOAOD,            89.8 GB,  65 files,   73330042 events
 /JetHT/Run2016E-HIPM_UL2016_MiniAODv2_NanoAODv9-v2/NANOAOD,            87.1 GB,  49 files,   69219288 events
-/JetHT/Run2016F-UL2016_MiniAODv2_NanoAODv9-v1/NANOAOD,                 8.3 GB,   5 files,     6613811 events
+/JetHT/Run2016F-UL2016_MiniAODv2_NanoAODv9-v1/NANOAOD,                 53.1 GB,  52 files,   41564915 events
 /JetHT/Run2016G-UL2016_MiniAODv2_NanoAODv9-v1/NANOAOD,                 154.2 GB, 70 files,  120688407 events
 /JetHT/Run2016H-UL2016_MiniAODv2_NanoAODv9-v1/NANOAOD,                 156.1 GB, 72 files,  124050331 events
 -----------------------------------------------------------------------------------------------------------
-                                                                                            583876623 events total
+                                                                                            625441538 events total
 ===========================================================================================================
 /JetHT/Run2017B-UL2017_MiniAODv2_NanoAODv9-v1/NANOAOD,                 67.8 GB,  33 files,   63043590 events
 /JetHT/Run2017C-UL2017_MiniAODv2_NanoAODv9-v1/NANOAOD,                 107.8 GB, 66 files,   96264601 events
@@ -59,22 +59,42 @@ def CollectDatasets(redirector_str):
         redirector_str --> string for either running over lpc of coffea-casa
             Two acceptable inputs: 'root://xcache/' Only works in Coffea-Casa Environment
                                    'root://cmsxrootd.fnal.gov/'
+            UBWinterFell tests:    '/mnt/data/cms'
     """
     filedir = 'TTbarAllHadUproot/nanoAODv9Files/'
     Years = ['UL16', 'UL17', 'UL18']
-    VFP = ['preVFP', 'postVFP']
-
+    VFP = ['preVFP', 'postVFP'] # preVFP unavailable in Winterfell for the moment
+    # VFP = ['postVFP'] # Only for simple test in WinterFell
     filesets = {} # To be filled and returned by this function
  
-    # ---- Before concatenation with +=, lists should be declard ---- #
+    # ---- Before concatenation with +=, lists should be declard ---- # 
     
-    for v in VFP:
-        filesets['UL'+v+'_QCD'] = []
-        filesets['UL'+v+'_TTbar'] = []
-        
-        for i in range(1000, 5500, 500):
-            filesets['UL'+v+'_DM'+str(i)] = []
-            filesets['UL'+v+'_RSGluon'+str(i)] = []
+    filesets['UL_QCD'] = []
+    filesets['UL_TTbar'] = []
+    filesets['UL_JetHT_Data'] = []
+    for i in range(1000, 5500, 500):
+        filesets['UL_DM'+str(i)] = []
+        filesets['UL_RSGluon'+str(i)] = []
+    
+    for y in Years:
+        if '16' in y:
+            for v in VFP:
+                filesets[y+v+'_QCD'] = []
+                filesets[y+v+'_TTbar'] = []
+        for l in ['', 'B', 'C', 'D', 'E', 'F']:
+            filesets[y+'preVFP_JetHT'+l+'_Data'] = []
+        for l in ['', 'F', 'G', 'H']:
+            filesets[y+'postVFP_JetHT'+l+'_Data'] = []
+        # elif '17' in y:
+        #     filesets[y+'postVFP_QCD'] = []
+        #     filesets[y+'postVFP_TTbar'] = []
+        #     for l in ['', 'B', 'C', 'D', 'E', 'F']:
+        #         filesets[y+'postVFP_JetHT'+l+'_Data'] = []
+        # else:
+        #     filesets[y+'postVFP_QCD'] = []
+        #     filesets[y+'postVFP_TTbar'] = []
+        #     for l in ['', 'A', 'B', 'C', 'D']:
+        #         filesets[y+'postVFP_JetHT'+l+'_Data'] = []
     
     # ---- Loop through years and VFP status, filling the filesets dictionary with the MC file locations from corresponding txt files ---- #
     
@@ -84,188 +104,201 @@ def CollectDatasets(redirector_str):
                 # ---- QCD ---- #
                 ulqcdfilename = filedir + 'QCD/QCD_NanoAODv9_' + y + '_' + v + '.txt'
                 with open(ulqcdfilename) as f:
-                    ulqcdfiles = [redirector_str + s.strip() for s in f.readlines()]
-                filesets[y+v+'_QCD'] = ulqcdfiles
-                filesets['UL'+v+'_QCD'] += ulqcdfiles # Combine files of all three years for both VFP conditions
+                    ulqcdfiles = [redirector_str + s.strip() for s in f.readlines() if not s.startswith('#')]
+                filesets[y+v+'_QCD'] += ulqcdfiles
+                filesets['UL_QCD'] += ulqcdfiles # Combine files of all three years for both VFP conditions
 
                 # ---- TTbar ---- #
                 ulttbar700to1000filename = filedir + 'TT/TT_Mtt-700to1000_NanoAODv9_' + y + '_' + v + '.txt'
                 with open(ulttbar700to1000filename) as f:
-                    ulttbar700to1000files = [redirector_str + s.strip() for s in f.readlines()]
+                    ulttbar700to1000files = [redirector_str + s.strip() for s in f.readlines() if not s.startswith('#')]
                 ulttbar1000toInffilename = filedir + 'TT/TT_Mtt-1000toInf_NanoAODv9_' + y + '_' + v + '.txt'
                 with open(ulttbar1000toInffilename) as f:
-                    ulttbar1000toInffiles = [redirector_str + s.strip() for s in f.readlines()]
+                    ulttbar1000toInffiles = [redirector_str + s.strip() for s in f.readlines() if not s.startswith('#')]
                 ulttbarfiles = ulttbar700to1000files + ulttbar1000toInffiles # inclusion of both biased samples
-                filesets[y+v+'_TTbar'] = ulttbarfiles
-                filesets['UL'+v+'_TTbar'] += ulttbarfiles # Combine files of all three years for both VFP conditions
-
+                filesets[y+v+'_TTbar'] += ulttbarfiles
+                filesets['UL_TTbar'] += ulttbarfiles # Combine files of all three years for both VFP conditions
+                
+                # ---- JetHT ---- #
+                datafilelist = os.listdir(filedir + 'JetHT/')
+                for filename in datafilelist:
+                    if 'pre' in v:
+                        if 'Run2016' in filename: #preVFP
+                            with open(filedir + 'JetHT/' + filename) as f:
+                                jetdatafiles2016 = [redirector_str + s.strip() for s in f.readlines() if ('HIPM' in s and not s.startswith('#'))] 
+                            filesets[y+v+'_JetHT_Data'] += jetdatafiles2016 
+                    elif 'post' in v:
+                        if 'Run2016' in filename: #postVFP
+                            with open(filedir + 'JetHT/' + filename) as f:
+                                jetdatafiles2016 = [redirector_str + s.strip() for s in f.readlines() if ('HIPM' not in s and not s.startswith('#'))] 
+                            filesets[y+v+'_JetHT_Data'] += jetdatafiles2016
+                    
                 # ---- Z' Dark Matter Mediator ---- #
                 ulZprimeDMfilename = filedir + 'ZprimeDMToTTbar/ZprimeDMToTTbar_NanoAODv9_' + y + '_' + v + '.txt'
                 ulDMfiles=[]
                 k=0
                 for i in range(1000, 5500, 500):
                     with open(ulZprimeDMfilename) as f:
-                        ulDMfiles.append([redirector_str + s.strip() for s in f.readlines() if "ResoIncl_MZp"+str(i) in s])
+                        ulDMfiles.append([redirector_str + s.strip() for s in f.readlines() if ("ResoIncl_MZp"+str(i) in s and not s.startswith('#'))])
                     filesets[y+v+'_DM'+str(i)] = ulDMfiles[k]
-                    filesets['UL'+v+'_DM'+str(i)] += ulDMfiles[k] # Combine files of all three years for both VFP conditions
+                    filesets['UL_DM'+str(i)] += ulDMfiles[k] # Combine files of all three years for both VFP conditions
                     k += 1
+                    
                 # ---- RS KK Gluon ---- #
                 ulRSGluonfilename = filedir + 'RSGluonToTT/RSGluonToTT_NanoAODv9_' + y + '_' + v + '.txt'
                 ulRSGluonfiles=[]
                 l=0
                 for i in range(1000, 5500, 500):
                     with open(ulRSGluonfilename) as f:
-                        ulRSGluonfiles.append([redirector_str + s.strip() for s in f.readlines() if "RSGluonToTT_M-"+str(i) in s])
+                        ulRSGluonfiles.append([redirector_str + s.strip() for s in f.readlines() if ("RSGluonToTT_M-"+str(i) in s and not s.startswith('#'))])
                     filesets[y+v+'_RSGluon'+str(i)] = ulRSGluonfiles[l]
-                    filesets['UL'+v+'_RSGluon'+str(i)] += ulRSGluonfiles[l] # Combine files of all three years for both VFP conditions
+                    filesets['UL_RSGluon'+str(i)] += ulRSGluonfiles[l] # Combine files of all three years for both VFP conditions
                     l += 1
-        else: # UL17 and UL18
-            v = VFP[1] # No preVFP after 2016 Run vertex problem was fixed
-            # ---- QCD ---- #
-            ulqcdfilename = filedir + 'QCD/QCD_NanoAODv9_' + y + '_' + v + '.txt'
-            with open(ulqcdfilename) as f:
-                ulqcdfiles = [redirector_str + s.strip() for s in f.readlines()]
-            filesets[y+v+'_QCD'] = ulqcdfiles
-            filesets['UL'+v+'_QCD'] += ulqcdfiles # Combine files of all three years for both VFP conditions
+                    
+#         else: # UL17 and UL18
+#             v = VFP[1] # No preVFP after 2016 Run vertex problem was fixed
+            
+#             # ---- QCD ---- #
+#             ulqcdfilename = filedir + 'QCD/QCD_NanoAODv9_' + y + '_' + v + '.txt'
+#             with open(ulqcdfilename) as f:
+#                 ulqcdfiles = [redirector_str + s.strip() for s in f.readlines() if not s.startswith('#')]
+#             filesets[y+v+'_QCD'] = ulqcdfiles
+#             filesets['UL_QCD'] += ulqcdfiles # Combine files of all three years for both VFP conditions
 
-            # ---- TTbar ---- #
-            ulttbar700to1000filename = filedir + 'TT/TT_Mtt-700to1000_NanoAODv9_' + y + '_' + v + '.txt'
-            with open(ulttbar700to1000filename) as f:
-                ulttbar700to1000files = [redirector_str + s.strip() for s in f.readlines()]
-            ulttbar1000toInffilename = filedir + 'TT/TT_Mtt-1000toInf_NanoAODv9_' + y + '_' + v + '.txt'
-            with open(ulttbar1000toInffilename) as f:
-                ulttbar1000toInffiles = [redirector_str + s.strip() for s in f.readlines()]
-            ulttbarfiles = ulttbar700to1000files + ulttbar1000toInffiles # inclusion of both biased samples
-            filesets[y+v+'_TTbar'] = ulttbarfiles
-            filesets['UL'+v+'_TTbar'] += ulttbarfiles # Combine files of all three years for both VFP conditions
+#             # ---- TTbar ---- #
+#             ulttbar700to1000filename = filedir + 'TT/TT_Mtt-700to1000_NanoAODv9_' + y + '_' + v + '.txt'
+#             with open(ulttbar700to1000filename) as f:
+#                 ulttbar700to1000files = [redirector_str + s.strip() for s in f.readlines() if not s.startswith('#')]
+#             ulttbar1000toInffilename = filedir + 'TT/TT_Mtt-1000toInf_NanoAODv9_' + y + '_' + v + '.txt'
+#             with open(ulttbar1000toInffilename) as f:
+#                 ulttbar1000toInffiles = [redirector_str + s.strip() for s in f.readlines() if not s.startswith('#')]
+#             ulttbarfiles = ulttbar700to1000files + ulttbar1000toInffiles # inclusion of both biased samples
+#             filesets[y+v+'_TTbar'] = ulttbarfiles
+#             filesets['UL_TTbar'] += ulttbarfiles # Combine files of all three years for both VFP conditions
+            
+#             # ---- JetHT ---- #
+#             datafilelist = os.listdir(filedir + 'JetHT/')
+#             for filename in datafilelist: 
+#                 if 'Run2017' in filename: #postVFP
+#                     with open(filedir + 'JetHT/' + filename) as f:
+#                         jetdatafiles2017 = [redirector_str + s.strip() for s in f.readlines() if ('HIPM' not in s and not s.startswith('#'))] 
+#                     filesets[y+v+'_JetHT_Data'] += jetdatafiles2017
+#                 elif 'Run2018' in filename: #postVFP
+#                     with open(filedir + 'JetHT/' + filename) as f:
+#                         jetdatafiles2018 = [redirector_str + s.strip() for s in f.readlines() if ('HIPM' not in s and not s.startswith('#'))] 
+#                     filesets[y+v+'_JetHT_Data'] += jetdatafiles2018
 
-            # ---- Z' Dark Matter Mediator ---- #
-            ulZprimeDMfilename = filedir + 'ZprimeDMToTTbar/ZprimeDMToTTbar_NanoAODv9_' + y + '_' + v + '.txt'
-            ulDMfiles=[]
-            k=0
-            for i in range(1000, 5500, 500):
-                with open(ulZprimeDMfilename) as f:
-                    ulDMfiles.append([redirector_str + s.strip() for s in f.readlines() if "ResoIncl_MZp"+str(i) in s])
-                filesets[y+v+'_DM'+str(i)] = ulDMfiles[k]
-                filesets['UL'+v+'_DM'+str(i)] += ulDMfiles[k] # Combine files of all three years for both VFP conditions
-                k += 1
-            # ---- RS KK Gluon ---- #
-            ulRSGluonfilename = filedir + 'RSGluonToTT/RSGluonToTT_NanoAODv9_' + y + '_' + v + '.txt'
-            ulRSGluonfiles=[]
-            l=0
-            for i in range(1000, 5500, 500):
-                with open(ulRSGluonfilename) as f:
-                    ulRSGluonfiles.append([redirector_str + s.strip() for s in f.readlines() if "RSGluonToTT_M-"+str(i) in s])
-                filesets[y+v+'_RSGluon'+str(i)] = ulRSGluonfiles[l]
-                filesets['UL'+v+'_RSGluon'+str(i)] += ulRSGluonfiles[l] # Combine files of all three years for both VFP conditions
-                l += 1
+#             # ---- Z' Dark Matter Mediator ---- #
+#             ulZprimeDMfilename = filedir + 'ZprimeDMToTTbar/ZprimeDMToTTbar_NanoAODv9_' + y + '_' + v + '.txt'
+#             ulDMfiles=[]
+#             k=0
+#             for i in range(1000, 5500, 500):
+#                 with open(ulZprimeDMfilename) as f:
+#                     ulDMfiles.append([redirector_str + s.strip() for s in f.readlines() if ("ResoIncl_MZp"+str(i) in s and not s.startswith('#'))])
+#                 filesets[y+v+'_DM'+str(i)] = ulDMfiles[k]
+#                 filesets['UL_DM'+str(i)] += ulDMfiles[k] # Combine files of all three years for both VFP conditions
+#                 k += 1
+                
+#             # ---- RS KK Gluon ---- #
+#             ulRSGluonfilename = filedir + 'RSGluonToTT/RSGluonToTT_NanoAODv9_' + y + '_' + v + '.txt'
+#             ulRSGluonfiles=[]
+#             l=0
+#             for i in range(1000, 5500, 500):
+#                 with open(ulRSGluonfilename) as f:
+#                     ulRSGluonfiles.append([redirector_str + s.strip() for s in f.readlines() if ("RSGluonToTT_M-"+str(i) in s and not s.startswith('#'))])
+#                 filesets[y+v+'_RSGluon'+str(i)] = ulRSGluonfiles[l]
+#                 filesets['UL_RSGluon'+str(i)] += ulRSGluonfiles[l] # Combine files of all three years for both VFP conditions
+#                 l += 1
             
     
-    # ---- JetHT ---- #
+    # ---- JetHT Eras---- #
+    
     datafilelist = os.listdir(filedir + 'JetHT/')
     for filename in datafilelist:
-        if 'Run2016' in filename:
-            with open(filedir + 'JetHT/' + filename) as f:
-                jetdatafiles2016 = [redirector_str + s.strip() for s in f.readlines()] 
-        elif 'Run2017' in filename:
-            with open(filedir + 'JetHT/' + filename) as g:
-                jetdatafiles2017 = [redirector_str + s.strip() for s in g.readlines()[::3]] # Every third datafile
-        else:
-            with open(filedir + 'JetHT/' + filename) as h:
-                jetdatafiles2018 = [redirector_str + s.strip() for s in h.readlines()[::3]] 
         
         if 'Run2016B' in filename:
             with open(filedir + 'JetHT/' + filename) as b:
-                jetdatafiles2016b = [redirector_str + s.strip() for s in b.readlines()] 
+                jetdatafiles2016b = [redirector_str + s.strip() for s in b.readlines() if not s.startswith('#')] 
+            filesets['UL16preVFP_JetHTB_Data'] += jetdatafiles2016b
         elif 'Run2016C' in filename:
             with open(filedir + 'JetHT/' + filename) as c:
-                jetdatafiles2016c = [redirector_str + s.strip() for s in c.readlines()] 
+                jetdatafiles2016c = [redirector_str + s.strip() for s in c.readlines() if not s.startswith('#')] 
+            filesets['UL16preVFP_JetHTC_Data'] += jetdatafiles2016c
         elif 'Run2016D' in filename:
             with open(filedir + 'JetHT/' + filename) as d:
-                jetdatafiles2016d = [redirector_str + s.strip() for s in d.readlines()] 
+                jetdatafiles2016d = [redirector_str + s.strip() for s in d.readlines() if not s.startswith('#')] 
+            filesets['UL16preVFP_JetHTD_Data'] += jetdatafiles2016d
         elif 'Run2016E' in filename:
             with open(filedir + 'JetHT/' + filename) as e:
-                jetdatafiles2016e = [redirector_str + s.strip() for s in e.readlines()] 
+                jetdatafiles2016e = [redirector_str + s.strip() for s in e.readlines() if not s.startswith('#')] 
+            filesets['UL16preVFP_JetHTE_Data'] += jetdatafiles2016e
         elif 'Run2016F' in filename:
-            with open(filedir + 'JetHT/' + filename) as f:
-                jetdatafiles2016f = [redirector_str + s.strip() for s in f.readlines()] 
+            with open(filedir + 'JetHT/' + filename) as fold:
+                jetdatafiles2016fold = [redirector_str + s.strip() for s in fold.readlines() if ('HIPM' in s and not s.startswith('#'))]
+            with open(filedir + 'JetHT/' + filename) as fnew:
+                jetdatafiles2016fnew = [redirector_str + s.strip() for s in fnew.readlines() if ('HIPM' not in s and not s.startswith('#'))]
+            filesets['UL16preVFP_JetHTF_Data'] += jetdatafiles2016fold
+            filesets['UL16postVFP_JetHTF_Data'] += jetdatafiles2016fnew
         elif 'Run2016G' in filename:
             with open(filedir + 'JetHT/' + filename) as g:
-                jetdatafiles2016g = [redirector_str + s.strip() for s in g.readlines()] 
+                jetdatafiles2016g = [redirector_str + s.strip() for s in g.readlines() if not s.startswith('#')] 
+            filesets['UL16postVFP_JetHTG_Data'] += jetdatafiles2016g
         elif 'Run2016H' in filename:
             with open(filedir + 'JetHT/' + filename) as h:
-                jetdatafiles2016h = [redirector_str + s.strip() for s in h.readlines()] 
+                jetdatafiles2016h = [redirector_str + s.strip() for s in h.readlines() if not s.startswith('#')] 
+            filesets['UL16postVFP_JetHTH_Data'] += jetdatafiles2016h
                 
-        if 'Run2017B' in filename:
-            with open(filedir + 'JetHT/' + filename) as b:
-                jetdatafiles2017b = [redirector_str + s.strip() for s in b.readlines()[::3]] 
-        elif 'Run2017C' in filename:
-            with open(filedir + 'JetHT/' + filename) as c:
-                jetdatafiles2017c = [redirector_str + s.strip() for s in c.readlines()[::3]] 
-        elif 'Run2017D' in filename:
-            with open(filedir + 'JetHT/' + filename) as d:
-                jetdatafiles2017d = [redirector_str + s.strip() for s in d.readlines()[::3]] 
-        elif 'Run2017E' in filename:
-            with open(filedir + 'JetHT/' + filename) as e:
-                jetdatafiles2017e = [redirector_str + s.strip() for s in e.readlines()[::3]] 
-        elif 'Run2017F' in filename:
-            with open(filedir + 'JetHT/' + filename) as f:
-                jetdatafiles2017f = [redirector_str + s.strip() for s in f.readlines()[::3]] 
+#         if 'Run2017B' in filename:
+#             with open(filedir + 'JetHT/' + filename) as b:
+#                 jetdatafiles2017b = [redirector_str + s.strip() for s in b.readlines()[::3] if not s.startswith('#')] 
+#         elif 'Run2017C' in filename:
+#             with open(filedir + 'JetHT/' + filename) as c:
+#                 jetdatafiles2017c = [redirector_str + s.strip() for s in c.readlines()[::3] if not s.startswith('#')] 
+#         elif 'Run2017D' in filename:
+#             with open(filedir + 'JetHT/' + filename) as d:
+#                 jetdatafiles2017d = [redirector_str + s.strip() for s in d.readlines()[::3] if not s.startswith('#')] 
+#         elif 'Run2017E' in filename:
+#             with open(filedir + 'JetHT/' + filename) as e:
+#                 jetdatafiles2017e = [redirector_str + s.strip() for s in e.readlines()[::3] if not s.startswith('#')] 
+#         elif 'Run2017F' in filename:
+#             with open(filedir + 'JetHT/' + filename) as f:
+#                 jetdatafiles2017f = [redirector_str + s.strip() for s in f.readlines()[::3] if not s.startswith('#')] 
                 
-        if 'Run2018A' in filename:
-            with open(filedir + 'JetHT/' + filename) as a:
-                jetdatafiles2018a = [redirector_str + s.strip() for s in a.readlines()[::3]] 
-        elif 'Run2018B' in filename:
-            with open(filedir + 'JetHT/' + filename) as b:
-                jetdatafiles2018b = [redirector_str + s.strip() for s in b.readlines()[::3]] 
-        elif 'Run2018C' in filename:
-            with open(filedir + 'JetHT/' + filename) as c:
-                jetdatafiles2018c = [redirector_str + s.strip() for s in c.readlines()[::3]] 
-        elif 'Run2018D' in filename:
-            with open(filedir + 'JetHT/' + filename) as d:
-                jetdatafiles2018d = [redirector_str + s.strip() for s in d.readlines()[::3]] 
+#         if 'Run2018A' in filename:
+#             with open(filedir + 'JetHT/' + filename) as a:
+#                 jetdatafiles2018a = [redirector_str + s.strip() for s in a.readlines()[::3] if not s.startswith('#')] 
+#         elif 'Run2018B' in filename:
+#             with open(filedir + 'JetHT/' + filename) as b:
+#                 jetdatafiles2018b = [redirector_str + s.strip() for s in b.readlines()[::3] if not s.startswith('#')] 
+#         elif 'Run2018C' in filename:
+#             with open(filedir + 'JetHT/' + filename) as c:
+#                 jetdatafiles2018c = [redirector_str + s.strip() for s in c.readlines()[::3] if not s.startswith('#')] 
+#         elif 'Run2018D' in filename:
+#             with open(filedir + 'JetHT/' + filename) as d:
+#                 jetdatafiles2018d = [redirector_str + s.strip() for s in d.readlines()[::3] if not s.startswith('#')] 
                 
-    filesets['JetHT2016_Data'] = jetdatafiles2016   
-    filesets['JetHT2017_Data'] = jetdatafiles2017 
-    filesets['JetHT2018_Data'] = jetdatafiles2018 
-    jetdatafiles = jetdatafiles2016 + jetdatafiles2017 + jetdatafiles2018 # All data
-    filesets['JetHT_Data'] = jetdatafiles
+
     
-    filesets['JetHT2016B_Data'] = jetdatafiles2016b
-    filesets['JetHT2016C_Data'] = jetdatafiles2016c
-    filesets['JetHT2016D_Data'] = jetdatafiles2016d
-    filesets['JetHT2016E_Data'] = jetdatafiles2016e
-    filesets['JetHT2016F_Data'] = jetdatafiles2016f
-    filesets['JetHT2016G_Data'] = jetdatafiles2016g
-    filesets['JetHT2016H_Data'] = jetdatafiles2016h
-    
-    filesets['JetHT2017B_Data'] = jetdatafiles2017b
-    filesets['JetHT2017C_Data'] = jetdatafiles2017c
-    filesets['JetHT2017D_Data'] = jetdatafiles2017d
-    filesets['JetHT2017E_Data'] = jetdatafiles2017e
-    filesets['JetHT2017F_Data'] = jetdatafiles2017f
-    
-    filesets['JetHT2018A_Data'] = jetdatafiles2018a
-    filesets['JetHT2018B_Data'] = jetdatafiles2018b
-    filesets['JetHT2018C_Data'] = jetdatafiles2018c
-    filesets['JetHT2018D_Data'] = jetdatafiles2018d
-    
-    # ---- Single Muon ---- #
-    datafilelist = os.listdir(filedir + 'SingleMu/')
-    for filename in datafilelist:
-        if 'Run2016' in filename:
-            with open(filedir + 'SingleMu/' + filename) as f:
-                singlemudatafiles2016 = [redirector_str + s.strip() for s in f.readlines()]
-        elif 'Run2017' in filename:
-            with open(filedir + 'SingleMu/' + filename) as g:
-                singlemudatafiles2017 = [redirector_str + s.strip() for s in g.readlines()]
-        else:
-            with open(filedir + 'SingleMu/' + filename) as h:
-                singlemudatafiles2018 = [redirector_str + s.strip() for s in h.readlines()] 
-    filesets['SingleMu2016_Data'] = singlemudatafiles2016            
-    filesets['SingleMu2017_Data'] = singlemudatafiles2017
-    filesets['SingleMu2018_Data'] = singlemudatafiles2018 
-    
+#     # ---- Single Muon ---- #
+#     datafilelist = os.listdir(filedir + 'SingleMu/')
+#     for filename in datafilelist:
+#         if 'Run2016' in filename:
+#             with open(filedir + 'SingleMu/' + filename) as f:
+#                 singlemudatafiles2016 = [redirector_str + s.strip() for s in f.readlines() if not s.startswith('#')]
+#             filesets['SingleMu2016_Data'] += singlemudatafiles2016
+#         elif 'Run2017' in filename:
+#             with open(filedir + 'SingleMu/' + filename) as g:
+#                 singlemudatafiles2017 = [redirector_str + s.strip() for s in g.readlines() if not s.startswith('#')]
+#             filesets['SingleMu2017_Data'] += singlemudatafiles2017
+#         else:
+#             with open(filedir + 'SingleMu/' + filename) as h:
+#                 singlemudatafiles2018 = [redirector_str + s.strip() for s in h.readlines() if not s.startswith('#')] 
+#             filesets['SingleMu2018_Data'] += singlemudatafiles2018 
+                
+    # print(filesets['UL16postVFP_JetHT_Data'])
+    # print('==========================================================================================================')
+    # print(filesets['UL16postVFP_TTbar'])
+                    
     return filesets
 
 # CollectDatasets('root://xcache/')
@@ -273,4 +306,3 @@ def CollectDatasets(redirector_str):
 # xrootdstr2 = 'root://xcache/' # Only works in Coffea-Casa Environment
 # xrootdstr3 = 'root://cmsxrootd-site.fnal.gov/' #If 2nd redirector fails, file is probably here
 # xrootdstr4 = 'root://cmsxrootd.fnal.gov/'
-
