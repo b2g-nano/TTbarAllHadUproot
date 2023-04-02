@@ -1489,7 +1489,7 @@ def main():
                                                                                            lumSystematicWeight = lumSystwgt,
                                                                                            ApplyTopReweight = args.tpt,
                                                                                            ApplybtagSF=ApplybSF,
-                                                                                           ApplyJesc=ApplyJES,
+                                                                                           ApplyJes=ApplyJES,
                                                                                            var=var,
                                                                                            ApplyPdf=ApplyPDF,
                                                                                            ApplyPrefiring = ApplyPrefiring,
