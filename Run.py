@@ -201,7 +201,8 @@ def main():
     BDiscriminatorGroup.add_argument('-l', '--loose', action='store_true', help='Apply loose bTag discriminant cut')
     BDiscriminatorGroup.add_argument('-med', '--medium', action='store_true', help='Apply medium bTag discriminant cut')
     BDiscriminatorGroup.add_argument('-med2016', '--medium2016', action='store_true', help='Apply medium bTag discriminant cut from 2016 AN')
-
+    
+    Parser.add_argument('--mistagcorrect', action='store_true', help='Remove ttbar contamination when making mistag rates')
     Parser.add_argument('-a', '--APV', type=str, choices=['yes', 'no'], help='Do datasets have APV?', default='no')
     Parser.add_argument('-trigs', '--triggers', type=str, nargs='+', help='Triggers to Apply')
     Parser.add_argument('-y', '--year', type=int, choices=[2016, 2017, 2018, 0], help='Year(s) of data/MC of the datasets you want to run uproot with.  Choose 0 for all years simultaneously (0 option not yet finished; TBA).', default=2016)
@@ -286,7 +287,7 @@ def main():
         # args.chunksize = 20000
         args.uproot = 2
     else:
-        print('\n\nManual Job Being Performed Below:')
+        print('Manual Job Being Performed Below:')
 
     StartGroupList = np.array([args.runtesting, args.runmistag, args.runtrigeff, args.runflavoreff, args.runMMO, args.runAMO, args.rundataset], dtype=object)
     BDiscriminatorGroupList = np.array([args.loose, args.medium, args.medium2016], dtype=object)
@@ -297,7 +298,7 @@ def main():
         args.uproot = 1
         # args.medium = True
     if not np.any(BDiscriminatorGroupList): #if user forgets to assign something here or does not pick a specific step
-        print('\n\nDefault Btag; No available btag WP selected')
+        print('\n\nDefault Btag -> med;')
         args.medium = True
 
     TimeOut = 30.
@@ -884,13 +885,18 @@ def main():
     elif UsingDaskExecutor == True and args.winterfell:
         from dask.distributed import Client
         from dask.distributed.diagnostics.plugin import UploadDirectory
-
+        import shutil
+        
+        shutil.make_archive('UploadToDask', 'zip', 'TTbarAllHadUproot')
+        print('archive made')
         if __name__ == "__main__":       
 
             # cluster = '128.205.11.158:8787'
             # uploadDir = '/mnt/users/acwillia/TTbarAllHadUproot'
             client = Client()
-
+            print('Uploading archive to client...')
+            client.upload_file('UploadToDask.zip')
+            print('Archive uploaded')
             # try:
             #     client.register_worker_plugin(UploadDirectory(uploadDir,restart=True,update_path=True),nanny=True)
             # except OSError as ose:
@@ -1355,10 +1361,10 @@ def main():
     mistag_luts = None
 
     if args.runmistag:
-        CreateLUTS(filesets_to_run, outputs_unweighted, BDiscDirectory, args.year, VFP, args.runmistag, Letters, args.saveMistag)
-        mistag_luts = LoadDataLUTS(BDiscDirectory, args.year, VFP, Letters) # Specifically get data mistag rates with ttContam. corrections
+        CreateLUTS(filesets_to_run, outputs_unweighted, BDiscDirectory, args.year, VFP, args.mistagcorrect, Letters, args.saveMistag)
+        mistag_luts = LoadDataLUTS(BDiscDirectory, args.year, VFP, args.mistagcorrect, Letters) # Specifically get data mistag rates
     else:
-        mistag_luts = LoadDataLUTS(BDiscDirectory, args.year, VFP, Letters)
+        mistag_luts = LoadDataLUTS(BDiscDirectory, args.year, VFP, args.mistagcorrect, Letters)
 
     if OnlyCreateLookupTables:
         print("\n\nWe\'re done here!!\n")
