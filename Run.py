@@ -787,7 +787,8 @@ def main():
                 elif 'TTbar' in a or 'QCD' in a:
                     filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a] # include MC dataset read in from Filesets
         elif args.runmistag: # if args.mistag: Only run 1st uproot job for ttbar and data to get mistag rate with tt contamination removed
-            filesets_to_run[namingConvention+'_TTbar'] = filesets[namingConvention+'_TTbar']
+            if args.mistagcorrect:
+                filesets_to_run[namingConvention+'_TTbar'] = filesets[namingConvention+'_TTbar']
             if args.year > 0:
                 for L in Letters:
                     filesets_to_run[namingConvention+'_JetHT'+L+'_Data'] = filesets[namingConvention+'_JetHT'+L+'_Data'] # include JetHT dataset read in from Filesets
@@ -887,16 +888,17 @@ def main():
         from dask.distributed.diagnostics.plugin import UploadDirectory
         import shutil
         
-        shutil.make_archive('UploadToDask', 'zip', 'TTbarAllHadUproot')
-        print('archive made')
         if __name__ == "__main__":       
 
             # cluster = '128.205.11.158:8787'
             # uploadDir = '/mnt/users/acwillia/TTbarAllHadUproot'
             client = Client()
-            print('Uploading archive to client...')
-            client.upload_file('UploadToDask.zip')
-            print('Archive uploaded')
+            if (args.runMMO or args.runAMO or args.uproot == 2):
+                shutil.make_archive('UploadToDask', 'zip', 'TTbarAllHadUproot')
+                print('archive made')
+                print('Uploading archive to client...')
+                client.upload_file('UploadToDask.zip')
+                print('Archive uploaded')
             # try:
             #     client.register_worker_plugin(UploadDirectory(uploadDir,restart=True,update_path=True),nanny=True)
             # except OSError as ose:
