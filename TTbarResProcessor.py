@@ -132,7 +132,6 @@ class TTbarResProcessor(processor.ProcessorABC):
         # --- axes for weights --- #
         jethem_axis    = hist.axis.Regular(30, 0, 1.5, name=   "JetWeights", label=r"2018 HEM Weights")
         fatjethem_axis = hist.axis.Regular(30, 0, 1.5, name="FatJetWeights", label=r"2018 HEM Weights")
-        subjethem_axis = hist.axis.Regular(30, 0, 1.5, name="SubJetWeights", label=r"2018 HEM Weights")
         prefiring_axis = hist.axis.Regular(30, 0, 1.5, name=      "Weights", label=r"L1 Prefiring Weight")
             
         self.histo_dict = {
@@ -372,7 +371,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         #    W     W EEEEEEE IIIIIII  GGGGG  H     H    T        H     H IIIIIII SSSSS      T    SSSSS
         #    ===========================================================================================    
             
-            # 'weights_HEM' : hist.Hist(dataset_axis, jethem_axis, fatjethem_axis, subjethem_axis, storage="weight", name="Counts"),
+            # 'weights_HEM' : hist.Hist(dataset_axis, jethem_axis, fatjethem_axis, storage="weight", name="Counts"),
             
             'weights_prefiringUp'  : hist.Hist(dataset_axis, cats_axis, prefiring_axis, storage="weight", name="Counts"),
             'weights_prefiringDown'  : hist.Hist(dataset_axis, cats_axis, prefiring_axis, storage="weight", name="Counts"),
@@ -1040,17 +1039,13 @@ class TTbarResProcessor(processor.ProcessorABC):
                     
             JetWeights_HEM = self.HEMCleaning(Jets)
             FatJetWeights_HEM = self.HEMCleaning(FatJets)
-            SubJetWeights_HEM = self.HEMCleaning(SubJets)
-
-            output['weights_HEM'].fill(dataset = dataset,
-                             JetWeights = JetWeights_HEM,
-                             FatJetWeights = FatJetWeights_HEM,
-                             SubJetWeights = SubJetWeights_HEM
-                            )
+            
+            # output['weights_HEM'].fill(dataset = dataset,
+            #                  JetWeights = JetWeights_HEM,
+            #                  FatJetWeights = FatJetWeights_HEM)
 
             Jets = ak.with_field(Jets, JetWeights_HEM*Jets.pt, 'pt')
             FatJets = ak.with_field(FatJets, FatJetWeights_HEM*FatJets.pt, 'pt')
-            SubJets = ak.with_field(SubJets, SubJetWeights_HEM*SubJets.pt, 'pt')
 
 #    ===================================================================================            
 #    M     M EEEEEEE TTTTTTT     FFFFFFF IIIIIII L       TTTTTTT EEEEEEE RRRRRR    SSSSS     
