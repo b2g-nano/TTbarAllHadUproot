@@ -3,7 +3,7 @@
 
 # `TTbarResCoffeaOutputs` Notebook to produce Coffea output files for an all hadronic $t\bar{t}$ analysis.  The outputs will be found in the corresponding **CoffeaOutputs** directory.
 
-import os
+import os, psutil
 import time
 import copy
 import itertools
@@ -23,6 +23,8 @@ import matplotlib.colors as colors
 # from hist.intervals import ratio_uncertainty
 
 ak.behavior.update(candidate.behavior)
+# -- Note: Use process.memory_info()[0] for python 2.7. Else, use process.memory_info()
+process = psutil.Process(os.getpid()) # Keep track of memory usage
 maindirectory = os.getcwd()
 os.chdir('../') # Runs the code from within the working directory without manually changing all directory paths!
 
@@ -1050,6 +1052,7 @@ def main():
             print("\n\nWe\'re done here\n!!")
         if args.dask and args.newCluster:    
             cluster.close()
+        print(psutil.Process(os.getpid()).memory_info().rss / 10 ** 6) # Display MB of memory usage
         exit() # No need to go further if performing trigger analysis
 
 
@@ -1187,6 +1190,7 @@ def main():
         if args.dask and args.newCluster:
             cluster.close()
             print('\nManual Cluster Closed\n')
+        print(psutil.Process(os.getpid()).memory_info().rss / 10 ** 6) # Display MB of memory usage
         exit() # No need to go further if performing trigger analysis
     else:
         pass
@@ -1372,6 +1376,7 @@ def main():
         print("\n\nWe\'re done here!!\n")
         if args.dask and args.newCluster:
             cluster.close()
+        print(psutil.Process(os.getpid()).memory_info().rss / 10 ** 6) # Display MB of memory usage
         exit()
 
 
@@ -1577,6 +1582,7 @@ def main():
         print("\n\nWe\'re done here!!\n")
         if args.dask:
             cluster.close()
+        print(psutil.Process(os.getpid()).memory_info().rss / 10 ** 6) # Display MB of memory usage
         exit()
     # else:
     #     print("\n\nWe\'re done here!!\n")
@@ -1892,7 +1898,7 @@ def main():
 
     if args.dask and args.newCluster:
         cluster.close()
-
+    print(psutil.Process(os.getpid()).memory_info().rss / 10 ** 6) # Display MB of memory usage
     exit()
     
 if __name__ == '__main__':
