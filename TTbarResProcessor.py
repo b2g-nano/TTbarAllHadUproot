@@ -787,15 +787,12 @@ class TTbarResProcessor(processor.ProcessorABC):
 
         isData = ('JetHT' in dataset) or ('SingleMu' in dataset)
         
-        #####################################
-        #### Find the IOV from the dataset name
-        #####################################
         IOV = ('2016APV' if any(regularexpressions.findall(r'preVFP', dataset))
                else '2018' if any(regularexpressions.findall(r'UL18', dataset))
                else '2017' if any(regularexpressions.findall(r'UL17', dataset))
                else '2016')
                 
-        # ---- Define lumimasks to be initialized as an input to the processor before this point ---- #
+        # ---- Define lumimasks ---- #
         
         # if isData: 
         #     lumi_mask = np.array(self.lumimasks[IOV](events.run, events.luminosityBlock), dtype=bool)
