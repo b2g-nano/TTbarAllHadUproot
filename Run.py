@@ -155,11 +155,13 @@ def main():
                                         JetHT 2017 letters: B - F
                                         JetHT 2018 letters: A - D
                                         =========================\n
+
                                         =============================================================================
                                         JetHT 2016 triggers: HLT_PFHT900 (default), HLT_PFHT800, HLT_AK8PFJet450, HLT_AK8PFJet360_TrimMass30
                                         JetHT 2017 triggers:
                                         JetHT 2018 triggers:
                                         =============================================================================\n
+
         Example of a usual workflow on Coffea-Casa to make the relevant coffea outputs:\n
         0.) Make Outputs for Flavor and Trigger Efficiencies
     ./Run.py -C -med -F QCD TTbar DM RSGluon -a no -y 2016 --dask --saveFlav
@@ -199,7 +201,8 @@ def main():
     BDiscriminatorGroup.add_argument('-l', '--loose', action='store_true', help='Apply loose bTag discriminant cut')
     BDiscriminatorGroup.add_argument('-med', '--medium', action='store_true', help='Apply medium bTag discriminant cut')
     BDiscriminatorGroup.add_argument('-med2016', '--medium2016', action='store_true', help='Apply medium bTag discriminant cut from 2016 AN')
-
+    
+    Parser.add_argument('--mistagcorrect', action='store_true', help='Remove ttbar contamination when making mistag rates')
     Parser.add_argument('-a', '--APV', type=str, choices=['yes', 'no'], help='Do datasets have APV?', default='no')
     Parser.add_argument('-trigs', '--triggers', type=str, nargs='+', help='Triggers to Apply')
     Parser.add_argument('-y', '--year', type=int, choices=[2016, 2017, 2018, 0], help='Year(s) of data/MC of the datasets you want to run uproot with.  Choose 0 for all years simultaneously (0 option not yet finished; TBA).', default=2016)
@@ -217,6 +220,7 @@ def main():
     Parser.add_argument('--newCluster', action='store_true', help='Use Manually Defined Cluster (Must Disable Default Cluster First if Running in CoffeaCasa)')
     Parser.add_argument('--timeout', type=float, help='How many seconds should dask wait for scheduler to connect')
     Parser.add_argument('--useEff', action='store_true', help='Use MC bTag efficiencies for bTagging systematics')
+    Parser.add_argument('--tpt', action='store_true', help='Apply top pT re-weighting for uproot 2')
 
     Parser.add_argument('--step', type=int, choices=[1, 2, 3, 4, 5], help='Easily run a certain step of the workflow')
 
@@ -226,13 +230,14 @@ def main():
     UncertaintyGroup.add_argument('--ttXSSyst', type=str, choices=['central', 'up', 'down'], help='ttbar cross section systematics.  Choose Unc.')
     UncertaintyGroup.add_argument('--lumSyst', type=str, choices=['central', 'up', 'down'], help='Luminosity systematics.  Choose Unc.')
     UncertaintyGroup.add_argument('--jes', type=str, choices=['central', 'up', 'down'], help='apply jes systematic weights. Choose Unc.')
+
+    
     
     # systematic weights applied in the same processor
     Parser.add_argument('--pileup', action='store_true', help='apply pileup systematic weights')
     Parser.add_argument('--prefiring', action='store_true', help='apply prefiring systematic weights')
     Parser.add_argument('--pdf', action='store_true', help='apply pdf systematic weights')
     Parser.add_argument('--hem', action='store_true', help='apply HEM cleaning')
-    Parser.add_argument('--tpt', action='store_true', help='Apply top pT re-weighting for uproot 2')
 
 
     args = Parser.parse_args()
@@ -247,53 +252,53 @@ def main():
         for itrig in args.triggers:
             if itrig not in defaultTriggers:
                 Trigs_to_run.append(itrig)    
-    print(f'All Triggers Chosen: {Trigs_to_run}\n')
+    print(f'All Triggers Chosen: {Trigs_to_run}\n\n')
 
     if args.step == 1:
-        print('\nStep 1: Get and Save Mistag Rates\n')
+        print('\n\nStep 1: Get and Save Mistag Rates\n')
         # args.medium = True
         args.runmistag = True
         args.saveMistag = True
         # args.chunksize = 20000
     elif args.step == 2: 
-        print('\nStep 2: Run and Save the First Uproot Job\n')
+        print('\n\nStep 2: Run and Save the First Uproot Job\n')
         # args.medium = True
         args.rundataset = ['QCD', 'TTbar', 'JetHT', 'DM', 'RSGluon']
         args.save = True
         # args.chunksize = 20000
         args.uproot = 1
     elif args.step == 3: 
-        print('\nStep 3: Run and Save the Second Uproot Job with Only Mistag Rate Application\n')
+        print('\n\nStep 3: Run and Save the Second Uproot Job with Only Mistag Rate Application\n')
         # args.medium = True
         args.runAMO = ['QCD', 'TTbar', 'JetHT', 'DM', 'RSGluon']
         args.save = True
         # args.chunksize = 20000
     elif args.step == 4: 
-        print('\nStep 4: Run and Save the Second Uproot Job with Only Mistag Rate and ModMass Applications\n')
+        print('\n\nStep 4: Run and Save the Second Uproot Job with Only Mistag Rate and ModMass Applications\n')
         # args.medium = True
         args.runMMO = ['QCD', 'TTbar', 'JetHT', 'DM', 'RSGluon']
         args.save = True
         # args.chunksize = 20000
     elif args.step == 5: 
-        print('\nStep 5: Run and Save the Second Uproot Job\n')
+        print('\n\nStep 5: Run and Save the Second Uproot Job\n')
         # args.medium = True
         args.rundataset = ['QCD', 'TTbar', 'JetHT', 'DM', 'RSGluon']
         args.save = True
         # args.chunksize = 20000
         args.uproot = 2
     else:
-        print('\nManual Job Being Performed Below:')
+        print('Manual Job Being Performed Below:')
 
     StartGroupList = np.array([args.runtesting, args.runmistag, args.runtrigeff, args.runflavoreff, args.runMMO, args.runAMO, args.rundataset], dtype=object)
     BDiscriminatorGroupList = np.array([args.loose, args.medium, args.medium2016], dtype=object)
 
     if not np.any(StartGroupList): #if user forgets to assign something here or does not pick a specific step
-        print('\nDefault run; No available dataset selected')
+        print('\n\nDefault run; No available dataset selected')
         args.rundataset = ['QCD']
         args.uproot = 1
         # args.medium = True
     if not np.any(BDiscriminatorGroupList): #if user forgets to assign something here or does not pick a specific step
-        print('\nDefault Btag; No available btag WP selected')
+        print('\n\nDefault Btag -> med;')
         args.medium = True
 
     TimeOut = 30.
@@ -467,9 +472,9 @@ def main():
         UncType = "_jesUnc_"
         SystType = args.jes        
         ApplyJES = True
-        var = args.jes
-        if args.jes == 'central':
-            var = 'nominal'
+        var = "nominal"
+        if (args.jes == "up"): var = "up"
+        if (args.jes == "down"): var = "down"
     #    ---------------------------------------------------------------------------------------------------------------------    # 
 
     elif args.pdf:
@@ -880,16 +885,20 @@ def main():
     elif UsingDaskExecutor == True and args.winterfell:
         from dask.distributed import Client
         from dask.distributed.diagnostics.plugin import UploadDirectory
-
+        import shutil
+        
+        shutil.make_archive('UploadToDask', 'zip', 'TTbarAllHadUproot')
+        print('archive made')
         if __name__ == "__main__":       
 
             # cluster = '128.205.11.158:8787'
             # uploadDir = '/mnt/users/acwillia/TTbarAllHadUproot'
             client = Client()
-
+            print('Uploading archive to client...')
+            client.upload_file('UploadToDask.zip')
+            print('Archive uploaded')
             # try:
-            #     # client.register_worker_plugin(UploadDirectory(uploadDir,restart=True,update_path=True),nanny=True)
-            #     client.upload_file('UploadToDask.zip')
+            #     client.register_worker_plugin(UploadDirectory(uploadDir,restart=True,update_path=True),nanny=True)
             # except OSError as ose:
             #     print('\n', ose)    
             #     print('\nFor some reason, Dask did not work as intended\n')
@@ -1352,10 +1361,10 @@ def main():
     mistag_luts = None
 
     if args.runmistag:
-        CreateLUTS(filesets_to_run, outputs_unweighted, BDiscDirectory, args.year, VFP, args.runmistag, Letters, args.saveMistag)
-        mistag_luts = LoadDataLUTS(BDiscDirectory, args.year, VFP, Letters) # Specifically get data mistag rates with ttContam. corrections
+        CreateLUTS(filesets_to_run, outputs_unweighted, BDiscDirectory, args.year, VFP, args.mistagcorrect, Letters, args.saveMistag)
+        mistag_luts = LoadDataLUTS(BDiscDirectory, args.year, VFP, args.mistagcorrect, Letters) # Specifically get data mistag rates
     else:
-        mistag_luts = LoadDataLUTS(BDiscDirectory, args.year, VFP, Letters)
+        mistag_luts = LoadDataLUTS(BDiscDirectory, args.year, VFP, args.mistagcorrect, Letters)
 
     if OnlyCreateLookupTables:
         print("\n\nWe\'re done here!!\n")
@@ -1488,7 +1497,7 @@ def main():
                                                                                            lumSystematicWeight = lumSystwgt,
                                                                                            ApplyTopReweight = args.tpt,
                                                                                            ApplybtagSF=ApplybSF,
-                                                                                           ApplyJesc=ApplyJES,
+                                                                                           ApplyJes=ApplyJES,
                                                                                            var=var,
                                                                                            ApplyPdf=ApplyPDF,
                                                                                            ApplyPrefiring = ApplyPrefiring,
