@@ -49,6 +49,9 @@ class TTbarResProcessor(processor.ProcessorABC):
                  ApplyJes=False, var="nominal", ApplyPdf=False, ApplyPrefiring=False, ApplyPUweights=False,
                  ApplyHEMCleaning=False, trigs_to_run=[''],
                  sysType=None):
+
+
+        self.lumimasks = getLumiMaskRun2(prepend="TTbarAllHadUproot/")
         
         self.prng = prng
         self.htCut = htCut
@@ -877,9 +880,9 @@ class TTbarResProcessor(processor.ProcessorABC):
                 
         # ---- Define lumimasks ---- #
         
-        # if isData: 
-        #     lumi_mask = np.array(self.lumimasks[IOV](events.run, events.luminosityBlock), dtype=bool)
-        #     events = events[lumi_mask]
+        if isData: 
+            lumi_mask = np.array(self.lumimasks[IOV](events.run, events.luminosityBlock), dtype=bool)
+            events = events[lumi_mask]
         
         
         FatJets = ak.zip({
