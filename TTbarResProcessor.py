@@ -171,161 +171,161 @@ class TTbarResProcessor(processor.ProcessorABC):
 
             'jetmass' : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
             
-            'jetmass_jesUp'   : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
-            'jetmass_jesDown' : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
-            'jetmass_jesNom'  : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
+            # 'jetmass_jesUp'   : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
+            # 'jetmass_jesDown' : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
+            # 'jetmass_jesNom'  : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
             
-            'jetmass_pdfUp'   : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
-            'jetmass_pdfDown' : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
-            'jetmass_pdfNom'  : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
+            # 'jetmass_pdfUp'   : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
+            # 'jetmass_pdfDown' : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
+            # 'jetmass_pdfNom'  : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
             
-            'jetmass_puUp'   : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
-            'jetmass_puDown' : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
-            'jetmass_puNom'  : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
+            # 'jetmass_puUp'   : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
+            # 'jetmass_puDown' : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
+            # 'jetmass_puNom'  : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
             
-            'jetmass_hemUp'   : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
-            'jetmass_hemDown' : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
-            'jetmass_hemNom'  : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
+            # 'jetmass_hemUp'   : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
+            # 'jetmass_hemDown' : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
+            # 'jetmass_hemNom'  : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
             
-            'jetmass_prefiringUp'   : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
-            'jetmass_prefiringDown' : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
-            'jetmass_prefiringNom'  : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
+            # 'jetmass_prefiringUp'   : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
+            # 'jetmass_prefiringDown' : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
+            # 'jetmass_prefiringNom'  : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
             
             #################################################################################################################
             
             'SDmass'  : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
             
-            'SDmass_jesUp'   : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
-            'SDmass_jesDown' : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
-            'SDmass_jesNom'  : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
+            # 'SDmass_jesUp'   : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
+            # 'SDmass_jesDown' : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
+            # 'SDmass_jesNom'  : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
             
-            'SDmass_pdfUp'   : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
-            'SDmass_pdfDown' : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
-            'SDmass_pdfNom'  : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
+            # 'SDmass_pdfUp'   : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
+            # 'SDmass_pdfDown' : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
+            # 'SDmass_pdfNom'  : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
             
-            'SDmass_puUp'   : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
-            'SDmass_puDown' : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
-            'SDmass_puNom'  : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
+            # 'SDmass_puUp'   : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
+            # 'SDmass_puDown' : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
+            # 'SDmass_puNom'  : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
             
-            'SDmass_hemUp'   : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
-            'SDmass_hemDown' : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
-            'SDmass_hemNom'  : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
+            # 'SDmass_hemUp'   : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
+            # 'SDmass_hemDown' : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
+            # 'SDmass_hemNom'  : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
             
-            'SDmass_prefiringUp'   : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
-            'SDmass_prefiringDown' : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
-            'SDmass_prefiringNom'  : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
+            # 'SDmass_prefiringUp'   : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
+            # 'SDmass_prefiringDown' : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
+            # 'SDmass_prefiringNom'  : hist.Hist(dataset_axis, cats_axis, jetmass_axis, storage="weight", name="Counts"),
             
             #################################################################################################################
 
             'jetpt'  : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
             
-            'jetpt_jesUp'   : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
-            'jetpt_jesDown' : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
-            'jetpt_jesNom'  : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
+            # 'jetpt_jesUp'   : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
+            # 'jetpt_jesDown' : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
+            # 'jetpt_jesNom'  : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
             
-            'jetpt_pdfUp'   : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
-            'jetpt_pdfDown' : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
-            'jetpt_pdfNom'  : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
+            # 'jetpt_pdfUp'   : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
+            # 'jetpt_pdfDown' : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
+            # 'jetpt_pdfNom'  : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
             
-            'jetpt_puUp'   : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
-            'jetpt_puDown' : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
-            'jetpt_puNom'  : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
+            # 'jetpt_puUp'   : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
+            # 'jetpt_puDown' : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
+            # 'jetpt_puNom'  : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
             
-            'jetpt_hemUp'   : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
-            'jetpt_hemDown' : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
-            'jetpt_hemNom'  : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
+            # 'jetpt_hemUp'   : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
+            # 'jetpt_hemDown' : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
+            # 'jetpt_hemNom'  : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
             
-            'jetpt_prefiringUp'   : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
-            'jetpt_prefiringDown' : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
-            'jetpt_prefiringNom'  : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
+            # 'jetpt_prefiringUp'   : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
+            # 'jetpt_prefiringDown' : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
+            # 'jetpt_prefiringNom'  : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
             
             #################################################################################################################
             
             'jeteta' : hist.Hist(dataset_axis, cats_axis, jeteta_axis, storage="weight", name="Counts"),
             
-            'jeteta_jesUp'   : hist.Hist(dataset_axis, cats_axis, jeteta_axis, storage="weight", name="Counts"),
-            'jeteta_jesDown' : hist.Hist(dataset_axis, cats_axis, jeteta_axis, storage="weight", name="Counts"),
-            'jeteta_jesNom'  : hist.Hist(dataset_axis, cats_axis, jeteta_axis, storage="weight", name="Counts"),
+            # 'jeteta_jesUp'   : hist.Hist(dataset_axis, cats_axis, jeteta_axis, storage="weight", name="Counts"),
+            # 'jeteta_jesDown' : hist.Hist(dataset_axis, cats_axis, jeteta_axis, storage="weight", name="Counts"),
+            # 'jeteta_jesNom'  : hist.Hist(dataset_axis, cats_axis, jeteta_axis, storage="weight", name="Counts"),
             
-            'jeteta_pdfUp'   : hist.Hist(dataset_axis, cats_axis, jeteta_axis, storage="weight", name="Counts"),
-            'jeteta_pdfDown' : hist.Hist(dataset_axis, cats_axis, jeteta_axis, storage="weight", name="Counts"),
-            'jeteta_pdfNom'  : hist.Hist(dataset_axis, cats_axis, jeteta_axis, storage="weight", name="Counts"),
+            # 'jeteta_pdfUp'   : hist.Hist(dataset_axis, cats_axis, jeteta_axis, storage="weight", name="Counts"),
+            # 'jeteta_pdfDown' : hist.Hist(dataset_axis, cats_axis, jeteta_axis, storage="weight", name="Counts"),
+            # 'jeteta_pdfNom'  : hist.Hist(dataset_axis, cats_axis, jeteta_axis, storage="weight", name="Counts"),
             
-            'jeteta_puUp'   : hist.Hist(dataset_axis, cats_axis, jeteta_axis, storage="weight", name="Counts"),
-            'jeteta_puDown' : hist.Hist(dataset_axis, cats_axis, jeteta_axis, storage="weight", name="Counts"),
-            'jeteta_puNom'  : hist.Hist(dataset_axis, cats_axis, jeteta_axis, storage="weight", name="Counts"),
+            # 'jeteta_puUp'   : hist.Hist(dataset_axis, cats_axis, jeteta_axis, storage="weight", name="Counts"),
+            # 'jeteta_puDown' : hist.Hist(dataset_axis, cats_axis, jeteta_axis, storage="weight", name="Counts"),
+            # 'jeteta_puNom'  : hist.Hist(dataset_axis, cats_axis, jeteta_axis, storage="weight", name="Counts"),
             
-            'jeteta_hemUp'   : hist.Hist(dataset_axis, cats_axis, jeteta_axis, storage="weight", name="Counts"),
-            'jeteta_hemDown' : hist.Hist(dataset_axis, cats_axis, jeteta_axis, storage="weight", name="Counts"),
-            'jeteta_hemNom'  : hist.Hist(dataset_axis, cats_axis, jeteta_axis, storage="weight", name="Counts"),
+            # 'jeteta_hemUp'   : hist.Hist(dataset_axis, cats_axis, jeteta_axis, storage="weight", name="Counts"),
+            # 'jeteta_hemDown' : hist.Hist(dataset_axis, cats_axis, jeteta_axis, storage="weight", name="Counts"),
+            # 'jeteta_hemNom'  : hist.Hist(dataset_axis, cats_axis, jeteta_axis, storage="weight", name="Counts"),
             
-            'jeteta_prefiringUp'   : hist.Hist(dataset_axis, cats_axis, jeteta_axis, storage="weight", name="Counts"),
-            'jeteta_prefiringDown' : hist.Hist(dataset_axis, cats_axis, jeteta_axis, storage="weight", name="Counts"),
-            'jeteta_prefiringNom'  : hist.Hist(dataset_axis, cats_axis, jeteta_axis, storage="weight", name="Counts"),
+            # 'jeteta_prefiringUp'   : hist.Hist(dataset_axis, cats_axis, jeteta_axis, storage="weight", name="Counts"),
+            # 'jeteta_prefiringDown' : hist.Hist(dataset_axis, cats_axis, jeteta_axis, storage="weight", name="Counts"),
+            # 'jeteta_prefiringNom'  : hist.Hist(dataset_axis, cats_axis, jeteta_axis, storage="weight", name="Counts"),
             
             #################################################################################################################
             
             'jetphi' : hist.Hist(dataset_axis, cats_axis, jetphi_axis, storage="weight", name="Counts"),
             
-            'jetphi_jesUp'   : hist.Hist(dataset_axis, cats_axis, jetphi_axis, storage="weight", name="Counts"),
-            'jetphi_jesDown' : hist.Hist(dataset_axis, cats_axis, jetphi_axis, storage="weight", name="Counts"),
-            'jetphi_jesNom'  : hist.Hist(dataset_axis, cats_axis, jetphi_axis, storage="weight", name="Counts"),
+            # 'jetphi_jesUp'   : hist.Hist(dataset_axis, cats_axis, jetphi_axis, storage="weight", name="Counts"),
+            # 'jetphi_jesDown' : hist.Hist(dataset_axis, cats_axis, jetphi_axis, storage="weight", name="Counts"),
+            # 'jetphi_jesNom'  : hist.Hist(dataset_axis, cats_axis, jetphi_axis, storage="weight", name="Counts"),
             
-            'jetphi_pdfUp'   : hist.Hist(dataset_axis, cats_axis, jetphi_axis, storage="weight", name="Counts"),
-            'jetphi_pdfDown' : hist.Hist(dataset_axis, cats_axis, jetphi_axis, storage="weight", name="Counts"),
-            'jetphi_pdfNom'  : hist.Hist(dataset_axis, cats_axis, jetphi_axis, storage="weight", name="Counts"),
+            # 'jetphi_pdfUp'   : hist.Hist(dataset_axis, cats_axis, jetphi_axis, storage="weight", name="Counts"),
+            # 'jetphi_pdfDown' : hist.Hist(dataset_axis, cats_axis, jetphi_axis, storage="weight", name="Counts"),
+            # 'jetphi_pdfNom'  : hist.Hist(dataset_axis, cats_axis, jetphi_axis, storage="weight", name="Counts"),
             
-            'jetphi_puUp'   : hist.Hist(dataset_axis, cats_axis, jetphi_axis, storage="weight", name="Counts"),
-            'jetphi_puDown' : hist.Hist(dataset_axis, cats_axis, jetphi_axis, storage="weight", name="Counts"),
-            'jetphi_puNom'  : hist.Hist(dataset_axis, cats_axis, jetphi_axis, storage="weight", name="Counts"),
+            # 'jetphi_puUp'   : hist.Hist(dataset_axis, cats_axis, jetphi_axis, storage="weight", name="Counts"),
+            # 'jetphi_puDown' : hist.Hist(dataset_axis, cats_axis, jetphi_axis, storage="weight", name="Counts"),
+            # 'jetphi_puNom'  : hist.Hist(dataset_axis, cats_axis, jetphi_axis, storage="weight", name="Counts"),
             
-            'jetphi_hemUp'   : hist.Hist(dataset_axis, cats_axis, jetphi_axis, storage="weight", name="Counts"),
-            'jetphi_hemDown' : hist.Hist(dataset_axis, cats_axis, jetphi_axis, storage="weight", name="Counts"),
-            'jetphi_hemNom'  : hist.Hist(dataset_axis, cats_axis, jetphi_axis, storage="weight", name="Counts"),
+            # 'jetphi_hemUp'   : hist.Hist(dataset_axis, cats_axis, jetphi_axis, storage="weight", name="Counts"),
+            # 'jetphi_hemDown' : hist.Hist(dataset_axis, cats_axis, jetphi_axis, storage="weight", name="Counts"),
+            # 'jetphi_hemNom'  : hist.Hist(dataset_axis, cats_axis, jetphi_axis, storage="weight", name="Counts"),
             
-            'jetphi_prefiringUp'   : hist.Hist(dataset_axis, cats_axis, jetphi_axis, storage="weight", name="Counts"),
-            'jetphi_prefiringDown' : hist.Hist(dataset_axis, cats_axis, jetphi_axis, storage="weight", name="Counts"),
-            'jetphi_prefiringNom'  : hist.Hist(dataset_axis, cats_axis, jetphi_axis, storage="weight", name="Counts"),
+            # 'jetphi_prefiringUp'   : hist.Hist(dataset_axis, cats_axis, jetphi_axis, storage="weight", name="Counts"),
+            # 'jetphi_prefiringDown' : hist.Hist(dataset_axis, cats_axis, jetphi_axis, storage="weight", name="Counts"),
+            # 'jetphi_prefiringNom'  : hist.Hist(dataset_axis, cats_axis, jetphi_axis, storage="weight", name="Counts"),
             
             #################################################################################################################
 
             'probept' : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
             'probep'  : hist.Hist(dataset_axis, cats_axis, manual_axis, storage="weight", name="Counts"),
             
-            'probept_jesUp'   : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
-            'probept_jesDown' : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
-            'probept_jesNom'  : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
-            'probep_jesUp'    : hist.Hist(dataset_axis, cats_axis, manual_axis, storage="weight", name="Counts"),
-            'probep_jesDown'  : hist.Hist(dataset_axis, cats_axis, manual_axis, storage="weight", name="Counts"),
-            'probep_jesNom'   : hist.Hist(dataset_axis, cats_axis, manual_axis, storage="weight", name="Counts"),
+            # 'probept_jesUp'   : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
+            # 'probept_jesDown' : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
+            # 'probept_jesNom'  : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
+            # 'probep_jesUp'    : hist.Hist(dataset_axis, cats_axis, manual_axis, storage="weight", name="Counts"),
+            # 'probep_jesDown'  : hist.Hist(dataset_axis, cats_axis, manual_axis, storage="weight", name="Counts"),
+            # 'probep_jesNom'   : hist.Hist(dataset_axis, cats_axis, manual_axis, storage="weight", name="Counts"),
             
-            'probept_pdfUp'   : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
-            'probept_pdfDown' : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
-            'probept_pdfNom'  : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
-            'probep_pdfUp'    : hist.Hist(dataset_axis, cats_axis, manual_axis, storage="weight", name="Counts"),
-            'probep_pdfDown'  : hist.Hist(dataset_axis, cats_axis, manual_axis, storage="weight", name="Counts"),
-            'probep_pdfNom'   : hist.Hist(dataset_axis, cats_axis, manual_axis, storage="weight", name="Counts"),
+            # 'probept_pdfUp'   : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
+            # 'probept_pdfDown' : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
+            # 'probept_pdfNom'  : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
+            # 'probep_pdfUp'    : hist.Hist(dataset_axis, cats_axis, manual_axis, storage="weight", name="Counts"),
+            # 'probep_pdfDown'  : hist.Hist(dataset_axis, cats_axis, manual_axis, storage="weight", name="Counts"),
+            # 'probep_pdfNom'   : hist.Hist(dataset_axis, cats_axis, manual_axis, storage="weight", name="Counts"),
             
-            'probept_puUp'   : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
-            'probept_puDown' : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
-            'probept_puNom'  : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
-            'probep_puUp'    : hist.Hist(dataset_axis, cats_axis, manual_axis, storage="weight", name="Counts"),
-            'probep_puDown'  : hist.Hist(dataset_axis, cats_axis, manual_axis, storage="weight", name="Counts"),
-            'probep_puNom'   : hist.Hist(dataset_axis, cats_axis, manual_axis, storage="weight", name="Counts"),
+            # 'probept_puUp'   : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
+            # 'probept_puDown' : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
+            # 'probept_puNom'  : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
+            # 'probep_puUp'    : hist.Hist(dataset_axis, cats_axis, manual_axis, storage="weight", name="Counts"),
+            # 'probep_puDown'  : hist.Hist(dataset_axis, cats_axis, manual_axis, storage="weight", name="Counts"),
+            # 'probep_puNom'   : hist.Hist(dataset_axis, cats_axis, manual_axis, storage="weight", name="Counts"),
             
-            'probept_hemUp'   : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
-            'probept_hemDown' : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
-            'probept_hemNom'  : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
-            'probep_hemUp'    : hist.Hist(dataset_axis, cats_axis, manual_axis, storage="weight", name="Counts"),
-            'probep_hemDown'  : hist.Hist(dataset_axis, cats_axis, manual_axis, storage="weight", name="Counts"),
-            'probep_hemNom'   : hist.Hist(dataset_axis, cats_axis, manual_axis, storage="weight", name="Counts"),
+            # 'probept_hemUp'   : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
+            # 'probept_hemDown' : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
+            # 'probept_hemNom'  : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
+            # 'probep_hemUp'    : hist.Hist(dataset_axis, cats_axis, manual_axis, storage="weight", name="Counts"),
+            # 'probep_hemDown'  : hist.Hist(dataset_axis, cats_axis, manual_axis, storage="weight", name="Counts"),
+            # 'probep_hemNom'   : hist.Hist(dataset_axis, cats_axis, manual_axis, storage="weight", name="Counts"),
             
-            'probept_prefiringUp'   : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
-            'probept_prefiringDown' : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
-            'probept_prefiringNom'  : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
-            'probep_prefiringUp'    : hist.Hist(dataset_axis, cats_axis, manual_axis, storage="weight", name="Counts"),
-            'probep_prefiringDown'  : hist.Hist(dataset_axis, cats_axis, manual_axis, storage="weight", name="Counts"),
-            'probep_prefiringNom'   : hist.Hist(dataset_axis, cats_axis, manual_axis, storage="weight", name="Counts"),
+            # 'probept_prefiringUp'   : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
+            # 'probept_prefiringDown' : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
+            # 'probept_prefiringNom'  : hist.Hist(dataset_axis, cats_axis, jetpt_axis, storage="weight", name="Counts"),
+            # 'probep_prefiringUp'    : hist.Hist(dataset_axis, cats_axis, manual_axis, storage="weight", name="Counts"),
+            # 'probep_prefiringDown'  : hist.Hist(dataset_axis, cats_axis, manual_axis, storage="weight", name="Counts"),
+            # 'probep_prefiringNom'   : hist.Hist(dataset_axis, cats_axis, manual_axis, storage="weight", name="Counts"),
             
             #################################################################################################################
 
@@ -369,7 +369,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         #    W     W EEEEEEE IIIIIII  GGGGG  H     H    T        H     H IIIIIII SSSSS      T    SSSSS
         #    ===========================================================================================    
             
-            'weights_HEM' : hist.Hist(dataset_axis, jethem_axis, fatjethem_axis, subjethem_axis, storage="weight", name="Counts"),
+            # 'weights_HEM' : hist.Hist(dataset_axis, jethem_axis, fatjethem_axis, subjethem_axis, storage="weight", name="Counts"),
             
             'weights_prefiringUp'  : hist.Hist(dataset_axis, cats_axis, prefiring_axis, storage="weight", name="Counts"),
             'weights_prefiringDown'  : hist.Hist(dataset_axis, cats_axis, prefiring_axis, storage="weight", name="Counts"),
@@ -1714,15 +1714,15 @@ class TTbarResProcessor(processor.ProcessorABC):
 
                     output['weights_prefiringNom'].fill(dataset = dataset,
                                      anacat = self.ConvertLabelToInt(self.label_dict, ilabel),
-                                     weights = prefiringNom,
+                                     Weights = prefiringNom,
                                     )
                     output['weights_prefiringUp'].fill(dataset = dataset,
                                      anacat = self.ConvertLabelToInt(self.label_dict, ilabel),
-                                     weights = prefiringUp,
+                                     Weights = prefiringUp,
                                     )
                     output['weights_prefiringDown'].fill(dataset = dataset,
                                      anacat = self.ConvertLabelToInt(self.label_dict, ilabel),
-                                     weights = prefiringDown,
+                                     Weights = prefiringDown,
                                     )
                     
                 
