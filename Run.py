@@ -534,6 +534,8 @@ def main():
         namingConvention+'_TTbar': 'TT/' + BDiscDirectory + fileConvention,
         namingConvention+'_QCD': 'QCD/' + BDiscDirectory + fileConvention,
         namingConvention+'_DM': 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention,
+        namingConvention+'_DM2500': 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention,
+        namingConvention+'_DM5000': 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention,
         namingConvention+'_RSGluon': 'RSGluonToTT/' + BDiscDirectory + fileConvention
     }
     if not Testing:
@@ -807,7 +809,8 @@ def main():
             'TestSample_ttbarRES':TestRootFiles
         }
         filesets_forweights = filesets
-
+        
+        
     #    ---------------------------------------------------------------------------
     #    DDDD       A      SSSSS K     K       SSSSS EEEEEEE TTTTTTT U     U PPPPPP      
     #    D   D     A A    S      K   K        S      E          T    U     U P     P     
@@ -1384,6 +1387,12 @@ def main():
 
     seed = 1234577890
     prng = RandomState(seed)
+    
+    
+    # for key in filesets.keys():
+    #     print(key)
+    
+    
 
     if not OnlyCreateLookupTables and (not args.runMMO and not args.runAMO):
         for name,files in filesets_to_run.items(): 
@@ -1489,7 +1498,7 @@ def main():
                                                                                            lumSystematicWeight = lumSystwgt,
                                                                                            ApplyTopReweight = args.tpt,
                                                                                            ApplybtagSF=ApplybSF,
-                                                                                           ApplyJesc=ApplyJES,
+                                                                                           ApplyJes=ApplyJES,
                                                                                            var=var,
                                                                                            ApplyPdf=ApplyPDF,
                                                                                            ApplyPrefiring = ApplyPrefiring,

@@ -468,46 +468,135 @@ class TTbarResProcessor(processor.ProcessorABC):
     
         return isHEM
     
-    def GetJESUncertainties(self, FatJets, GenJets, events):
+    def GetJESUncertainties(self, FatJets, events, isData=False):
         
+        # original code https://gitlab.cern.ch/gagarwal/ttbardileptonic/-/blob/master/jmeCorrections.py
+        
+        IOV = f'{self.year}{self.apv}'
+                
+        jer_tag=None
+        if (IOV=='2018'):
+            jec_tag="Summer19UL18_V5_MC"
+            jec_tag_data={
+                "RunA": "Summer19UL18_RunA_V5_DATA",
+                "RunB": "Summer19UL18_RunB_V5_DATA",
+                "RunC": "Summer19UL18_RunC_V5_DATA",
+                "RunD": "Summer19UL18_RunD_V5_DATA",
+            }
+            jer_tag = "Summer19UL18_JRV2_MC"
+        elif (IOV=='2017'):
+            jec_tag="Summer19UL17_V5_MC"
+            jec_tag_data={
+                "RunB": "Summer19UL17_RunB_V5_DATA",
+                "RunC": "Summer19UL17_RunC_V5_DATA",
+                "RunD": "Summer19UL17_RunD_V5_DATA",
+                "RunE": "Summer19UL17_RunE_V5_DATA",
+                "RunF": "Summer19UL17_RunF_V5_DATA",
+            }
+            jer_tag = "Summer19UL17_JRV2_MC"
+        elif (IOV=='2016noAPV'):
+            jec_tag="Summer19UL16_V7_MC"
+            jec_tag_data={
+                "RunF": "Summer19UL16_RunFGH_V7_DATA",
+                "RunG": "Summer19UL16_RunFGH_V7_DATA",
+                "RunH": "Summer19UL16_RunFGH_V7_DATA",
+            }
+            jer_tag = "Summer20UL16_JRV3_MC"
+        elif (IOV=='2016APV'):
+            jec_tag="Summer19UL16_V7_MC"
+            ## HIPM/APV     : B_ver1, B_ver2, C, D, E, F
+            ## non HIPM/APV : F, G, H
+
+            jec_tag_data={
+                "RunB_ver1": "Summer19UL16APV_RunBCD_V7_DATA",
+                "RunB_ver2": "Summer19UL16APV_RunBCD_V7_DATA",
+                "RunC": "Summer19UL16APV_RunBCD_V7_DATA",
+                "RunD": "Summer19UL16APV_RunBCD_V7_DATA",
+                "RunE": "Summer19UL16APV_RunEF_V7_DATA",
+                "RunF": "Summer19UL16APV_RunEF_V7_DATA",
+            }
+            jer_tag = "Summer20UL16APV_JRV3_MC"
+        else:
+            raise ValueError(f"Error: Unknown year \"{IOV}\".")
+            
+            
+            
         ext = extractor()
-        ext.add_weight_sets([
-            "* * TTbarAllHadUproot/CorrectionFiles/JEC/Summer19UL17_V5_MC/Summer19UL17_V5_MC_L1FastJet_AK8PFchs.jec.txt",
-            "* * TTbarAllHadUproot/CorrectionFiles/JEC/Summer19UL17_V5_MC/Summer19UL17_V5_MC_L2Relative_AK8PFchs.jec.txt",
-            "* * TTbarAllHadUproot/CorrectionFiles/JEC/Summer19UL17_V5_MC/Summer19UL17_V5_MC_L3Absolute_AK8PFchs.jec.txt",
-            "* * TTbarAllHadUproot/CorrectionFiles/JEC/Summer19UL17_V5_MC/Summer19UL17_V5_MC_UncertaintySources_AK8PFchs.junc.txt",
-            "* * TTbarAllHadUproot/CorrectionFiles/JEC/Summer19UL17_V5_MC/Summer19UL17_V5_MC_Uncertainty_AK8PFchs.junc.txt",
-        ])
+        if not isData:
+        #For MC
+            ext.add_weight_sets([
+                '* * TTbarAllHadUproot/CorrectionFiles/JEC/{0}/{0}_L1FastJet_AK8PFchs.jec.txt'.format(jec_tag),
+                '* * TTbarAllHadUproot/CorrectionFiles/JEC/{0}/{0}_L2Relative_AK8PFchs.jec.txt'.format(jec_tag),
+                '* * TTbarAllHadUproot/CorrectionFiles/JEC/{0}/{0}_L3Absolute_AK8PFchs.jec.txt'.format(jec_tag),
+                '* * TTbarAllHadUproot/CorrectionFiles/JEC/{0}/{0}_UncertaintySources_AK8PFchs.junc.txt'.format(jec_tag),
+                '* * TTbarAllHadUproot/CorrectionFiles/JEC/{0}/{0}_Uncertainty_AK8PFchs.junc.txt'.format(jec_tag),
+            ])
+
+        else:       
+            #For data, make sure we don't duplicate
+            tags_done = []
+            for run, tag in jec_tag_data.items():
+                if not (tag in tags_done):
+                    ext.add_weight_sets([
+                    '* * TTbarAllHadUproot/CorrectionFiles/JEC/{0}/{0}_L1FastJet_AK8PFchs.jec.txt'.format(tag),
+                    '* * TTbarAllHadUproot/CorrectionFiles/JEC/{0}/{0}_L2Relative_AK8PFchs.jec.txt'.format(tag),
+                    '* * TTbarAllHadUproot/CorrectionFiles/JEC/{0}/{0}_L3Absolute_AK8PFchs.jec.txt'.format(tag),
+                    '* * TTbarAllHadUproot/CorrectionFiles/JEC/{0}/{0}_L2L3Residual_AK8PFchs.jec.txt'.format(tag),
+                    ])
+                    tags_done += [tag]
+
         ext.finalize()
 
-        jec_stack_names = [
-            "Summer19UL17_V5_MC_L1FastJet_AK8PFchs",
-            "Summer19UL17_V5_MC_L2Relative_AK8PFchs",
-            "Summer19UL17_V5_MC_L3Absolute_AK8PFchs",
-            "Summer19UL17_V5_MC_Uncertainty_AK8PFchs",
-        ]
+        
+        
+        
 
         evaluator = ext.make_evaluator()
+        
+        
+        
+        if (not isData):
+            jec_names = [
+                '{0}_L1FastJet_AK8PFchs'.format(jec_tag),
+                '{0}_L2Relative_AK8PFchs'.format(jec_tag),
+                '{0}_L3Absolute_AK8PFchs'.format(jec_tag),
+                '{0}_Uncertainty_AK8PFchs'.format(jec_tag)]
+        else:
+            jec_names={}
+            for run, tag in jec_tag_data.items():
+                jec_names[run] = [
+                    '{0}_L1FastJet_AK8PFchs'.format(tag),
+                    '{0}_L3Absolute_AK8PFchs'.format(tag),
+                    '{0}_L2Relative_AK8PFchs'.format(tag),
+                    '{0}_L2L3Residual_AK8PFchs'.format(tag),]
 
-        jec_inputs = {name: evaluator[name] for name in jec_stack_names}
+        
+        
+        
+        if not isData:
+            jec_inputs = {name: evaluator[name] for name in jec_names}
+        else:
+            jec_names_data = []
+            for era in self.eras:
+                jec_names_data += jec_names[f'Run{era}']
+  
+            jec_inputs = {name: evaluator[name] for name in jec_names_data}
+                
+                
+                
+
         jec_stack = JECStack(jec_inputs)
+        
+                
+        FatJets['pt_raw'] = (1 - FatJets['rawFactor']) * FatJets['pt']
+        FatJets['mass_raw'] = (1 - FatJets['rawFactor']) * FatJets['mass']
+        FatJets['rho'] = ak.broadcast_arrays(events.fixedGridRhoFastjetAll, FatJets.pt)[0]
 
         name_map = jec_stack.blank_name_map
         name_map['JetPt'] = 'pt'
         name_map['JetMass'] = 'mass'
         name_map['JetEta'] = 'eta'
         name_map['JetA'] = 'area'
-
-        
-        # match gen jets to AK8 jets
-        matched_genjet_index = ak.mask(FatJets.genJetIdx, (FatJets.genJetIdx != -1) & (FatJets.genJetIdx < ak.count(GenJets.pt, axis=1)))
-        matched_GenJet_pt = GenJets.pt[matched_genjet_index]        
-
-        FatJets['pt_raw'] = (1 - FatJets['rawFactor']) * FatJets['pt']
-        FatJets['mass_raw'] = (1 - FatJets['rawFactor']) * FatJets['mass']
-        FatJets['pt_gen'] = matched_GenJet_pt
-        FatJets['rho'] = ak.broadcast_arrays(events.fixedGridRhoFastjetAll, FatJets.pt)[0]
-        
         name_map['ptGenJet'] = 'pt_gen'
         name_map['ptRaw'] = 'pt_raw'
         name_map['massRaw'] = 'mass_raw'
@@ -515,12 +604,6 @@ class TTbarResProcessor(processor.ProcessorABC):
 
 
         events_cache = events.caches[0]
-        corrector = FactorizedJetCorrector(
-            Fall17_17Nov2017_V32_MC_L2Relative_AK8PFPuppi=evaluator['Summer19UL17_V5_MC_L2Relative_AK8PFchs'],
-        )
-        uncertainties = JetCorrectionUncertainty(
-            Fall17_17Nov2017_V32_MC_Uncertainty_AK8PFPuppi=evaluator['Summer19UL17_V5_MC_Uncertainty_AK8PFchs']
-        )
 
         jet_factory = CorrectedJetsFactory(name_map, jec_stack)
         corrected_jets = jet_factory.build(FatJets, lazy_cache=events_cache)
@@ -535,7 +618,7 @@ class TTbarResProcessor(processor.ProcessorABC):
             
         elif (self.var == "down"):
             jes_correction = corrected_jets.JES_jes.down.pt/corrected_jets.pt_raw
-            CorrectedJets = corrected_jets.JES_jes.up
+            CorrectedJets = corrected_jets.JES_jes.down
 
         
         
@@ -731,15 +814,34 @@ class TTbarResProcessor(processor.ProcessorABC):
         
         # Jet Corrections #
         
+        # match gen jets to AK8 jets
+        if not isData:
+            
+            matched_genjet_index = ak.mask(FatJets.genJetIdx, (FatJets.genJetIdx != -1) & (FatJets.genJetIdx < ak.count(GenJets.pt, axis=1)))
+            matched_GenJet_pt = GenJets.pt[matched_genjet_index]        
+            FatJets['pt_gen'] = matched_GenJet_pt
+        
         
         if(self.ApplyJes):
-                                
-            CorrectedJets = self.GetJESUncertainties(FatJets, GenJets, events)
             
-            FatJets['pt'] = CorrectedJets['pt']
-            FatJets['eta'] = CorrectedJets['eta']
-            FatJets['phi'] = CorrectedJets['phi']
-            FatJets['mass'] = CorrectedJets['mass']
+            if (self.var == "central"):
+                                
+                CorrectedJets = self.GetJESUncertainties(FatJets, events, isData)
+
+                FatJets['pt'] = CorrectedJets['pt']
+                FatJets['eta'] = CorrectedJets['eta']
+                FatJets['phi'] = CorrectedJets['phi']
+                FatJets['mass'] = CorrectedJets['mass']
+                
+            else:
+                if not isData:
+                    CorrectedJets = self.GetJESUncertainties(FatJets, events, isData)
+
+                    FatJets['pt'] = CorrectedJets['pt']
+                    FatJets['eta'] = CorrectedJets['eta']
+                    FatJets['phi'] = CorrectedJets['phi']
+                    FatJets['mass'] = CorrectedJets['mass']
+                    
 
         
         if self.ApplyHEMCleaning:
