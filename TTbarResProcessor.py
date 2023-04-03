@@ -997,7 +997,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         filteredEvents = np.logical_or.reduce(filteredEvents, axis=0)
         
         if ak.sum(filteredEvents) < 1 :
-            print("\nNo events passed the MET filters.\n")
+            print("\nNo events passed the MET filters.\n", flush=True)
             return output
         else:
             FatJets = FatJets[filteredEvents]
@@ -1353,19 +1353,19 @@ class TTbarResProcessor(processor.ProcessorABC):
                     try:
                         BSF_s0_allHeavy = btag_sf['deepCSV_subjet'].evaluate(self.sysType, 'lt', Fitting, s0_allHeavy, abs(s0_eta), s0_pt)
                     except RuntimeError as re:
-                        print('flavor (with light mask): \n', s0_allHeavy)
-                        print('eta: \n', s0_eta)
-                        print('pt: \n', s0_pt)
-                        print('These subjets\' all heavy SFs evaluation failed')
-                        print(re)
+                        print('flavor (with light mask): \n', s0_allHeavy, flush=True)
+                        print('eta: \n', s0_eta, flush=True)
+                        print('pt: \n', s0_pt, flush=True)
+                        print('These subjets\' all heavy SFs evaluation failed', flush=True)
+                        print(re, flush=True)
                     try:
                         BSF_s1_allHeavy = btag_sf['deepCSV_subjet'].evaluate(self.sysType, 'lt', Fitting, s1_allHeavy, abs(s1_eta), s1_pt)
                     except RuntimeError as RE:
-                        print('flavor (with light mask): \n', s1_allHeavy)
-                        print('eta: \n', s1_eta)
-                        print('pt: \n', s1_pt)
-                        print('These subjets\' all heavy SFs evaluation failed')
-                        print(RE)
+                        print('flavor (with light mask): \n', s1_allHeavy, flush=True)
+                        print('eta: \n', s1_eta, flush=True)
+                        print('pt: \n', s1_pt, flush=True)
+                        print('These subjets\' all heavy SFs evaluation failed', flush=True)
+                        print(RE, flush=True)
                     
                     BSF_s0_allLight = btag_sf['deepCSV_subjet'].evaluate(self.sysType, 'incl', Fitting, s0_allLight, abs(s0_eta), s0_pt)
                     BSF_s1_allLight = btag_sf['deepCSV_subjet'].evaluate(self.sysType, 'incl', Fitting, s1_allLight, abs(s1_eta), s1_pt)
@@ -1570,7 +1570,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                 elif self.year == 0: # all years; not just 2016, 17 or 18 alone
                     file_df = self.lu['JetHT_Data']['at' + str(ilabel[-5:])] # All JetHT years mistag rate
                 else:
-                    print('Something is wrong...\n\nNecessary JetHT LUT(s) not found')
+                    print('Something is wrong...\n\nNecessary JetHT LUT(s) not found', flush=True)
                     quit()
                
                 # with pd.option_context('display.max_rows', None, 'display.max_columns', None): 
@@ -1595,8 +1595,8 @@ class TTbarResProcessor(processor.ProcessorABC):
                                        'display.max_columns', None,
                                        'display.precision', 3,
                                        ):
-                        print(df)
-                    print(VE)
+                        print(df, flush=True)
+                    print(VE, flush=True)
             
                 WeightMatching = wgts[BinNumber] # Match 'wgts' with corresponding p bin using the bin number
                 Weights = weights*WeightMatching # Include 'wgts' with the previously defined 'weights'

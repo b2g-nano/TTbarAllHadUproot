@@ -99,15 +99,15 @@ def FlavEffList(Flavor, Output, Dataset, bdiscDirectory, Save):
                             ['efficiency']
                         )
 
-        print('\n\t--------------------- Subjet ' + subjet + ' ' + Flavor + ' Efficiency ---------------------\n')
-        print('====================================================================\n')
-        print(EfficiencyList)
+        print('\n\t--------------------- Subjet ' + subjet + ' ' + Flavor + ' Efficiency ---------------------\n', flush=True)
+        print('====================================================================\n', flush=True)
+        print(EfficiencyList, flush=True)
         
         # ---- Save the Efficiency List as .csv ---- #
         if Save:
             filename = dataset + '_' + subjet + '_' + Flavor + 'tageff.csv'
             EfficiencyList.to_csv(SaveDirectory+filename)
-            print('\nSaved ' + filename)
+            print('\nSaved ' + filename, flush=True)
 
             
             
@@ -248,59 +248,59 @@ def main():
     defaultTriggers = []
     if args.year == 2016:
         defaultTriggers.append("HLT_PFHT900")
-    print(f'\nDefault Triggers: {defaultTriggers}\n')
+    print(f'\nDefault Triggers: {defaultTriggers}\n', flush=True)
     Trigs_to_run = defaultTriggers
     if args.triggers:
         for itrig in args.triggers:
             if itrig not in defaultTriggers:
                 Trigs_to_run.append(itrig)    
-    print(f'All Triggers Chosen: {Trigs_to_run}\n\n')
+    print(f'All Triggers Chosen: {Trigs_to_run}\n\n', flush=True)
 
     if args.step == 1:
-        print('\n\nStep 1: Get and Save Mistag Rates\n')
+        print('\n\nStep 1: Get and Save Mistag Rates\n', flush=True)
         # args.medium = True
         args.runmistag = True
         args.saveMistag = True
         # args.chunksize = 20000
     elif args.step == 2: 
-        print('\n\nStep 2: Run and Save the First Uproot Job\n')
+        print('\n\nStep 2: Run and Save the First Uproot Job\n', flush=True)
         # args.medium = True
         args.rundataset = ['QCD', 'TTbar', 'JetHT', 'DM', 'RSGluon']
         args.save = True
         # args.chunksize = 20000
         args.uproot = 1
     elif args.step == 3: 
-        print('\n\nStep 3: Run and Save the Second Uproot Job with Only Mistag Rate Application\n')
+        print('\n\nStep 3: Run and Save the Second Uproot Job with Only Mistag Rate Application\n', flush=True)
         # args.medium = True
         args.runAMO = ['QCD', 'TTbar', 'JetHT', 'DM', 'RSGluon']
         args.save = True
         # args.chunksize = 20000
     elif args.step == 4: 
-        print('\n\nStep 4: Run and Save the Second Uproot Job with Only Mistag Rate and ModMass Applications\n')
+        print('\n\nStep 4: Run and Save the Second Uproot Job with Only Mistag Rate and ModMass Applications\n', flush=True)
         # args.medium = True
         args.runMMO = ['QCD', 'TTbar', 'JetHT', 'DM', 'RSGluon']
         args.save = True
         # args.chunksize = 20000
     elif args.step == 5: 
-        print('\n\nStep 5: Run and Save the Second Uproot Job\n')
+        print('\n\nStep 5: Run and Save the Second Uproot Job\n', flush=True)
         # args.medium = True
         args.rundataset = ['QCD', 'TTbar', 'JetHT', 'DM', 'RSGluon']
         args.save = True
         # args.chunksize = 20000
         args.uproot = 2
     else:
-        print('Manual Job Being Performed Below:')
+        print('Manual Job Being Performed Below:', flush=True)
 
     StartGroupList = np.array([args.runtesting, args.runmistag, args.runtrigeff, args.runflavoreff, args.runMMO, args.runAMO, args.rundataset], dtype=object)
     BDiscriminatorGroupList = np.array([args.loose, args.medium, args.medium2016], dtype=object)
 
     if not np.any(StartGroupList): #if user forgets to assign something here or does not pick a specific step
-        print('\n\nDefault run; No available dataset selected')
+        print('\n\nDefault run; No available dataset selected', flush=True)
         args.rundataset = ['QCD']
         args.uproot = 1
         # args.medium = True
     if not np.any(BDiscriminatorGroupList): #if user forgets to assign something here or does not pick a specific step
-        print('\n\nDefault Btag -> med;')
+        print('\n\nDefault Btag -> med;', flush=True)
         args.medium = True
 
     TimeOut = 30.
@@ -341,7 +341,7 @@ def main():
     elif args.winterfell:
         Redirector = '/mnt/data/cms'
     else:
-        print('Redirector not selected properly; code should have terminated earlier!  Terminating now!')
+        print('Redirector not selected properly; code should have terminated earlier!  Terminating now!', flush=True)
         quit()
     #    ---------------------------------------------------------------------------------------------------------------------    # 
 
@@ -806,7 +806,7 @@ def main():
                 filesets_to_run['SingleMu_Data'] = filesets['SingleMu_Data']
                 SaveLocation['SingleMu_Data'] = 'SingleMu/' + BDiscDirectory + '/TTbarRes_0l_'
         else: # if somehow, the initial needed arguments are not used
-            print("Something is wrong.  Please come and investigate what the problem could be")
+            print("Something is wrong.  Please come and investigate what the problem could be", flush=True)
     else:
         TestRootFiles = ['']
         filesets = {
@@ -848,8 +848,8 @@ def main():
             try:
                 client.register_worker_plugin(UploadDirectory(uploadDir,restart=True,update_path=True),nanny=True)
             except OSError as ose:
-                print('\n', ose)    
-                print('\nFor some reason, Dask did not work as intended\n')
+                print('\n', ose, flush=True)    
+                print('\nFor some reason, Dask did not work as intended\n', flush=True)
                 exit
                 if args.newCluster:
                     cluster.close()
@@ -878,7 +878,7 @@ def main():
             try:
                 client.register_worker_plugin(UploadDirectory('TTbarAllHadUproot',restart=True,update_path=True),nanny=True)
             except OSError as ose:
-                print('\n', ose)
+                print('\n', ose, flush=True)
 
             # client.restart()
             # client.upload_file('TTbarAllHadUproot/Filesets.py')
@@ -897,10 +897,10 @@ def main():
             client = Client()
             if (args.runMMO or args.runAMO or args.uproot == 2):
                 shutil.make_archive('UploadToDask', 'zip', 'TTbarAllHadUproot')
-                print('archive made')
-                print('Uploading archive to client...')
-                client.upload_file('UploadToDask.zip')
-                print('Archive uploaded')
+                print('archive made', flush=True)
+                print('Uploading archive to client...', flush=True)
+                client.upload_file('UploadToDask.zip', flush=True)
+                print('Archive uploaded', flush=True)
             # try:
             #     client.register_worker_plugin(UploadDirectory(uploadDir,restart=True,update_path=True),nanny=True)
             # except OSError as ose:
@@ -933,7 +933,7 @@ def main():
         prng = RandomState(seed)
 
         for name,files in filesets_to_run.items(): 
-            print('Processing', name, '...')
+            print('Processing', name, '...', flush=True)
             if not RunAllRootFiles:
                 if not UsingDaskExecutor:
                     chosen_exec = 'futures'
@@ -983,7 +983,7 @@ def main():
 
                     savefilename = 'TTbarAllHadUproot/CoffeaOutputsForMCFlavorAnalysis/' + SaveLocation[name] + name     + '_MCFlavorAnalysis'  + OldDisc + '.coffea'
                     util.save(output, savefilename)
-                    print('saving ' + savefilename)
+                    print('saving ' + savefilename, flush=True)
 
 
             else: # Run all Root Files
@@ -1026,7 +1026,7 @@ def main():
 
                 elapsed = time.time() - tstart
                 outputs_unweighted[name] = output
-                print(output)
+                print(output, flush=True)
 
                 if args.saveFlav:
                     mkdir_p('TTbarAllHadUproot/CoffeaOutputsForMCFlavorAnalysis/'
@@ -1034,7 +1034,7 @@ def main():
 
                     savefilename = 'TTbarAllHadUproot/CoffeaOutputsForMCFlavorAnalysis/' + SaveLocation[name] + name + '_MCFlavorAnalysis' + OldDisc + '.coffea'
                     util.save(output, savefilename)
-                    print('saving ' + savefilename)
+                    print('saving ' + savefilename, flush=True)
 
 
             print('Elapsed time = ', elapsed, ' sec.')
@@ -1042,17 +1042,17 @@ def main():
             print('Elapsed time = ', elapsed/3600., ' hrs.') 
 
         for dataset,output in outputs_unweighted.items(): 
-            print("-------Unweighted " + dataset + "--------")
+            print("-------Unweighted " + dataset + "--------", flush=True)
             for i,j in output['cutflow'].items():        
-                print( '%20s : %1s' % (i,j) ) 
+                print( '%20s : %1s' % (i,j), flush=True ) 
 
             FlavEffList('b', output, dataset, BDiscDirectory, args.saveFlav)
             FlavEffList('c', output, dataset, BDiscDirectory, args.saveFlav)
             FlavEffList('udsg', output, dataset, BDiscDirectory, args.saveFlav)
-            print("\n\nWe\'re done here\n!!")
+            print("\n\nWe\'re done here\n!!", flush=True)
         if args.dask and args.newCluster:    
             cluster.close()
-        print(psutil.Process(os.getpid()).memory_info().rss / 10 ** 6) # Display MB of memory usage
+        print(psutil.Process(os.getpid()).memory_info().rss / 10 ** 6, flush=True) # Display MB of memory usage
         exit() # No need to go further if performing trigger analysis
 
 
@@ -1076,7 +1076,7 @@ def main():
         prng = RandomState(seed)
 
         for name,files in filesets_to_run.items(): 
-            print('Processing', name, '...')
+            print('Processing', name, '...', flush=True)
             if not RunAllRootFiles:
                 if not UsingDaskExecutor:
                     chosen_exec = 'futures'
@@ -1118,14 +1118,14 @@ def main():
 
                 elapsed = time.time() - tstart
                 outputs_unweighted[name] = output
-                print(output)
+                print(output, flush=True)
 
                 if args.saveTrig:
                     mkdir_p('TTbarAllHadUproot/CoffeaOutputsForTriggerAnalysis/'
                               + SaveLocation[name])
                     savefilename = 'TTbarAllHadUproot/CoffeaOutputsForTriggerAnalysis/' + SaveLocation[name] + name + '_TriggerAnalysis' + OldDisc + '.coffea'
                     util.save(output, savefilename)
-                    print('saving ' + savefilename)
+                    print('saving ' + savefilename, flush=True)
 
 
             else: # Run all Root Files
@@ -1168,29 +1168,29 @@ def main():
 
                 elapsed = time.time() - tstart
                 outputs_unweighted[name] = output
-                print(output)
+                print(output, flush=True)
 
                 if args.saveTrig:
                     mkdir_p('TTbarAllHadUproot/CoffeaOutputsForTriggerAnalysis/'
                               + SaveLocation[name])
                     savefilename =  output, 'TTbarAllHadUproot/CoffeaOutputsForTriggerAnalysis/' + SaveLocation[name] + name + '_TriggerAnalysis' + OldDisc + '.coffea'
                     util.save(output, savefilename)
-                    print('saving ' + savefilename)
+                    print('saving ' + savefilename, flush=True)
 
 
-            print('Elapsed time = ', elapsed, ' sec.')
-            print('Elapsed time = ', elapsed/60., ' min.')
-            print('Elapsed time = ', elapsed/3600., ' hrs.') 
+            print('Elapsed time = ', elapsed, ' sec.', flush=True)
+            print('Elapsed time = ', elapsed/60., ' min.', flush=True)
+            print('Elapsed time = ', elapsed/3600., ' hrs.', flush=True) 
 
         for name,output in outputs_unweighted.items(): 
-            print("-------Unweighted " + name + "--------")
+            print("-------Unweighted " + name + "--------", flush=True)
             for i,j in output['cutflow'].items():        
-                print( '%20s : %1s' % (i,j) )
-        print("\n\nWe\'re done here\n!!")
+                print( '%20s : %1s' % (i,j), flush=True )
+        print("\n\nWe\'re done here\n!!", flush=True)
         if args.dask and args.newCluster:
             cluster.close()
-            print('\nManual Cluster Closed\n')
-        print(psutil.Process(os.getpid()).memory_info().rss / 10 ** 6) # Display MB of memory usage
+            print('\nManual Cluster Closed\n', flush=True)
+        print(psutil.Process(os.getpid()).memory_info().rss / 10 ** 6, flush=True) # Display MB of memory usage
         exit() # No need to go further if performing trigger analysis
     else:
         pass
@@ -1213,9 +1213,9 @@ def main():
     prng = RandomState(seed)
 
     for name,files in filesets_to_run.items(): 
-        print('\n\n' + name + '\n\n-----------------------------------------------------')
+        print('\n\n' + name + '\n\n-----------------------------------------------------', flush=True)
         if not LoadingUnweightedFiles:
-            print('Processing', name, '...')
+            print('Processing', name, '...', flush=True)
             if not RunAllRootFiles:
                 if not UsingDaskExecutor:
                     chosen_exec = 'futures'
@@ -1263,14 +1263,14 @@ def main():
 
                 elapsed = time.time() - tstart
                 outputs_unweighted[name] = output
-                print(output)
+                print(output, flush=True)
                 if SaveFirstRun:
                     mkdir_p('TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/'
                               + SaveLocation[name])
 
                     savefilename = 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/' + SaveLocation[name] + name + OldDisc + '.coffea'
                     util.save(output, savefilename)
-                    print('saving ' + savefilename)                           
+                    print('saving ' + savefilename, flush=True)                           
 
 
             else: # Run all Root Files
@@ -1319,7 +1319,7 @@ def main():
 
                 elapsed = time.time() - tstart
                 outputs_unweighted[name] = output
-                print(output)
+                print(output, flush=True)
                 if SaveFirstRun:
                     mkdir_p('TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/'
                               + SaveLocation[name])
@@ -1327,12 +1327,12 @@ def main():
 
                     savefilename = 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/' + SaveLocation[name] + name + OldDisc + '.coffea'                         
                     util.save(output, savefilename)
-                    print('saving ' + savefilename)
+                    print('saving ' + savefilename, flush=True)
 
             for name,output in outputs_unweighted.items(): 
-                print("-------Unweighted " + name + "--------")
+                print("-------Unweighted " + name + "--------", flush=True)
                 for i,j in output['cutflow'].items():        
-                    print( '%20s : %1s' % (i,j) )
+                    print( '%20s : %1s' % (i,j), flush=True )
 
         else: # Load files
             output = util.load('TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/'
@@ -1342,12 +1342,12 @@ def main():
                                + '.coffea')
 
             outputs_unweighted[name] = output
-            print(name + ' unweighted output loaded')
+            print(name + ' unweighted output loaded', flush=True)
             elapsed = time.time() - tstart
 
-        print('Elapsed time = ', elapsed, ' sec.')
-        print('Elapsed time = ', elapsed/60., ' min.')
-        print('Elapsed time = ', elapsed/3600., ' hrs.') 
+        print('Elapsed time = ', elapsed, ' sec.', flush=True)
+        print('Elapsed time = ', elapsed/60., ' min.', flush=True)
+        print('Elapsed time = ', elapsed/3600., ' hrs.', flush=True) 
 
 
     #    -----------------------------------------------------------------------------------
