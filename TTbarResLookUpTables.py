@@ -101,15 +101,18 @@ def multi_dict(K, type): # definition from https://www.geeksforgeeks.org/python-
 luts = {}
 luts = multi_dict(2, str) #Annoying, but necessary definition of the dictionary
 
-def LoadDataLUTS(bdiscDirectory, Year, VFP, ListOfLetters):
+def LoadDataLUTS(bdiscDirectory, Year, VFP, RemoveContam, ListOfLetters):
+    contam = ''
+    if RemoveContam == True:
+        contam = '_ttContaminationRemoved'
     if Year != 0:
         for letter in ListOfLetters:
             for icat in list_of_cats:
-                df = pd.read_csv('TTbarAllHadUproot/LookupTables/' + bdiscDirectory + 'mistag_UL' + str(Year-2000) + VFP + '_JetHT' + letter + '_Data_ttContaminationRemoved_' + icat + '.csv')
+                df = pd.read_csv('TTbarAllHadUproot/LookupTables/' + bdiscDirectory + 'mistag_UL' + str(Year-2000) + VFP + '_JetHT' + letter + '_Data'+contam+'_' + icat + '.csv')
                 luts['JetHT' + str(Year) + letter + '_Data'][icat] = df
     else:
         for icat in list_of_cats:
-            df = pd.read_csv('TTbarAllHadUproot/LookupTables/' + bdiscDirectory + 'mistag_JetHT_Data_ttContaminationRemoved_' + icat + '.csv')
+            df = pd.read_csv('TTbarAllHadUproot/LookupTables/' + bdiscDirectory + 'mistag_ULJetHT_Data'+contam+'_' + icat + '.csv')
             luts['JetHT_Data'][icat] = df
     return(luts)
 
