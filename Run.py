@@ -3,7 +3,7 @@
 
 # `TTbarResCoffeaOutputs` Notebook to produce Coffea output files for an all hadronic $t\bar{t}$ analysis.  The outputs will be found in the corresponding **CoffeaOutputs** directory.
 
-import os
+import os, psutil
 import time
 import copy
 import itertools
@@ -23,6 +23,8 @@ import matplotlib.colors as colors
 # from hist.intervals import ratio_uncertainty
 
 ak.behavior.update(candidate.behavior)
+# -- Note: Use process.memory_info()[0] for python 2.7. Else, use process.memory_info()
+process = psutil.Process(os.getpid()) # Keep track of memory usage
 maindirectory = os.getcwd()
 os.chdir('../') # Runs the code from within the working directory without manually changing all directory paths!
 
@@ -155,11 +157,13 @@ def main():
                                         JetHT 2017 letters: B - F
                                         JetHT 2018 letters: A - D
                                         =========================\n
+
                                         =============================================================================
                                         JetHT 2016 triggers: HLT_PFHT900 (default), HLT_PFHT800, HLT_AK8PFJet450, HLT_AK8PFJet360_TrimMass30
                                         JetHT 2017 triggers:
                                         JetHT 2018 triggers:
                                         =============================================================================\n
+
         Example of a usual workflow on Coffea-Casa to make the relevant coffea outputs:\n
         0.) Make Outputs for Flavor and Trigger Efficiencies
     ./Run.py -C -med -F QCD TTbar DM RSGluon -a no -y 2016 --dask --saveFlav
@@ -199,7 +203,8 @@ def main():
     BDiscriminatorGroup.add_argument('-l', '--loose', action='store_true', help='Apply loose bTag discriminant cut')
     BDiscriminatorGroup.add_argument('-med', '--medium', action='store_true', help='Apply medium bTag discriminant cut')
     BDiscriminatorGroup.add_argument('-med2016', '--medium2016', action='store_true', help='Apply medium bTag discriminant cut from 2016 AN')
-
+    
+    Parser.add_argument('--mistagcorrect', action='store_true', help='Remove ttbar contamination when making mistag rates')
     Parser.add_argument('-a', '--APV', type=str, choices=['yes', 'no'], help='Do datasets have APV?', default='no')
     Parser.add_argument('-trigs', '--triggers', type=str, nargs='+', help='Triggers to Apply')
     Parser.add_argument('-y', '--year', type=int, choices=[2016, 2017, 2018, 0], help='Year(s) of data/MC of the datasets you want to run uproot with.  Choose 0 for all years simultaneously (0 option not yet finished; TBA).', default=2016)
@@ -284,7 +289,7 @@ def main():
         # args.chunksize = 20000
         args.uproot = 2
     else:
-        print('\n\nManual Job Being Performed Below:')
+        print('Manual Job Being Performed Below:')
 
     StartGroupList = np.array([args.runtesting, args.runmistag, args.runtrigeff, args.runflavoreff, args.runMMO, args.runAMO, args.rundataset], dtype=object)
     BDiscriminatorGroupList = np.array([args.loose, args.medium, args.medium2016], dtype=object)
@@ -295,7 +300,7 @@ def main():
         args.uproot = 1
         # args.medium = True
     if not np.any(BDiscriminatorGroupList): #if user forgets to assign something here or does not pick a specific step
-        print('\n\nDefault Btag; No available btag WP selected')
+        print('\n\nDefault Btag -> med;')
         args.medium = True
 
     TimeOut = 30.
@@ -786,7 +791,8 @@ def main():
                 elif 'TTbar' in a or 'QCD' in a:
                     filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a] # include MC dataset read in from Filesets
         elif args.runmistag: # if args.mistag: Only run 1st uproot job for ttbar and data to get mistag rate with tt contamination removed
-            filesets_to_run[namingConvention+'_TTbar'] = filesets[namingConvention+'_TTbar']
+            if args.mistagcorrect:
+                filesets_to_run[namingConvention+'_TTbar'] = filesets[namingConvention+'_TTbar']
             if args.year > 0:
                 for L in Letters:
                     filesets_to_run[namingConvention+'_JetHT'+L+'_Data'] = filesets[namingConvention+'_JetHT'+L+'_Data'] # include JetHT dataset read in from Filesets
@@ -885,13 +891,19 @@ def main():
     elif UsingDaskExecutor == True and args.winterfell:
         from dask.distributed import Client
         from dask.distributed.diagnostics.plugin import UploadDirectory
-
+        import shutil
+        
         if __name__ == "__main__":       
 
             # cluster = '128.205.11.158:8787'
             # uploadDir = '/mnt/users/acwillia/TTbarAllHadUproot'
             client = Client()
-
+            if (args.runMMO or args.runAMO or args.uproot == 2):
+                shutil.make_archive('UploadToDask', 'zip', 'TTbarAllHadUproot')
+                print('archive made')
+                print('Uploading archive to client...')
+                client.upload_file('UploadToDask.zip')
+                print('Archive uploaded')
             # try:
             #     client.register_worker_plugin(UploadDirectory(uploadDir,restart=True,update_path=True),nanny=True)
             # except OSError as ose:
@@ -1043,6 +1055,7 @@ def main():
             print("\n\nWe\'re done here\n!!")
         if args.dask and args.newCluster:    
             cluster.close()
+        print(psutil.Process(os.getpid()).memory_info().rss / 10 ** 6) # Display MB of memory usage
         exit() # No need to go further if performing trigger analysis
 
 
@@ -1180,6 +1193,7 @@ def main():
         if args.dask and args.newCluster:
             cluster.close()
             print('\nManual Cluster Closed\n')
+        print(psutil.Process(os.getpid()).memory_info().rss / 10 ** 6) # Display MB of memory usage
         exit() # No need to go further if performing trigger analysis
     else:
         pass
@@ -1356,15 +1370,16 @@ def main():
     mistag_luts = None
 
     if args.runmistag:
-        CreateLUTS(filesets_to_run, outputs_unweighted, BDiscDirectory, args.year, VFP, args.runmistag, Letters, args.saveMistag)
-        mistag_luts = LoadDataLUTS(BDiscDirectory, args.year, VFP, Letters) # Specifically get data mistag rates with ttContam. corrections
+        CreateLUTS(filesets_to_run, outputs_unweighted, BDiscDirectory, args.year, VFP, args.mistagcorrect, Letters, args.saveMistag)
+        mistag_luts = LoadDataLUTS(BDiscDirectory, args.year, VFP, args.mistagcorrect, Letters) # Specifically get data mistag rates
     else:
-        mistag_luts = LoadDataLUTS(BDiscDirectory, args.year, VFP, Letters)
+        mistag_luts = LoadDataLUTS(BDiscDirectory, args.year, VFP, args.mistagcorrect, Letters)
 
     if OnlyCreateLookupTables:
         print("\n\nWe\'re done here!!\n")
         if args.dask and args.newCluster:
             cluster.close()
+        print(psutil.Process(os.getpid()).memory_info().rss / 10 ** 6) # Display MB of memory usage
         exit()
 
 
@@ -1576,6 +1591,7 @@ def main():
         print("\n\nWe\'re done here!!\n")
         if args.dask:
             cluster.close()
+        print(psutil.Process(os.getpid()).memory_info().rss / 10 ** 6) # Display MB of memory usage
         exit()
     # else:
     #     print("\n\nWe\'re done here!!\n")
@@ -1891,7 +1907,7 @@ def main():
 
     if args.dask and args.newCluster:
         cluster.close()
-
+    print(psutil.Process(os.getpid()).memory_info().rss / 10 ** 6) # Display MB of memory usage
     exit()
     
 if __name__ == '__main__':
