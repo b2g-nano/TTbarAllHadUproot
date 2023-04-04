@@ -130,8 +130,8 @@ class TTbarResProcessor(processor.ProcessorABC):
         subjetphi_axis  = hist.axis.Regular(50, -np.pi, np.pi, name="subjetphi", label=r"SubJet $\phi$")
         
         # --- axes for weights --- #
-        jethem_axis    = hist.axis.Regular(30, 0, 1.5, name=   "JetWeights", label=r"2018 HEM Weights")
-        fatjethem_axis = hist.axis.Regular(30, 0, 1.5, name="FatJetWeights", label=r"2018 HEM Weights")
+        # jethem_axis    = hist.axis.Regular(30, 0, 1.5, name=   "JetWeights", label=r"2018 HEM Weights")
+        # fatjethem_axis = hist.axis.Regular(30, 0, 1.5, name="FatJetWeights", label=r"2018 HEM Weights")
         prefiring_axis = hist.axis.Regular(30, 0, 1.5, name=      "Weights", label=r"L1 Prefiring Weight")
             
         self.histo_dict = {
@@ -344,8 +344,8 @@ class TTbarResProcessor(processor.ProcessorABC):
         #       T    A     A  GGGGG   GGGGG  EEEEEEE R     R     H     H IIIIIII SSSSS      T    SSSSS 
         #    =========================================================================================== 
 
-            'deepTagMD_TvsQCD' : hist.Hist(dataset_axis, cats_axis, jetpt_axis, SDjetmass_axis, tagger_axis, storage="weight", name="Counts"),
-            'deepb' : hist.Hist(dataset_axis, subjetmass_axis, subjetpt_axis, subjettagger_axis, storage="weight", name="Counts"),
+            # 'deepTagMD_TvsQCD' : hist.Hist(dataset_axis, cats_axis, jetpt_axis, SDjetmass_axis, tagger_axis, storage="weight", name="Counts"),
+            # 'deepb' : hist.Hist(dataset_axis, subjetmass_axis, subjetpt_axis, subjettagger_axis, storage="weight", name="Counts"),
             'tau32'        : hist.Hist(dataset_axis, cats_axis, tau32_axis, storage="weight", name="Counts"),
 
         #    ===========================================================================================    
@@ -1280,11 +1280,11 @@ class TTbarResProcessor(processor.ProcessorABC):
         
         # 'deepB' : hist.Hist(dataset_axis, subjetmass_axis, subjetpt_axis, subjeteta_axis, subjetphi_axis, subjettagger_axis, storage="weight", name="Counts"),
         
-        output["deepb"].fill(dataset = dataset,
-                            subjetmass = ak.to_numpy(ak.flatten(SubJet01.mass)),
-                            subjetpt = ak.to_numpy(ak.flatten(SubJet01.pt)),
-                            subjettagger = ak.to_numpy(ak.flatten(SubJet01.btagDeepB)),
-                            weight = ak.to_numpy(evtweights))
+        # output["deepb"].fill(dataset = dataset,
+        #                     subjetmass = ak.to_numpy(ak.flatten(SubJet01.mass)),
+        #                     subjetpt = ak.to_numpy(ak.flatten(SubJet01.pt)),
+        #                     subjettagger = ak.to_numpy(ak.flatten(SubJet01.btagDeepB)),
+        #                     weight = ak.to_numpy(evtweights))
         
         # ---- Define Rapidity Regions ---- #
         """ NOTE that ttbarcands.i0.p4.energy no longer works after ttbarcands is defined as an old awkward array """
@@ -1948,13 +1948,13 @@ class TTbarResProcessor(processor.ProcessorABC):
                                     )
             # 'deepTagMD_TvsQCD' : hist.Hist(dataset_axis, cats_axis, jetpt_axis, jetmass_axis, tagger_axis, storage="weight", name="Counts"),
             
-            output['deepTagMD_TvsQCD'].fill(dataset = dataset,
-                                     anacat = self.ConvertLabelToInt(self.label_dict, ilabel),
-                                     jetpt = ak.to_numpy(jetpt[icat]),
-                                     SDjetmass = ak.to_numpy(SDmass[icat]),
-                                     tagger = ak.to_numpy(ak8tagger[icat]),       
-                                     weight = ak.to_numpy(Weights[icat]),
-                                    )
+            # output['deepTagMD_TvsQCD'].fill(dataset = dataset,
+            #                          anacat = self.ConvertLabelToInt(self.label_dict, ilabel),
+            #                          jetpt = ak.to_numpy(jetpt[icat]),
+            #                          SDjetmass = ak.to_numpy(SDmass[icat]),
+            #                          tagger = ak.to_numpy(ak8tagger[icat]),       
+            #                          weight = ak.to_numpy(Weights[icat]),
+            #                         )
             output['jetmass'].fill(dataset = dataset,
                                      anacat = self.ConvertLabelToInt(self.label_dict, ilabel),
                                      jetmass = ak.to_numpy(jetmass[icat]),
