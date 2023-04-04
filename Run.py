@@ -1062,7 +1062,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
         if args.dask and args.newCluster:    
             cluster.close()
         memoryMb = process.memory_info().rss / 10 ** 6
-        print(f'Total memory used = {memoryMb} Mb', flush=True) # Display MB of memory usage
+        print(f'Memory used by Run.py = {memoryMb} Mb', flush=True) # Display MB of memory usage
         del memoryMb, process
         exit() # No need to go further if performing trigger analysis
 
@@ -1202,7 +1202,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
             cluster.close()
             print('\nManual Cluster Closed\n', flush=True)
         memoryMb = process.memory_info().rss / 10 ** 6
-        print(f'Total memory used = {memoryMb} Mb', flush=True) # Display MB of memory usage
+        print(f'Memory used by Run.py = {memoryMb} Mb', flush=True) # Display MB of memory usage
         del memoryMb, process
         exit() # No need to go further if performing trigger analysis
     else:
@@ -1384,7 +1384,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
         if args.dask and args.newCluster:
             cluster.close()
         memoryMb = process.memory_info().rss / 10 ** 6
-        print(f'Total memory used = {memoryMb} Mb', flush=True) # Display MB of memory usage
+        print(f'Memory used by Run.py = {memoryMb} Mb', flush=True) # Display MB of memory usage
         del memoryMb, process
         exit()
     if args.runmistag:
@@ -1399,7 +1399,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
         if args.dask and args.newCluster:
             cluster.close()
         memoryMb = process.memory_info().rss / 10 ** 6
-        print(f'Total memory used = {memoryMb} Mb', flush=True) # Display MB of memory usage
+        print(f'Memory used by Run.py = {memoryMb} Mb', flush=True) # Display MB of memory usage
         del memoryMb, process
         exit()
 
@@ -1611,7 +1611,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
         if args.dask:
             cluster.close()
         memoryMb = process.memory_info().rss / 10 ** 6
-        print(f'Total memory used = {memoryMb} Mb', flush=True) # Display MB of memory usage
+        print(f'Memory used by Run.py = {memoryMb} Mb', flush=True) # Display MB of memory usage
         del memoryMb, process
         exit()
     # else:
@@ -1925,7 +1925,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
     if args.dask and args.newCluster:
         cluster.close()
     memoryMb = process.memory_info().rss / 10 ** 6
-    print(f'Total memory used = {memoryMb} Mb', flush=True) # Display MB of memory usage
+    print(f'Memory used by Run.py = {memoryMb} Mb', flush=True) # Display MB of memory usage
     del memoryMb, process
     exit()
     

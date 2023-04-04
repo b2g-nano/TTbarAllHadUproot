@@ -11,7 +11,7 @@ from coffea.jetmet_tools import FactorizedJetCorrector, JetCorrectionUncertainty
 from coffea.jetmet_tools import JECStack, CorrectedJetsFactory
 from coffea.lookup_tools import extractor
 import sys
-import os 
+import os, psutil
 import copy
 import scipy.stats as ss
 import numpy as np
@@ -393,6 +393,13 @@ class TTbarResProcessor(processor.ProcessorABC):
 #   F        U   U  N    NN  C         T       I     O   O  N    NN      S      
 #   F         UUU   N     N   CCCC     T    IIIIIII   OOO   N     N SSSSS
 #   =======================================================================
+
+    def MemoryMb(self):
+        process = psutil.Process(os.getpid()) # Keep track of memory usage
+        memoryMb = process.memory_info().rss / 10 ** 6
+        print(f'\nMemory used = {memoryMb} Mb\n', flush=True) # Display MB of memory usage
+        del memoryMb, process
+        
 
     def ConvertLabelToInt(self, mapping, str_label):
         for intkey, string in mapping.items():
@@ -870,7 +877,7 @@ class TTbarResProcessor(processor.ProcessorABC):
 #    N     N A     A N     N   OOO   A     A   OOO   DDDD          OOO   BBBBBB   JJ     SSSSS 
 #    =========================================================================================== 
 
-        isData = ('JetHT' in dataset) or ('SingleMu' in dataset)
+        isData = ('JetHT' in filename) or ('SingleMu' in filename)
         
         IOV = ('2016APV' if any(regularexpressions.findall(r'preVFP', dataset))
                else '2018' if any(regularexpressions.findall(r'UL18', dataset))
@@ -1012,6 +1019,8 @@ class TTbarResProcessor(processor.ProcessorABC):
                 FatJets['eta'] = CorrectedJets['eta']
                 FatJets['phi'] = CorrectedJets['phi']
                 FatJets['mass'] = CorrectedJets['mass']
+
+                del CorrectedJets
                 
             else:
                 if not isData:
@@ -1022,7 +1031,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                     FatJets['phi'] = CorrectedJets['phi']
                     FatJets['mass'] = CorrectedJets['mass']
                     
-
+                    del CorrectedJets
 
             
 #    ===========================================================================================            
@@ -1046,6 +1055,8 @@ class TTbarResProcessor(processor.ProcessorABC):
 
             Jets = ak.with_field(Jets, JetWeights_HEM*Jets.pt, 'pt')
             FatJets = ak.with_field(FatJets, FatJetWeights_HEM*FatJets.pt, 'pt')
+
+            del JetWeights_HEM, FatJetWeights_HEM
 
 #    ===================================================================================            
 #    M     M EEEEEEE TTTTTTT     FFFFFFF IIIIIII L       TTTTTTT EEEEEEE RRRRRR    SSSSS     
@@ -1113,6 +1124,8 @@ class TTbarResProcessor(processor.ProcessorABC):
             
             output['cutflow']['Passed MET Filters'] += ak.sum(filteredEvents)
 
+            del filteredEvents
+
 
 #    ================================================================
 #    TTTTTTT RRRRRR  IIIIIII GGGGGGG GGGGGGG EEEEEEE RRRRRR    SSSSS     
@@ -1146,6 +1159,8 @@ class TTbarResProcessor(processor.ProcessorABC):
             events = events[condition]
             
             output['cutflow']['Passed Trigger(s)'] += ak.sum(condition)
+
+        del condition, Triggers
             
 #    ===================================================================================
 #    PPPPPP  RRRRRR  EEEEEEE L       IIIIIII M     M       CCCC  U     U TTTTTTT   SSSSS     
@@ -1170,20 +1185,26 @@ class TTbarResProcessor(processor.ProcessorABC):
             GenJets = GenJets[passhT]
         
         output['cutflow']['Passed HT Cut'] += ak.to_awkward0(passhT).sum()
+
+        del hT, passhT
           
         # ---- Jets that satisfy Jet ID ---- #
         jet_id = (FatJets.jetId > 0) # Loose jet ID
         FatJets = FatJets[jet_id]
         output['cutflow']['Passed Loose Jet ID'] += ak.to_awkward0(jet_id).any().sum()
+
+        del jet_id
         
         # ---- Apply pT Cut and Rapidity Window ---- #
         FatJets_rapidity = .5*np.log( (FatJets.p4.energy + FatJets.p4.pz)/(FatJets.p4.energy - FatJets.p4.pz) )
         jetkincut_index = (FatJets.pt > self.ak8PtMin) & (np.abs(FatJets_rapidity) < 2.4)
         FatJets = FatJets[ jetkincut_index ]
         output['cutflow']['Passed pT,y Cut'] += ak.to_awkward0(jetkincut_index).any().sum()
+
+        del FatJets_rapidity, jetkincut_index
         
         # ---- Find two AK8 Jets ---- #
-        twoFatJetsKin = (ak.num(FatJets, axis=-1) == 2)
+        twoFatJetsKin = (ak.num(FatJets, axis=-1) >= 2)
         FatJets = FatJets[twoFatJetsKin]
         SubJets = SubJets[twoFatJetsKin]
         Jets = Jets[twoFatJetsKin]
@@ -1191,6 +1212,8 @@ class TTbarResProcessor(processor.ProcessorABC):
         evtweights = evtweights[twoFatJetsKin]
         if not isData:
             GenJets = GenJets[twoFatJetsKin]
+
+        del twoFatJetsKin
         
         # ---- Randomly Assign AK8 Jets as TTbar Candidates 0 and 1 --- #
         Counts = np.ones(len(FatJets), dtype='i') # Number 1 for each FatJet
@@ -1224,6 +1247,8 @@ class TTbarResProcessor(processor.ProcessorABC):
         jet1 = FatJets[1 - index] #J1
         
         ttbarcands = ak.cartesian([jet0, jet1]) # Re-group the randomized pairs in a similar fashion to how they were
+
+        del Counts, index
         
         """ NOTE that ak.cartesian gives a shape with one more layer than FatJets """
         # ---- Make sure we have at least 1 TTbar candidate pair and re-broadcast releveant arrays  ---- #
@@ -1237,7 +1262,9 @@ class TTbarResProcessor(processor.ProcessorABC):
         evtweights = evtweights[oneTTbar]
         if not isData:
             GenJets = GenJets[oneTTbar]
-            
+    
+        del oneTTbar
+        
         # ---- Apply Delta Phi Cut for Back to Back Topology ---- #
         """ NOTE: Should find function for this; avoids 2pi problem """
         dPhiCut = ttbarcands.slot0.p4.delta_phi(ttbarcands.slot1.p4) > 2.1
@@ -1251,6 +1278,8 @@ class TTbarResProcessor(processor.ProcessorABC):
         evtweights = evtweights[dPhiCut]
         if not isData:
             GenJets = GenJets[dPhiCut]
+        
+        del dPhiCut
         
         # ---- Identify subjets according to subjet ID ---- #
         hasSubjets0 = ((ttbarcands.slot0.subJetIdx1 > -1) & (ttbarcands.slot0.subJetIdx2 > -1)) # 1st candidate has two subjets
@@ -1267,6 +1296,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         if not isData:
             GenJets = GenJets[GoodSubjets]
         
+        del GoodSubjets, hasSubjets0, hasSubjets1
         SubJet01 = SubJets[ttbarcands.slot0.subJetIdx1] # ttbarcandidate 0's first subjet 
         SubJet02 = SubJets[ttbarcands.slot0.subJetIdx2] # ttbarcandidate 0's second subjet
         SubJet11 = SubJets[ttbarcands.slot1.subJetIdx1] # ttbarcandidate 1's first subjet 
@@ -1296,6 +1326,8 @@ class TTbarResProcessor(processor.ProcessorABC):
         ttbarcands_s1_rapidity = 0.5*np.log( (s1_energy+s1_pz)/(s1_energy-s1_pz) ) # rapidity as function of eta
         cen = np.abs(ttbarcands_s0_rapidity - ttbarcands_s1_rapidity) < 1.0
         fwd = (~cen)
+
+        del s0_energy, s1_energy, s0_pz, s1_pz
         
 
 #    ============================================================
@@ -1584,6 +1616,8 @@ class TTbarResProcessor(processor.ProcessorABC):
         labels_and_categories = dict(zip( self.anacats, cats ))
         # labels_and_categories = dict(zip(self.label_dict.keys(), cats))
         # print(labels_and_categories)
+
+        del regs, btags, ttags
         
         # ---- Variables for Kinematic Histograms ---- #
         # ---- "slot0" is the control jet, "slot1" is the probe jet ---- #
@@ -1612,6 +1646,8 @@ class TTbarResProcessor(processor.ProcessorABC):
         pT = ak.flatten(ttbarcands.slot1.pt)
         pz = ak.flatten(ttbarcands.slot1.p4.pz)
         p = np.absolute(np.sqrt(pT**2 + pz**2))
+
+        
         
         # --------------------------------------------------------------------------------- #
         # ----          Avoid momentum values greater than what's defined in           ---- #
@@ -1986,10 +2022,11 @@ class TTbarResProcessor(processor.ProcessorABC):
                                      tau32 = ak.to_numpy(Tau32[icat]),
                                      weight = ak.to_numpy(Weights[icat]),
                                     )
-
- 
+            
+        del df
+        self.MemoryMb()
         return output
-
+    
     def postprocess(self, accumulator):
         return accumulator
     
