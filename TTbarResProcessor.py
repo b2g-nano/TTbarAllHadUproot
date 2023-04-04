@@ -46,7 +46,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                  year=None, apv='', vfp='',eras=[], UseLookUpTables=False, lu=None, extraDaskDirectory='',
                  ModMass=False, RandomDebugMode=False, UseEfficiencies=False, xsSystematicWeight=1., lumSystematicWeight=1.,
                  ApplybtagSF=False, ScaleFactorFile='', ApplyttagSF=False, ApplyTopReweight=False, 
-                 ApplyJes=False, var="nominal", ApplyPdf=False, ApplyPrefiring=False, ApplyPUweights=False,
+                 ApplyJes=False, ApplyJer=False, var="nominal", ApplyPdf=False, ApplyPrefiring=False, ApplyPUweights=False,
                  ApplyHEMCleaning=False, trigs_to_run=[''],
                  sysType=None):
 
@@ -76,6 +76,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         self.ApplyttagSF = ApplyttagSF
         self.ApplyTopReweight = ApplyTopReweight
         self.ApplyJes = ApplyJes
+        self.ApplyJer = ApplyJer
         self.var = var
         self.ApplyPdf = ApplyPdf
         self.ApplyPrefiring = ApplyPrefiring
@@ -147,10 +148,6 @@ class TTbarResProcessor(processor.ProcessorABC):
         #    ===================================================================================================================    
 
             'ttbarmass' : hist.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
-
-            'ttbarmass_jesUp'   : hist.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
-            'ttbarmass_jesDown' : hist.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
-            'ttbarmass_jesNom'  : hist.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
 
             'ttbarmass_pdfUp'   : hist.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
             'ttbarmass_pdfDown' : hist.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
@@ -659,7 +656,10 @@ class TTbarResProcessor(processor.ProcessorABC):
     
         return isHEM
     
-    def GetJESUncertainties(self, FatJets, events, isData=False):
+    
+
+    
+    def GetJECUncertainties(self, FatJets, events, isData=False):
         
         # original code https://gitlab.cern.ch/gagarwal/ttbardileptonic/-/blob/master/jmeCorrections.py
         
@@ -722,6 +722,12 @@ class TTbarResProcessor(processor.ProcessorABC):
                 '* * TTbarAllHadUproot/CorrectionFiles/JEC/{0}/{0}_UncertaintySources_AK8PFchs.junc.txt'.format(jec_tag),
                 '* * TTbarAllHadUproot/CorrectionFiles/JEC/{0}/{0}_Uncertainty_AK8PFchs.junc.txt'.format(jec_tag),
             ])
+            
+            if jer_tag:
+                ext.add_weight_sets([
+                '* * TTbarAllHadUproot/CorrectionFiles/JER/{0}/{0}_PtResolution_AK4PFchs.jr.txt'.format(jer_tag),
+                '* * TTbarAllHadUproot/CorrectionFiles/JER/{0}/{0}_SF_AK4PFchs.jersf.txt'.format(jer_tag)])
+
 
         else:       
             #For data, make sure we don't duplicate
@@ -752,6 +758,11 @@ class TTbarResProcessor(processor.ProcessorABC):
                 '{0}_L2Relative_AK8PFchs'.format(jec_tag),
                 '{0}_L3Absolute_AK8PFchs'.format(jec_tag),
                 '{0}_Uncertainty_AK8PFchs'.format(jec_tag)]
+            
+            if jer_tag: 
+                jec_names.extend(['{0}_PtResolution_AK4PFchs'.format(jer_tag),
+                                  '{0}_SF_AK4PFchs'.format(jer_tag)])
+
         else:
             jec_names={}
             for run, tag in jec_tag_data.items():
@@ -760,7 +771,6 @@ class TTbarResProcessor(processor.ProcessorABC):
                     '{0}_L3Absolute_AK8PFchs'.format(tag),
                     '{0}_L2Relative_AK8PFchs'.format(tag),
                     '{0}_L2L3Residual_AK8PFchs'.format(tag),]
-
         
         
         
@@ -792,28 +802,15 @@ class TTbarResProcessor(processor.ProcessorABC):
         name_map['ptRaw'] = 'pt_raw'
         name_map['massRaw'] = 'mass_raw'
         name_map['Rho'] = 'rho'
+        
 
 
         events_cache = events.caches[0]
 
         jet_factory = CorrectedJetsFactory(name_map, jec_stack)
         corrected_jets = jet_factory.build(FatJets, lazy_cache=events_cache)
-        
-        # nominal jes
-        jes_correction = corrected_jets.pt/corrected_jets.pt_raw
-        CorrectedJets = corrected_jets
 
-        if (self.var == "up"):
-            jes_correction = corrected_jets.JES_jes.up.pt/corrected_jets.pt_raw
-            CorrectedJets = corrected_jets.JES_jes.up
-            
-        elif (self.var == "down"):
-            jes_correction = corrected_jets.JES_jes.down.pt/corrected_jets.pt_raw
-            CorrectedJets = corrected_jets.JES_jes.down
-
-        
-        
-        return CorrectedJets
+        return corrected_jets
     
     
     def GetPDFWeights(self, events):
@@ -994,10 +991,11 @@ class TTbarResProcessor(processor.ProcessorABC):
         # match gen jets to AK8 jets
         if not isData:
             
-            matched_genjet_index = ak.mask(FatJets.genJetIdx, (FatJets.genJetIdx != -1) & (FatJets.genJetIdx < ak.count(GenJets.pt, axis=1)))
-            matched_GenJet_pt = GenJets.pt[matched_genjet_index]        
-            FatJets['pt_gen'] = matched_GenJet_pt
-        
+            
+            FatJets["matched_gen_0p2"] = FatJets.p4.nearest(GenJets.p4, threshold=0.2)
+            FatJets["pt_gen"] = ak.values_astype(ak.fill_none(FatJets.matched_gen_0p2.pt, 0), np.float32)
+            
+            
 
 #    =======================        
 #    JJJJJJJ EEEEEEE   SSSSS     
@@ -1011,9 +1009,9 @@ class TTbarResProcessor(processor.ProcessorABC):
         
         if(self.ApplyJes):
             
+            CorrectedJets = self.GetJECUncertainties(FatJets, events, isData)
+                
             if (self.var == "central"):
-                                
-                CorrectedJets = self.GetJESUncertainties(FatJets, events, isData)
 
                 FatJets['pt'] = CorrectedJets['pt']
                 FatJets['eta'] = CorrectedJets['eta']
@@ -1024,14 +1022,65 @@ class TTbarResProcessor(processor.ProcessorABC):
                 
             else:
                 if not isData:
-                    CorrectedJets = self.GetJESUncertainties(FatJets, events, isData)
+
+                    if (self.var == "up"):
+                        FatJets['pt'] = CorrectedJets.JES_jes.up.pt
+                        FatJets['eta'] = CorrectedJets.JES_jes.up.eta
+                        FatJets['phi'] = CorrectedJets.JES_jes.up.phi
+                        FatJets['mass'] = CorrectedJets.JES_jes.up.mass
+                        
+                    elif (self.var == "down"):
+                        FatJets['pt'] = CorrectedJets.JES_jes.down.pt
+                        FatJets['eta'] = CorrectedJets.JES_jes.down.eta
+                        FatJets['phi'] = CorrectedJets.JES_jes.down.phi
+                        FatJets['mass'] = CorrectedJets.JES_jes.down.mass
+                    
+                    del CorrectedJets
+        
+                    
+                    
+        if(self.ApplyJer):
+            
+            if not isData:
+                
+                CorrectedJets = self.GetJECUncertainties(FatJets, events, isData)
+                
+                if (self.var == "central"):
 
                     FatJets['pt'] = CorrectedJets['pt']
                     FatJets['eta'] = CorrectedJets['eta']
                     FatJets['phi'] = CorrectedJets['phi']
                     FatJets['mass'] = CorrectedJets['mass']
-                    
+
                     del CorrectedJets
+
+                else:
+                    if not isData:
+
+                        if (self.var == "up"):
+                            FatJets['pt'] = CorrectedJets.JER.up.pt
+                            FatJets['eta'] = CorrectedJets.JER.up.eta
+                            FatJets['phi'] = CorrectedJets.JER.up.phi
+                            FatJets['mass'] = CorrectedJets.JER.up.mass
+
+                        elif (self.var == "down"):
+                            FatJets['pt'] = CorrectedJets.JER.down.pt
+                            FatJets['eta'] = CorrectedJets.JER.down.eta
+                            FatJets['phi'] = CorrectedJets.JER.down.phi
+                            FatJets['mass'] = CorrectedJets.JER.down.mass
+
+                        del CorrectedJets
+                    
+                    
+            
+            
+            
+            
+            
+                    
+                    
+                    
+                    
 
             
 #    ===========================================================================================            
@@ -1262,9 +1311,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         evtweights = evtweights[oneTTbar]
         if not isData:
             GenJets = GenJets[oneTTbar]
-    
-        del oneTTbar
-        
+            
         # ---- Apply Delta Phi Cut for Back to Back Topology ---- #
         """ NOTE: Should find function for this; avoids 2pi problem """
         dPhiCut = ttbarcands.slot0.p4.delta_phi(ttbarcands.slot1.p4) > 2.1
@@ -1278,9 +1325,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         evtweights = evtweights[dPhiCut]
         if not isData:
             GenJets = GenJets[dPhiCut]
-        
-        del dPhiCut
-        
+                
         # ---- Identify subjets according to subjet ID ---- #
         hasSubjets0 = ((ttbarcands.slot0.subJetIdx1 > -1) & (ttbarcands.slot0.subJetIdx2 > -1)) # 1st candidate has two subjets
         hasSubjets1 = ((ttbarcands.slot1.subJetIdx1 > -1) & (ttbarcands.slot1.subJetIdx2 > -1)) # 2nd candidate has two subjets
@@ -1296,7 +1341,6 @@ class TTbarResProcessor(processor.ProcessorABC):
         if not isData:
             GenJets = GenJets[GoodSubjets]
         
-        del GoodSubjets, hasSubjets0, hasSubjets1
         SubJet01 = SubJets[ttbarcands.slot0.subJetIdx1] # ttbarcandidate 0's first subjet 
         SubJet02 = SubJets[ttbarcands.slot0.subJetIdx2] # ttbarcandidate 0's second subjet
         SubJet11 = SubJets[ttbarcands.slot1.subJetIdx1] # ttbarcandidate 1's first subjet 
@@ -1327,7 +1371,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         cen = np.abs(ttbarcands_s0_rapidity - ttbarcands_s1_rapidity) < 1.0
         fwd = (~cen)
 
-        del s0_energy, s1_energy, s0_pz, s1_pz
+        # del s0_energy, s1_energy, s0_pz, s1_pz
         
 
 #    ============================================================
@@ -1797,8 +1841,11 @@ class TTbarResProcessor(processor.ProcessorABC):
                 jet1_modp4 = copy.copy(jet1.p4) #J1's Lorentz four vector that can be safely modified
                 jet1_modp4["fMass"] = ModMass_hist_dist.rvs(size=ak.to_awkward0(jet1_modp4).size) #Replace J1's mass with random value of mass from mm hist
                 
+                
+                
                 ttbarcands_modmass = ak.cartesian([jet0.p4, jet1_modp4])
-
+                
+                
                 # ---- Apply Necessary Selections to new modmass version ---- #
                 ttbarcands_modmass = ttbarcands_modmass[oneTTbar]
                 ttbarcands_modmass = ttbarcands_modmass[dPhiCut]
@@ -2024,7 +2071,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                                     )
             
         del df
-        self.MemoryMb()
+        # self.MemoryMb()
         return output
     
     def postprocess(self, accumulator):

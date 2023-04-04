@@ -231,6 +231,8 @@ def main():
     UncertaintyGroup.add_argument('--ttXSSyst', type=str, choices=['central', 'up', 'down'], help='ttbar cross section systematics.  Choose Unc.')
     UncertaintyGroup.add_argument('--lumSyst', type=str, choices=['central', 'up', 'down'], help='Luminosity systematics.  Choose Unc.')
     UncertaintyGroup.add_argument('--jes', type=str, choices=['central', 'up', 'down'], help='apply jes systematic weights. Choose Unc.')
+    UncertaintyGroup.add_argument('--jer', type=str, choices=['central', 'up', 'down'], help='apply jer systematic weights. Choose Unc.')
+
 
     
     
@@ -417,6 +419,7 @@ def main():
     ApplybSF = False
     ApplytSF = False
     ApplyJES = False
+    ApplyJER = False
     ApplyPDF = False
     ApplyPrefiring = False
     ApplyPUweights = False
@@ -475,9 +478,18 @@ def main():
         UncType = "_jesUnc_"
         SystType = args.jes        
         ApplyJES = True
-        var = "nominal"
+        var = "central"
         if (args.jes == "up"): var = "up"
         if (args.jes == "down"): var = "down"
+    #    ---------------------------------------------------------------------------------------------------------------------    # 
+
+    elif args.jer:
+        UncType = "_jerUnc_"
+        SystType = args.jer        
+        ApplyJER = True
+        var = "central"
+        if (args.jer == "up"): var = "up"
+        if (args.jer == "down"): var = "down"
     #    ---------------------------------------------------------------------------------------------------------------------    # 
 
     elif args.pdf:
@@ -506,7 +518,7 @@ def main():
     #    ---------------------------------------------------------------------------------------------------------------------    # 
 
 
-    UncArgs = np.array([args.bTagSyst, args.tTagSyst, args.jes, args.ttXSSyst, args.lumSyst, args.pdf, args.pileup, args.prefiring])
+    UncArgs = np.array([args.bTagSyst, args.tTagSyst, args.jes, args.jer, args.ttXSSyst, args.lumSyst, args.pdf, args.pileup, args.prefiring])
     SystOpts = np.any(UncArgs) # Check to see if any uncertainty argument is used
     if (not OnlyCreateLookupTables) and (not SystOpts and (not args.runMMO and not args.runAMO)) :
         Parser.error('Only run second uproot job with a Systematic application (like --bTagSyst, --jes, etc.)')
@@ -1224,6 +1236,12 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
 
     seed = 1234577890
     prng = RandomState(seed)
+    
+    
+    
+    
+    
+    
 
     for name,files in filesets_to_run.items(): 
         print('\n\n' + name + '\n\n-----------------------------------------------------', flush=True)
@@ -1424,12 +1442,12 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
     seed = 1234577890
     prng = RandomState(seed)
     
+        
     
-    # for key in filesets.keys():
-    #     print(key)
-    
-    
+    # run over only 1 file to test
+    # filesets_to_run = {ds_name: [ds[0]] for ds_name, ds in filesets_to_run.items()}
 
+    
     if not OnlyCreateLookupTables and (not args.runMMO and not args.runAMO):
         for name,files in filesets_to_run.items(): 
             print('Processing', name)
@@ -1448,6 +1466,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                                                            ApplyTopReweight = args.tpt,
                                                                                            ApplybtagSF=ApplybSF,
                                                                                            ApplyJes=ApplyJES,
+                                                                                           ApplyJer=ApplyJER,
                                                                                            var=var,
                                                                                            ApplyPdf=ApplyPDF,
                                                                                            ApplyPrefiring = ApplyPrefiring,
@@ -1484,6 +1503,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                                                            ApplyTopReweight = args.tpt,
                                                                                            ApplybtagSF=ApplybSF,
                                                                                            ApplyJes=ApplyJES,
+                                                                                           ApplyJer=ApplyJER,
                                                                                            var=var,
                                                                                            ApplyPdf=ApplyPDF,
                                                                                            ApplyPrefiring = ApplyPrefiring,
@@ -1534,6 +1554,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                                                            ApplyTopReweight = args.tpt,
                                                                                            ApplybtagSF=ApplybSF,
                                                                                            ApplyJes=ApplyJES,
+                                                                                           ApplyJer=ApplyJER,
                                                                                            var=var,
                                                                                            ApplyPdf=ApplyPDF,
                                                                                            ApplyPrefiring = ApplyPrefiring,
@@ -1570,6 +1591,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                                                            ApplyTopReweight = args.tpt,
                                                                                            ApplybtagSF=ApplybSF,
                                                                                            ApplyJes=ApplyJES,
+                                                                                           ApplyJer=ApplyJER,
                                                                                            var=var,
                                                                                            ApplyPrefiring = ApplyPrefiring,
                                                                                            sysType=SystType,
