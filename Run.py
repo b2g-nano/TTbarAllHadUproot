@@ -24,7 +24,6 @@ import matplotlib.colors as colors
 
 ak.behavior.update(candidate.behavior)
 # -- Note: Use process.memory_info()[0] for python 2.7. Else, use process.memory_info()
-process = psutil.Process(os.getpid()) # Keep track of memory usage
 maindirectory = os.getcwd()
 os.chdir('../') # Runs the code from within the working directory without manually changing all directory paths!
 
@@ -243,7 +242,8 @@ def main():
 
 
     args = Parser.parse_args()
-    
+    process = psutil.Process(os.getpid()) # Keep track of memory usage
+
     Trigs_to_run = []
     defaultTriggers = []
     if args.year == 2016:
@@ -1061,7 +1061,9 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
             print("\n\nWe\'re done here\n!!", flush=True)
         if args.dask and args.newCluster:    
             cluster.close()
-        print(psutil.Process(os.getpid()).memory_info().rss / 10 ** 6, flush=True) # Display MB of memory usage
+        memoryMb = process.memory_info().rss / 10 ** 6
+        print(f'Total memory used = {memoryMb} Mb', flush=True) # Display MB of memory usage
+        del memoryMb, process
         exit() # No need to go further if performing trigger analysis
 
 
@@ -1199,7 +1201,9 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
         if args.dask and args.newCluster:
             cluster.close()
             print('\nManual Cluster Closed\n', flush=True)
-        print(psutil.Process(os.getpid()).memory_info().rss / 10 ** 6, flush=True) # Display MB of memory usage
+        memoryMb = process.memory_info().rss / 10 ** 6
+        print(f'Total memory used = {memoryMb} Mb', flush=True) # Display MB of memory usage
+        del memoryMb, process
         exit() # No need to go further if performing trigger analysis
     else:
         pass
@@ -1379,7 +1383,9 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
         print("\n\nTest Complete!!\n", flush=True)
         if args.dask and args.newCluster:
             cluster.close()
-        print(psutil.Process(os.getpid()).memory_info().rss / 10 ** 6, flush=True) # Display MB of memory usage
+        memoryMb = process.memory_info().rss / 10 ** 6
+        print(f'Total memory used = {memoryMb} Mb', flush=True) # Display MB of memory usage
+        del memoryMb, process
         exit()
     if args.runmistag:
         CreateLUTS(filesets_to_run, outputs_unweighted, BDiscDirectory, args.year, VFP, args.mistagcorrect, Letters, args.saveMistag)
@@ -1392,7 +1398,9 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
         print("\n\nWe\'re done here!!\n", flush=True)
         if args.dask and args.newCluster:
             cluster.close()
-        print(psutil.Process(os.getpid()).memory_info().rss / 10 ** 6, flush=True) # Display MB of memory usage
+        memoryMb = process.memory_info().rss / 10 ** 6
+        print(f'Total memory used = {memoryMb} Mb', flush=True) # Display MB of memory usage
+        del memoryMb, process
         exit()
 
 
@@ -1602,7 +1610,9 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
         print("\n\nWe\'re done here!!\n", flush=True)
         if args.dask:
             cluster.close()
-        print(psutil.Process(os.getpid()).memory_info().rss / 10 ** 6, flush=True) # Display MB of memory usage
+        memoryMb = process.memory_info().rss / 10 ** 6
+        print(f'Total memory used = {memoryMb} Mb', flush=True) # Display MB of memory usage
+        del memoryMb, process
         exit()
     # else:
     #     print("\n\nWe\'re done here!!\n")
@@ -1914,7 +1924,9 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
 
     if args.dask and args.newCluster:
         cluster.close()
-    print(psutil.Process(os.getpid()).memory_info().rss / 10 ** 6, flush=True) # Display MB of memory usage
+    memoryMb = process.memory_info().rss / 10 ** 6
+    print(f'Total memory used = {memoryMb} Mb', flush=True) # Display MB of memory usage
+    del memoryMb, process
     exit()
     
 if __name__ == '__main__':
