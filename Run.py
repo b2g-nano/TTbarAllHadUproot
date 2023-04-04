@@ -371,6 +371,7 @@ def main():
     #    ---------------------------------------------------------------------------------------------------------------------    # 
 
     Testing = args.runtesting
+    if Testing: args.uproot = 1
     #    ---------------------------------------------------------------------------------------------------------------------    # 
 
     LoadingUnweightedFiles = False 
@@ -810,11 +811,16 @@ def main():
         else: # if somehow, the initial needed arguments are not used
             print("Something is wrong.  Please come and investigate what the problem could be", flush=True)
     else:
-        TestRootFiles = ['']
-        filesets = {
-            'TestSample_ttbarRES':TestRootFiles
+        TestRootFilesQCD = [Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/QCD_Pt-15to7000_TuneCP5_Flat2018_13TeV_pythia8/NANOAODSIM/106X_mcRun2_asymptotic_v17-v1/280000/FCF7CA28-D3D5-6B4F-81D9-B12D55E0E4AD.root']
+        TestRootFilesTTbar = [Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-700to1000_TuneCP5_13TeV-powheg-pythia8/NANOAODSIM/106X_mcRun2_asymptotic_v17-v1/120000/10ED69B6-BB36-E84F-9324-C86423BEDCB6.root',
+Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-powheg-pythia8/NANOAODSIM/106X_mcRun2_asymptotic_v17-v1/270000/7B50DBA5-347A-7D43-8A65-68E0A5845EF3.root']
+        TestRootFilesData = [Redirector+'/store/data/Run2016H/JetHT/NANOAOD/UL2016_MiniAODv2_NanoAODv9-v1/70000/EFD7B1BD-64D0-EB43-BCBA-5415DE0FB5CB.root']
+        filesets_to_run = {
+            'TestSample_QCD'  :TestRootFilesQCD,
+            'TestSample_TTbar':TestRootFilesTTbar,
+            'TestSample_Data' :TestRootFilesData,
         }
-        filesets_forweights = filesets
+        filesets_forweights = filesets_to_run
         
         
     #    ---------------------------------------------------------------------------
@@ -1369,10 +1375,17 @@ def main():
 
     mistag_luts = None
 
+    if Testing:
+        print("\n\nTest Complete!!\n", flush=True)
+        if args.dask and args.newCluster:
+            cluster.close()
+        print(psutil.Process(os.getpid()).memory_info().rss / 10 ** 6, flush=True) # Display MB of memory usage
+        exit()
     if args.runmistag:
         CreateLUTS(filesets_to_run, outputs_unweighted, BDiscDirectory, args.year, VFP, args.mistagcorrect, Letters, args.saveMistag)
         mistag_luts = LoadDataLUTS(BDiscDirectory, args.year, VFP, args.mistagcorrect, Letters) # Specifically get data mistag rates
-    else:
+    
+    if LoadingUnweightedFiles:
         mistag_luts = LoadDataLUTS(BDiscDirectory, args.year, VFP, args.mistagcorrect, Letters)
 
     if OnlyCreateLookupTables:
