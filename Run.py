@@ -945,7 +945,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
             print('Processing', name, '...', flush=True)
             if not RunAllRootFiles:
                 if not UsingDaskExecutor:
-                    chosen_exec = 'iterative_executor'
+                    chosen_exec = 'futures_executor'
                     output = processor.run_uproot_job({name:files},
                                                       treename='Events',
                                                       processor_instance=MCFlavorEfficiencyProcessor(RandomDebugMode=False,
@@ -997,7 +997,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
 
             else: # Run all Root Files
                 if not UsingDaskExecutor:
-                    chosen_exec = 'iterative_executor'
+                    chosen_exec = 'futures_executor'
                     output = processor.run_uproot_job({name:files},
                                                       treename='Events',
                                                       processor_instance=MCFlavorEfficiencyProcessor(RandomDebugMode=False,
@@ -1088,7 +1088,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
             print('Processing', name, '...', flush=True)
             if not RunAllRootFiles:
                 if not UsingDaskExecutor:
-                    chosen_exec = 'iterative_executor'
+                    chosen_exec = 'futures_executor'
                     output = processor.run_uproot_job({name:files},
                                                       treename='Events',
                                                       processor_instance=TriggerAnalysisProcessor(RandomDebugMode=False,
@@ -1139,7 +1139,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
 
             else: # Run all Root Files
                 if not UsingDaskExecutor:
-                    chosen_exec = 'iterative_executor'
+                    chosen_exec = 'futures_executor'
                     output = processor.run_uproot_job({name:files},
                                                       treename='Events',
                                                       processor_instance=TriggerAnalysisProcessor(RandomDebugMode=False,
@@ -1227,7 +1227,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
             print('Processing', name, '...', flush=True)
             if not RunAllRootFiles:
                 if not UsingDaskExecutor:
-                    chosen_exec = 'iterative_executor'
+                    chosen_exec = 'futures_executor'
                     output = processor.run_uproot_job({name:files},
                                                       treename='Events',
                                                       processor_instance=TTbarResProcessor(UseLookUpTables=False,
@@ -1284,7 +1284,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
 
             else: # Run all Root Files
                 if not UsingDaskExecutor:
-                    chosen_exec = 'iterative_executor'
+                    chosen_exec = 'futures_executor'
                     output = processor.run_uproot_job({name:files},
                                                       treename='Events',
                                                       processor_instance=TTbarResProcessor(UseLookUpTables=False,
@@ -1427,7 +1427,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
             print('Processing', name)
             if not RunAllRootFiles:
                 if not UsingDaskExecutor:
-                    chosen_exec = 'iterative_executor'
+                    chosen_exec = 'futures_executor'
                     output = processor.run_uproot_job({name:files},
                                                       treename='Events',
                                                       processor_instance=TTbarResProcessor(UseLookUpTables=True,
@@ -1513,7 +1513,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
 
             else: # Run all Root Files
                 if not UsingDaskExecutor:
-                    chosen_exec = 'iterative_executor'
+                    chosen_exec = 'futures_executor'
                     output = processor.run_uproot_job({name:files},
                                                       treename='Events',
                                                       processor_instance=TTbarResProcessor(UseLookUpTables=True,
@@ -1636,7 +1636,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                 print('Processing', name)
                 if not RunAllRootFiles:
                     if not UsingDaskExecutor:
-                        chosen_exec = 'iterative_executor'
+                        chosen_exec = 'futures_executor'
                         output = processor.run_uproot_job({name:files},
                                                           treename='Events',
                                                           processor_instance=TTbarResProcessor(UseLookUpTables=True,
@@ -1696,7 +1696,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
 
                 else: # Run all Root Files
                     if not UsingDaskExecutor:
-                        chosen_exec = 'iterative_executor'
+                        chosen_exec = 'futures_executor'
                         output = processor.run_uproot_job({name:files},
                                                           treename='Events',
                                                           processor_instance=TTbarResProcessor(UseLookUpTables=True,
@@ -1783,7 +1783,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                 print('Processing', name)
                 if not RunAllRootFiles:
                     if not UsingDaskExecutor:
-                        chosen_exec = 'iterative_executor'
+                        chosen_exec = 'futures_executor'
                         output = processor.run_uproot_job({name:files},
                                                           treename='Events',
                                                           processor_instance=TTbarResProcessor(UseLookUpTables=True,
@@ -1843,7 +1843,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
 
                 else: # Run all Root Files
                     if not UsingDaskExecutor:
-                        chosen_exec = 'iterative_executor'
+                        chosen_exec = 'futures_executor'
                         output = processor.run_uproot_job({name:files},
                                                           treename='Events',
                                                           processor_instance=TTbarResProcessor(UseLookUpTables=True,
