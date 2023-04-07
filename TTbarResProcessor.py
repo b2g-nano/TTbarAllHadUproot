@@ -1298,6 +1298,16 @@ class TTbarResProcessor(processor.ProcessorABC):
         ttbarcands = ak.cartesian([jet0, jet1]) # Re-group the randomized pairs in a similar fashion to how they were
 
         del Counts, index
+        ttbarcand_size = len(ttbarcands)
+        FatJets_size = len(FatJets)
+        
+#         print(f'Size of ttbarcands = {ttbarcand_size}', flush=True)
+#         print(f'Size of fatjets = {FatJets_size}', flush=True)
+#         print(f'ttbarcands slot 0 pt = {ttbarcands.slot0.pt}', flush=True)
+#         print(f'ttbarcands slot 1 pt = {ttbarcands.slot1.pt}', flush=True)
+#         print(f'fatjets slot 0 pt = {FatJets.pt[:,0]}', flush=True)
+#         print(f'fatjets slot 1 pt = {FatJets.pt[:,1]}', flush=True)
+#         print('==============================================\n', flush=True)
         
         """ NOTE that ak.cartesian gives a shape with one more layer than FatJets """
         # ---- Make sure we have at least 1 TTbar candidate pair and re-broadcast releveant arrays  ---- #
@@ -1314,7 +1324,8 @@ class TTbarResProcessor(processor.ProcessorABC):
             
         # ---- Apply Delta Phi Cut for Back to Back Topology ---- #
         """ NOTE: Should find function for this; avoids 2pi problem """
-        dPhiCut = ttbarcands.slot0.p4.delta_phi(ttbarcands.slot1.p4) > 2.1
+        print(np.abs(ttbarcands.slot0.p4.delta_phi(ttbarcands.slot1.p4)))
+        dPhiCut = np.abs(ttbarcands.slot0.p4.delta_phi(ttbarcands.slot1.p4)) > 2.1
         dPhiCut = ak.flatten(dPhiCut)
         output['cutflow']['Passed dPhi Cut'] += ak.to_awkward0(dPhiCut).sum()
         ttbarcands = ttbarcands[dPhiCut]
