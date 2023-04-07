@@ -981,7 +981,7 @@ class TTbarResProcessor(processor.ProcessorABC):
             evtweights = events.Generator_weight
         # ---- Show all events ---- #
         output['cutflow']['all events'] += len(FatJets) #ak.to_awkward0(FatJets).size
-        print("all events", len(FatJets))
+        # print("all events", len(FatJets))
         
         # ---- Define the SumW2 for MC Datasets (Probably unnecessary now) ---- #
         output['cutflow']['sumw'] += np.sum(evtweights)
@@ -1173,8 +1173,8 @@ class TTbarResProcessor(processor.ProcessorABC):
             events = events[filteredEvents]
             
             output['cutflow']['Passed MET Filters'] += ak.sum(filteredEvents)
-            print("Passed MET Filters", ak.sum(filteredEvents))
-            print(len(FatJets))
+            # print("Passed MET Filters", ak.sum(filteredEvents))
+            # print(len(FatJets))
 
             del filteredEvents
 
@@ -1211,8 +1211,8 @@ class TTbarResProcessor(processor.ProcessorABC):
             events = events[condition]
             
             output['cutflow']['Passed Trigger(s)'] += ak.sum(condition)
-            print("Passed Trigger(s)", ak.sum(condition))
-            print(len(FatJets))
+            # print("Passed Trigger(s)", ak.sum(condition))
+            # print(len(FatJets))
 
         del condition, Triggers
             
@@ -1239,8 +1239,8 @@ class TTbarResProcessor(processor.ProcessorABC):
             GenJets = GenJets[passhT]
         
         output['cutflow']['Passed HT Cut'] += ak.sum(passhT)
-        print("Passed HT Cut", ak.sum(passhT))
-        print(len(FatJets))
+        # print("Passed HT Cut", ak.sum(passhT))
+        # print(len(FatJets))
 
         del hT, passhT
           
@@ -1271,8 +1271,8 @@ class TTbarResProcessor(processor.ProcessorABC):
 
         del twoFatJetsKin
         
-        print("before randomization")
-        print(len(FatJets))
+        # print("before randomization")
+        # print(len(FatJets))
 
         # ---- Randomly Assign AK8 Jets as TTbar Candidates 0 and 1 --- #
         Counts = np.ones(len(FatJets), dtype='i') # Number 1 for each FatJet
@@ -1305,19 +1305,19 @@ class TTbarResProcessor(processor.ProcessorABC):
         jet0 = FatJets[index] #J0
         jet1 = FatJets[1 - index] #J1
 
-        print("after randomization")
-        print("FatJets", len(FatJets))
-        print("jet0", len(jet0))
-        print("jet1", len(jet1))
+        # print("after randomization")
+        # print("FatJets", len(FatJets))
+        # print("jet0", len(jet0))
+        # print("jet1", len(jet1))
         
         ttbarcands = ak.cartesian([jet0, jet1]) # Re-group the randomized pairs in a similar fashion to how they were
 
-        print("ttbarcands ", len(ttbarcands))
-        print("ttbar mass ", ttbarcands.slot0.p4.add( ttbarcands.slot1.p4 ).mass)
+        # print("ttbarcands ", len(ttbarcands))
+        # print("ttbar mass ", ttbarcands.slot0.p4.add( ttbarcands.slot1.p4 ).mass)
 
         del Counts, index
-        ttbarcand_size = len(ttbarcands)
-        FatJets_size = len(FatJets)
+        # ttbarcand_size = len(ttbarcands)
+        # FatJets_size = len(FatJets)
         
 #         print(f'Size of ttbarcands = {ttbarcand_size}', flush=True)
 #         print(f'Size of fatjets = {FatJets_size}', flush=True)
@@ -1342,7 +1342,7 @@ class TTbarResProcessor(processor.ProcessorABC):
             
         # ---- Apply Delta Phi Cut for Back to Back Topology ---- #
         """ NOTE: Should find function for this; avoids 2pi problem """
-        print(np.abs(ttbarcands.slot0.p4.delta_phi(ttbarcands.slot1.p4)))
+        # print(np.abs(ttbarcands.slot0.p4.delta_phi(ttbarcands.slot1.p4)))
         dPhiCut = np.abs(ttbarcands.slot0.p4.delta_phi(ttbarcands.slot1.p4)) > 2.1
         dPhiCut = ak.flatten(dPhiCut)
         ttbarcands = ttbarcands[dPhiCut]
