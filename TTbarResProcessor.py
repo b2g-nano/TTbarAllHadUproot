@@ -1832,12 +1832,17 @@ class TTbarResProcessor(processor.ProcessorABC):
             ###---------------------------------------------------------------------------------------------###
             if (self.ModMass == True and (isData or ('TTbar' in dataset))):
                 QCD_hist = None # Higher scope declaration
+                if self.BDirect == '':
+                    od = '_oldANdisc'
+                else:
+                    od = ''
                 if self.year > 0:
                     QCD_unweighted = util.load(self.extraDaskDirectory+'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/QCD/'
-                                               +self.BDirect+str(self.year)+'/'+self.apv+'/TTbarRes_0l_UL'+str(self.year-2000)+self.vfp+'_QCD.coffea') 
+                                               +self.BDirect+str(self.year)+'/'+self.apv+'/TTbarRes_0l_UL'+str(self.year-2000)+self.vfp+'_QCD'+od+'.coffea') 
                     
                     # ---- Define Histogram ---- #
                     loaded_dataset = 'UL'+str(self.year-2000)+self.vfp+'_QCD'
+                    
                     QCD_hist = QCD_unweighted['jetmass'][loaded_dataset, self.ConvertLabelToInt(self.label_dict, '2t' + str(ilabel[-5:])), :]
                     
                 else: # All years !NOTE: Needs to be fixed for all years later!
