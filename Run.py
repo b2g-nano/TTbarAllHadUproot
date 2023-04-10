@@ -378,10 +378,13 @@ def main():
 
     LoadingUnweightedFiles = False 
     OnlyCreateLookupTables = False 
+    contam = ''
     if (args.uproot == 1 or args.runmistag) or (isTrigEffArg or args.runflavoreff):
         OnlyCreateLookupTables = True # stop the code after LUTs are displayed on the terminal; after 1st uproot job
     elif (args.uproot == 2 or args.runMMO or args.runAMO):
         LoadingUnweightedFiles = True # Load the 1st uproot job's coffea outputs if you only want to run the 2nd uproot job.
+        if args.mistagcorrect:
+            contam = '_ttbarContamRemoved'
     else: # Default for running both 1st and 2nd uproot job
         LoadingUnweightedFiles = False 
         OnlyCreateLookupTables = False 
@@ -1410,6 +1413,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
         mistag_luts = LoadDataLUTS(BDiscDirectory, args.year, VFP, args.mistagcorrect, Letters) # Specifically get data mistag rates
     
     if LoadingUnweightedFiles:
+        print('Preparing to load unweighted coffea outputs', flush=True)
         mistag_luts = LoadDataLUTS(BDiscDirectory, args.year, VFP, args.mistagcorrect, Letters)
 
     if OnlyCreateLookupTables:
@@ -1534,7 +1538,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                     mkdir_p('TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/'
                               + SaveLocation[name])
 
-                    savefilename = 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/' + SaveLocation[name] + name  + '_weighted' + UncType + SystType + method + TPT + OldDisc + '.coffea'                       
+                    savefilename = 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/' + SaveLocation[name] + name  + '_weighted' + contam + UncType + SystType + method + TPT + OldDisc + '.coffea'                       
                     util.save(output, savefilename)
                     print('saving ' + savefilename)                          
 
@@ -1618,7 +1622,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                               + SaveLocation[name])
 
 
-                    savefilename = 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/' + SaveLocation[name] + name  + '_weighted' + UncType + SystType + method + TPT + OldDisc + '.coffea'                       
+                    savefilename = 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/' + SaveLocation[name] + name  + '_weighted' + contam + UncType + SystType + method + TPT + OldDisc + '.coffea'                       
                     util.save(output, savefilename)
                     print('saving ' + savefilename, flush=True)  
             print('Elapsed time = ', elapsed, ' sec.', flush=True)
@@ -1721,7 +1725,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                         mkdir_p('TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/'
                                   + SaveLocation[name])
 
-                        savefilename = 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/' + SaveLocation[name] + name  + '_weighted' + UncType  + SystType + method + TPT + OldDisc + '.coffea'
+                        savefilename = 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/' + SaveLocation[name] + name  + '_weighted' + contam + UncType  + SystType + method + TPT + OldDisc + '.coffea'
                         util.save(output, savefilename)
                         print('saving ' + savefilename, flush=True)
 
@@ -1780,7 +1784,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                         mkdir_p('TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/'
                                   + SaveLocation[name])
 
-                        savefilename = 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/' + SaveLocation[name] + name  + '_weighted' + UncType + SystType + method + TPT + OldDisc + '.coffea'                    
+                        savefilename = 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/' + SaveLocation[name] + name  + '_weighted' + contam + UncType + SystType + method + TPT + OldDisc + '.coffea'                    
                         util.save(output, savefilename)
                         print('saving ' + savefilename, flush=True)
                 print('Elapsed time = ', elapsed, ' sec.', flush=True)
@@ -1927,7 +1931,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                         mkdir_p('TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/'
                                   + SaveLocation[name])
 
-                        savefilename = 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/' + SaveLocation[name] + name  + '_weighted_MistagOnly' + UncType + SystType + method + TPT + OldDisc + '.coffea'                    
+                        savefilename = 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/' + SaveLocation[name] + name  + '_weighted_MistagOnly' + contam + UncType + SystType + method + TPT + OldDisc + '.coffea'                    
                         util.save(output, savefilename)
                         print('saving ' + savefilename, flush=True)
                 print('Elapsed time = ', elapsed, ' sec.', flush=True)
