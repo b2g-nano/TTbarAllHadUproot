@@ -880,12 +880,6 @@ class TTbarResProcessor(processor.ProcessorABC):
                else '2018' if any(regularexpressions.findall(r'UL18', dataset))
                else '2017' if any(regularexpressions.findall(r'UL17', dataset))
                else '2016')
-                
-        # ---- Define lumimasks ---- #
-        
-        if isData: 
-            lumi_mask = np.array(self.lumimasks[IOV](events.run, events.luminosityBlock), dtype=bool)
-            events = events[lumi_mask]
         
         
         FatJets = ak.zip({
@@ -986,8 +980,14 @@ class TTbarResProcessor(processor.ProcessorABC):
         # ---- Define the SumW2 for MC Datasets (Probably unnecessary now) ---- #
         output['cutflow']['sumw'] += np.sum(evtweights)
         output['cutflow']['sumw2'] += np.sum(evtweights**2)        
+
+        # ---- Define lumimasks ---- #
         
-        # Jet Corrections #
+        if isData: 
+            lumi_mask = np.array(self.lumimasks[IOV](events.run, events.luminosityBlock), dtype=bool)
+            events = events[lumi_mask]
+        
+        # ---- Jet Corrections ---- #
         
         # match gen jets to AK8 jets
         if not isData:
