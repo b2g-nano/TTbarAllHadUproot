@@ -242,7 +242,6 @@ def main():
     Parser.add_argument('--pdf', action='store_true', help='apply pdf systematic weights')
     Parser.add_argument('--hem', action='store_true', help='apply HEM cleaning')
 
-
     args = Parser.parse_args()
     process = psutil.Process(os.getpid()) # Keep track of memory usage
 
@@ -293,8 +292,19 @@ def main():
     else:
         print('Manual Job Being Performed Below:', flush=True)
 
+    WeightList = np.array([args.pileup, args.prefiring, args.pdf, args.hem], dtype=object)
+
     StartGroupList = np.array([args.runtesting, args.runmistag, args.runtrigeff, args.runflavoreff, args.runMMO, args.runAMO, args.rundataset], dtype=object)
+
     BDiscriminatorGroupList = np.array([args.loose, args.medium, args.medium2016], dtype=object)
+
+    # -- If no weights are specifically chosen, just apply them all by default -- #
+    if not np.any(WeightList) and (args.uproot == 2 or args.runMMO or args.runAMO):
+        args.pileup = True
+        args.prefiring = True
+        args.pdf = True
+        args.hem = True
+        print('Default Weights; All Available Weights Being Applied', flush=True)
 
     if not np.any(StartGroupList): #if user forgets to assign something here or does not pick a specific step
         print('\n\nDefault run; No available dataset selected', flush=True)
