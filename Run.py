@@ -17,6 +17,7 @@ import re
 from coffea import processor, nanoevents, util
 from coffea.nanoevents.methods import candidate
 from coffea.nanoevents import NanoAODSchema, BaseSchema
+import random
 from numpy.random import RandomState
 import mplhep as hep
 import matplotlib.colors as colors
@@ -234,14 +235,12 @@ def main():
     UncertaintyGroup.add_argument('--jer', type=str, choices=['central', 'up', 'down'], help='apply jer systematic weights. Choose Unc.')
 
 
-    
-    
+        
     # systematic weights applied in the same processor
     Parser.add_argument('--pileup', action='store_true', help='apply pileup systematic weights')
     Parser.add_argument('--prefiring', action='store_true', help='apply prefiring systematic weights')
     Parser.add_argument('--pdf', action='store_true', help='apply pdf systematic weights')
     Parser.add_argument('--hem', action='store_true', help='apply HEM cleaning')
-
 
     args = Parser.parse_args()
     process = psutil.Process(os.getpid()) # Keep track of memory usage
@@ -293,8 +292,19 @@ def main():
     else:
         print('Manual Job Being Performed Below:', flush=True)
 
+    WeightList = np.array([args.pileup, args.prefiring, args.pdf, args.hem], dtype=object)
+
     StartGroupList = np.array([args.runtesting, args.runmistag, args.runtrigeff, args.runflavoreff, args.runMMO, args.runAMO, args.rundataset], dtype=object)
+
     BDiscriminatorGroupList = np.array([args.loose, args.medium, args.medium2016], dtype=object)
+
+    # -- If no weights are specifically chosen, just apply them all by default -- #
+    if not np.any(WeightList) and (args.uproot == 2 or args.runMMO or args.runAMO):
+        args.pileup = True
+        args.prefiring = True
+        args.pdf = True
+        args.hem = True
+        print('Default Weights; All Available Weights Being Applied', flush=True)
 
     if not np.any(StartGroupList): #if user forgets to assign something here or does not pick a specific step
         print('\n\nDefault run; No available dataset selected', flush=True)
@@ -955,8 +965,8 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
 
         outputs_unweighted = {}
 
-        seed = 1234577890
-        prng = RandomState(seed)
+        seed = random.seed()
+        prng = RandomState()
 
         for name,files in filesets_to_run.items(): 
             print('Processing', name, '...', flush=True)
@@ -1100,7 +1110,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
 
         outputs_unweighted = {}
 
-        seed = 1234577890
+        seed = random.seed()
         prng = RandomState(seed)
 
         for name,files in filesets_to_run.items(): 
@@ -1239,7 +1249,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
 
     outputs_unweighted = {}
 
-    seed = 1234577890
+    seed = random.seed()
     prng = RandomState(seed)
     
     
@@ -1445,7 +1455,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
 
     outputs_weighted = {}
 
-    seed = 1234577890
+    seed = random.seed()
     prng = RandomState(seed)
     
         
@@ -1666,7 +1676,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
 
         outputs_weighted = {}
 
-        seed = 1234577890
+        seed = random.seed()
         prng = RandomState(seed)
 
         for name,files in filesets_to_run.items(): 
@@ -1813,7 +1823,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
 
         outputs_weighted = {}
 
-        seed = 1234577890
+        seed = random.seed()
         prng = RandomState(seed)
 
         for name,files in filesets_to_run.items(): 

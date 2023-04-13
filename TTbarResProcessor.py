@@ -897,7 +897,6 @@ class TTbarResProcessor(processor.ProcessorABC):
             vals = (events.Generator_weight - average ) / stddev
             events = events[ np.abs(vals) < 2 ]
 
-
         
         FatJets = ak.zip({
             "run": events.run,
@@ -1001,8 +1000,14 @@ class TTbarResProcessor(processor.ProcessorABC):
         # ---- Define the SumW2 for MC Datasets (Probably unnecessary now) ---- #
         output['cutflow']['sumw'] += np.sum(evtweights)
         output['cutflow']['sumw2'] += np.sum(evtweights**2)        
+
+        # ---- Define lumimasks ---- #
         
-        # Jet Corrections #
+        if isData: 
+            lumi_mask = np.array(self.lumimasks[IOV](events.run, events.luminosityBlock), dtype=bool)
+            events = events[lumi_mask]
+        
+        # ---- Jet Corrections ---- #
         
         # match gen jets to AK8 jets
         if not isData:
@@ -1702,12 +1707,6 @@ class TTbarResProcessor(processor.ProcessorABC):
         btags = [btag0,btag1,btag2]
         ttags = [antitag_probe,antitag,pretag,ttag0,ttag1,ttagI,ttag2,Alltags]
         cats = [ ak.to_awkward0(ak.flatten(t&b&y)) for t,b,y in itertools.product(ttags, btags, regs) ]
-        print("cen   ", len(cen))
-        print("fwd   ", len(fwd))
-        print("ttags ", len(ttags))
-        print("btags ", len(btags))
-        print("regs  ", len(regs))
-        print("cats  ", len(cats))
         labels_and_categories = dict(zip( self.anacats, cats ))
         # labels_and_categories = dict(zip(self.label_dict.keys(), cats))
         #print(labels_and_categories)
@@ -1781,11 +1780,11 @@ class TTbarResProcessor(processor.ProcessorABC):
                 # print(f'letter {letter} found', flush=True)
                 continue
         
-        print("labels_and_categories len ", len(labels_and_categories))
+        #print("labels_and_categories len ", len(labels_and_categories))
         for ilabel,icat in labels_and_categories.items():
 
-            print("Running ", ilabel)
-            print("n icat ", len(icat))
+            #print("Running ", ilabel)
+            #print("n icat ", len(icat))
 #    ===============================================================================================================================            
 #       A    PPPPPP  PPPPPP  L       Y     Y     M     M IIIIIII   SSSSS TTTTTTT    A    GGGGGGG     W     W GGGGGGG TTTTTTT   SSSSS     
 #      A A   P     P P     P L        Y   Y      MM   MM    I     S         T      A A   G           W     W G          T     S          
