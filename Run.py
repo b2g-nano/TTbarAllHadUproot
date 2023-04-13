@@ -530,7 +530,9 @@ def main():
     Chunk = [args.chunksize, args.chunks] # [chunksize, maxchunks]
     #    -------------------------------------------------------    # 
 
-    from TTbarResProcessor import TTbarResProcessor, TriggerAnalysisProcessor, MCFlavorEfficiencyProcessor
+    from TTbarResProcessor import TTbarResProcessor
+    from TriggerAnalysisProcessor import TriggerAnalysisProcessor
+    from MCFlavorEfficiencyProcessor import MCFlavorEfficiencyProcessor
 
     #    -------------------------------------------------------------------------------------------------------------------
     #    IIIIIII M     M PPPPPP    OOO   RRRRRR  TTTTTTT     DDDD       A    TTTTTTT    A      SSSSS EEEEEEE TTTTTTT   SSSSS     
