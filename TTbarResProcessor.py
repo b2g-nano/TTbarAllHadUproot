@@ -992,6 +992,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         if isData: 
             lumi_mask = np.array(self.lumimasks[IOV](events.run, events.luminosityBlock), dtype=bool)
             events = events[lumi_mask]
+            evtweights = evtweights[lumi_mask]
         else: 
             if dataset not in self.means_stddevs : 
                 average = np.average( events.Generator_weight )
