@@ -882,20 +882,6 @@ class TTbarResProcessor(processor.ProcessorABC):
                else '2018' if any(regularexpressions.findall(r'UL18', dataset))
                else '2017' if any(regularexpressions.findall(r'UL17', dataset))
                else '2016')
-                
-        # ---- Define lumimasks ---- #
-        
-        if isData: 
-            lumi_mask = np.array(self.lumimasks[IOV](events.run, events.luminosityBlock), dtype=bool)
-            events = events[lumi_mask]
-        else: 
-            if dataset not in self.means_stddevs : 
-                average = np.average( events.Generator_weight )
-                stddev = np.std( events.Generator_weight )
-                self.means_stddevs[dataset] = (average, stddev)            
-            average,stddev = self.means_stddevs[dataset]
-            vals = (events.Generator_weight - average ) / stddev
-            events = events[ np.abs(vals) < 2 ]
 
             if "QCD_Pt-15to7000" in filename: 
                 events = events[ events.Generator_binvar > 400 ] # Remove events with large weights
@@ -1003,12 +989,21 @@ class TTbarResProcessor(processor.ProcessorABC):
         # ---- Define the SumW2 for MC Datasets (Probably unnecessary now) ---- #
         output['cutflow']['sumw'] += np.sum(evtweights)
         output['cutflow']['sumw2'] += np.sum(evtweights**2)        
-
+        
         # ---- Define lumimasks ---- #
         
         if isData: 
             lumi_mask = np.array(self.lumimasks[IOV](events.run, events.luminosityBlock), dtype=bool)
             events = events[lumi_mask]
+            evtweights = evtweights[lumi_mask]
+        else: 
+            if dataset not in self.means_stddevs : 
+                average = np.average( events.Generator_weight )
+                stddev = np.std( events.Generator_weight )
+                self.means_stddevs[dataset] = (average, stddev)            
+            average,stddev = self.means_stddevs[dataset]
+            vals = (events.Generator_weight - average ) / stddev
+            events = events[ np.abs(vals) < 2 ]
         
         # ---- Jet Corrections ---- #
         
@@ -1478,23 +1473,13 @@ class TTbarResProcessor(processor.ProcessorABC):
 #    BBBBBB         T    A     A  GGGGG   GGGGG  EEEEEEE R     R
 #    ============================================================
         
+        
         # ---- Pick FatJet that passes btag discriminator cut based on its subjet with the highest btag value ---- #
         # -------------- NOTE: B-discriminator cut must be changed to match BTV POG Recommendations -------------- #
-        
+
         btag_s0 = ( np.maximum(SubJet01.btagCSVV2 , SubJet02.btagCSVV2) > self.bdisc )
         btag_s1 = ( np.maximum(SubJet11.btagCSVV2 , SubJet12.btagCSVV2) > self.bdisc )
-        # print(f'Jet 0\'s first subjet\'s CSVV2 = {SubJet01.btagCSVV2}', flush=True)
-        # print(f'Jet 0\'s second subjet\'s CSVV2 = {SubJet02.btagCSVV2}', flush=True)
-        # print(f'Jet 1\'s first subjet\'s CSVV2 = {SubJet11.btagCSVV2}', flush=True)
-        # print(f'Jet 1\'s second subjet\'s CSVV2 = {SubJet12.btagCSVV2}\n-----------------------------------------\n', flush=True)
-        # print(f'Jet 0\'s first subjet\'s DeepB = {SubJet01.btagDeepB}', flush=True)
-        # print(f'Jet 0\'s second subjet\'s DeepB = {SubJet02.btagDeepB}', flush=True)
-        # print(f'Jet 1\'s first subjet\'s DeepB = {SubJet11.btagDeepB}', flush=True)
-        # print(f'Jet 1\'s second subjet\'s DeepB = {SubJet12.btagDeepB}\n-----------------------------------------\n', flush=True)
-        # print(f'Jet 0\'s largest DeepB? = {np.maximum(SubJet01.btagDeepB , SubJet02.btagDeepB)}', flush=True)
-        # print(f'Jet 1\'s largest DeepB? = {np.maximum(SubJet11.btagDeepB , SubJet12.btagDeepB)}', flush=True)
-        # print(f'is Jet 0 btagged? = {btag_s0}', flush=True)
-        # print(f'is Jet 1 btagged? = {btag_s1}', flush=True)
+        
         # --- Define "B Tag" Regions ---- #
         btag0 = (~btag_s0) & (~btag_s1) #(0b)
         btag1 = btag_s0 ^ btag_s1 #(1b)
