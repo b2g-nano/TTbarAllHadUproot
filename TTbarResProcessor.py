@@ -897,6 +897,9 @@ class TTbarResProcessor(processor.ProcessorABC):
             vals = (events.Generator_weight - average ) / stddev
             events = events[ np.abs(vals) < 2 ]
 
+            if "QCD_Pt-15to7000" in filename: 
+                events = events[ events.Generator_binvar > 400 ] # Remove events with large weights
+
         
         FatJets = ak.zip({
             "run": events.run,
