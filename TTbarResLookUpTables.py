@@ -108,7 +108,7 @@ def LoadDataLUTS(bdiscDirectory, Year, VFP, RemoveContam, ListOfLetters):
     if Year != 0:
         for letter in ListOfLetters:
             for icat in list_of_cats:
-                df = pd.read_csv('TTbarAllHadUproot/LookupTables/' + bdiscDirectory + 'mistag_UL' + str(Year-2000) + VFP + '_JetHT' + '_Data'+contam+'_' + icat + '.csv')
+                df = pd.read_csv('TTbarAllHadUproot/LookupTables/' + bdiscDirectory + 'mistag_UL' + str(Year-2000) + VFP + '_JetHT' + '_Data'+contam+'_' + icat[:4] + 'inc.csv')
                 luts['JetHT' + str(Year) + letter + '_Data'][icat] = df
     else:
         for icat in list_of_cats:
