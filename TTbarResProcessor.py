@@ -883,8 +883,8 @@ class TTbarResProcessor(processor.ProcessorABC):
                else '2017' if any(regularexpressions.findall(r'UL17', dataset))
                else '2016')
 
-            if "QCD_Pt-15to7000" in filename: 
-                events = events[ events.Generator_binvar > 400 ] # Remove events with large weights
+        if "QCD_Pt-15to7000" in filename: 
+            events = events[ events.Generator_binvar > 400 ] # Remove events with large weights
 
         
         FatJets = ak.zip({
