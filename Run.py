@@ -298,14 +298,6 @@ def main():
 
     BDiscriminatorGroupList = np.array([args.loose, args.medium, args.medium2016], dtype=object)
 
-    # -- If no weights are specifically chosen, just apply them all by default -- #
-    if not np.any(WeightList) and (args.uproot == 2 or args.runMMO or args.runAMO):
-        args.pileup = True
-        args.prefiring = True
-        args.pdf = True
-        args.hem = True
-        print('Default Weights; All Available Weights Being Applied', flush=True)
-
     if not np.any(StartGroupList): #if user forgets to assign something here or does not pick a specific step
         print('\n\nDefault run; No available dataset selected', flush=True)
         args.rundataset = ['QCD']
@@ -315,6 +307,14 @@ def main():
         print('\n\nDefault Btag -> med;', flush=True)
         args.medium = True
 
+    # -- If no weights are specifically chosen, just apply them all by default -- #
+    if not np.any(WeightList) and (args.uproot == 2 or args.runMMO or args.runAMO):
+        args.pileup = True
+        args.prefiring = True
+        args.pdf = True
+        args.hem = True
+        print('Default Weights; All Available Weights Being Applied', flush=True)
+        
     TimeOut = 30.
     if args.timeout:
         TimeOut = args.timeout
@@ -435,6 +435,7 @@ def main():
     ApplyJER = False
     ApplyPDF = False
     ApplyPrefiring = False
+    ApplyHemCleaning = False
     ApplyPUweights = False
     xsSystwgt = 1.
     lumSystwgt = 1.
@@ -506,28 +507,28 @@ def main():
     #    ---------------------------------------------------------------------------------------------------------------------    # 
 
     elif args.pdf:
-        UncType = "_pdfUnc_"
+        # UncType = "_pdfUnc_"
         # SystType = 'pdf'
         ApplyPDF = True
     #    ---------------------------------------------------------------------------------------------------------------------    # 
 
     elif args.pileup:
-        UncType = "_pileupUnc_"
+        # UncType = "_pileupUnc_"
         # SystType = ""
         ApplyPUweights = True
     #    ---------------------------------------------------------------------------------------------------------------------    # 
     
     elif args.prefiring:
-        UncType = "_prefiringUnc_"
+        # UncType = "_prefiringUnc_"
         # SystType = ''
         ApplyPrefiring = True
     #    ---------------------------------------------------------------------------------------------------------------------    # 
     
         
     elif args.prefiring:
-        UncType = "_hemCleaning_"
+        # UncType = "_hemCleaning_"
         # SystType = ''
-        ApplyPrefiring = True
+        ApplyHemCleaning = True
     #    ---------------------------------------------------------------------------------------------------------------------    # 
 
 
@@ -536,6 +537,7 @@ def main():
     if (not OnlyCreateLookupTables) and (not SystOpts and (not args.runMMO and not args.runAMO)) :
         Parser.error('Only run second uproot job with a Systematic application (like --bTagSyst, --jes, etc.)')
         quit()
+        
     #    -------------------------------------------------------    # 
     Chunk = [args.chunksize, args.chunks] # [chunksize, maxchunks]
     #    -------------------------------------------------------    # 
@@ -1422,7 +1424,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
         exit()
     if args.runmistag:
         CreateLUTS(filesets_to_run, outputs_unweighted, BDiscDirectory, args.year, VFP, args.mistagcorrect, Letters, args.saveMistag)
-        mistag_luts = LoadDataLUTS(BDiscDirectory, args.year, VFP, args.mistagcorrect, Letters) # Specifically get data mistag rates
+        # mistag_luts = LoadDataLUTS(BDiscDirectory, args.year, VFP, args.mistagcorrect, Letters) # Specifically get data mistag rates
     
     if LoadingUnweightedFiles:
         print('Preparing to load unweighted coffea outputs', flush=True)
