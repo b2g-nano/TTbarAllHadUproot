@@ -455,6 +455,7 @@ class TTbarResProcessor(processor.ProcessorABC):
             vals = (events.Generator_weight - average ) / stddev
             events = events[ np.abs(vals) < 2 ]
 
+
         
         FatJets = ak.zip({
             "run": events.run,
