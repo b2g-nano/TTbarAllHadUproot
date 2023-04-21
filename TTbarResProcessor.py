@@ -1412,8 +1412,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                     # ---- Define Histogram ---- #
                     loaded_dataset = 'UL'+str(self.year-2000)+self.vfp+'_QCD'
                     
-                    # QCD_hist = QCD_unweighted['jetmass'][loaded_dataset, ConvertLabelToInt(self.label_dict, '2t' + str(ilabel[-5:])), :]
-                    QCD_hist = QCD_unweighted['jetmass'][loaded_dataset, i, :]
+                    QCD_hist = QCD_unweighted['jetmass'][loaded_dataset, ConvertLabelToInt(self.label_dict, '2t' + str(ilabel[-5:])), :]
 
                     
                 else: # All years !NOTE: Needs to be fixed for all years later!
@@ -1425,8 +1424,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                     #                            +self.BDirect+'2018/'+self.apv+'/TTbarRes_0l_UL18'+self.vfp+'_QCD.coffea') 
                     
                     # ---- Define Histogram ---- #
-                    # QCD_hist_2016 = QCD_unwgt_2016['jetmass']['UL16'+self.vfp+'_QCD', ConvertLabelToInt(self.label_dict, '2t' + str(ilabel[-5:])), :]
-                    QCD_hist_2016 = QCD_unwgt_2016['jetmass']['UL16'+self.vfp+'_QCD', i, :]
+                    QCD_hist_2016 = QCD_unwgt_2016['jetmass']['UL16'+self.vfp+'_QCD', ConvertLabelToInt(self.label_dict, '2t' + str(ilabel[-5:])), :]
                     
                     # QCD_hist_2017 = QCD_unwgt_2017['jetmass']['UL17'+self.vfp+'_QCD', i, :]
                     # QCD_hist_2018 = QCD_unwgt_2018['jetmass']['UL18'+self.vfp+'_QCD', i, :]
@@ -1492,31 +1490,31 @@ class TTbarResProcessor(processor.ProcessorABC):
                     Weights_prefiringNom = Weights * prefiringNom
 
                     output['ttbarmass_prefiringNom'].fill(dataset = dataset,
-                                     anacat = i,
+                                     anacat = ConvertLabelToInt(self.label_dict, ilabel),
                                      ttbarmass = ak.to_numpy(ttbarmass[icat]),
                                      weight = ak.to_numpy(Weights_prefiringNom[icat]),
                                     )
                     output['ttbarmass_prefiringUp'].fill(dataset = dataset,
-                                     anacat = i,
+                                     anacat = ConvertLabelToInt(self.label_dict, ilabel),
                                      ttbarmass = ak.to_numpy(ttbarmass[icat]),
                                      weight = ak.to_numpy(Weights_prefiringUp[icat]),
                                     )
                     output['ttbarmass_prefiringDown'].fill(dataset = dataset,
-                                     anacat = i,
+                                     anacat = ConvertLabelToInt(self.label_dict, ilabel),
                                      ttbarmass = ak.to_numpy(ttbarmass[icat]),
                                      weight = ak.to_numpy(Weights_prefiringDown[icat]),
                                     )
 
                     output['weights_prefiringNom'].fill(dataset = dataset,
-                                     anacat = i,
+                                     anacat = ConvertLabelToInt(self.label_dict, ilabel),
                                      Weights = prefiringNom,
                                     )
                     output['weights_prefiringUp'].fill(dataset = dataset,
-                                     anacat = i,
+                                     anacat = ConvertLabelToInt(self.label_dict, ilabel),
                                      Weights = prefiringUp,
                                     )
                     output['weights_prefiringDown'].fill(dataset = dataset,
-                                     anacat = i,
+                                     anacat = ConvertLabelToInt(self.label_dict, ilabel),
                                      Weights = prefiringDown,
                                     )
                     
@@ -1539,17 +1537,17 @@ class TTbarResProcessor(processor.ProcessorABC):
                     
                         
                     output['ttbarmass_pdfNom'].fill(dataset = dataset,
-                                     anacat = i,
+                                     anacat = ConvertLabelToInt(self.label_dict, ilabel),
                                      ttbarmass = ak.to_numpy(ttbarmass[icat]),
                                      weight = ak.to_numpy(Weights_pdfNom[icat]),
                                     )
                     output['ttbarmass_pdfUp'].fill(dataset = dataset,
-                                     anacat = i,
+                                     anacat = ConvertLabelToInt(self.label_dict, ilabel),
                                      ttbarmass = ak.to_numpy(ttbarmass[icat]),
                                      weight = ak.to_numpy(Weights_pdfUp[icat]),
                                     )
                     output['ttbarmass_pdfDown'].fill(dataset = dataset,
-                                     anacat = i,
+                                     anacat = ConvertLabelToInt(self.label_dict, ilabel),
                                      ttbarmass = ak.to_numpy(ttbarmass[icat]),
                                      weight = ak.to_numpy(Weights_pdfDown[icat]),
                                     )
@@ -1563,17 +1561,17 @@ class TTbarResProcessor(processor.ProcessorABC):
                     Weights_puNom = Weights * puNom
 
                     output['ttbarmass_puNom'].fill(dataset = dataset,
-                                     anacat = i,
+                                     anacat = ConvertLabelToInt(self.label_dict, ilabel),
                                      ttbarmass = ak.to_numpy(ttbarmass[icat]),
                                      weight = ak.to_numpy(Weights_puNom[icat]),
                                     )
                     output['ttbarmass_puUp'].fill(dataset = dataset,
-                                     anacat = i,
+                                     anacat = ConvertLabelToInt(self.label_dict, ilabel),
                                      ttbarmass = ak.to_numpy(ttbarmass[icat]),
                                      weight = ak.to_numpy(Weights_puUp[icat]),
                                     )
                     output['ttbarmass_puDown'].fill(dataset = dataset,
-                                     anacat = i,
+                                     anacat = ConvertLabelToInt(self.label_dict, ilabel),
                                      ttbarmass = ak.to_numpy(ttbarmass[icat]),
                                      weight = ak.to_numpy(Weights_puDown[icat]),
                                     )
@@ -1593,78 +1591,78 @@ class TTbarResProcessor(processor.ProcessorABC):
             output['cutflow'][ilabel] += np.sum(icat)
                 
             output['ttbarmass'].fill(dataset = dataset,
-                                     anacat = i,
+                                     anacat = ConvertLabelToInt(self.label_dict, ilabel),
                                      ttbarmass = ak.to_numpy(ttbarmass[icat]),
                                      weight = ak.to_numpy(Weights[icat]),
                                     )
 
 
-            #badweights = Weights[ (i == 36) & (ttbarmass > 1100) & (ttbarmass < 1800)]
-            #badttbar = ttbarmass[ (i == 36) & (ttbarmass > 1100) & (ttbarmass < 1800)]
+            #badweights = Weights[ (ConvertLabelToInt(self.label_dict, ilabel) == 36) & (ttbarmass > 1100) & (ttbarmass < 1800)]
+            #badttbar = ttbarmass[ (ConvertLabelToInt(self.label_dict, ilabel) == 36) & (ttbarmass > 1100) & (ttbarmass < 1800)]
 
 #            if icat == "2t0bcen": 
 #                print("------")
 #                print("badweights ", ak.max(Weights))
 
             output['ttbarmass_bare'].fill(dataset = dataset,
-                                     anacat = i,
+                                     anacat = ConvertLabelToInt(self.label_dict, ilabel),
                                      ttbarmass = ak.to_numpy(ttbarmass[icat])
                                     )
 
             # probe ttbar candidate histograms
             output['probept'].fill(dataset = dataset,
-                                     anacat = i,
+                                     anacat = ConvertLabelToInt(self.label_dict, ilabel),
                                      jetpt = ak.to_numpy(pT[icat]),
                                      weight = ak.to_numpy(Weights[icat]),
                                     )
             output['probep'].fill(dataset = dataset,
-                                     anacat = i,
+                                     anacat = ConvertLabelToInt(self.label_dict, ilabel),
                                      jetp = ak.to_numpy(p[icat]),
                                      weight = ak.to_numpy(Weights[icat]),
                                     )
 
             # jet histograms 
             output['jetpt'].fill(dataset = dataset,
-                                     anacat = i,
+                                     anacat = ConvertLabelToInt(self.label_dict, ilabel),
                                      jetpt = ak.to_numpy(jetpt[icat]),
                                      weight = ak.to_numpy(Weights[icat]),
                                     )
             output['jeteta'].fill(dataset = dataset,
-                                     anacat = i,
+                                     anacat = ConvertLabelToInt(self.label_dict, ilabel),
                                      jeteta = ak.to_numpy(jeteta[icat]),
                                      weight = ak.to_numpy(Weights[icat]),
                                     )
             output['jetphi'].fill(dataset = dataset,
-                                     anacat = i,
+                                     anacat = ConvertLabelToInt(self.label_dict, ilabel),
                                      jetphi = ak.to_numpy(jetphi[icat]),
                                      weight = ak.to_numpy(Weights[icat]),
                                     )
             output['jety'].fill(dataset = dataset,
-                                     anacat = i,
+                                     anacat = ConvertLabelToInt(self.label_dict, ilabel),
                                      jety = ak.to_numpy(jety[icat]),
                                      weight = ak.to_numpy(Weights[icat]),
                                     )
             output['jetdy'].fill(dataset = dataset,
-                                     anacat = i,
+                                     anacat = ConvertLabelToInt(self.label_dict, ilabel),
                                      jetdy = ak.to_numpy(jetdy[icat]),
                                      weight = ak.to_numpy(Weights[icat]),
                                     )
             # 'deepTagMD_TvsQCD' : hist.Hist(dataset_axis, cats_axis, jetpt_axis, jetmass_axis, tagger_axis, storage="weight", name="Counts"),
             
             # output['deepTagMD_TvsQCD'].fill(dataset = dataset,
-            #                          anacat = i,
+            #                          anacat = ConvertLabelToInt(self.label_dict, ilabel),
             #                          jetpt = ak.to_numpy(jetpt[icat]),
             #                          SDjetmass = ak.to_numpy(SDmass[icat]),
             #                          tagger = ak.to_numpy(ak8tagger[icat]),       
             #                          weight = ak.to_numpy(Weights[icat]),
             #                         )
             output['jetmass'].fill(dataset = dataset,
-                                     anacat = i,
+                                     anacat = ConvertLabelToInt(self.label_dict, ilabel),
                                      jetmass = ak.to_numpy(jetmass[icat]),
                                      weight = ak.to_numpy(Weights[icat]),
                                     )
             output['SDmass'].fill(dataset = dataset,
-                                     anacat = i,
+                                     anacat = ConvertLabelToInt(self.label_dict, ilabel),
                                      jetmass = ak.to_numpy(SDmass[icat]),
                                      weight = ak.to_numpy(Weights[icat]),
                                     )
@@ -1672,12 +1670,12 @@ class TTbarResProcessor(processor.ProcessorABC):
 
             # mistag rate histograms
             output['numerator'].fill(dataset = dataset,
-                                     anacat = i,
+                                     anacat = ConvertLabelToInt(self.label_dict, ilabel),
                                      jetp = ak.to_numpy(numerator[icat]),
                                      weight = ak.to_numpy(Weights[icat]),
                                     )
             output['denominator'].fill(dataset = dataset,
-                                     anacat = i,
+                                     anacat = ConvertLabelToInt(self.label_dict, ilabel),
                                      jetp = ak.to_numpy(denominator[icat]),
                                      weight = ak.to_numpy(Weights[icat]),
                                     )
@@ -1685,7 +1683,7 @@ class TTbarResProcessor(processor.ProcessorABC):
 
             # top tagger histograms
             output['tau32'].fill(dataset = dataset,
-                                     anacat = i,
+                                     anacat = ConvertLabelToInt(self.label_dict, ilabel),
                                      tau32 = ak.to_numpy(Tau32[icat]),
                                      weight = ak.to_numpy(Weights[icat]),
                                     )
