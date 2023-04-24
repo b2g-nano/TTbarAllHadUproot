@@ -566,11 +566,10 @@ def main():
         namingConvention = 'UL'+str(args.year-2000)+VFP # prefix to help name every coffea output according to the selected options
         fileConvention = str(args.year) + '/' + convertLabel[VFP] + '/TTbarRes_0l_' # direct the saved coffea output to the appropriate directory
     SaveLocation={ # Fill this dictionary with each type of dataset; use this dictionary when saving uproot jobs below
-        namingConvention+'_TTbar': 'TT/' + BDiscDirectory + fileConvention,
+        namingConvention+'_TTbar_700_1000': 'TT/' + BDiscDirectory + fileConvention,
+        namingConvention+'_TTbar_1000_Inf': 'TT/' + BDiscDirectory + fileConvention,
         namingConvention+'_QCD': 'QCD/' + BDiscDirectory + fileConvention,
         namingConvention+'_DM': 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention,
-        namingConvention+'_DM2500': 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention,
-        namingConvention+'_DM5000': 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention,
         namingConvention+'_RSGluon': 'RSGluonToTT/' + BDiscDirectory + fileConvention
     }
     if not Testing:
@@ -596,7 +595,7 @@ def main():
                         SaveLocation['SingleMu_Data'] = 'SingleMu/' + BDiscDirectory + '/TTbarRes_0l_' # file where output will be saved
                 # Signal MC (then TTbar and QCD MC)
                 if 'RSGluon' in a:
-                    if a == 'RSGluon':
+                    if a == 'RSGluon': # Run all resonance masses
                         filesets_to_run[namingConvention+'_'+a+'1000'] = filesets[namingConvention+'_'+a+'1000']
                         filesets_to_run[namingConvention+'_'+a+'1500'] = filesets[namingConvention+'_'+a+'1500']
                         filesets_to_run[namingConvention+'_'+a+'2000'] = filesets[namingConvention+'_'+a+'2000']
@@ -615,10 +614,10 @@ def main():
                         SaveLocation[namingConvention+'_'+a+'4000'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'4500'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'5000'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
-                    else:
+                    else: # Only run user specified resonance masses
                         filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a]
                 elif 'DM' in a:
-                    if a == 'DM':
+                    if a == 'DM': # Same logic as RSGluon
                         filesets_to_run[namingConvention+'_'+a+'1000'] = filesets[namingConvention+'_'+a+'1000']
                         filesets_to_run[namingConvention+'_'+a+'1500'] = filesets[namingConvention+'_'+a+'1500']
                         filesets_to_run[namingConvention+'_'+a+'2000'] = filesets[namingConvention+'_'+a+'2000']
@@ -639,7 +638,10 @@ def main():
                         SaveLocation[namingConvention+'_'+a+'5000'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
                     else:
                         filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a]
-                elif 'TTbar' in a or 'QCD' in a:
+                elif a == 'TTbar':
+                    filesets_to_run[namingConvention+'_'+a+'_700_1000'] = filesets[namingConvention+'_'+a+'_700_1000'] # include MC dataset read in from Filesets
+                    filesets_to_run[namingConvention+'_'+a+'_1000_Inf'] = filesets[namingConvention+'_'+a+'_1000_Inf'] # include MC dataset read in 
+                elif 'QCD' in a:
                     filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a] # include MC dataset read in from Filesets
 
         elif args.runMMO:
@@ -704,7 +706,10 @@ def main():
                         SaveLocation[namingConvention+'_'+a+'5000'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
                     else:
                         filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a]
-                elif 'TTbar' in a or 'QCD' in a:
+                elif a == 'TTbar':
+                    filesets_to_run[namingConvention+'_'+a+'_700_1000'] = filesets[namingConvention+'_'+a+'_700_1000'] # include MC dataset read in from Filesets
+                    filesets_to_run[namingConvention+'_'+a+'_1000_Inf'] = filesets[namingConvention+'_'+a+'_1000_Inf'] # include MC dataset read in 
+                elif 'QCD' in a:
                     filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a] # include MC dataset read in from Filesets
 
         elif args.runAMO:
@@ -769,7 +774,10 @@ def main():
                         SaveLocation[namingConvention+'_'+a+'5000'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
                     else:
                         filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a]
-                elif 'TTbar' in a or 'QCD' in a:
+                elif a == 'TTbar':
+                    filesets_to_run[namingConvention+'_'+a+'_700_1000'] = filesets[namingConvention+'_'+a+'_700_1000'] # include MC dataset read in from Filesets
+                    filesets_to_run[namingConvention+'_'+a+'_1000_Inf'] = filesets[namingConvention+'_'+a+'_1000_Inf'] # include MC dataset read in 
+                elif 'QCD' in a:
                     filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a] # include MC dataset read in from Filesets
 
         elif args.runflavoreff:
@@ -818,8 +826,12 @@ def main():
                         SaveLocation[namingConvention+'_'+a+'5000'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
                     else:
                         filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a]
-                elif 'TTbar' in a or 'QCD' in a:
+                elif a == 'TTbar':
+                    filesets_to_run[namingConvention+'_'+a+'_700_1000'] = filesets[namingConvention+'_'+a+'_700_1000'] # include MC dataset read in from Filesets
+                    filesets_to_run[namingConvention+'_'+a+'_1000_Inf'] = filesets[namingConvention+'_'+a+'_1000_Inf'] # include MC dataset read in 
+                elif 'QCD' in a:
                     filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a] # include MC dataset read in from Filesets
+                
         elif args.runmistag: # if args.mistag: Only run 1st uproot job for ttbar and data to get mistag rate with tt contamination removed
             if args.mistagcorrect:
                 filesets_to_run[namingConvention+'_TTbar'] = filesets[namingConvention+'_TTbar']

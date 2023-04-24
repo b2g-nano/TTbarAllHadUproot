@@ -69,18 +69,12 @@ def CollectDatasets(redirector_str):
  
     # ---- Before concatenation with +=, lists should be declard ---- # 
     
-    filesets['UL_QCD'] = []
-    filesets['UL_TTbar'] = []
-    filesets['UL_JetHT_Data'] = []
-    for i in range(1000, 5500, 500):
-        filesets['UL_DM'+str(i)] = []
-        filesets['UL_RSGluon'+str(i)] = []
-    
     for y in Years:
         if '16' in y:
             for v in VFP:
                 filesets[y+v+'_QCD'] = []
-                filesets[y+v+'_TTbar'] = []
+                filesets[y+v+'_TTbar_700_1000'] = []
+                filesets[y+v+'_TTbar_1000_Inf'] = []
         for l in ['', 'B', 'C', 'D', 'E', 'F']:
             filesets[y+'preVFP_JetHT'+l+'_Data'] = []
         for l in ['', 'F', 'G', 'H']:
@@ -106,8 +100,7 @@ def CollectDatasets(redirector_str):
                 with open(ulqcdfilename) as f:
                     ulqcdfiles = [redirector_str + s.strip() for s in f.readlines() if not s.startswith('#')]
                 filesets[y+v+'_QCD'] += ulqcdfiles
-                filesets['UL_QCD'] += ulqcdfiles # Combine files of all three years for both VFP conditions
-
+                
                 # ---- TTbar ---- #
                 ulttbar700to1000filename = filedir + 'TT/TT_Mtt-700to1000_NanoAODv9_' + y + '_' + v + '.txt'
                 with open(ulttbar700to1000filename) as f:
@@ -115,10 +108,9 @@ def CollectDatasets(redirector_str):
                 ulttbar1000toInffilename = filedir + 'TT/TT_Mtt-1000toInf_NanoAODv9_' + y + '_' + v + '.txt'
                 with open(ulttbar1000toInffilename) as f:
                     ulttbar1000toInffiles = [redirector_str + s.strip() for s in f.readlines() if not s.startswith('#')]
-                ulttbarfiles = ulttbar700to1000files + ulttbar1000toInffiles # inclusion of both biased samples
-                filesets[y+v+'_TTbar'] += ulttbarfiles
-                filesets['UL_TTbar'] += ulttbarfiles # Combine files of all three years for both VFP conditions
-                
+                filesets[y+v+'_TTbar_700_1000'] += ulttbar700to1000files
+                filesets[y+v+'_TTbar_1000_Inf'] += ulttbar1000toInffiles
+                                
                 # ---- JetHT ---- #
                 datafilelist = os.listdir(filedir + 'JetHT/')
                 for filename in datafilelist:
@@ -141,7 +133,6 @@ def CollectDatasets(redirector_str):
                     with open(ulZprimeDMfilename) as f:
                         ulDMfiles.append([redirector_str + s.strip() for s in f.readlines() if ("ResoIncl_MZp"+str(i) in s and not s.startswith('#'))])
                     filesets[y+v+'_DM'+str(i)] = ulDMfiles[k]
-                    filesets['UL_DM'+str(i)] += ulDMfiles[k] # Combine files of all three years for both VFP conditions
                     k += 1
                     
                 # ---- RS KK Gluon ---- #
@@ -152,7 +143,6 @@ def CollectDatasets(redirector_str):
                     with open(ulRSGluonfilename) as f:
                         ulRSGluonfiles.append([redirector_str + s.strip() for s in f.readlines() if ("RSGluonToTT_M-"+str(i) in s and not s.startswith('#'))])
                     filesets[y+v+'_RSGluon'+str(i)] = ulRSGluonfiles[l]
-                    filesets['UL_RSGluon'+str(i)] += ulRSGluonfiles[l] # Combine files of all three years for both VFP conditions
                     l += 1
                     
 #         else: # UL17 and UL18
@@ -163,7 +153,6 @@ def CollectDatasets(redirector_str):
 #             with open(ulqcdfilename) as f:
 #                 ulqcdfiles = [redirector_str + s.strip() for s in f.readlines() if not s.startswith('#')]
 #             filesets[y+v+'_QCD'] = ulqcdfiles
-#             filesets['UL_QCD'] += ulqcdfiles # Combine files of all three years for both VFP conditions
 
 #             # ---- TTbar ---- #
 #             ulttbar700to1000filename = filedir + 'TT/TT_Mtt-700to1000_NanoAODv9_' + y + '_' + v + '.txt'
@@ -174,7 +163,6 @@ def CollectDatasets(redirector_str):
 #                 ulttbar1000toInffiles = [redirector_str + s.strip() for s in f.readlines() if not s.startswith('#')]
 #             ulttbarfiles = ulttbar700to1000files + ulttbar1000toInffiles # inclusion of both biased samples
 #             filesets[y+v+'_TTbar'] = ulttbarfiles
-#             filesets['UL_TTbar'] += ulttbarfiles # Combine files of all three years for both VFP conditions
             
 #             # ---- JetHT ---- #
 #             datafilelist = os.listdir(filedir + 'JetHT/')
@@ -196,7 +184,6 @@ def CollectDatasets(redirector_str):
 #                 with open(ulZprimeDMfilename) as f:
 #                     ulDMfiles.append([redirector_str + s.strip() for s in f.readlines() if ("ResoIncl_MZp"+str(i) in s and not s.startswith('#'))])
 #                 filesets[y+v+'_DM'+str(i)] = ulDMfiles[k]
-#                 filesets['UL_DM'+str(i)] += ulDMfiles[k] # Combine files of all three years for both VFP conditions
 #                 k += 1
                 
 #             # ---- RS KK Gluon ---- #
@@ -207,7 +194,6 @@ def CollectDatasets(redirector_str):
 #                 with open(ulRSGluonfilename) as f:
 #                     ulRSGluonfiles.append([redirector_str + s.strip() for s in f.readlines() if ("RSGluonToTT_M-"+str(i) in s and not s.startswith('#'))])
 #                 filesets[y+v+'_RSGluon'+str(i)] = ulRSGluonfiles[l]
-#                 filesets['UL_RSGluon'+str(i)] += ulRSGluonfiles[l] # Combine files of all three years for both VFP conditions
 #                 l += 1
             
     
