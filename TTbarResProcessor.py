@@ -735,25 +735,25 @@ class TTbarResProcessor(processor.ProcessorABC):
                                   "hfNoisyHitsFilter",
                                   "eeBadScFilter",
                                   "ecalBadCalibFilter"]}
+        if isData:
+            filteredEvents = np.array([getattr(events, f'Flag_{MET_filters[IOV][i]}') for i in range(len(MET_filters[IOV]))])
+            filteredEvents = np.logical_or.reduce(filteredEvents, axis=0)
         
-        filteredEvents = np.array([getattr(events, f'Flag_{MET_filters[IOV][i]}') for i in range(len(MET_filters[IOV]))])
-        filteredEvents = np.logical_or.reduce(filteredEvents, axis=0)
-        
-        if ak.sum(filteredEvents) < 1 :
-            print("\nNo events passed the MET filters.\n", flush=True)
-            return output
-        else:
-            FatJets = FatJets[filteredEvents]
-            Jets = Jets[filteredEvents]
-            SubJets = SubJets[filteredEvents]
-            evtweights = evtweights[filteredEvents]
-            events = events[filteredEvents]
-            
-            output['cutflow']['Passed MET Filters'] += ak.sum(filteredEvents)
-            # print("Passed MET Filters", ak.sum(filteredEvents))
-            # print(len(FatJets))
-
-            del filteredEvents
+            if ak.sum(filteredEvents) < 1 :
+                print("\nNo events passed the MET filters.\n", flush=True)
+                return output
+            else:
+                FatJets = FatJets[filteredEvents]
+                Jets = Jets[filteredEvents]
+                SubJets = SubJets[filteredEvents]
+                evtweights = evtweights[filteredEvents]
+                events = events[filteredEvents]
+                
+                output['cutflow']['Passed MET Filters'] += ak.sum(filteredEvents)
+                # print("Passed MET Filters", ak.sum(filteredEvents))
+                # print(len(FatJets))
+                
+                del filteredEvents
 
 
 #    ================================================================
