@@ -432,6 +432,7 @@ class TTbarResProcessor(processor.ProcessorABC):
 #    =========================================================================================== 
 
         isData = ('JetHT' in filename) or ('SingleMu' in filename)
+        isSignal = ('RSGluon' in filename) or ('DM' in filename)
         
         IOV = ('2016APV' if any(regularexpressions.findall(r'preVFP', dataset))
                else '2018' if any(regularexpressions.findall(r'UL18', dataset))
@@ -443,11 +444,13 @@ class TTbarResProcessor(processor.ProcessorABC):
                 
                 
         # ---- Define lumimasks ---- #
-        
+        # print(f'\nbefore lumimask:\n {events.nFatJet}')
         if isData: 
             lumi_mask = np.array(self.lumimasks[IOV](events.run, events.luminosityBlock), dtype=bool)
             events = events[lumi_mask]
             evtweights = evtweights[lumi_mask]
+        elif isSignal:
+            pass # Do nothing to the number of events here...
         else: 
             if dataset not in self.means_stddevs : 
                 average = np.average( events.Generator_weight )
