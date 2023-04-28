@@ -863,7 +863,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
         }
         filesets_forweights = filesets_to_run
         
-    print(f"\nRoot files to run:\n {filesets_to_run}", flush=True)
+    # print(f"\nRoot files to run:\n {filesets_to_run}", flush=True)
     
     #    ---------------------------------------------------------------------------
     #    DDDD       A      SSSSS K     K       SSSSS EEEEEEE TTTTTTT U     U PPPPPP      
