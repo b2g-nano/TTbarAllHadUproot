@@ -4,6 +4,7 @@
 from errno import EEXIST
 from os import makedirs, path
 import mplhep as hep
+import matplotlib.pyplot as plt
 
 def mkdir_p(mypath):
     '''Creates a directory. equivalent to using mkdir -p on the command line'''
@@ -64,3 +65,54 @@ def printColorText(text, color): # both the input text and the color desired are
                 }
     print(whichcolor.get(color) + '\033[90m')
     # The added string on the end resets the default colored text to black #
+    
+def AnalysisAxes(HistName, axis):
+    CMSx, CMSy = 0.01, 0.98 # Position of CMS Preliminary label
+    
+    if 'ttbarmass' in HistName:
+        axis.set_xlim(950,6000)
+        CMSx = 0.14 
+        CMSy = 0.98
+    elif 'jetpt' in HistName:
+        axis.set_xlim(400,2000)
+        CMSx = 0.26 
+        CMSy = 0.98
+    elif 'jeteta' in HistName:
+        axis.set_xlim(-2.3,2.3)
+    elif 'jetphi' in HistName:
+        axis.set_xlim(-3.14, 3.14)
+    elif 'jety' in HistName:
+        axis.set_xlim(-3., 3.)
+    elif 'jetdy' in HistName:
+        axis.set_xlim(0., 5.)
+    elif 'probept' in HistName:
+        axis.set_xlim(400., 2000.)
+        CMSx = 0.14 
+        CMSy = 0.98
+    elif 'probep' in HistName:
+        axis.set_xlim(400., 7000.)  
+        CMSx = 0.14 
+        CMSy = 0.98
+
+def AnalysisLabels(Luminosity, axis):
+    CMSx, CMSy = 0.01, 0.98 # Position of CMS Preliminary label
+    Lint = str(Luminosity*.001) # Integrated Luminosity
+    
+    lumi = plt.text(1.15, 1.07, "L = " + Lint[:6] + " fb$^{-1}$",
+            fontsize='x-large',
+            horizontalalignment='right',
+            verticalalignment='top',
+            transform=axis.transAxes
+           )
+    CMS = plt.text(CMSx, CMSy, 'CMS Preliminary',
+            fontsize='x-large',
+            horizontalalignment='left',
+            verticalalignment='top',
+            transform=axis.transAxes
+           )
+    coffea = plt.text(1.00, 0.85, u"☕",
+              fontsize=50,
+              horizontalalignment='left',
+              verticalalignment='bottom',
+              transform=axis.transAxes
+             )

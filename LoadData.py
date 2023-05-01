@@ -67,6 +67,34 @@ def JetHT_Weighted(btag, year, contam, unc, mr):
         
     return(Output)
 
+def AddEraHists(Output, Year, HistName, CategoryInt):
+    '''
+        Output --> Dictionary of Data Outputs
+        Year --> Integer; Year of 
+        HistName --> String; Name of Histogram to be Plotted ('ttbarmass', 'jetpt', etc...)
+        CategoryInt --> Integer; Number Corresponding to Name of Category ('2t0bcen', 'pret1bfwd', etc...)
+    '''
+    
+    JetHT_str = f'UL{str(Year - 2000)}preVFP_JetHTB_Data'
+    HistObject = Output['B_preVFP'][HistName][JetHT_str, CategoryInt, :]
+    
+    # ---- Add all data together ---- #
+    for vfp in ['preVFP', 'postVFP']:
+        #---- Define Histograms from Coffea Outputs ----# 
+        if vfp == 'preVFP':
+            for Era in ['C', 'D', 'E', 'F']: #exclude B because histogram is initialized with B era
+                JetHT_str = f'UL{str(Year - 2000)}{vfp}_JetHT{Era}_Data'
+                HistObject += Output[Era+'_'+vfp][HistName][JetHT_str, CategoryInt, :]
+                
+        else:
+            for Era in ['F', 'G', 'H']: #exclude B because histogram is initialized with B era
+                JetHT_str = f'UL{str(Year - 2000)}{vfp}_JetHT{Era}_Data'
+                HistObject += Output[Era+'_'+vfp][HistName][JetHT_str, CategoryInt, :]
+                
+    return HistObject
+    
+    
+    
 def Cutflow(Output):
     '''
         Output --> Dictionary of Data Outputs
