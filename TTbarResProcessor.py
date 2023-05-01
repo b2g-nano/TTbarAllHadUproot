@@ -432,7 +432,7 @@ class TTbarResProcessor(processor.ProcessorABC):
 #    =========================================================================================== 
 
         isData = ('JetHT' in filename) or ('SingleMu' in filename)
-        isSignal = ('RSGluon' in filename) or ('DM' in filename)
+        isSignal = ('RSGluon' in filename) #or ('DM' in filename)
         
         IOV = ('2016APV' if any(regularexpressions.findall(r'preVFP', dataset))
                else '2018' if any(regularexpressions.findall(r'UL18', dataset))
