@@ -448,7 +448,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         if isData: 
             lumi_mask = np.array(self.lumimasks[IOV](events.run, events.luminosityBlock), dtype=bool)
             events = events[lumi_mask]
-            evtweights = evtweights[lumi_mask]
+            # evtweights = evtweights[lumi_mask]
         elif isSignal:
             pass # Do nothing to the number of events here...
         else: 
