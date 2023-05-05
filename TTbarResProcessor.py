@@ -71,7 +71,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                  ModMass=False, RandomDebugMode=False, UseEfficiencies=False, xsSystematicWeight=1., lumSystematicWeight=1.,
                  ApplybtagSF=False, ScaleFactorFile='', ApplyttagSF=False, ApplyTopReweight=False, 
                  ApplyJes=False, ApplyJer=False, var="nominal", ApplyPdf=False, ApplyPrefiring=False, ApplyPUweights=False,
-                 ApplyHEMCleaning=False, trigs_to_run=[''],
+                 ApplyHEMCleaning=False, trigs_to_run=[''], csvv2=False, 
                  sysType=None):
 
 
@@ -112,6 +112,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         self.lumSystematicWeight = lumSystematicWeight
         self.lu = lu # Look Up Tables
         self.means_stddevs = defaultdict() # To remove anomalous MC weights
+        self.csvv2 = csvv2
         
         # --- anti-tag+probe, anti-tag, pre-tag, 0, 1, >=1, 2 ttags, any t-tag (>=0t) --- #
         self.ttagcats = ["AT&Pt", "at", "pret", "0t", "1t", ">=1t", "2t", ">=0t"] 
@@ -1038,9 +1039,12 @@ class TTbarResProcessor(processor.ProcessorABC):
         
         # ---- Pick FatJet that passes btag discriminator cut based on its subjet with the highest btag value ---- #
         # -------------- NOTE: B-discriminator cut must be changed to match BTV POG Recommendations -------------- #
-
-        btag_s0 = ( np.maximum(SubJet01.btagCSVV2 , SubJet02.btagCSVV2) > self.bdisc )
-        btag_s1 = ( np.maximum(SubJet11.btagCSVV2 , SubJet12.btagCSVV2) > self.bdisc )
+        if not self.csvv2:
+            btag_s0 = ( np.maximum(SubJet01.btagDeepB , SubJet02.btagDeepB) > self.bdisc )
+            btag_s1 = ( np.maximum(SubJet11.btagDeepB , SubJet12.btagDeepB) > self.bdisc )
+        else: # Only when running -med2016 option
+            btag_s0 = ( np.maximum(SubJet01.btagCSVV2 , SubJet02.btagCSVV2) > self.bdisc )
+            btag_s1 = ( np.maximum(SubJet11.btagCSVV2 , SubJet12.btagCSVV2) > self.bdisc )
         
         # --- Define "B Tag" Regions ---- #
         btag0 = (~btag_s0) & (~btag_s1) #(0b)
@@ -1091,8 +1095,12 @@ class TTbarResProcessor(processor.ProcessorABC):
                     """
 
                     # ---- Use the leading subjet again to get the scale factors ---- #
-                    LeadingSubjet_s0 = np.where(SubJet01.btagCSVV2>SubJet02.btagCSVV2, SubJet01, SubJet02)
-                    LeadingSubjet_s1 = np.where(SubJet11.btagCSVV2>SubJet12.btagCSVV2, SubJet11, SubJet12)
+                    if not self.csvv2:
+                        LeadingSubjet_s0 = np.where(SubJet01.btagCSVV2>SubJet02.btagCSVV2, SubJet01, SubJet02)
+                        LeadingSubjet_s1 = np.where(SubJet11.btagCSVV2>SubJet12.btagCSVV2, SubJet11, SubJet12)
+                    else:
+                        LeadingSubjet_s0 = np.where(SubJet01.btagDeepB>SubJet02.btagDeepB, SubJet01, SubJet02)
+                        LeadingSubjet_s1 = np.where(SubJet11.btagDeepB>SubJet12.btagDeepB, SubJet11, SubJet12)
 
                     # ---- Define the BSF for each of the two fatjets ---- #
                     SF_filename = self.ScaleFactorFile    

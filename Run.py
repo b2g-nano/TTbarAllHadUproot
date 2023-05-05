@@ -367,19 +367,23 @@ def main():
         'postVFP': 'noAPV'
     }
     #    ---------------------------------------------------------------------------------------------------------------------    # 
-
+    CSVV2 = False
     BDisc = 0.
     OldDisc = '' #Label the datasets that use the old discriminator cut from 2016 AN
     BDiscDirectory = ''
     if args.loose:
         BDisc = 0.1918
         BDiscDirectory = 'LooseBTag/'
+        print(f'\nb-tagger DeepCSV Selected\n', flush=True)
     elif args.medium:
         BDisc = 0.5847
         BDiscDirectory = 'MediumBTag/'
+        print(f'\nb-tagger DeepCSV Selected\n', flush=True)
     else:
         BDisc = 0.8484
         OldDisc = '_oldANdisc'
+        CSVV2 = True
+        print(f'\nb-tagger CSVv2 Selected\n', flush=True)
     #    ---------------------------------------------------------------------------------------------------------------------    # 
 
     Testing = args.runtesting
@@ -1001,6 +1005,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
                                                                                            bdisc=BDisc,
+                                                                                           csvv2=CSVV2,
                                                                                            trigs_to_run=Trigs_to_run,
                                                                                            prng=prng),
                                                       executor=getattr(processor,chosen_exec),
@@ -1020,6 +1025,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
                                                                                            bdisc=BDisc,
+                                                                                           csvv2=CSVV2,
                                                                                            trigs_to_run=Trigs_to_run,
                                                                                            prng=prng),
                                                       executor=getattr(processor,chosen_exec),
@@ -1053,6 +1059,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
                                                                                            bdisc=BDisc,
+                                                                                           csvv2=CSVV2,
                                                                                            trigs_to_run=Trigs_to_run,
                                                                                            prng=prng),
                                                       executor=getattr(processor,chosen_exec),
@@ -1072,6 +1079,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
                                                                                            bdisc=BDisc,
+                                                                                           csvv2=CSVV2,
                                                                                            trigs_to_run=Trigs_to_run,
                                                                                            prng=prng),
                                                       executor=getattr(processor,chosen_exec),
@@ -1143,6 +1151,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                       treename='Events',
                                                       processor_instance=TriggerAnalysisProcessor(RandomDebugMode=False,
                                                                                            bdisc = BDisc,
+                                                                                           csvv2=CSVV2,
                                                                                            year=args.year,
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
@@ -1162,6 +1171,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                       treename='Events',
                                                       processor_instance=TriggerAnalysisProcessor(RandomDebugMode=False,
                                                                                            bdisc = BDisc,
+                                                                                           csvv2=CSVV2,
                                                                                            year=args.year,
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
@@ -1194,6 +1204,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                       treename='Events',
                                                       processor_instance=TriggerAnalysisProcessor(RandomDebugMode=False,
                                                                                            bdisc = BDisc,
+                                                                                           csvv2=CSVV2,
                                                                                            year=args.year,
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
@@ -1213,6 +1224,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                       treename='Events',
                                                       processor_instance=TriggerAnalysisProcessor(RandomDebugMode=False,
                                                                                            bdisc = BDisc,
+                                                                                           csvv2=CSVV2,
                                                                                            year=args.year,
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
@@ -1292,6 +1304,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                                                            ModMass=False, 
                                                                                            RandomDebugMode=False,
                                                                                            bdisc = BDisc,
+                                                                                           csvv2=CSVV2,
                                                                                            year=args.year,
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
@@ -1314,6 +1327,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                                                            ModMass=False, 
                                                                                            RandomDebugMode=False,
                                                                                            bdisc = BDisc,
+                                                                                           csvv2=CSVV2,
                                                                                            year=args.year,
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
@@ -1349,6 +1363,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                                                            ModMass=False, 
                                                                                            RandomDebugMode=False,
                                                                                            bdisc = BDisc,
+                                                                                           csvv2=CSVV2,
                                                                                            year=args.year,
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
@@ -1371,6 +1386,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                                                            ModMass=False, 
                                                                                            RandomDebugMode=False,
                                                                                            bdisc = BDisc,
+                                                                                           csvv2=CSVV2,
                                                                                            year=args.year,
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
@@ -1512,6 +1528,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                                                            ScaleFactorFile=SFfile,
                                                                                            UseEfficiencies=args.useEff,
                                                                                            bdisc = BDisc,
+                                                                                           csvv2=CSVV2,
                                                                                            year=args.year,
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
@@ -1549,6 +1566,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                                                            ScaleFactorFile=SFfile,
                                                                                            UseEfficiencies=args.useEff,
                                                                                            bdisc = BDisc,
+                                                                                           csvv2=CSVV2,
                                                                                            year=args.year,
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
@@ -1600,6 +1618,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                                                            ScaleFactorFile=SFfile,
                                                                                            UseEfficiencies=args.useEff,
                                                                                            bdisc = BDisc,
+                                                                                           csvv2=CSVV2,
                                                                                            year=args.year,
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
@@ -1635,6 +1654,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                                                            ScaleFactorFile=SFfile,
                                                                                            UseEfficiencies=args.useEff,
                                                                                            bdisc = BDisc,
+                                                                                           csvv2=CSVV2,
                                                                                            year=args.year,
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
@@ -1714,6 +1734,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                                                                RandomDebugMode=False,
                                                                                                BDirect = BDiscDirectory,
                                                                                                bdisc = BDisc,
+                                                                                               csvv2=CSVV2,
                                                                                                year=args.year,
                                                                                                apv=convertLabel[VFP],
                                                                                                vfp=VFP,
@@ -1738,6 +1759,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                                                                RandomDebugMode=False,
                                                                                                BDirect = BDiscDirectory,
                                                                                                bdisc = BDisc,
+                                                                                               csvv2=CSVV2,
                                                                                                year=args.year,
                                                                                                apv=convertLabel[VFP],
                                                                                                vfp=VFP,
@@ -1774,6 +1796,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                                                                RandomDebugMode=False,
                                                                                                BDirect = BDiscDirectory,
                                                                                                bdisc = BDisc,
+                                                                                               csvv2=CSVV2,
                                                                                                year=args.year,
                                                                                                apv=convertLabel[VFP],
                                                                                                vfp=VFP,
@@ -1798,6 +1821,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                                                                RandomDebugMode=False,
                                                                                                BDirect = BDiscDirectory,
                                                                                                bdisc = BDisc,
+                                                                                               csvv2=CSVV2,
                                                                                                year=args.year,
                                                                                                apv=convertLabel[VFP],
                                                                                                vfp=VFP,
@@ -1861,6 +1885,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                                                                RandomDebugMode=False,
                                                                                                BDirect = BDiscDirectory,
                                                                                                bdisc = BDisc,
+                                                                                               csvv2=CSVV2,
                                                                                                year=args.year,
                                                                                                apv=convertLabel[VFP],
                                                                                                vfp=VFP,
@@ -1885,6 +1910,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                                                                RandomDebugMode=False,
                                                                                                BDirect = BDiscDirectory,
                                                                                                bdisc = BDisc,
+                                                                                               csvv2=CSVV2,
                                                                                                year=args.year,
                                                                                                apv=convertLabel[VFP],
                                                                                                vfp=VFP,
@@ -1921,6 +1947,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                                                                RandomDebugMode=False,
                                                                                                BDirect = BDiscDirectory,
                                                                                                bdisc = BDisc,
+                                                                                               csvv2=CSVV2,
                                                                                                year=args.year,
                                                                                                apv=convertLabel[VFP],
                                                                                                vfp=VFP,
@@ -1945,6 +1972,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                                                                RandomDebugMode=False,
                                                                                                BDirect = BDiscDirectory,
                                                                                                bdisc = BDisc,
+                                                                                               csvv2=CSVV2,
                                                                                                year=args.year,
                                                                                                apv=convertLabel[VFP],
                                                                                                vfp=VFP,
