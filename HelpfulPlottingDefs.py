@@ -5,6 +5,7 @@ from errno import EEXIST
 from os import makedirs, path
 import mplhep as hep
 import matplotlib.pyplot as plt
+from hist.intervals import ratio_uncertainty
 
 def mkdir_p(mypath):
     '''Creates a directory. equivalent to using mkdir -p on the command line'''
@@ -53,6 +54,36 @@ def plotratio(numerator, denominator, ax=None, histtype='errorbar', marker='.', 
         return hep.histplot(ratio, ax=ax, histtype=histtype, color=color, alpha=alpha, lw=5.)
     else:
         return hep.histplot(ratio, ax=ax, histtype=histtype, color=color)
+    
+def plotefficiency(numerator, denominator, ax=None, histtype='errorbar', marker='.', markersize=5., color='k', alpha=0.1, xerr=0.):
+    NumeratorAxes = numerator.axes
+    DenominatorAxes = denominator.axes
+    
+    # integer number of bins in this axis #
+    NumeratorAxis1_BinNumber = NumeratorAxes[0].size - 3 # Subtract 3 to remove overflow
+    
+    DenominatorAxis1_BinNumber = DenominatorAxes[0].size - 3 
+    
+    if(NumeratorAxis1_BinNumber != DenominatorAxis1_BinNumber):
+        raise Exception('Numerator and Denominator axes are different sizes; Cannot perform division.')
+        
+    ratio = numerator / denominator.values()
+
+    err_up, err_down = ratio_uncertainty(numerator.values(), denominator.values(), 'efficiency')
+    yerror = [err_up, err_down]
+
+#     for ra, u, d in zip(ratio, err_up, err_down):
+#         print(f'{ra} +{u} -{d}\n')
+#     print('=================================================\n')
+    
+    if histtype == 'errorbar':
+        return hep.histplot(ratio, ax=ax, histtype=histtype, marker=marker, markersize=markersize, color=color, 
+                            xerr=xerr, yerr=yerror)
+    elif histtype == 'fill':
+        return hep.histplot(ratio, ax=ax, histtype=histtype, color=color, alpha=alpha, lw=5., 
+                           yerr=yerror)
+    else:
+        return hep.histplot(ratio, ax=ax, histtype=histtype, color=color, yerr=yerror)
     
 def printColorText(text, color): # both the input text and the color desired are input as strings
     whichcolor = {

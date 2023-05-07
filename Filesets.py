@@ -75,20 +75,28 @@ def CollectDatasets(redirector_str):
                 filesets[y+v+'_QCD'] = []
                 filesets[y+v+'_TTbar_700_1000'] = []
                 filesets[y+v+'_TTbar_1000_Inf'] = []
-        for l in ['', 'B', 'C', 'D', 'E', 'F']:
-            filesets[y+'preVFP_JetHT'+l+'_Data'] = []
-        for l in ['', 'F', 'G', 'H']:
-            filesets[y+'postVFP_JetHT'+l+'_Data'] = []
-        # elif '17' in y:
-        #     filesets[y+'postVFP_QCD'] = []
-        #     filesets[y+'postVFP_TTbar'] = []
-        #     for l in ['', 'B', 'C', 'D', 'E', 'F']:
-        #         filesets[y+'postVFP_JetHT'+l+'_Data'] = []
-        # else:
-        #     filesets[y+'postVFP_QCD'] = []
-        #     filesets[y+'postVFP_TTbar'] = []
-        #     for l in ['', 'A', 'B', 'C', 'D']:
-        #         filesets[y+'postVFP_JetHT'+l+'_Data'] = []
+            # ---- JetHT and SingleMu ---- #
+            for l in ['', 'B', 'C', 'D', 'E', 'F']:
+                filesets[y+'preVFP_JetHT'+l+'_Data'] = []
+                filesets[y+'preVFP_SingleMu'+l+'_Data'] = []
+            for l in ['', 'F', 'G', 'H']:
+                filesets[y+'postVFP_JetHT'+l+'_Data'] = []
+                filesets[y+'postVFP_SingleMu'+l+'_Data'] = []
+            
+            
+        elif '17' in y:
+            filesets[y+'postVFP_QCD'] = []
+            filesets[y+'postVFP_TTbar'] = []
+            for l in ['', 'B', 'C', 'D', 'E', 'F']:
+                filesets[y+'postVFP_JetHT'+l+'_Data'] = []
+                filesets[y+'postVFP_SingleMu'+l+'_Data'] = []
+                
+        else:
+            filesets[y+'postVFP_QCD'] = []
+            filesets[y+'postVFP_TTbar'] = []
+            for l in ['', 'A', 'B', 'C', 'D']:
+                filesets[y+'postVFP_JetHT'+l+'_Data'] = []
+                filesets[y+'postVFP_SingleMu'+l+'_Data'] = []
     
     # ---- Loop through years and VFP status, filling the filesets dictionary with the MC file locations from corresponding txt files ---- #
     
@@ -234,61 +242,120 @@ def CollectDatasets(redirector_str):
                 jetdatafiles2016h = [redirector_str + s.strip() for s in h.readlines() if not s.startswith('#')] 
             filesets['UL16postVFP_JetHTH_Data'] += jetdatafiles2016h
                 
-        # if 'Run2017B' in filename:
-        #     with open(filedir + 'JetHT/' + filename) as b:
-        #         jetdatafiles2017b = [redirector_str + s.strip() for s in b.readlines()[::3] if not s.startswith('#')] 
-        #     filesets['UL17postVFP_JetHTB_Data'] += jetdatafiles2017b
-        # elif 'Run2017C' in filename:
-        #     with open(filedir + 'JetHT/' + filename) as c:
-        #         jetdatafiles2017c = [redirector_str + s.strip() for s in c.readlines()[::3] if not s.startswith('#')] 
-        #     filesets['UL17postVFP_JetHTC_Data'] += jetdatafiles2017c
-        # elif 'Run2017D' in filename:
-        #     with open(filedir + 'JetHT/' + filename) as d:
-        #         jetdatafiles2017d = [redirector_str + s.strip() for s in d.readlines()[::3] if not s.startswith('#')] 
-        #     filesets['UL17postVFP_JetHTD_Data'] += jetdatafiles2017d
-        # elif 'Run2017E' in filename:
-        #     with open(filedir + 'JetHT/' + filename) as e:
-        #         jetdatafiles2017e = [redirector_str + s.strip() for s in e.readlines()[::3] if not s.startswith('#')] 
-        #     filesets['UL17postVFP_JetHTE_Data'] += jetdatafiles2017e
-        # elif 'Run2017F' in filename:
-        #     with open(filedir + 'JetHT/' + filename) as f:
-        #         jetdatafiles2017f = [redirector_str + s.strip() for s in f.readlines()[::3] if not s.startswith('#')] 
-        #     filesets['UL17postVFP_JetHTF_Data'] += jetdatafiles2017f
+#         if 'Run2017B' in filename:
+#             with open(filedir + 'JetHT/' + filename) as b:
+#                 jetdatafiles2017b = [redirector_str + s.strip() for s in b.readlines()[::3] if not s.startswith('#')] 
+#             filesets['UL17postVFP_JetHTB_Data'] += jetdatafiles2017b
+#         elif 'Run2017C' in filename:
+#             with open(filedir + 'JetHT/' + filename) as c:
+#                 jetdatafiles2017c = [redirector_str + s.strip() for s in c.readlines()[::3] if not s.startswith('#')] 
+#             filesets['UL17postVFP_JetHTC_Data'] += jetdatafiles2017c
+#         elif 'Run2017D' in filename:
+#             with open(filedir + 'JetHT/' + filename) as d:
+#                 jetdatafiles2017d = [redirector_str + s.strip() for s in d.readlines()[::3] if not s.startswith('#')] 
+#             filesets['UL17postVFP_JetHTD_Data'] += jetdatafiles2017d
+#         elif 'Run2017E' in filename:
+#             with open(filedir + 'JetHT/' + filename) as e:
+#                 jetdatafiles2017e = [redirector_str + s.strip() for s in e.readlines()[::3] if not s.startswith('#')] 
+#             filesets['UL17postVFP_JetHTE_Data'] += jetdatafiles2017e
+#         elif 'Run2017F' in filename:
+#             with open(filedir + 'JetHT/' + filename) as f:
+#                 jetdatafiles2017f = [redirector_str + s.strip() for s in f.readlines()[::3] if not s.startswith('#')] 
+#             filesets['UL17postVFP_JetHTF_Data'] += jetdatafiles2017f
                 
-        # if 'Run2018A' in filename:
-        #     with open(filedir + 'JetHT/' + filename) as a:
-        #         jetdatafiles2018a = [redirector_str + s.strip() for s in a.readlines()[::3] if not s.startswith('#')] 
-        #     filesets['UL18postVFP_JetHTA_Data'] += jetdatafiles2018a
-        # elif 'Run2018B' in filename:
-        #     with open(filedir + 'JetHT/' + filename) as b:
-        #         jetdatafiles2018b = [redirector_str + s.strip() for s in b.readlines()[::3] if not s.startswith('#')] 
-        #     filesets['UL18postVFP_JetHTB_Data'] += jetdatafiles2018b
-        # elif 'Run2018C' in filename:
-        #     with open(filedir + 'JetHT/' + filename) as c:
-        #         jetdatafiles2018c = [redirector_str + s.strip() for s in c.readlines()[::3] if not s.startswith('#')] 
-        #     filesets['UL18postVFP_JetHTC_Data'] += jetdatafiles2018c
-        # elif 'Run2018D' in filename:
-        #     with open(filedir + 'JetHT/' + filename) as d:
-        #         jetdatafiles2018d = [redirector_str + s.strip() for s in d.readlines()[::3] if not s.startswith('#')] 
-        #     filesets['UL18postVFP_JetHTD_Data'] += jetdatafiles2018d
+#         if 'Run2018A' in filename:
+#             with open(filedir + 'JetHT/' + filename) as a:
+#                 jetdatafiles2018a = [redirector_str + s.strip() for s in a.readlines()[::3] if not s.startswith('#')] 
+#             filesets['UL18postVFP_JetHTA_Data'] += jetdatafiles2018a
+#         elif 'Run2018B' in filename:
+#             with open(filedir + 'JetHT/' + filename) as b:
+#                 jetdatafiles2018b = [redirector_str + s.strip() for s in b.readlines()[::3] if not s.startswith('#')] 
+#             filesets['UL18postVFP_JetHTB_Data'] += jetdatafiles2018b
+#         elif 'Run2018C' in filename:
+#             with open(filedir + 'JetHT/' + filename) as c:
+#                 jetdatafiles2018c = [redirector_str + s.strip() for s in c.readlines()[::3] if not s.startswith('#')] 
+#             filesets['UL18postVFP_JetHTC_Data'] += jetdatafiles2018c
+#         elif 'Run2018D' in filename:
+#             with open(filedir + 'JetHT/' + filename) as d:
+#                 jetdatafiles2018d = [redirector_str + s.strip() for s in d.readlines()[::3] if not s.startswith('#')] 
+#             filesets['UL18postVFP_JetHTD_Data'] += jetdatafiles2018d
                 
 
     
-#     # ---- Single Muon ---- #
-#     datafilelist = os.listdir(filedir + 'SingleMu/')
-#     for filename in datafilelist:
-#         if 'Run2016' in filename:
-#             with open(filedir + 'SingleMu/' + filename) as f:
-#                 singlemudatafiles2016 = [redirector_str + s.strip() for s in f.readlines() if not s.startswith('#')]
-#             filesets['SingleMu2016_Data'] += singlemudatafiles2016
-#         elif 'Run2017' in filename:
-#             with open(filedir + 'SingleMu/' + filename) as g:
-#                 singlemudatafiles2017 = [redirector_str + s.strip() for s in g.readlines() if not s.startswith('#')]
-#             filesets['SingleMu2017_Data'] += singlemudatafiles2017
-#         else:
-#             with open(filedir + 'SingleMu/' + filename) as h:
-#                 singlemudatafiles2018 = [redirector_str + s.strip() for s in h.readlines() if not s.startswith('#')] 
-#             filesets['SingleMu2018_Data'] += singlemudatafiles2018 
+    # ---- Single Muon ---- #
+    datafilelist = os.listdir(filedir + 'SingleMu/')
+    for filename in datafilelist:
+        
+        if 'Run2016B' in filename:
+            with open(filedir + 'SingleMu/' + filename) as b:
+                jetdatafiles2016b = [redirector_str + s.strip() for s in b.readlines() if not s.startswith('#')] 
+            filesets['UL16preVFP_SingleMuB_Data'] += jetdatafiles2016b
+        elif 'Run2016C' in filename:
+            with open(filedir + 'SingleMu/' + filename) as c:
+                jetdatafiles2016c = [redirector_str + s.strip() for s in c.readlines() if not s.startswith('#')] 
+            filesets['UL16preVFP_SingleMuC_Data'] += jetdatafiles2016c
+        elif 'Run2016D' in filename:
+            with open(filedir + 'SingleMu/' + filename) as d:
+                jetdatafiles2016d = [redirector_str + s.strip() for s in d.readlines() if not s.startswith('#')] 
+            filesets['UL16preVFP_SingleMuD_Data'] += jetdatafiles2016d
+        elif 'Run2016E' in filename:
+            with open(filedir + 'SingleMu/' + filename) as e:
+                jetdatafiles2016e = [redirector_str + s.strip() for s in e.readlines() if not s.startswith('#')] 
+            filesets['UL16preVFP_SingleMuE_Data'] += jetdatafiles2016e
+        elif 'Run2016F' in filename:
+            with open(filedir + 'SingleMu/' + filename) as fold:
+                jetdatafiles2016fold = [redirector_str + s.strip() for s in fold.readlines() if ('HIPM' in s and not s.startswith('#'))]
+            with open(filedir + 'SingleMu/' + filename) as fnew:
+                jetdatafiles2016fnew = [redirector_str + s.strip() for s in fnew.readlines() if ('HIPM' not in s and not s.startswith('#'))]
+            filesets['UL16preVFP_SingleMuF_Data'] += jetdatafiles2016fold
+            filesets['UL16postVFP_SingleMuF_Data'] += jetdatafiles2016fnew
+        elif 'Run2016G' in filename:
+            with open(filedir + 'SingleMu/' + filename) as g:
+                jetdatafiles2016g = [redirector_str + s.strip() for s in g.readlines() if not s.startswith('#')] 
+            filesets['UL16postVFP_SingleMuG_Data'] += jetdatafiles2016g
+        elif 'Run2016H' in filename:
+            with open(filedir + 'SingleMu/' + filename) as h:
+                jetdatafiles2016h = [redirector_str + s.strip() for s in h.readlines() if not s.startswith('#')] 
+            filesets['UL16postVFP_SingleMuH_Data'] += jetdatafiles2016h
+            
+        if 'Run2017B' in filename:
+            with open(filedir + 'SingleMu/' + filename) as b:
+                jetdatafiles2017b = [redirector_str + s.strip() for s in b.readlines()[::3] if not s.startswith('#')] 
+            filesets['UL17postVFP_SingleMuB_Data'] += jetdatafiles2017b
+        elif 'Run2017C' in filename:
+            with open(filedir + 'SingleMu/' + filename) as c:
+                jetdatafiles2017c = [redirector_str + s.strip() for s in c.readlines()[::3] if not s.startswith('#')] 
+            filesets['UL17postVFP_SingleMuC_Data'] += jetdatafiles2017c
+        elif 'Run2017D' in filename:
+            with open(filedir + 'SingleMu/' + filename) as d:
+                jetdatafiles2017d = [redirector_str + s.strip() for s in d.readlines()[::3] if not s.startswith('#')] 
+            filesets['UL17postVFP_SingleMuD_Data'] += jetdatafiles2017d
+        elif 'Run2017E' in filename:
+            with open(filedir + 'SingleMu/' + filename) as e:
+                jetdatafiles2017e = [redirector_str + s.strip() for s in e.readlines()[::3] if not s.startswith('#')] 
+            filesets['UL17postVFP_SingleMuE_Data'] += jetdatafiles2017e
+        elif 'Run2017F' in filename:
+            with open(filedir + 'SingleMu/' + filename) as f:
+                jetdatafiles2017f = [redirector_str + s.strip() for s in f.readlines()[::3] if not s.startswith('#')] 
+            filesets['UL17postVFP_SingleMuF_Data'] += jetdatafiles2017f
+                
+        if 'Run2018A' in filename:
+            with open(filedir + 'SingleMu/' + filename) as a:
+                jetdatafiles2018a = [redirector_str + s.strip() for s in a.readlines()[::3] if not s.startswith('#')] 
+            filesets['UL18postVFP_SingleMuA_Data'] += jetdatafiles2018a
+        elif 'Run2018B' in filename:
+            with open(filedir + 'SingleMu/' + filename) as b:
+                jetdatafiles2018b = [redirector_str + s.strip() for s in b.readlines()[::3] if not s.startswith('#')] 
+            filesets['UL18postVFP_SingleMuB_Data'] += jetdatafiles2018b
+        elif 'Run2018C' in filename:
+            with open(filedir + 'SingleMu/' + filename) as c:
+                jetdatafiles2018c = [redirector_str + s.strip() for s in c.readlines()[::3] if not s.startswith('#')] 
+            filesets['UL18postVFP_SingleMuC_Data'] += jetdatafiles2018c
+        elif 'Run2018D' in filename:
+            with open(filedir + 'SingleMu/' + filename) as d:
+                jetdatafiles2018d = [redirector_str + s.strip() for s in d.readlines()[::3] if not s.startswith('#')] 
+            filesets['UL18postVFP_SingleMuD_Data'] += jetdatafiles2018d
+        
                 
     # print(filesets['UL16postVFP_JetHT_Data'])
     # print('==========================================================================================================')

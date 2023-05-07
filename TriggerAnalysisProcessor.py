@@ -58,8 +58,9 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         self.label_dict = {i: label for i, label in enumerate(self.ttagcats_forTriggerAnalysis)}
                                                           
         dataset_axis = hist.axis.StrCategory([], growth=True, name = "dataset", label = "Primary Dataset")
-        cats_axis = hist.axis.Regular(2, 0, 1, name = "anacat", label = "Analysis Category")
+        cats_axis = hist.axis.IntCategory(range(2), name = "anacat", label = "Analysis Category")
         jetht_axis = hist.axis.Variable(manual_jetht_bins, name = "Jet_HT", label = r'$AK4\ Jet\ HT$') # Used for Trigger Analysis
+        jetht_axis_zoom = hist.axis.Variable(manual_jetht_bins_zoom, name = "Jet_HT", label = r'$AK4\ Jet\ HT$') # Used for Trigger Analysis
         sdMass_axis = hist.axis.Variable(manual_sdMass_bins, name = "Jet_sdMass", label = r'$AK4\ M_{SD}$')
         
 #    ===================================================================================================
@@ -86,6 +87,19 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
            'trigger4_numerator': hist.Hist(dataset_axis, cats_axis, jetht_axis, sdMass_axis, storage = "weight", name = "Counts"),
            'trigger5_numerator': hist.Hist(dataset_axis, cats_axis, jetht_axis, sdMass_axis, storage = "weight", name = "Counts"),
             
+           'condition1_numerator_zoom': hist.Hist(dataset_axis, cats_axis, jetht_axis_zoom, sdMass_axis, storage = "weight", name = "Counts"),
+           'condition2_numerator_zoom': hist.Hist(dataset_axis, cats_axis, jetht_axis_zoom, sdMass_axis, storage = "weight", name = "Counts"),
+           'condition3_numerator_zoom': hist.Hist(dataset_axis, cats_axis, jetht_axis_zoom, sdMass_axis, storage = "weight", name = "Counts"),
+           'condition4_numerator_zoom': hist.Hist(dataset_axis, cats_axis, jetht_axis_zoom, sdMass_axis, storage = "weight", name = "Counts"),
+           'condition5_numerator_zoom': hist.Hist(dataset_axis, cats_axis, jetht_axis_zoom, sdMass_axis, storage = "weight", name = "Counts"),
+           'condition_denominator_zoom': hist.Hist(dataset_axis, cats_axis, jetht_axis_zoom, sdMass_axis, storage = "weight", name = "Counts"),
+            
+           'trigger1_numerator_zoom': hist.Hist(dataset_axis, cats_axis, jetht_axis_zoom, sdMass_axis, storage = "weight", name = "Counts"),
+           'trigger2_numerator_zoom': hist.Hist(dataset_axis, cats_axis, jetht_axis_zoom, sdMass_axis, storage = "weight", name = "Counts"),
+           'trigger3_numerator_zoom': hist.Hist(dataset_axis, cats_axis, jetht_axis_zoom, sdMass_axis, storage = "weight", name = "Counts"),
+           'trigger4_numerator_zoom': hist.Hist(dataset_axis, cats_axis, jetht_axis_zoom, sdMass_axis, storage = "weight", name = "Counts"),
+           'trigger5_numerator_zoom': hist.Hist(dataset_axis, cats_axis, jetht_axis_zoom, sdMass_axis, storage = "weight", name = "Counts"),
+            
            'cutflow': processor.defaultdict_accumulator(int),
         }
         
@@ -106,6 +120,7 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         
         # ---- Define dataset ---- #
         dataset = events.metadata['dataset']
+        filename = events.metadata['filename']
 
 #    ===========================================================================================    
 #    N     N    A    N     N   OOO      A      OOO   DDDD          OOO   BBBBBB  JJJJJJJ   SSSSS     
@@ -209,27 +224,92 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         trigger1 = None
         trigger2 = None
         trigger3 = None
-        trigger4 = None
         
-        if self.year == 2016: #HLT PFHT890
-            trigger1 = events.HLT_PFHT900
-            trigger2 = events.HLT_AK8PFHT700_TrimR0p1PT0p03Mass50
-            trigger3 = events.HLT_AK8PFJet450
-            trigger4 = events.HLT_AK8PFJet360_TrimMass30
-        elif self.year == 2017:
-            trigger1 = events.HLT_PFHT1050
-            trigger2 = events.HLT_AK8PFJet550 
+        condition = None
+        Triggers = []
+        
+        if self.year == 2016 and isData: 
+            
+            try:
+                Triggers.append(events.HLT_PFHT900)
+            except AttributeError as AE:
+                print(f'\nTrigger HLT_PFHT900 not found in {filename}\nEvent run {events.run}\n', flush=True)
+                return output
+            try:
+                Triggers.append(events.HLT_AK8PFJet450)
+            except AttributeError as AE:
+                print(f'\nTrigger HLT_AK8PFJet450 not found in {filename}\nEvent run {events.run}\n', flush=True)
+                return output
+            try:
+                Triggers.append(events.HLT_AK8PFJet360_TrimMass30)
+            except AttributeError as AE:
+                print(f'\nTrigger HLT_AK8PFJet360_TrimMass30 not found in {filename}\nEvent run {events.run}\n', flush=True)
+                return output
+            
+        elif self.year == 2017 and isData and 'Run2017B' not in filename: 
+            
+            try:
+                Triggers.append(events.HLT_PFHT1050)
+            except AttributeError as AE:
+                print(f'\nTrigger HLT_PFHT1050 not found in {filename}\nEvent run {events.run}\n', flush=True)
+                return output
+            try:
+                Triggers.append(events.HLT_AK8PFJet550)
+            except AttributeError as AE:
+                print(f'\nTrigger HLT_AK8PFJet550 not found in {filename}\nEvent run {events.run}\n', flush=True)
+                return output
+            try:
+                Triggers.append(events.HLT_AK8PFHT800_TrimMass50 ) # This IS prescaled!!
+            except AttributeError as AE:
+                print(f'\nTrigger HLT_AK8PFHT800_TrimMass50 not found in {filename}\nEvent run {events.run}\n', flush=True)
+                return output
+            
+        elif self.year == 2017 and isData and 'Run2017B' in filename: 
+            
+            try:
+                Triggers.append(events.HLT_PFHT1050)
+            except AttributeError as AE:
+                print(f'\nTrigger HLT_PFHT1050 not found in {filename}\nEvent run {events.run}\n', flush=True)
+                return output
+            try:
+                Triggers.append(events.HLT_AK8PFJet550)
+            except AttributeError as AE:
+                print(f'\nTrigger HLT_AK8PFJet550 not found in {filename}\nEvent run {events.run}\n', flush=True)
+                return output
+            
         else:
-            trigger1 = events.HLT_PFHT1050
-            trigger2 = events.HLT_AK8PFHT800_TrimMass50
-            trigger3 = events.HLT_AK8PFJet550 
-            trigger4 = events.HLT_AK8PFJet400_TrimMass30
+            
+            try:
+                Triggers.append(events.HLT_PFHT1050)
+            except AttributeError as AE:
+                print(f'\nTrigger HLT_PFHT1050 not found in {filename}\nEvent run {events.run}\n', flush=True)
+                return output
+            try:
+                Triggers.append(events.HLT_AK8PFHT800_TrimMass50 )
+            except AttributeError as AE:
+                print(f'\nTrigger HLT_AK8PFHT800_TrimMass50 not found in {filename}\nEvent run {events.run}\n', flush=True)
+                return output
+            try:
+                Triggers.append(events.HLT_AK8PFJet400_TrimMass30)
+            except AttributeError as AE:
+                print(f'\nTrigger HLT_AK8PFJet400_TrimMass30 not found in {filename}\nEvent run {events.run}\n', flush=True)
+                return output
+                
+            
+                
+        # condition = ak.flatten(ak.any(Triggers, axis=0, keepdims=True))
+
+        trigger1 = Triggers[0]
+        trigger2 = Triggers[1]
+
+        if 'Run2017B' not in filename:
+            trigger3 = Triggers[2]
             
         Trigger1 = trigger1 & trigDenom
         Trigger2 = trigger2 & trigDenom
-        if self.year != 2017:
+        
+        if 'Run2017B' not in filename:
             Trigger3 = trigger3 & trigDenom
-            Trigger4 = trigger4 & trigDenom
             
 
 #    ===================================================================================
@@ -255,20 +335,12 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         condition1 = None
         condition2 = None
         condition3 = None
-        condition4 = None
         
         # ---- Apply Trigger(s) ---- # 
-        if self.year != 2017: # Include other years later...
-            # ---- Defining Trigger Analysis Conditions ---- #
-            condition1 = trigger1 & trigDenom 
-            condition2 = (trigger1 | trigger2) & trigDenom
+        condition1 = trigger1 & trigDenom 
+        condition2 = (trigger1 | trigger2) & trigDenom
+        if 'Run2017B' not in filename:
             condition3 = ((trigger1 | trigger2) | trigger3) & trigDenom
-            condition4 = ((trigger1 | trigger2) | (trigger3 | trigger4)) & trigDenom
-            
-        else: # Special for 2017 only
-            # ---- Defining Trigger Analysis Conditions ---- #
-            condition1 = trigger1 & trigDenom 
-            condition2 = (trigger1 | trigger2) & trigDenom
         
             
         # ---- Jets that satisfy Jet ID ---- #
@@ -283,21 +355,20 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         output['cutflow']['events with pT,y Cut'] += len(FatJets)
         
         # ---- Find two AK8 Jets ---- #
-        twoFatJetsKin = (ak.num(FatJets, axis=-1) == 2)
+        twoFatJetsKin = (ak.num(FatJets, axis=-1) >= 2)
         FatJets = FatJets[twoFatJetsKin]
         SubJets = SubJets[twoFatJetsKin]
         Jets = Jets[twoFatJetsKin] # this used to not be here
         
         Trigger1 = Trigger1[twoFatJetsKin]
         Trigger2 = Trigger2[twoFatJetsKin]
+        if 'Run2017B' not in filename:
+            Trigger3 = Trigger3[twoFatJetsKin]
         condition1 = condition1[twoFatJetsKin]
         condition2 = condition2[twoFatJetsKin]
-
-        if self.year != 2017:
-            Trigger3 = Trigger3[twoFatJetsKin]
-            Trigger4 = Trigger4[twoFatJetsKin]
+        if 'Run2017B' not in filename:
             condition3 = condition3[twoFatJetsKin]
-            condition4 = condition4[twoFatJetsKin]
+        
             
         trigDenom = trigDenom[twoFatJetsKin]
         evtweights = evtweights[twoFatJetsKin]
@@ -346,14 +417,12 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         
         Trigger1 = Trigger1[oneTTbar]
         Trigger2 = Trigger2[oneTTbar]
+        if 'Run2017B' not in filename:
+            Trigger3 = Trigger3[oneTTbar]
         condition1 = condition1[oneTTbar]
         condition2 = condition2[oneTTbar]
-        
-        if self.year != 2017:
-            Trigger3 = Trigger3[oneTTbar]
-            Trigger4 = Trigger4[oneTTbar]
+        if 'Run2017B' not in filename:
             condition3 = condition3[oneTTbar]
-            condition4 = condition4[oneTTbar]
         
         trigDenom = trigDenom[oneTTbar]
         SubJets = SubJets[oneTTbar]
@@ -361,7 +430,7 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
             
         # ---- Apply Delta Phi Cut for Back to Back Topology ---- #
         """ NOTE: Should find function for this; avoids 2pi problem """
-        dPhiCut = ttbarcands.slot0.p4.delta_phi(ttbarcands.slot1.p4) > 2.1
+        dPhiCut = np.abs(ttbarcands.slot0.p4.delta_phi(ttbarcands.slot1.p4)) > 2.1
         dPhiCut = ak.flatten(dPhiCut)
         ttbarcands = ttbarcands[dPhiCut]
         FatJets = FatJets[dPhiCut] 
@@ -370,14 +439,12 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         
         Trigger1 = Trigger1[dPhiCut]
         Trigger2 = Trigger2[dPhiCut]
+        if 'Run2017B' not in filename:
+            Trigger3 = Trigger3[dPhiCut]
         condition1 = condition1[dPhiCut]
         condition2 = condition2[dPhiCut]
-        
-        if self.year != 2017:
-            Trigger3 = Trigger3[dPhiCut]
-            Trigger4 = Trigger4[dPhiCut]
+        if 'Run2017B' not in filename:
             condition3 = condition3[dPhiCut]
-            condition4 = condition4[dPhiCut]
             
         trigDenom = trigDenom[dPhiCut]
         SubJets = SubJets[dPhiCut] 
@@ -395,14 +462,12 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         
         Trigger1 = Trigger1[GoodSubjets]
         Trigger2 = Trigger2[GoodSubjets]
+        if 'Run2017B' not in filename:
+            Trigger3 = Trigger3[GoodSubjets]
         condition1 = condition1[GoodSubjets]
         condition2 = condition2[GoodSubjets]
-        
-        if self.year != 2017:
-            Trigger3 = Trigger3[GoodSubjets]
-            Trigger4 = Trigger4[GoodSubjets]
+        if 'Run2017B' not in filename:
             condition3 = condition3[GoodSubjets]
-            condition4 = condition4[GoodSubjets]
             
         trigDenom = trigDenom[GoodSubjets]
         evtweights = evtweights[GoodSubjets]
@@ -458,47 +523,43 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
             '1': condition1,
             '2': condition2
         } 
-        if self.year != 2017:
+        
+        if 'Run2017B' not in filename:
             TriggersDict['3'] = Trigger3
-            TriggersDict['4'] = Trigger4
             ConditionsDict['3'] = condition3
-            ConditionsDict['4'] = condition4
+        
             
 
         # ---- Defining Jet Collections for Trigger Analysis Numerator and Denominator ---- #
         Jets_NumTrigger1 = Jets[Trigger1] # contains jets to be used as numerator for trigger eff
         Jets_NumTrigger2 = Jets[Trigger2]
+        if 'Run2017B' not in filename:
+            Jets_NumTrigger3 = Jets[Trigger3]
         Jets_NumCondition1 = Jets[condition1] # contains jets to be used as numerator for trigger eff
         Jets_NumCondition2 = Jets[condition2]
-        
-        if self.year != 2017:
-            Jets_NumTrigger3 = Jets[Trigger3]
-            Jets_NumTrigger4 = Jets[Trigger4]
+        if 'Run2017B' not in filename:
             Jets_NumCondition3 = Jets[condition3]
-            Jets_NumCondition4 = Jets[condition4]
+        
             
         Jets_DenomCondition = Jets[trigDenom] # contains jets to be used as denominator for trigger eff
         
-        output['cutflow']['events with jets cond1'] +=  ak.sum(condition1,axis=1)
-        output['cutflow']['events with jets cond2'] +=  ak.sum(condition2, axis=1)
+        output['cutflow']['events with jets cond1'] +=  ak.sum(condition1, axis=-1)
+        output['cutflow']['events with jets cond2'] +=  ak.sum(condition2, axis=-1)
+        if 'Run2017B' not in filename:
+            output['cutflow']['events with jets cond3'] +=  ak.sum(condition3, axis=-1)
         
-        if self.year != 2017:
-            output['cutflow']['events with jets cond3'] +=  ak.sum(condition3, axis=1)
-            output['cutflow']['events with jets cond4'] +=  ak.sum(condition4, axis=1)
-        
-        output['cutflow']['events with jets Denom cond'] +=  ak.sum(trigDenom, axis=1)
+        output['cutflow']['events with jets Denom cond'] +=  ak.sum(trigDenom, axis=-1)
         
         # ---- Must pass this cut before calculating HT variables for analysis ---- #
         passAK4_num1_trig = (Jets_NumTrigger1.pt > 30.) & (np.abs(Jets_NumTrigger1.eta) < 3.0) 
         passAK4_num2_trig = (Jets_NumTrigger2.pt > 30.) & (np.abs(Jets_NumTrigger2.eta) < 3.0)
+        if 'Run2017B' not in filename:
+            passAK4_num3_trig = (Jets_NumTrigger3.pt > 30.) & (np.abs(Jets_NumTrigger3.eta) < 3.0) 
         passAK4_num1 = (Jets_NumCondition1.pt > 30.) & (np.abs(Jets_NumCondition1.eta) < 3.0) 
         passAK4_num2 = (Jets_NumCondition2.pt > 30.) & (np.abs(Jets_NumCondition2.eta) < 3.0)
-        
-        if self.year != 2017:
-            passAK4_num3_trig = (Jets_NumTrigger3.pt > 30.) & (np.abs(Jets_NumTrigger3.eta) < 3.0) 
-            passAK4_num4_trig = (Jets_NumTrigger4.pt > 30.) & (np.abs(Jets_NumTrigger4.eta) < 3.0)
+        if 'Run2017B' not in filename:
             passAK4_num3 = (Jets_NumCondition3.pt > 30.) & (np.abs(Jets_NumCondition3.eta) < 3.0)
-            passAK4_num4 = (Jets_NumCondition4.pt > 30.) & (np.abs(Jets_NumCondition4.eta) < 3.0)
+        
         
         passAK4_denom = (Jets_DenomCondition.pt > 30.) & (np.abs(Jets_DenomCondition.eta) < 3.0) 
         
@@ -511,14 +572,13 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         
         Num1Wgt_trig = evtweights[Trigger1]
         Num2Wgt_trig = evtweights[Trigger2]
+        if 'Run2017B' not in filename:
+            Num3Wgt_trig = evtweights[Trigger3]
         Num1Wgt = evtweights[condition1]
         Num2Wgt = evtweights[condition2]
-        
-        if self.year != 2017:
-            Num3Wgt_trig = evtweights[Trigger3]
-            Num4Wgt_trig = evtweights[Trigger4]
+        if 'Run2017B' not in filename:
             Num3Wgt = evtweights[condition3]
-            Num4Wgt = evtweights[condition4]
+        
         
         NumWgtTrigDict = {
             '1': Num1Wgt_trig,
@@ -529,25 +589,22 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
             '2': Num2Wgt
         }
         
-        if self.year != 2017:
+        if 'Run2017B' not in filename:
             NumWgtTrigDict['3'] = Num3Wgt_trig
-            NumWgtTrigDict['4'] = Num4Wgt_trig
             NumWgtDict['3'] = Num3Wgt
-            NumWgtDict['4'] = Num4Wgt
             
         DenomWgt = evtweights[trigDenom]
         
         # ---- Defining Trigger Analysis Numerator(s) and Denominator as function of HT ---- #
         jet_HT_numerator1_trig = ak.sum(Jets_NumTrigger1[passAK4_num1_trig].pt, axis=-1) # Sum over each AK4 Jet per event
         jet_HT_numerator2_trig = ak.sum(Jets_NumTrigger2[passAK4_num2_trig].pt, axis=-1)
+        if 'Run2017B' not in filename:
+            jet_HT_numerator3_trig = ak.sum(Jets_NumTrigger3[passAK4_num3_trig].pt, axis=-1)
         jet_HT_numerator1 = ak.sum(Jets_NumCondition1[passAK4_num1].pt, axis=-1) # Sum over each AK4 Jet per event
         jet_HT_numerator2 = ak.sum(Jets_NumCondition2[passAK4_num2].pt, axis=-1)
-        
-        if self.year != 2017:
-            jet_HT_numerator3_trig = ak.sum(Jets_NumTrigger3[passAK4_num3_trig].pt, axis=-1)
-            jet_HT_numerator4_trig = ak.sum(Jets_NumTrigger4[passAK4_num4_trig].pt, axis=-1)
+        if 'Run2017B' not in filename:
             jet_HT_numerator3 = ak.sum(Jets_NumCondition3[passAK4_num3].pt, axis=-1)
-            jet_HT_numerator4 = ak.sum(Jets_NumCondition4[passAK4_num4].pt, axis=-1)
+        
         
         jet_HT_numeratorTrigDict = {
             '1': jet_HT_numerator1_trig,
@@ -558,12 +615,9 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
             '1': jet_HT_numerator1,
             '2': jet_HT_numerator2
         }
-        
-        if self.year != 2017:
+        if 'Run2017B' not in filename:
             jet_HT_numeratorTrigDict['3'] = jet_HT_numerator3_trig
-            jet_HT_numeratorTrigDict['4'] = jet_HT_numerator4_trig
             jet_HT_numeratorDict['3'] = jet_HT_numerator3
-            jet_HT_numeratorDict['4'] = jet_HT_numerator4
             
         jet_HT_denominator = ak.sum(Jets_DenomCondition[passAK4_denom].pt, axis=-1) # Sum over each AK4 Jet per event
         
@@ -572,14 +626,13 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
         
         jet_SD_numerator1_trig = sdMass[Trigger1]
         jet_SD_numerator2_trig = sdMass[Trigger2]
+        if 'Run2017B' not in filename:
+            jet_SD_numerator3_trig = sdMass[Trigger3]
         jet_SD_numerator1 = sdMass[condition1]
         jet_SD_numerator2 = sdMass[condition2]
-
-        if self.year != 2017:
-            jet_SD_numerator3_trig = sdMass[Trigger3]
-            jet_SD_numerator4_trig = sdMass[Trigger4]
+        if 'Run2017B' not in filename:
             jet_SD_numerator3 = sdMass[condition3]
-            jet_SD_numerator4 = sdMass[condition4]
+        
             
         jet_SD_denominator = sdMass[trigDenom]
         
@@ -592,12 +645,9 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
             '1': jet_SD_numerator1,
             '2': jet_SD_numerator2
         }
-        
-        if self.year != 2017:
+        if 'Run2017B' not in filename:
             jet_SD_numeratorTrigDict['3'] = jet_SD_numerator3_trig
-            jet_SD_numeratorTrigDict['4'] = jet_SD_numerator4_trig
             jet_SD_numeratorDict['3'] = jet_SD_numerator3
-            jet_SD_numeratorDict['4'] = jet_SD_numerator4
                 
         # ----------------- Keep track of cutflow for individual bins ---------------- #
         # ---- [200, 800, 840, 880, 920, 960, 1000, 1200, 1400, 1600, 1800, 2000] ---- #
@@ -631,6 +681,10 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
                                                 Jet_HT = ak.to_numpy(jet_HT_denominator[icat]),
                                                 Jet_sdMass = ak.to_numpy(jet_SD_denominator[icat]),
                                                 weight = ak.to_numpy(DenomWgt[icat]))
+            output['condition_denominator_zoom'].fill(dataset = dataset, anacat = self.ConvertLabelToInt(self.label_dict, ilabel), 
+                                                Jet_HT = ak.to_numpy(jet_HT_denominator[icat]),
+                                                Jet_sdMass = ak.to_numpy(jet_SD_denominator[icat]),
+                                                weight = ak.to_numpy(DenomWgt[icat]))
         # ---- Define Categories for Trigger Analysis Numerators and Fill Hists---- #
         for i in range(1, len(ConditionsDict)+1):
             c = ConditionsDict[str(i)]
@@ -648,8 +702,12 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
             labels_and_categories_cond = dict(zip(self.ttagcats_forTriggerAnalysis, cats_cond))
             labels_and_categories_trig = dict(zip(self.ttagcats_forTriggerAnalysis, cats_trig))
             # print(labels_and_categories_cond)
-            for ilabel,icat in labels_and_categories_cond.items():
+            for ilabel,icat in labels_and_categories_cond.items(): 
                 output['condition' + str(i) + '_numerator'].fill(dataset = dataset, anacat = self.ConvertLabelToInt(self.label_dict, ilabel), 
+                                                                Jet_HT = ak.to_numpy(n_HT[icat]),
+                                                                Jet_sdMass = ak.to_numpy(n_SD[icat]),
+                                                                weight = ak.to_numpy(w[icat]))
+                output['condition' + str(i) + '_numerator_zoom'].fill(dataset = dataset, anacat = self.ConvertLabelToInt(self.label_dict, ilabel), 
                                                                 Jet_HT = ak.to_numpy(n_HT[icat]),
                                                                 Jet_sdMass = ak.to_numpy(n_SD[icat]),
                                                                 weight = ak.to_numpy(w[icat]))
@@ -658,8 +716,16 @@ class TriggerAnalysisProcessor(processor.ProcessorABC):
                                                                 Jet_HT = ak.to_numpy(nt_HT[icat]),
                                                                 Jet_sdMass = ak.to_numpy(nt_SD[icat]),
                                                                 weight = ak.to_numpy(wt[icat]))
+                output['trigger' + str(i) + '_numerator_zoom'].fill(dataset = dataset, anacat = self.ConvertLabelToInt(self.label_dict, ilabel), 
+                                                                Jet_HT = ak.to_numpy(nt_HT[icat]),
+                                                                Jet_sdMass = ak.to_numpy(nt_SD[icat]),
+                                                                weight = ak.to_numpy(wt[icat]))
  
         return output
 
     def postprocess(self, accumulator):
         return accumulator
+
+    
+    
+    
