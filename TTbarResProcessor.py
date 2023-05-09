@@ -998,23 +998,23 @@ class TTbarResProcessor(processor.ProcessorABC):
         # ----------- CMS Top Tagger Version 2 (SD and Tau32 Cuts) ----------- #
         # ---- NOTE: Must Change This to DeepAK8 Top Tag Discriminator Cut ----#
         # ---- Maybe we should ignore tau32 cut(s) when performing trigger analysis ---- #
-        tau32_s0 = np.where(ttbarcands.slot0.tau2>0,ttbarcands.slot0.tau3/ttbarcands.slot0.tau2, 0 )
-        tau32_s1 = np.where(ttbarcands.slot1.tau2>0,ttbarcands.slot1.tau3/ttbarcands.slot1.tau2, 0 )
+#         tau32_s0 = np.where(ttbarcands.slot0.tau2>0,ttbarcands.slot0.tau3/ttbarcands.slot0.tau2, 0 )
+#         tau32_s1 = np.where(ttbarcands.slot1.tau2>0,ttbarcands.slot1.tau3/ttbarcands.slot1.tau2, 0 )
         
-        taucut_s0 = tau32_s0 < self.tau32Cut
-        taucut_s1 = tau32_s1 < self.tau32Cut
+#         taucut_s0 = tau32_s0 < self.tau32Cut
+#         taucut_s1 = tau32_s1 < self.tau32Cut
         
-        mcut_s0 = (self.minMSD < ttbarcands.slot0.msoftdrop) & (ttbarcands.slot0.msoftdrop < self.maxMSD) 
-        mcut_s1 = (self.minMSD < ttbarcands.slot1.msoftdrop) & (ttbarcands.slot1.msoftdrop < self.maxMSD) 
+#         mcut_s0 = (self.minMSD < ttbarcands.slot0.msoftdrop) & (ttbarcands.slot0.msoftdrop < self.maxMSD) 
+#         mcut_s1 = (self.minMSD < ttbarcands.slot1.msoftdrop) & (ttbarcands.slot1.msoftdrop < self.maxMSD) 
 
-        ttag_s0 = (taucut_s0) & (mcut_s0)
-        ttag_s1 = (taucut_s1) & (mcut_s1)
-        antitag = (~taucut_s0) & (mcut_s0) # The Probe jet will always be ttbarcands.slot1 (at)
+#         ttag_s0 = (taucut_s0) & (mcut_s0)
+#         ttag_s1 = (taucut_s1) & (mcut_s1)
+#         antitag = (~taucut_s0) & (mcut_s0) # The Probe jet will always be ttbarcands.slot1 (at)
 
         # ----------- DeepAK8 Tagger (Discriminator Cut) ----------- #
-        # ttag_s0 = ttbarcands.slot0.deepTag_TvsQCD > self.deepAK8Cut
-        # ttag_s1 = ttbarcands.slot1.deepTag_TvsQCD > self.deepAK8Cut
-        # antitag = ttbarcands.slot0.deepTag_TvsQCD < self.deepAK8Cut # The Probe jet will always be ttbarcands.slot1 (at)
+        ttag_s0 = ttbarcands.slot0.deepTag_TvsQCD > self.deepAK8Cut
+        ttag_s1 = ttbarcands.slot1.deepTag_TvsQCD > self.deepAK8Cut
+        antitag = ttbarcands.slot0.deepTag_TvsQCD < self.deepAK8Cut # The Probe jet will always be ttbarcands.slot1 (at)
         
         # ---- Define "Top Tag" Regions ---- #
         antitag_probe = np.logical_and(antitag, ttag_s1) # Found an antitag and ttagged probe pair for mistag rate (AT&Pt)
