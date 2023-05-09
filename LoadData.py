@@ -67,6 +67,38 @@ def JetHT_Weighted(btag, year, contam, unc, mr):
         
     return(Output)
 
+def SingleMu_Unweighted(year):
+    
+    Output = {}
+    
+    if year == 2016:
+        
+        for Era in ['B', 'C', 'D', 'E', 'F']:
+            datastr = f'TTbarRes_0l_UL16preVFP_SingleMu{Era}_Data_TriggerAnalysis'
+            PathToFile = f'CoffeaOutputsForTriggerAnalysis/SingleMu/MediumBTag/{str(year)}/APV/{datastr}.coffea'
+            Output[Era+'_preVFP'] = util.load(PathToFile)
+
+        for Era in ['F', 'G', 'H']:
+            datastr = f'TTbarRes_0l_UL16postVFP_SingleMu{Era}_Data_TriggerAnalysis'
+            PathToFile = f'CoffeaOutputsForTriggerAnalysis/SingleMu/MediumBTag/{str(year)}/noAPV/{datastr}.coffea'
+            Output[Era+'_postVFP'] = util.load(PathToFile)
+            
+    elif year == 2017:
+        
+        for Era in ['B', 'C', 'D', 'E', 'F']:
+            datastr = f'TTbarRes_0l_UL17postVFP_SingleMu{Era}_Data_TriggerAnalysis'
+            PathToFile = f'CoffeaOutputsForTriggerAnalysis/SingleMu/MediumBTag/{str(year)}/noAPV/{datastr}.coffea'
+            Output[Era+'_postVFP'] = util.load(PathToFile)
+            
+    elif year == 2018:
+        
+        for Era in ['A', 'B', 'C', 'D']:
+            datastr = f'TTbarRes_0l_UL18postVFP_SingleMu{Era}_Data_TriggerAnalysis'
+            PathToFile = f'CoffeaOutputsForTriggerAnalysis/SingleMu/MediumBTag/{str(year)}/noAPV/{datastr}.coffea'
+            Output[Era+'_postVFP'] = util.load(PathToFile)
+        
+    return(Output)
+
 def AddEraHists(Output, Year, HistName, CategoryInt):
     '''
         Output --> Dictionary of Data Outputs
@@ -90,6 +122,113 @@ def AddEraHists(Output, Year, HistName, CategoryInt):
             for Era in ['F', 'G', 'H']: #exclude B because histogram is initialized with B era
                 JetHT_str = f'UL{str(Year - 2000)}{vfp}_JetHT{Era}_Data'
                 HistObject += Output[Era+'_'+vfp][HistName][JetHT_str, CategoryInt, :]
+                
+    return HistObject
+
+def AddEraHistsSingleMu(Output, Year, HistName, Xaxis, CategoryInt):
+    '''
+        Output --> Dictionary of Data Outputs
+        Year --> Integer; Year of 
+        HistName --> String; Name of Histogram to be Plotted ('ttbarmass', 'jetpt', etc...)
+        Xaxis --> String; xaxis to be Plotted ('ht', 'sd', 'tt')
+        CategoryInt --> Integer; Number Corresponding to Name of Category ('2t0bcen', 'pret1bfwd', etc...)
+    '''
+    
+    if Year == 2016:
+        
+        JetHT_str = f'UL{str(Year - 2000)}preVFP_SingleMuB_Data'
+        
+        if Xaxis == 'ht':
+            HistObject = Output['B_preVFP'][HistName][JetHT_str, CategoryInt, :, sum]
+        elif Xaxis == 'sd':
+            HistObject = Output['B_preVFP'][HistName][JetHT_str, CategoryInt, sum, :]
+        else:
+            print('Invalid xaxis')
+
+        # ---- Add all data together ---- #
+        for vfp in ['preVFP', 'postVFP']:
+            #---- Define Histograms from Coffea Outputs ----# 
+            if vfp == 'preVFP':
+                for Era in ['C', 'D', 'E', 'F']: #exclude B because histogram is initialized with B era
+                    JetHT_str = f'UL{str(Year - 2000)}{vfp}_SingleMu{Era}_Data'
+                    if Xaxis == 'ht':
+                        HistObject += Output[Era+'_'+vfp][HistName][JetHT_str, CategoryInt, :, sum]
+                    elif Xaxis == 'sd':
+                        HistObject += Output[Era+'_'+vfp][HistName][JetHT_str, CategoryInt, sum, :]
+                    else:
+                        print('Invalid xaxis')
+            else:
+                for Era in ['F', 'G', 'H']: #exclude B because histogram is initialized with B era
+                    JetHT_str = f'UL{str(Year - 2000)}{vfp}_SingleMu{Era}_Data'
+                    if Xaxis == 'ht':
+                        HistObject += Output[Era+'_'+vfp][HistName][JetHT_str, CategoryInt, :, sum]
+                    elif Xaxis == 'sd':
+                        HistObject += Output[Era+'_'+vfp][HistName][JetHT_str, CategoryInt, sum, :]
+                    else:
+                        print('Invalid xaxis')
+                        
+    elif Year == 2017 and '3' in HistName:
+        
+        JetHT_str = f'UL{str(Year - 2000)}postVFP_SingleMuC_Data'
+        
+        if Xaxis == 'ht':
+            HistObject = Output['C_postVFP'][HistName][JetHT_str, CategoryInt, :, sum]
+        elif Xaxis == 'sd':
+            HistObject = Output['C_postVFP'][HistName][JetHT_str, CategoryInt, sum, :]
+        else:
+            print('Invalid xaxis')
+
+        # ---- Add all data together ---- #
+        for Era in ['D', 'E', 'F']: #exclude B because histogram is initialized with C era
+            JetHT_str = f'UL{str(Year - 2000)}postVFP_SingleMu{Era}_Data'
+            if Xaxis == 'ht':
+                HistObject += Output[Era+'_postVFP'][HistName][JetHT_str, CategoryInt, :, sum]
+            elif Xaxis == 'sd':
+                HistObject += Output[Era+'_postVFP'][HistName][JetHT_str, CategoryInt, sum, :]
+            else:
+                print('Invalid xaxis')
+                        
+    elif Year == 2017 and '3' not in HistName:
+        
+        JetHT_str = f'UL{str(Year - 2000)}postVFP_SingleMuB_Data'
+        
+        if Xaxis == 'ht':
+            HistObject = Output['B_postVFP'][HistName][JetHT_str, CategoryInt, :, sum]
+        elif Xaxis == 'sd':
+            HistObject = Output['B_postVFP'][HistName][JetHT_str, CategoryInt, sum, :]
+        else:
+            print('Invalid xaxis')
+
+        # ---- Add all data together ---- #
+        for Era in ['C', 'D', 'E', 'F']: #exclude B because histogram is initialized with B era
+            JetHT_str = f'UL{str(Year - 2000)}postVFP_SingleMu{Era}_Data'
+            if Xaxis == 'ht':
+                HistObject += Output[Era+'_postVFP'][HistName][JetHT_str, CategoryInt, :, sum]
+            elif Xaxis == 'sd':
+                HistObject += Output[Era+'_postVFP'][HistName][JetHT_str, CategoryInt, sum, :]
+            else:
+                print('Invalid xaxis')
+                
+    elif Year == 2018:
+        
+        JetHT_str = f'UL{str(Year - 2000)}postVFP_SingleMuA_Data'
+        
+        if Xaxis == 'ht':
+            HistObject = Output['A_postVFP'][HistName][JetHT_str, CategoryInt, :, sum]
+        elif Xaxis == 'sd':
+            HistObject = Output['A_postVFP'][HistName][JetHT_str, CategoryInt, sum, :]
+        else:
+            print('Invalid xaxis')
+
+        # ---- Add all data together ---- #
+        for Era in ['B', 'C', 'D']: #exclude A because histogram is initialized with B era
+            JetHT_str = f'UL{str(Year - 2000)}postVFP_SingleMu{Era}_Data'
+            if Xaxis == 'ht':
+                HistObject += Output[Era+'_postVFP'][HistName][JetHT_str, CategoryInt, :, sum]
+            elif Xaxis == 'sd':
+                HistObject += Output[Era+'_postVFP'][HistName][JetHT_str, CategoryInt, sum, :]
+            else:
+                print('Invalid xaxis')
                 
     return HistObject
     

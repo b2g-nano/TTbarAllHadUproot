@@ -810,9 +810,9 @@ def main():
         elif args.runmistag: # if args.mistag: Only run 1st uproot job for ttbar and data to get mistag rate with tt contamination removed
             if args.mistagcorrect:
                 filesets_to_run[namingConvention+'_TTbar'] = filesets[namingConvention+'_TTbar']
-            for L in Letters:
-                filesets_to_run[namingConvention+'_JetHT'+L+'_Data'] = filesets[namingConvention+'_JetHT'+L+'_Data'] # include JetHT dataset read in from Filesets
-                SaveLocation[namingConvention+'_JetHT'+L+'_Data'] = 'JetHT/' + BDiscDirectory + fileConvention # file where output will be saved
+                for L in Letters:
+                    filesets_to_run[namingConvention+'_JetHT'+L+'_Data'] = filesets[namingConvention+'_JetHT'+L+'_Data'] # include JetHT dataset read in from Filesets
+                    SaveLocation[namingConvention+'_JetHT'+L+'_Data'] = 'JetHT/' + BDiscDirectory + fileConvention # file where output will be saved
             else:
                 filesets_to_run[namingConvention+'_JetHT_Data'] = filesets[namingConvention+'JetHT_Data'] # include JetHT dataset read in from Filesets
                 SaveLocation[namingConvention+'_JetHT_Data'] = 'JetHT/' + BDiscDirectory + '/TTbarRes_0l_' # file where output will be saved
@@ -1113,11 +1113,11 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                       treename='Events',
                                                       processor_instance=TriggerAnalysisProcessor(RandomDebugMode=False,
                                                                                            bdisc = BDisc,
-                                                                                           csvv2=CSVV2,
+                                                                                           # csvv2=CSVV2,
                                                                                            year=args.year,
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
-                                                                                           trigs_to_run=Trigs_to_run,
+                                                                                           # trigs_to_run=Trigs_to_run,
                                                                                            prng=prng),
                                                       executor=getattr(processor,chosen_exec),
                                                       executor_args={
@@ -1133,11 +1133,11 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                       treename='Events',
                                                       processor_instance=TriggerAnalysisProcessor(RandomDebugMode=False,
                                                                                            bdisc = BDisc,
-                                                                                           csvv2=CSVV2,
+                                                                                           # csvv2=CSVV2,
                                                                                            year=args.year,
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
-                                                                                           trigs_to_run=Trigs_to_run,
+                                                                                           # trigs_to_run=Trigs_to_run,
                                                                                            prng=prng),
                                                       executor=getattr(processor,chosen_exec),
                                                       executor_args={
@@ -1166,11 +1166,11 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                       treename='Events',
                                                       processor_instance=TriggerAnalysisProcessor(RandomDebugMode=False,
                                                                                            bdisc = BDisc,
-                                                                                           csvv2=CSVV2,
+                                                                                           # csvv2=CSVV2,
                                                                                            year=args.year,
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
-                                                                                           trigs_to_run=Trigs_to_run,
+                                                                                           # trigs_to_run=Trigs_to_run,
                                                                                            prng=prng),
                                                       executor=getattr(processor,chosen_exec),
                                                       executor_args={
@@ -1186,11 +1186,11 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                       treename='Events',
                                                       processor_instance=TriggerAnalysisProcessor(RandomDebugMode=False,
                                                                                            bdisc = BDisc,
-                                                                                           csvv2=CSVV2,
+                                                                                           # csvv2=CSVV2,
                                                                                            year=args.year,
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
-                                                                                           trigs_to_run=Trigs_to_run,
+                                                                                           # trigs_to_run=Trigs_to_run,
                                                                                            prng=prng),
                                                       executor=getattr(processor,chosen_exec),
                                                       executor_args={
@@ -1206,7 +1206,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                 if args.saveTrig:
                     mkdir_p('TTbarAllHadUproot/CoffeaOutputsForTriggerAnalysis/'
                               + SaveLocation[name])
-                    savefilename =  output, 'TTbarAllHadUproot/CoffeaOutputsForTriggerAnalysis/' + SaveLocation[name] + name + '_TriggerAnalysis' + OldDisc + '.coffea'
+                    savefilename =  'TTbarAllHadUproot/CoffeaOutputsForTriggerAnalysis/' + SaveLocation[name] + name + '_TriggerAnalysis' + OldDisc + '.coffea'
                     util.save(output, savefilename)
                     print('saving ' + savefilename, flush=True)
 
