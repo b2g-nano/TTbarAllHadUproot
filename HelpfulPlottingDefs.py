@@ -313,4 +313,62 @@ def GetMistagInfoCR(TTbar, JetHT, btag, year, VFP, scale): # CR --> "Contaminati
     }
     
     return Output
+
+def GetMistagInfoTTbar(TTbar, btag, year, VFP, scale):
+    '''
+        TTbar --> dict, coffea output of ttbar loaded from LoadMC.py script
+        btag --> int, number of btags (0, 1, 2)
+        year --> int, run year        (2016, 2017, 2018)
+        VFP  --> str, APV or no APV   (preVFP, postVFP) 
+        scale --> list, collection of ttbar scale factors; first sf for 700-1000 and the other for 1000-Inf
+    '''
+    
+    str1 = '700_1000'
+    str2 = '1000_Inf'
+    stry = 'UL'+str(year-2000)
+    
+    if btag == 0:
+        cen = 6
+        fwd = 7
+    elif btag == 1:
+        cen = 8
+        fwd = 9
+    elif btag == 2:
+        cen = 10
+        fwd = 11
+    else:
+        print('No available number of btags selected')
+        return 0
+    
+    NumTT1cen = TTbar[f'{str1}_{VFP}']['numerator'][f'{stry}{VFP}_TTbar_{str1}', cen, :]
+    DenomTT1cen = TTbar[f'{str1}_{VFP}']['denominator'][f'{stry}{VFP}_TTbar_{str1}', cen, :]
+    NumTT1fwd = TTbar[f'{str1}_{VFP}']['numerator'][f'{stry}{VFP}_TTbar_{str1}', fwd, :]               
+    DenomTT1fwd = TTbar[f'{str1}_{VFP}']['denominator'][f'{stry}{VFP}_TTbar_{str1}', fwd, :]
+
+    NumTT1_inc = NumTT1cen + NumTT1fwd
+    DenomTT1_inc = DenomTT1cen + DenomTT1fwd
+
+    NumTT2cen = TTbar[f'{str2}_{VFP}']['numerator'][f'{stry}{VFP}_TTbar_{str2}', cen, :]
+    DenomTT2cen = TTbar[f'{str2}_{VFP}']['denominator'][f'{stry}{VFP}_TTbar_{str2}', cen, :]
+    NumTT2fwd = TTbar[f'{str2}_{VFP}']['numerator'][f'{stry}{VFP}_TTbar_{str2}', fwd, :]               
+    DenomTT2fwd = TTbar[f'{str2}_{VFP}']['denominator'][f'{stry}{VFP}_TTbar_{str2}', fwd, :]
+
+    NumTT2_inc = NumTT2cen + NumTT2fwd
+    DenomTT2_inc = DenomTT2cen + DenomTT2fwd
+
+    NumTT1_inc *= (-scale[0])
+    DenomTT1_inc *= (-scale[0])
+
+    NumTT2_inc *= (-scale[1])
+    DenomTT2_inc *= (-scale[1])
+
+    NumTT_inc = NumTT1_inc + NumTT2_inc
+    DenomTT_inc = DenomTT1_inc + DenomTT2_inc
+
+    Output = {
+        'Num':   NumTT_inc,
+        'Denom': DenomTT_inc
+    }
+    
+    return Output
         
