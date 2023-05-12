@@ -838,7 +838,7 @@ def main():
                     filesets_to_run[namingConvention+'_JetHT'+L+'_Data'] = filesets[namingConvention+'_JetHT'+L+'_Data'] # include JetHT dataset read in from Filesets
                     SaveLocation[namingConvention+'_JetHT'+L+'_Data'] = 'JetHT/' + BDiscDirectory + fileConvention # file where output will be saved
             else:
-                filesets_to_run[namingConvention+'_JetHT_Data'] = filesets[namingConvention+'JetHT_Data'] # include JetHT dataset read in from Filesets
+                filesets_to_run[namingConvention+'_JetHT_Data'] = filesets[namingConvention+'_JetHT_Data'] # include JetHT dataset read in from Filesets
                 SaveLocation[namingConvention+'_JetHT_Data'] = 'JetHT/' + BDiscDirectory + '/TTbarRes_0l_' # file where output will be saved
         elif isTrigEffArg: # just run over data
             for L in Letters:
