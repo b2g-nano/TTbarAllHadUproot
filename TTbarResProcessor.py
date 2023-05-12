@@ -447,9 +447,9 @@ class TTbarResProcessor(processor.ProcessorABC):
                else '2016')
         
         #blinding
-	if isData and (('2017' in IOV) or ('2018' in IOV)):
+        if isData and (('2017' in IOV) or ('2018' in IOV)):
             events = events[::10]
-
+       
         if "QCD_Pt-15to7000" in filename: 
                 events = events[ events.Generator_binvar > 400 ] # Remove events with large weights
         
