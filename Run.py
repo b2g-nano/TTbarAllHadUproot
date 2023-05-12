@@ -25,19 +25,6 @@ import matplotlib.colors as colors
 
 ak.behavior.update(candidate.behavior)
 # -- Note: Use process.memory_info()[0] for python 2.7. Else, use process.memory_info()
-maindirectory = os.getcwd()
-os.chdir('../') # Runs the code from within the working directory without manually changing all directory paths!
-
-# uploadDir = 'srv/' for lpcjobqueue shell or TTbarAllHadUproot/ for coffea casa
-uploadDir = os.getcwd().replace('/','') + '/'
-if 'TTbarAllHadUproot' in uploadDir: 
-    uploadDir = 'TTbarAllHadUproot/'
-elif 'jovyan' in uploadDir:
-    uploadDir = 'TTbarAllHadUproot/'
-else:
-    uploadDir = 'srv/'
-    
-
 
 def mkdir_p(mypath):
     '''Creates a directory. equivalent to using mkdir -p on the command line'''
@@ -124,15 +111,18 @@ def FlavEffList(Flavor, Output, Dataset, bdiscDirectory, Save):
             
 def main():
     
+    maindirectory = os.getcwd()
+    os.chdir('../') # Runs the code from within the working directory without manually changing all directory paths!
     
-    uploadDir = os.getcwd().replace('/','') + '/'
-    if 'TTbarAllHadUproot' in uploadDir: 
-        uploadDir = 'TTbarAllHadUproot/'
-    elif 'jovyan' in uploadDir:
-        uploadDir = 'TTbarAllHadUproot/'
-    else:
-        uploadDir = 'srv/'
+    # uploadDir = os.getcwd().replace('/','') + '/'
+    # if 'TTbarAllHadUproot' in uploadDir: 
+    #     uploadDir = 'TTbarAllHadUproot/'
+    # elif 'jovyan' in uploadDir:
+    #     uploadDir = 'TTbarAllHadUproot/'
+    # else:
+    #     uploadDir = 'srv/'
     
+    # print(uploadDir)
     
     #    -----------------------------------------------
     #    PPPPPP     A    RRRRRR    SSSSS EEEEEEE RRRRRR      
@@ -191,16 +181,16 @@ def main():
     ./Run.py -C -med -F QCD TTbar DM RSGluon -a no -y 2016 --dask --saveFlav
     ./Run.py -C -med -T -a no -y 2016 --dask --saveTrig\n
         1.) Make Outputs for the first Uproot Job with no weights applied (outside of MC weights that come with the nanoAOD)
-    ./Run.py -C -y 2016 --step 2
+    ./Run.py -C -y 2016 --step 1
     python Run.py -C -med -d QCD TTbar JetHT DM RSGluon -a no -y 2016 --uproot 1 --save\n
         2.) Make Outputs for the second Uproot Job with only mistag rate applied to JetHT and TTbar
-    ./Run.py -C -y 2016 --step 3
+    ./Run.py -C -y 2016 --step 2
     python Run.py -C -med -A QCD TTbar JetHT DM RSGluon -a no -y 2016 --save\n
         3.) Make Outputs for the second Uproot Job with only mistag rate applied to JetHT and TTbar, and mass modification of JetHT and TTbar in pre-tag region
-    ./Run.py -C -y 2016 --step 4
+    ./Run.py -C -y 2016 --step 3
     python Run.py -C -med -M QCD TTbar JetHT DM RSGluon -a no -y 2016 --save\n
         4.) Make Outputs for the second Uproot Job with systematics, on top of mistag rate application and mass modification
-    ./Run.py -C -y 2016 --step 5
+    ./Run.py -C -y 2016 --step 4
     python Run.py -C -med -d QCD TTbar JetHT DM RSGluon -a no -y 2016 --uproot 2 --bTagSyst central --useEff --save\n
       ''')
     # ---- Necessary arguments ---- #
@@ -365,12 +355,14 @@ def main():
     if args.casa:
         Redirector = 'root://xcache/'
         envirDirectory = 'dask-worker-space/'
+        uploadDir = os.getcwd().replace('/','') + '/'
     elif args.lpc:
         Redirector = 'root://cmsxrootd.fnal.gov/'
         uploadDir = 'srv/'
         maindirectory  = 'srv/'
     elif args.winterfell:
         Redirector = '/mnt/data/cms'
+        uploadDir = maindirectory
     else:
         print('Redirector not selected properly; code should have terminated earlier!  Terminating now!', flush=True)
         quit()

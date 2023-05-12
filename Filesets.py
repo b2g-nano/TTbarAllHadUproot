@@ -65,14 +65,12 @@ def CollectDatasets(redirector_str):
     """
     
     
-    # uploadDir = 'srv/' for lpcjobqueue shell or TTbarAllHadUproot/ for coffea casa
-    uploadDir = os.getcwd().replace('/','') + '/'
-    if 'TTbarAllHadUproot' in uploadDir: 
-        uploadDir = 'TTbarAllHadUproot/'
-    elif 'jovyan' in uploadDir:
-        uploadDir = 'TTbarAllHadUproot/'
+    # uploadDir = 'srv/' for lpcjobqueue shell or TTbarAllHadUproot/ for coffea casa and WinterFell
+    
+    if 'xcache' in redirector_str or 'cmsxrootd' in redirector_str:
+        uploadDir = 'srv'
     else:
-        uploadDir = 'srv/'
+        uploadDir = 'TTbarAllHadUproot'
     
     filedir = uploadDir+'/nanoAODv9Files/'
     Years = ['UL16', 'UL17', 'UL18']
