@@ -54,6 +54,8 @@
 
 import os
 
+
+
 def CollectDatasets(redirector_str):
     """
         redirector_str --> string for either running over lpc of coffea-casa
@@ -61,7 +63,13 @@ def CollectDatasets(redirector_str):
                                    'root://cmsxrootd.fnal.gov/'
             UBWinterFell tests:    '/mnt/data/cms'
     """
-    filedir = 'TTbarAllHadUproot/nanoAODv9Files/'
+    
+    
+    uploadDir = os.getcwd().replace('/','') + '/'
+    if not 'TTbarAllHadUproot' in uploadDir:
+        uploadDir = 'srv/'
+    
+    filedir = uploadDir+'/nanoAODv9Files/'
     Years = ['UL16', 'UL17', 'UL18']
     VFP = ['preVFP', 'postVFP'] # preVFP unavailable in Winterfell for the moment
     # VFP = ['postVFP'] # Only for simple test in WinterFell
