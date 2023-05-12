@@ -362,7 +362,7 @@ def main():
         maindirectory  = 'srv/'
     elif args.winterfell:
         Redirector = '/mnt/data/cms'
-        uploadDir = maindirectory
+        uploadDir = maindirectory + '/'
     else:
         print('Redirector not selected properly; code should have terminated earlier!  Terminating now!', flush=True)
         quit()
