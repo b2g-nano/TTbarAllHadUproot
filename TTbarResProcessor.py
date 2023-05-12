@@ -147,8 +147,8 @@ class TTbarResProcessor(processor.ProcessorABC):
 
         # --- axes for top tagger --- #
         manual_axis = hist.axis.Variable(manual_bins, name="jetp", label=r"Jet Momentum [GeV]")
-        tagger_axis = hist.axis.Regular(50, 0, 1, name="tagger", label=r"deepTag")
-        subjettagger_axis = hist.axis.Regular(50, -2, 1, name="subjettagger", label=r"Deep B")
+        tagger_axis = hist.axis.Regular(50, 0, 1, name="tagger", label=r"MD deepAK8")
+        subjettagger_axis = hist.axis.Regular(50, 0, 1, name="subjettagger", label=r"DeepCSV")
         tau32_axis  = hist.axis.Regular(50, 0, 2, name="tau32", label=r"$\tau_3/\tau_2$")
 
         # --- axes for subjets --- #
@@ -369,9 +369,10 @@ class TTbarResProcessor(processor.ProcessorABC):
         #       T    A     A  GGGGG   GGGGG  EEEEEEE R     R     H     H IIIIIII SSSSS      T    SSSSS 
         #    =========================================================================================== 
 
-            # 'deepTagMD_TvsQCD' : hist.Hist(dataset_axis, cats_axis, jetpt_axis, SDjetmass_axis, tagger_axis, storage="weight", name="Counts"),
-            # 'deepb' : hist.Hist(dataset_axis, subjetmass_axis, subjetpt_axis, subjettagger_axis, storage="weight", name="Counts"),
-            'tau32'        : hist.Hist(dataset_axis, cats_axis, tau32_axis, storage="weight", name="Counts"),
+            'deepTagMD_TvsQCD' : hist.Hist(dataset_axis, jetpt_axis, SDjetmass_axis, tagger_axis, storage="weight", name="Counts"),
+            'deepB_subjet'     : hist.Hist(dataset_axis, subjetpt_axis, subjetmass_axis, subjettagger_axis, storage="weight", name="Counts"),
+            'deepB_fatjet'     : hist.Hist(dataset_axis, jetpt_axis, SDjetmass_axis, subjettagger_axis, storage="weight", name="Counts"),
+            'tau32'            : hist.Hist(dataset_axis, cats_axis, tau32_axis, storage="weight", name="Counts"),
 
         #    ===========================================================================================    
         #    M     M IIIIIII   SSSSS TTTTTTT    A    GGGGGGG     H     H IIIIIII   SSSSS TTTTTTT   SSSSS     
@@ -1337,6 +1338,27 @@ class TTbarResProcessor(processor.ProcessorABC):
             if 'JetHT'+letter in dataset:
                 # print(f'letter {letter} found', flush=True)
                 continue
+
+        # ---- Fill Outputs for Taggers ---- #
+            
+        output['deepTagMD_TvsQCD'].fill(dataset = dataset,
+                                     jetpt = ak.to_numpy(jetpt),
+                                     SDjetmass = ak.to_numpy(SDmass),
+                                     tagger = ak.to_numpy(ak8tagger),       
+                                     weight = ak.to_numpy(weights),
+                                    )
+        output['deepB_subjet'].fill(dataset = dataset,
+                                     subjetpt = ak.to_numpy(ak.flatten(SubJet11.p4.pt)),
+                                     subjetmass = ak.to_numpy(ak.flatten(SubJet11.p4.mass)),
+                                     subjettagger = ak.to_numpy(ak.flatten(SubJet11.btagDeepB)),       
+                                     weight = ak.to_numpy(weights),
+                                    )
+        output['deepB_fatjet'].fill(dataset = dataset,
+                                     jetpt = ak.to_numpy(jetpt),
+                                     SDjetmass = ak.to_numpy(SDmass),
+                                     subjettagger = ak.to_numpy(ak.flatten(SubJet11.btagDeepB)),       
+                                     weight = ak.to_numpy(weights),
+                                    )
         
         #print("labels_and_categories len ", len(labels_and_categories))
         for i, [ilabel,icat] in enumerate(labels_and_categories.items()):
@@ -1670,15 +1692,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                                      jetdy = ak.to_numpy(jetdy[icat]),
                                      weight = ak.to_numpy(Weights[icat]),
                                     )
-            # 'deepTagMD_TvsQCD' : hist.Hist(dataset_axis, cats_axis, jetpt_axis, jetmass_axis, tagger_axis, storage="weight", name="Counts"),
             
-            # output['deepTagMD_TvsQCD'].fill(dataset = dataset,
-            #                          anacat = self.label_to_int_dict[ilabel],
-            #                          jetpt = ak.to_numpy(jetpt[icat]),
-            #                          SDjetmass = ak.to_numpy(SDmass[icat]),
-            #                          tagger = ak.to_numpy(ak8tagger[icat]),       
-            #                          weight = ak.to_numpy(Weights[icat]),
-            #                         )
             output['jetmass'].fill(dataset = dataset,
                                      anacat = self.label_to_int_dict[ilabel],
                                      jetmass = ak.to_numpy(jetmass[icat]),
