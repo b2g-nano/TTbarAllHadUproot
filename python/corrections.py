@@ -1,6 +1,7 @@
 from coffea.lookup_tools import extractor
 from coffea.jetmet_tools import JECStack, CorrectedJetsFactory
 import awkward as ak
+import os
 
 
 
@@ -37,6 +38,15 @@ def HEMCleaning(JetCollection, year):
 
 
 def GetJECUncertainties(FatJets, events, IOV, isData=False):
+    
+    # uploadDir = 'srv/' for lpcjobqueue shell or TTbarAllHadUproot/ for coffea casa
+    uploadDir = os.getcwd().replace('/','') + '/'
+    if 'TTbarAllHadUproot' in uploadDir: 
+        uploadDir = 'TTbarAllHadUproot/'
+    elif 'jovyan' in uploadDir:
+        uploadDir = 'TTbarAllHadUproot/'
+    else:
+        uploadDir = 'srv/'
 
     # original code https://gitlab.cern.ch/gagarwal/ttbardileptonic/-/blob/master/jmeCorrections.py
     
@@ -91,17 +101,17 @@ def GetJECUncertainties(FatJets, events, IOV, isData=False):
     if not isData:
     #For MC
         ext.add_weight_sets([
-            '* * TTbarAllHadUproot/CorrectionFiles/JEC/{0}/{0}_L1FastJet_AK8PFchs.jec.txt'.format(jec_tag),
-            '* * TTbarAllHadUproot/CorrectionFiles/JEC/{0}/{0}_L2Relative_AK8PFchs.jec.txt'.format(jec_tag),
-            '* * TTbarAllHadUproot/CorrectionFiles/JEC/{0}/{0}_L3Absolute_AK8PFchs.jec.txt'.format(jec_tag),
-            '* * TTbarAllHadUproot/CorrectionFiles/JEC/{0}/{0}_UncertaintySources_AK8PFchs.junc.txt'.format(jec_tag),
-            '* * TTbarAllHadUproot/CorrectionFiles/JEC/{0}/{0}_Uncertainty_AK8PFchs.junc.txt'.format(jec_tag),
+            '* * '+uploadDir+'/CorrectionFiles/JEC/{0}/{0}_L1FastJet_AK8PFchs.jec.txt'.format(jec_tag),
+            '* * '+uploadDir+'/CorrectionFiles/JEC/{0}/{0}_L2Relative_AK8PFchs.jec.txt'.format(jec_tag),
+            '* * '+uploadDir+'/CorrectionFiles/JEC/{0}/{0}_L3Absolute_AK8PFchs.jec.txt'.format(jec_tag),
+            '* * '+uploadDir+'/CorrectionFiles/JEC/{0}/{0}_UncertaintySources_AK8PFchs.junc.txt'.format(jec_tag),
+            '* * '+uploadDir+'/CorrectionFiles/JEC/{0}/{0}_Uncertainty_AK8PFchs.junc.txt'.format(jec_tag),
         ])
 
         if jer_tag:
             ext.add_weight_sets([
-            '* * TTbarAllHadUproot/CorrectionFiles/JER/{0}/{0}_PtResolution_AK4PFchs.jr.txt'.format(jer_tag),
-            '* * TTbarAllHadUproot/CorrectionFiles/JER/{0}/{0}_SF_AK4PFchs.jersf.txt'.format(jer_tag)])
+            '* * '+uploadDir+'/CorrectionFiles/JER/{0}/{0}_PtResolution_AK4PFchs.jr.txt'.format(jer_tag),
+            '* * '+uploadDir+'/CorrectionFiles/JER/{0}/{0}_SF_AK4PFchs.jersf.txt'.format(jer_tag)])
 
 
     else:       
@@ -110,10 +120,10 @@ def GetJECUncertainties(FatJets, events, IOV, isData=False):
         for run, tag in jec_tag_data.items():
             if not (tag in tags_done):
                 ext.add_weight_sets([
-                '* * TTbarAllHadUproot/CorrectionFiles/JEC/{0}/{0}_L1FastJet_AK8PFchs.jec.txt'.format(tag),
-                '* * TTbarAllHadUproot/CorrectionFiles/JEC/{0}/{0}_L2Relative_AK8PFchs.jec.txt'.format(tag),
-                '* * TTbarAllHadUproot/CorrectionFiles/JEC/{0}/{0}_L3Absolute_AK8PFchs.jec.txt'.format(tag),
-                '* * TTbarAllHadUproot/CorrectionFiles/JEC/{0}/{0}_L2L3Residual_AK8PFchs.jec.txt'.format(tag),
+                '* * '+uploadDir+'/CorrectionFiles/JEC/{0}/{0}_L1FastJet_AK8PFchs.jec.txt'.format(tag),
+                '* * '+uploadDir+'/CorrectionFiles/JEC/{0}/{0}_L2Relative_AK8PFchs.jec.txt'.format(tag),
+                '* * '+uploadDir+'/CorrectionFiles/JEC/{0}/{0}_L3Absolute_AK8PFchs.jec.txt'.format(tag),
+                '* * '+uploadDir+'/CorrectionFiles/JEC/{0}/{0}_L2L3Residual_AK8PFchs.jec.txt'.format(tag),
                 ])
                 tags_done += [tag]
 
@@ -206,12 +216,21 @@ def GetPDFWeights(events):
 
 
 def GetPUSF(events, year):
+    
+    # uploadDir = 'srv/' for lpcjobqueue shell or TTbarAllHadUproot/ for coffea casa
+    uploadDir = os.getcwd().replace('/','') + '/'
+    if 'TTbarAllHadUproot' in uploadDir: 
+        uploadDir = 'TTbarAllHadUproot/'
+    elif 'jovyan' in uploadDir:
+        uploadDir = 'TTbarAllHadUproot/'
+    else:
+        uploadDir = 'srv/'
     # original code https://gitlab.cern.ch/gagarwal/ttbardileptonic/-/blob/master/TTbarDileptonProcessor.py#L38
     ## json files from: https://gitlab.cern.ch/cms-nanoAOD/jsonpog-integration/-/tree/master/POG/LUM
     if (year == 2016):
-        fname = "TTbarAllHadUproot/CorrectionFiles/puWeights/{0}{1}_UL/puWeights.json.gz".format(year, self.vfp)
+        fname = "'+uploadDir+'/CorrectionFiles/puWeights/{0}{1}_UL/puWeights.json.gz".format(year, self.vfp)
     else:
-        fname = "TTbarAllHadUproot/CorrectionFiles/puWeights/{0}_UL/puWeights.json.gz".format(year)
+        fname = "'+uploadDir+'/CorrectionFiles/puWeights/{0}_UL/puWeights.json.gz".format(year)
     hname = {
         "2016APV": "Collisions16_UltraLegacy_goldenJSON",
         "2016"   : "Collisions16_UltraLegacy_goldenJSON",
