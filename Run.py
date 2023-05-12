@@ -28,9 +28,13 @@ ak.behavior.update(candidate.behavior)
 maindirectory = os.getcwd()
 os.chdir('../') # Runs the code from within the working directory without manually changing all directory paths!
 
-# uploadDir = 'srv/' for lpcjobqueue shell or uploadDir+'' for coffea casa
+# uploadDir = 'srv/' for lpcjobqueue shell or TTbarAllHadUproot/ for coffea casa
 uploadDir = os.getcwd().replace('/','') + '/'
-if 'TTbarAllHadUproot' in uploadDir: uploadDir = uploadDir+''
+if 'TTbarAllHadUproot' in uploadDir: 
+    uploadDir = 'TTbarAllHadUproot/'
+else:
+    uploadDir = 'srv/'
+    
 
 
 def mkdir_p(mypath):
@@ -117,6 +121,15 @@ def FlavEffList(Flavor, Output, Dataset, bdiscDirectory, Save):
             
             
 def main():
+    
+    
+    uploadDir = os.getcwd().replace('/','') + '/'
+    if 'TTbarAllHadUproot' in uploadDir: 
+        uploadDir = 'TTbarAllHadUproot/'
+    else:
+        uploadDir = 'srv/'
+    
+    
     #    -----------------------------------------------
     #    PPPPPP     A    RRRRRR    SSSSS EEEEEEE RRRRRR      
     #    P     P   A A   R     R  S      E       R     R     
