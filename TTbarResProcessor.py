@@ -51,6 +51,8 @@ from python.functions import (
 
 
 
+
+
 ak.behavior.update(candidate.behavior)
 ak.behavior.update(vector.behavior)
 
@@ -75,7 +77,11 @@ class TTbarResProcessor(processor.ProcessorABC):
                  sysType=None):
 
 
-        self.lumimasks = getLumiMaskRun2(prepend="TTbarAllHadUproot/")
+#         self.lumimasks = getLumiMaskRun2(prepend="srv/")
+        self.lumimasks = getLumiMaskRun2(prepend="srv/")
+    
+    
+
         
         self.prng = prng
         self.htCut = htCut
@@ -430,15 +436,32 @@ class TTbarResProcessor(processor.ProcessorABC):
 #    =========================================================================================== 
 
         isData = ('JetHT' in filename) or ('SingleMu' in filename)
+    
+    
+        # blinding 
+        
+        
         
         IOV = ('2016APV' if any(regularexpressions.findall(r'preVFP', dataset))
                else '2018' if any(regularexpressions.findall(r'UL18', dataset))
                else '2017' if any(regularexpressions.findall(r'UL17', dataset))
                else '2016')
+        
+        if isData and (('2017' in IOV) or ('2018' in IOV)):
+            events = events[::10]
 
         if "QCD_Pt-15to7000" in filename: 
                 events = events[ events.Generator_binvar > 400 ] # Remove events with large weights
-                
+        
+        # ---- Get event weights from dataset ---- #
+        if isData: # If data is used...
+            # print('if isData command works')
+            evtweights = np.ones( len(events) ) # set all "data weights" to one
+        else: # if Monte Carlo dataset is used...
+            if "LHEWeight_originalXWGTUP" not in events.fields: 
+                evtweights = events.Generator_weight
+            else: 
+                evtweights = events.LHEWeight_originalXWGTUP
                 
         # ---- Define lumimasks ---- #
         
@@ -542,15 +565,15 @@ class TTbarResProcessor(processor.ProcessorABC):
             SubJets['hadronFlavour'] = events.SubJet_hadronFlavour
             FatJets["genJetIdx"] = events.FatJet_genJetAK8Idx
         
-        # ---- Get event weights from dataset ---- #
-        if isData: # If data is used...
-            # print('if isData command works')
-            evtweights = np.ones( len(FatJets) ) # set all "data weights" to one
-        else: # if Monte Carlo dataset is used...
-            if "LHEWeight_originalXWGTUP" not in events.fields: 
-                evtweights = events.Generator_weight
-            else: 
-                evtweights = events.LHEWeight_originalXWGTUP
+#         # ---- Get event weights from dataset ---- #
+#         if isData: # If data is used...
+#             # print('if isData command works')
+#             evtweights = np.ones( len(FatJets) ) # set all "data weights" to one
+#         else: # if Monte Carlo dataset is used...
+#             if "LHEWeight_originalXWGTUP" not in events.fields: 
+#                 evtweights = events.Generator_weight
+#             else: 
+#                 evtweights = events.LHEWeight_originalXWGTUP
 
         # ---- Show all events ---- #
         output['cutflow']['all events'] += len(FatJets) #ak.to_awkward0(FatJets).size
@@ -734,22 +757,26 @@ class TTbarResProcessor(processor.ProcessorABC):
                                   "eeBadScFilter",
                                   "ecalBadCalibFilter"]}
         
-        filteredEvents = np.array([getattr(events, f'Flag_{MET_filters[IOV][i]}') for i in range(len(MET_filters[IOV]))])
-        filteredEvents = np.logical_or.reduce(filteredEvents, axis=0)
         
-        if ak.sum(filteredEvents) < 1 :
-            print("\nNo events passed the MET filters.\n", flush=True)
-            return output
-        else:
-            FatJets = FatJets[filteredEvents]
-            Jets = Jets[filteredEvents]
-            SubJets = SubJets[filteredEvents]
-            evtweights = evtweights[filteredEvents]
-            events = events[filteredEvents]
+        
+        if isData:
             
-            output['cutflow']['Passed MET Filters'] += ak.sum(filteredEvents)
-            # print("Passed MET Filters", ak.sum(filteredEvents))
-            # print(len(FatJets))
+            filteredEvents = np.array([getattr(events, f'Flag_{MET_filters[IOV][i]}') for i in range(len(MET_filters[IOV]))])
+            filteredEvents = np.logical_or.reduce(filteredEvents, axis=0)
+        
+            if ak.sum(filteredEvents) < 1 :
+                print("\nNo events passed the MET filters.\n", flush=True)
+                return output
+            else:
+                FatJets = FatJets[filteredEvents]
+                Jets = Jets[filteredEvents]
+                SubJets = SubJets[filteredEvents]
+                evtweights = evtweights[filteredEvents]
+                events = events[filteredEvents]
+
+                output['cutflow']['Passed MET Filters'] += ak.sum(filteredEvents)
+                # print("Passed MET Filters", ak.sum(filteredEvents))
+                # print(len(FatJets))
 
             del filteredEvents
 
@@ -1216,7 +1243,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                     for subjet,subjet_info in SubjetNumDict.items():
                         flav_tag_list = [FlavorTagsDict[num] for num in np.abs(ak.flatten(subjet_info[0].hadronFlavour))] # List of tags i.e.) ['btag', 'udsgtag', 'ctag',...]
                         for flav_tag in flav_tag_list:
-                            EffFileDict['Eff_File_'+subjet_info[1]].append(self.extraDaskDirectory+'TTbarAllHadUproot/FlavorTagEfficiencies/' 
+                            EffFileDict['Eff_File_'+subjet_info[1]].append(self.extraDaskDirectory+'srv/FlavorTagEfficiencies/' 
                                                                            + self.BDirect + flav_tag 
                                                                            + 'EfficiencyTables/' + dataset + '_' + subjet_info[1] 
                                                                            + '_' + flav_tag + 'eff.csv')
@@ -1326,7 +1353,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                 continue
         
         #print("labels_and_categories len ", len(labels_and_categories))
-        for i, ilabel,icat in enumerate(labels_and_categories.items()):
+        for i, [ilabel,icat] in enumerate(labels_and_categories.items()):
 
             #print("Running ", ilabel)
             #print("n icat ", len(icat))
@@ -1406,7 +1433,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                 else:
                     od = ''
                 if self.year > 0:
-                    QCD_unweighted = util.load(self.extraDaskDirectory+'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/QCD/'
+                    QCD_unweighted = util.load(self.extraDaskDirectory+'srv/CoffeaOutputsForCombine/Coffea_FirstRun/QCD/'
                                                +self.BDirect+str(self.year)+'/'+self.apv+'/TTbarRes_0l_UL'+str(self.year-2000)+self.vfp+'_QCD'+od+'.coffea') 
                     
                     # ---- Define Histogram ---- #
@@ -1416,11 +1443,11 @@ class TTbarResProcessor(processor.ProcessorABC):
 
                     
                 else: # All years !NOTE: Needs to be fixed for all years later!
-                    QCD_unwgt_2016 = util.load(self.extraDaskDirectory+'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/QCD/'
+                    QCD_unwgt_2016 = util.load(self.extraDaskDirectory+'srv/CoffeaOutputsForCombine/Coffea_FirstRun/QCD/'
                                                +self.BDirect+'2016/'+self.apv+'/TTbarRes_0l_UL16'+self.vfp+'_QCD.coffea') 
-                    # QCD_unwgt_2017 = util.load(self.extraDaskDirectory+'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/QCD/'
+                    # QCD_unwgt_2017 = util.load(self.extraDaskDirectory+'srv/CoffeaOutputsForCombine/Coffea_FirstRun/QCD/'
                     #                            +self.BDirect+'2017/'+self.apv+'/TTbarRes_0l_UL17'+self.vfp+'_QCD.coffea') 
-                    # QCD_unwgt_2018 = util.load(self.extraDaskDirectory+'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/QCD/'
+                    # QCD_unwgt_2018 = util.load(self.extraDaskDirectory+'srv/CoffeaOutputsForCombine/Coffea_FirstRun/QCD/'
                     #                            +self.BDirect+'2018/'+self.apv+'/TTbarRes_0l_UL18'+self.vfp+'_QCD.coffea') 
                     
                     # ---- Define Histogram ---- #

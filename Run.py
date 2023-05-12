@@ -28,6 +28,11 @@ ak.behavior.update(candidate.behavior)
 maindirectory = os.getcwd()
 os.chdir('../') # Runs the code from within the working directory without manually changing all directory paths!
 
+# uploadDir = 'srv/' for lpcjobqueue shell or uploadDir+'' for coffea casa
+uploadDir = os.getcwd().replace('/','') + '/'
+if 'TTbarAllHadUproot' in uploadDir: uploadDir = uploadDir+''
+
+
 def mkdir_p(mypath):
     '''Creates a directory. equivalent to using mkdir -p on the command line'''
 
@@ -315,7 +320,7 @@ def main():
         args.hem = True
         print('Default Weights; All Available Weights Being Applied', flush=True)
         
-    TimeOut = 30.
+    TimeOut = 300.
     if args.timeout:
         TimeOut = args.timeout
     if args.runmistag and args.uproot:
@@ -350,6 +355,8 @@ def main():
         envirDirectory = 'dask-worker-space/'
     elif args.lpc:
         Redirector = 'root://cmsxrootd.fnal.gov/'
+        uploadDir = 'srv/'
+        maindirectory  = 'srv/'
     elif args.winterfell:
         Redirector = '/mnt/data/cms'
     else:
@@ -458,7 +465,7 @@ def main():
         UncType = "_btagUnc_"
         SystType = args.bTagSyst # string for btag SF evaluator --> "central", "up", or "down"
         ApplybSF = True
-        SFfile = daskDirectory+'TTbarAllHadUproot/CorrectionFiles/SFs/bquark/subjet_btagging.json.gz'
+        SFfile = daskDirectory+uploadDir+'CorrectionFiles/SFs/bquark/subjet_btagging.json.gz'
     #    ---------------------------------------------------------------------------------------------------------------------    # 
 
     elif args.ttXSSyst:
@@ -864,6 +871,8 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
 
     # client = None
     # cluster = None
+    
+    
 
     if UsingDaskExecutor == True and args.casa:
         from dask.distributed import Client #, Scheduler, SchedulerPlugin
@@ -908,20 +917,33 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
         from lpcjobqueue import LPCCondorCluster
 
         if __name__ == "__main__":  
+            
+            uploadDir = 'srv/'
+
 
             cluster = LPCCondorCluster(death_timeout=TimeOut)
             cluster.adapt(minimum=1, maximum=10)
             client = Client(cluster)
 
-            try:
-                client.register_worker_plugin(UploadDirectory('TTbarAllHadUproot',restart=True,update_path=True),nanny=True)
-            except OSError as ose:
-                print('\n', ose, flush=True)
+#             try:
+#                 client.register_worker_plugin(UploadDirectory('srv',restart=True,update_path=True),nanny=True)
+# #                 client.register_worker_plugin(UploadDirectory('TTbarAllHadUproot',restart=True,update_path=True),nanny=True)
+#             except OSError as ose:
+#                 print('\n', ose, flush=True)
 
-            # client.restart()
-            # client.upload_file('TTbarAllHadUproot/Filesets.py')
-            # client.upload_file('TTbarAllHadUproot/TTbarResProcessor.py')
-            # client.upload_file('TTbarAllHadUproot/TTbarResLookUpTables.py')
+            client.restart()
+            client.upload_file('srv/Filesets.py')
+            client.upload_file('srv/TTbarResProcessor.py')
+            client.upload_file('srv/TTbarResLookUpTables.py')
+            client.upload_file('srv/cms_utils.py')
+#             client.upload_file('srv/python/btag_flavor_efficiencies.py')
+#             client.upload_file('srv/python/corrections.py')
+#             client.upload_file('srv/python/functions.py')                   
+
+            client.register_worker_plugin(UploadDirectory('srv/CorrectionFiles',restart=True,update_path=True),nanny=True)
+            client.register_worker_plugin(UploadDirectory('srv/python',restart=True,update_path=True),nanny=True)
+
+
 
     elif UsingDaskExecutor == True and args.winterfell:
         from dask.distributed import Client
@@ -934,7 +956,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
             # uploadDir = '/mnt/users/acwillia/TTbarAllHadUproot'
             client = Client()
             if (args.runMMO or args.runAMO or args.uproot == 2):
-                shutil.make_archive('UploadToDask', 'zip', 'TTbarAllHadUproot')
+                shutil.make_archive('UploadToDask', 'zip', uploadDir)
                 print('archive made', flush=True)
                 print('Uploading archive to client...', flush=True)
                 client.upload_file('UploadToDask.zip', flush=True)
@@ -1016,10 +1038,10 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                 print(output)
 
                 if args.saveFlav:
-                    mkdir_p('TTbarAllHadUproot/CoffeaOutputsForMCFlavorAnalysis/'
+                    mkdir_p(uploadDir+'/CoffeaOutputsForMCFlavorAnalysis/'
                               + SaveLocation[name])
 
-                    savefilename = 'TTbarAllHadUproot/CoffeaOutputsForMCFlavorAnalysis/' + SaveLocation[name] + name     + '_MCFlavorAnalysis'  + OldDisc + '.coffea'
+                    savefilename = uploadDir+'/CoffeaOutputsForMCFlavorAnalysis/' + SaveLocation[name] + name     + '_MCFlavorAnalysis'  + OldDisc + '.coffea'
                     util.save(output, savefilename)
                     print('saving ' + savefilename, flush=True)
 
@@ -1067,10 +1089,10 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                 print(output, flush=True)
 
                 if args.saveFlav:
-                    mkdir_p('TTbarAllHadUproot/CoffeaOutputsForMCFlavorAnalysis/'
+                    mkdir_p(uploadDir+'CoffeaOutputsForMCFlavorAnalysis/'
                               + SaveLocation[name])
 
-                    savefilename = 'TTbarAllHadUproot/CoffeaOutputsForMCFlavorAnalysis/' + SaveLocation[name] + name + '_MCFlavorAnalysis' + OldDisc + '.coffea'
+                    savefilename = uploadDir+'CoffeaOutputsForMCFlavorAnalysis/' + SaveLocation[name] + name + '_MCFlavorAnalysis' + OldDisc + '.coffea'
                     util.save(output, savefilename)
                     print('saving ' + savefilename, flush=True)
 
@@ -1161,9 +1183,9 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                 print(output, flush=True)
 
                 if args.saveTrig:
-                    mkdir_p('TTbarAllHadUproot/CoffeaOutputsForTriggerAnalysis/'
+                    mkdir_p(uploadDir+'CoffeaOutputsForTriggerAnalysis/'
                               + SaveLocation[name])
-                    savefilename = 'TTbarAllHadUproot/CoffeaOutputsForTriggerAnalysis/' + SaveLocation[name] + name + '_TriggerAnalysis' + OldDisc + '.coffea'
+                    savefilename = uploadDir+'CoffeaOutputsForTriggerAnalysis/' + SaveLocation[name] + name + '_TriggerAnalysis' + OldDisc + '.coffea'
                     util.save(output, savefilename)
                     print('saving ' + savefilename, flush=True)
 
@@ -1211,9 +1233,9 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                 print(output, flush=True)
 
                 if args.saveTrig:
-                    mkdir_p('TTbarAllHadUproot/CoffeaOutputsForTriggerAnalysis/'
+                    mkdir_p(uploadDir+'CoffeaOutputsForTriggerAnalysis/'
                               + SaveLocation[name])
-                    savefilename =  output, 'TTbarAllHadUproot/CoffeaOutputsForTriggerAnalysis/' + SaveLocation[name] + name + '_TriggerAnalysis' + OldDisc + '.coffea'
+                    savefilename =  output, uploadDir+'CoffeaOutputsForTriggerAnalysis/' + SaveLocation[name] + name + '_TriggerAnalysis' + OldDisc + '.coffea'
                     util.save(output, savefilename)
                     print('saving ' + savefilename, flush=True)
 
@@ -1254,11 +1276,9 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
     seed = random.seed()
     prng = RandomState(seed)
     
-    
-    
-    
-    
-    
+    # run over only 1 file to test
+    # filesets_to_run = {ds_name: [ds[0]] for ds_name, ds in filesets_to_run.items()}
+
 
     for name,files in filesets_to_run.items(): 
         print('\n\n' + name + '\n\n-----------------------------------------------------', flush=True)
@@ -1313,10 +1333,10 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                 outputs_unweighted[name] = output
                 print(output, flush=True)
                 if SaveFirstRun:
-                    mkdir_p('TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/'
+                    mkdir_p(uploadDir+'CoffeaOutputsForCombine/Coffea_FirstRun/'
                               + SaveLocation[name])
 
-                    savefilename = 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/' + SaveLocation[name] + name + OldDisc + '.coffea'
+                    savefilename = uploadDir+'CoffeaOutputsForCombine/Coffea_FirstRun/' + SaveLocation[name] + name + OldDisc + '.coffea'
                     util.save(output, savefilename)
                     print('saving ' + savefilename, flush=True)                           
 
@@ -1369,11 +1389,11 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                 outputs_unweighted[name] = output
                 print(output, flush=True)
                 if SaveFirstRun:
-                    mkdir_p('TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/'
+                    mkdir_p(uploadDir+'CoffeaOutputsForCombine/Coffea_FirstRun/'
                               + SaveLocation[name])
 
 
-                    savefilename = 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/' + SaveLocation[name] + name + OldDisc + '.coffea'                         
+                    savefilename = uploadDir+'CoffeaOutputsForCombine/Coffea_FirstRun/' + SaveLocation[name] + name + OldDisc + '.coffea'                         
                     util.save(output, savefilename)
                     print('saving ' + savefilename, flush=True)
 
@@ -1383,7 +1403,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                     print( '%20s : %1s' % (i,j), flush=True )
 
         else: # Load files
-            output = util.load('TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/'
+            output = util.load(uploadDir+'CoffeaOutputsForCombine/Coffea_FirstRun/'
                                + SaveLocation[name]
                                + name 
                                + OldDisc
@@ -1428,7 +1448,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
     
     if LoadingUnweightedFiles:
         print('Preparing to load unweighted coffea outputs', flush=True)
-        mistag_luts = LoadDataLUTS(BDiscDirectory, args.year, VFP, args.mistagcorrect, Letters)
+        mistag_luts = LoadDataLUTS(BDiscDirectory, args.year, VFP, args.mistagcorrect, Letters, uploadDir)
 
     if OnlyCreateLookupTables:
         print("\n\nWe\'re done here!!\n", flush=True)
@@ -1461,9 +1481,6 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
     prng = RandomState(seed)
     
         
-    
-    # run over only 1 file to test
-    # filesets_to_run = {ds_name: [ds[0]] for ds_name, ds in filesets_to_run.items()}
 
     
     if not OnlyCreateLookupTables and (not args.runMMO and not args.runAMO):
@@ -1549,10 +1566,10 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                 outputs_weighted[name] = output
                 print(output)
                 if SaveSecondRun:
-                    mkdir_p('TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/'
+                    mkdir_p(uploadDir+'CoffeaOutputsForCombine/Coffea_SecondRun/'
                               + SaveLocation[name])
 
-                    savefilename = 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/' + SaveLocation[name] + name  + '_weighted' + contam + UncType + SystType + method + TPT + OldDisc + '.coffea'                       
+                    savefilename = uploadDir+'CoffeaOutputsForCombine/Coffea_SecondRun/' + SaveLocation[name] + name  + '_weighted' + contam + UncType + SystType + method + TPT + OldDisc + '.coffea'                       
                     util.save(output, savefilename)
                     print('saving ' + savefilename)                          
 
@@ -1632,11 +1649,11 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                 outputs_weighted[name] = output
                 print(output)
                 if SaveSecondRun:
-                    mkdir_p('TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/'
+                    mkdir_p(uploadDir+'CoffeaOutputsForCombine/Coffea_SecondRun/'
                               + SaveLocation[name])
 
 
-                    savefilename = 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/' + SaveLocation[name] + name  + '_weighted' + contam + UncType + SystType + method + TPT + OldDisc + '.coffea'                       
+                    savefilename = uploadDir+'CoffeaOutputsForCombine/Coffea_SecondRun/' + SaveLocation[name] + name  + '_weighted' + contam + UncType + SystType + method + TPT + OldDisc + '.coffea'                       
                     util.save(output, savefilename)
                     print('saving ' + savefilename, flush=True)  
             print('Elapsed time = ', elapsed, ' sec.', flush=True)
@@ -1736,10 +1753,10 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                     outputs_weighted[name] = output
                     print(output, flush=True)
                     if SaveSecondRun:
-                        mkdir_p('TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/'
+                        mkdir_p(uploadDir+'CoffeaOutputsForCombine/Coffea_SecondRun/'
                                   + SaveLocation[name])
 
-                        savefilename = 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/' + SaveLocation[name] + name  + '_weighted' + contam + UncType  + SystType + method + TPT + OldDisc + '.coffea'
+                        savefilename = uploadDir+'CoffeaOutputsForCombine/Coffea_SecondRun/' + SaveLocation[name] + name  + '_weighted' + contam + UncType  + SystType + method + TPT + OldDisc + '.coffea'
                         util.save(output, savefilename)
                         print('saving ' + savefilename, flush=True)
 
@@ -1795,10 +1812,10 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                     outputs_weighted[name] = output
                     print(output, flush=True)
                     if SaveSecondRun:
-                        mkdir_p('TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/'
+                        mkdir_p(uploadDir+'CoffeaOutputsForCombine/Coffea_SecondRun/'
                                   + SaveLocation[name])
 
-                        savefilename = 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/' + SaveLocation[name] + name  + '_weighted' + contam + UncType + SystType + method + TPT + OldDisc + '.coffea'                    
+                        savefilename = uploadDir+'CoffeaOutputsForCombine/Coffea_SecondRun/' + SaveLocation[name] + name  + '_weighted' + contam + UncType + SystType + method + TPT + OldDisc + '.coffea'                    
                         util.save(output, savefilename)
                         print('saving ' + savefilename, flush=True)
                 print('Elapsed time = ', elapsed, ' sec.', flush=True)
@@ -1883,10 +1900,10 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                     outputs_weighted[name] = output
                     print(output)
                     if SaveSecondRun:
-                        mkdir_p('TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/'
+                        mkdir_p(uploadDir+'CoffeaOutputsForCombine/Coffea_SecondRun/'
                                   + SaveLocation[name])
 
-                        savefilename = 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/' + SaveLocation[name] + name  + '_weighted_MistagOnly' + UncType  + SystType + method + TPT + OldDisc + '.coffea'
+                        savefilename = uploadDir+'CoffeaOutputsForCombine/Coffea_SecondRun/' + SaveLocation[name] + name  + '_weighted_MistagOnly' + UncType  + SystType + method + TPT + OldDisc + '.coffea'
                         util.save(output, savefilename)
                         print('saving ' + savefilename, flush=True)
 
@@ -1942,10 +1959,10 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                     outputs_weighted[name] = output
                     print(output)
                     if SaveSecondRun:
-                        mkdir_p('TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/'
+                        mkdir_p(uploadDir+'CoffeaOutputsForCombine/Coffea_SecondRun/'
                                   + SaveLocation[name])
 
-                        savefilename = 'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_SecondRun/' + SaveLocation[name] + name  + '_weighted_MistagOnly' + contam + UncType + SystType + method + TPT + OldDisc + '.coffea'                    
+                        savefilename = uploadDir+'CoffeaOutputsForCombine/Coffea_SecondRun/' + SaveLocation[name] + name  + '_weighted_MistagOnly' + contam + UncType + SystType + method + TPT + OldDisc + '.coffea'                    
                         util.save(output, savefilename)
                         print('saving ' + savefilename, flush=True)
                 print('Elapsed time = ', elapsed, ' sec.', flush=True)
