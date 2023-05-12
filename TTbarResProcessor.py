@@ -75,13 +75,17 @@ class TTbarResProcessor(processor.ProcessorABC):
                  ApplyJes=False, ApplyJer=False, var="nominal", ApplyPdf=False, ApplyPrefiring=False, ApplyPUweights=False,
                  ApplyHEMCleaning=False, trigs_to_run=[''], csvv2=False, 
                  sysType=None):
-
-
-#         self.lumimasks = getLumiMaskRun2(prepend="srv/")
-        self.lumimasks = getLumiMaskRun2(prepend="srv/")
-    
-    
-
+           
+        # uploadDir = 'srv/' for lpcjobqueue shell or TTbarAllHadUproot/ for coffea casa
+        uploadDir = os.getcwd().replace('/','') + '/'
+        if 'TTbarAllHadUproot' in uploadDir: 
+            uploadDir = 'TTbarAllHadUproot/'
+        elif 'jovyan' in uploadDir:
+            uploadDir = 'TTbarAllHadUproot/'
+        else:
+            uploadDir = 'srv/'
+        
+        self.lumimasks = getLumiMaskRun2(prepend=uploadDir)
         
         self.prng = prng
         self.htCut = htCut
