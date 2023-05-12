@@ -43,6 +43,8 @@ def GetJECUncertainties(FatJets, events, IOV, isData=False):
     uploadDir = os.getcwd().replace('/','') + '/'
     if 'TTbarAllHadUproot' in uploadDir: 
         uploadDir = 'TTbarAllHadUproot/'
+    elif 'jovyan' in uploadDir:
+        uploadDir = 'TTbarAllHadUproot/'
     else:
         uploadDir = 'srv/'
 
@@ -218,6 +220,8 @@ def GetPUSF(events, year):
     # uploadDir = 'srv/' for lpcjobqueue shell or TTbarAllHadUproot/ for coffea casa
     uploadDir = os.getcwd().replace('/','') + '/'
     if 'TTbarAllHadUproot' in uploadDir: 
+        uploadDir = 'TTbarAllHadUproot/'
+    elif 'jovyan' in uploadDir:
         uploadDir = 'TTbarAllHadUproot/'
     else:
         uploadDir = 'srv/'

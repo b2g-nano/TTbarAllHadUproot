@@ -32,6 +32,8 @@ os.chdir('../') # Runs the code from within the working directory without manual
 uploadDir = os.getcwd().replace('/','') + '/'
 if 'TTbarAllHadUproot' in uploadDir: 
     uploadDir = 'TTbarAllHadUproot/'
+elif 'jovyan' in uploadDir:
+    uploadDir = 'TTbarAllHadUproot/'
 else:
     uploadDir = 'srv/'
     
@@ -125,6 +127,8 @@ def main():
     
     uploadDir = os.getcwd().replace('/','') + '/'
     if 'TTbarAllHadUproot' in uploadDir: 
+        uploadDir = 'TTbarAllHadUproot/'
+    elif 'jovyan' in uploadDir:
         uploadDir = 'TTbarAllHadUproot/'
     else:
         uploadDir = 'srv/'

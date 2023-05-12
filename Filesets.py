@@ -65,8 +65,13 @@ def CollectDatasets(redirector_str):
     """
     
     
+    # uploadDir = 'srv/' for lpcjobqueue shell or TTbarAllHadUproot/ for coffea casa
     uploadDir = os.getcwd().replace('/','') + '/'
-    if not 'TTbarAllHadUproot' in uploadDir:
+    if 'TTbarAllHadUproot' in uploadDir: 
+        uploadDir = 'TTbarAllHadUproot/'
+    elif 'jovyan' in uploadDir:
+        uploadDir = 'TTbarAllHadUproot/'
+    else:
         uploadDir = 'srv/'
     
     filedir = uploadDir+'/nanoAODv9Files/'
