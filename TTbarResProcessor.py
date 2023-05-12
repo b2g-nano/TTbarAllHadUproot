@@ -73,7 +73,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                  ModMass=False, RandomDebugMode=False, UseEfficiencies=False, xsSystematicWeight=1., lumSystematicWeight=1.,
                  ApplybtagSF=False, ScaleFactorFile='', ApplyttagSF=False, ApplyTopReweight=False, 
                  ApplyJes=False, ApplyJer=False, var="nominal", ApplyPdf=False, ApplyPrefiring=False, ApplyPUweights=False,
-                 ApplyHEMCleaning=False, trigs_to_run=[''],
+                 ApplyHEMCleaning=False, trigs_to_run=[''], csvv2=False, 
                  sysType=None):
 
 
@@ -118,6 +118,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         self.lumSystematicWeight = lumSystematicWeight
         self.lu = lu # Look Up Tables
         self.means_stddevs = defaultdict() # To remove anomalous MC weights
+        self.csvv2 = csvv2
         
         # --- anti-tag+probe, anti-tag, pre-tag, 0, 1, >=1, 2 ttags, any t-tag (>=0t) --- #
         self.ttagcats = ["AT&Pt", "at", "pret", "0t", "1t", ">=1t", "2t", ">=0t"] 
@@ -131,6 +132,8 @@ class TTbarResProcessor(processor.ProcessorABC):
         # --- Combine categories like "0bcen", "0bfwd", etc: --- #
         self.anacats = [ t+b+y for t,b,y in itertools.product( self.ttagcats, self.btagcats, self.ycats) ]
         self.label_dict = {i: label for i, label in enumerate(self.anacats)}
+        self.label_to_int_dict = {label: i for i, label in enumerate(self.anacats)}
+
         
         # rewriting axes for scikit-hep/hist   
         dataset_axis = hist.axis.StrCategory([], growth=True, name="dataset", label="Primary Dataset")
@@ -436,18 +439,15 @@ class TTbarResProcessor(processor.ProcessorABC):
 #    =========================================================================================== 
 
         isData = ('JetHT' in filename) or ('SingleMu' in filename)
-    
-    
-        # blinding 
-        
-        
+        isSignal = ('RSGluon' in filename) #or ('DM' in filename)
         
         IOV = ('2016APV' if any(regularexpressions.findall(r'preVFP', dataset))
                else '2018' if any(regularexpressions.findall(r'UL18', dataset))
                else '2017' if any(regularexpressions.findall(r'UL17', dataset))
                else '2016')
         
-        if isData and (('2017' in IOV) or ('2018' in IOV)):
+        #blinding
+	if isData and (('2017' in IOV) or ('2018' in IOV)):
             events = events[::10]
 
         if "QCD_Pt-15to7000" in filename: 
@@ -464,11 +464,13 @@ class TTbarResProcessor(processor.ProcessorABC):
                 evtweights = events.LHEWeight_originalXWGTUP
                 
         # ---- Define lumimasks ---- #
-        
+        # print(f'\nbefore lumimask:\n {events.nFatJet}')
         if isData: 
             lumi_mask = np.array(self.lumimasks[IOV](events.run, events.luminosityBlock), dtype=bool)
             events = events[lumi_mask]
-            evtweights = evtweights[lumi_mask]
+            # evtweights = evtweights[lumi_mask]
+        elif isSignal:
+            pass # Do nothing to the number of events here...
         else: 
             if dataset not in self.means_stddevs : 
                 average = np.average( events.Generator_weight )
@@ -756,11 +758,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                                   "hfNoisyHitsFilter",
                                   "eeBadScFilter",
                                   "ecalBadCalibFilter"]}
-        
-        
-        
         if isData:
-            
             filteredEvents = np.array([getattr(events, f'Flag_{MET_filters[IOV][i]}') for i in range(len(MET_filters[IOV]))])
             filteredEvents = np.logical_or.reduce(filteredEvents, axis=0)
         
@@ -1019,23 +1017,23 @@ class TTbarResProcessor(processor.ProcessorABC):
         # ----------- CMS Top Tagger Version 2 (SD and Tau32 Cuts) ----------- #
         # ---- NOTE: Must Change This to DeepAK8 Top Tag Discriminator Cut ----#
         # ---- Maybe we should ignore tau32 cut(s) when performing trigger analysis ---- #
-        tau32_s0 = np.where(ttbarcands.slot0.tau2>0,ttbarcands.slot0.tau3/ttbarcands.slot0.tau2, 0 )
-        tau32_s1 = np.where(ttbarcands.slot1.tau2>0,ttbarcands.slot1.tau3/ttbarcands.slot1.tau2, 0 )
+#         tau32_s0 = np.where(ttbarcands.slot0.tau2>0,ttbarcands.slot0.tau3/ttbarcands.slot0.tau2, 0 )
+#         tau32_s1 = np.where(ttbarcands.slot1.tau2>0,ttbarcands.slot1.tau3/ttbarcands.slot1.tau2, 0 )
         
-        taucut_s0 = tau32_s0 < self.tau32Cut
-        taucut_s1 = tau32_s1 < self.tau32Cut
+#         taucut_s0 = tau32_s0 < self.tau32Cut
+#         taucut_s1 = tau32_s1 < self.tau32Cut
         
-        mcut_s0 = (self.minMSD < ttbarcands.slot0.msoftdrop) & (ttbarcands.slot0.msoftdrop < self.maxMSD) 
-        mcut_s1 = (self.minMSD < ttbarcands.slot1.msoftdrop) & (ttbarcands.slot1.msoftdrop < self.maxMSD) 
+#         mcut_s0 = (self.minMSD < ttbarcands.slot0.msoftdrop) & (ttbarcands.slot0.msoftdrop < self.maxMSD) 
+#         mcut_s1 = (self.minMSD < ttbarcands.slot1.msoftdrop) & (ttbarcands.slot1.msoftdrop < self.maxMSD) 
 
-        ttag_s0 = (taucut_s0) & (mcut_s0)
-        ttag_s1 = (taucut_s1) & (mcut_s1)
-        antitag = (~taucut_s0) & (mcut_s0) # The Probe jet will always be ttbarcands.slot1 (at)
+#         ttag_s0 = (taucut_s0) & (mcut_s0)
+#         ttag_s1 = (taucut_s1) & (mcut_s1)
+#         antitag = (~taucut_s0) & (mcut_s0) # The Probe jet will always be ttbarcands.slot1 (at)
 
         # ----------- DeepAK8 Tagger (Discriminator Cut) ----------- #
-        # ttag_s0 = ttbarcands.slot0.deepTag_TvsQCD > self.deepAK8Cut
-        # ttag_s1 = ttbarcands.slot1.deepTag_TvsQCD > self.deepAK8Cut
-        # antitag = ttbarcands.slot0.deepTag_TvsQCD < self.deepAK8Cut # The Probe jet will always be ttbarcands.slot1 (at)
+        ttag_s0 = ttbarcands.slot0.deepTag_TvsQCD > self.deepAK8Cut
+        ttag_s1 = ttbarcands.slot1.deepTag_TvsQCD > self.deepAK8Cut
+        antitag = ttbarcands.slot0.deepTag_TvsQCD < self.deepAK8Cut # The Probe jet will always be ttbarcands.slot1 (at)
         
         # ---- Define "Top Tag" Regions ---- #
         antitag_probe = np.logical_and(antitag, ttag_s1) # Found an antitag and ttagged probe pair for mistag rate (AT&Pt)
@@ -1060,9 +1058,12 @@ class TTbarResProcessor(processor.ProcessorABC):
         
         # ---- Pick FatJet that passes btag discriminator cut based on its subjet with the highest btag value ---- #
         # -------------- NOTE: B-discriminator cut must be changed to match BTV POG Recommendations -------------- #
-
-        btag_s0 = ( np.maximum(SubJet01.btagCSVV2 , SubJet02.btagCSVV2) > self.bdisc )
-        btag_s1 = ( np.maximum(SubJet11.btagCSVV2 , SubJet12.btagCSVV2) > self.bdisc )
+        if not self.csvv2:
+            btag_s0 = ( np.maximum(SubJet01.btagDeepB , SubJet02.btagDeepB) > self.bdisc )
+            btag_s1 = ( np.maximum(SubJet11.btagDeepB , SubJet12.btagDeepB) > self.bdisc )
+        else: # Only when running -med2016 option
+            btag_s0 = ( np.maximum(SubJet01.btagCSVV2 , SubJet02.btagCSVV2) > self.bdisc )
+            btag_s1 = ( np.maximum(SubJet11.btagCSVV2 , SubJet12.btagCSVV2) > self.bdisc )
         
         # --- Define "B Tag" Regions ---- #
         btag0 = (~btag_s0) & (~btag_s1) #(0b)
@@ -1113,8 +1114,12 @@ class TTbarResProcessor(processor.ProcessorABC):
                     """
 
                     # ---- Use the leading subjet again to get the scale factors ---- #
-                    LeadingSubjet_s0 = np.where(SubJet01.btagCSVV2>SubJet02.btagCSVV2, SubJet01, SubJet02)
-                    LeadingSubjet_s1 = np.where(SubJet11.btagCSVV2>SubJet12.btagCSVV2, SubJet11, SubJet12)
+                    if not self.csvv2:
+                        LeadingSubjet_s0 = np.where(SubJet01.btagCSVV2>SubJet02.btagCSVV2, SubJet01, SubJet02)
+                        LeadingSubjet_s1 = np.where(SubJet11.btagCSVV2>SubJet12.btagCSVV2, SubJet11, SubJet12)
+                    else:
+                        LeadingSubjet_s0 = np.where(SubJet01.btagDeepB>SubJet02.btagDeepB, SubJet01, SubJet02)
+                        LeadingSubjet_s1 = np.where(SubJet11.btagDeepB>SubJet12.btagDeepB, SubJet11, SubJet12)
 
                     # ---- Define the BSF for each of the two fatjets ---- #
                     SF_filename = self.ScaleFactorFile    
@@ -1423,6 +1428,8 @@ class TTbarResProcessor(processor.ProcessorABC):
 #    M     M A     A SSSSS   SSSSS       M     M   OOO   DDDD        P       R     R   OOO     CCCC  EEEEEEE DDDD      UUU   R     R EEEEEEE
 #    =======================================================================================================================================
             
+    
+    
             ###---------------------------------------------------------------------------------------------###
             ### ----------------------------------- Mod-mass Procedure ------------------------------------ ###
             ###---------------------------------------------------------------------------------------------###
@@ -1439,7 +1446,12 @@ class TTbarResProcessor(processor.ProcessorABC):
                     # ---- Define Histogram ---- #
                     loaded_dataset = 'UL'+str(self.year-2000)+self.vfp+'_QCD'
                     
-                    QCD_hist = QCD_unweighted['jetmass'][loaded_dataset, ConvertLabelToInt(self.label_dict, '2t' + str(ilabel[-5:])), :]
+                    
+                    self.label_to_int_dict
+                    
+                    
+                    QCD_hist = QCD_unweighted['jetmass'][loaded_dataset, self.label_to_int_dict['2t' + str(ilabel[-5:])], :]
+                    # QCD_hist = QCD_unweighted['jetmass'][loaded_dataset, ConvertLabelToInt(self.label_dict, '2t' + str(ilabel[-5:])), :]
 
                     
                 else: # All years !NOTE: Needs to be fixed for all years later!
@@ -1451,7 +1463,10 @@ class TTbarResProcessor(processor.ProcessorABC):
                     #                            +self.BDirect+'2018/'+self.apv+'/TTbarRes_0l_UL18'+self.vfp+'_QCD.coffea') 
                     
                     # ---- Define Histogram ---- #
-                    QCD_hist_2016 = QCD_unwgt_2016['jetmass']['UL16'+self.vfp+'_QCD', ConvertLabelToInt(self.label_dict, '2t' + str(ilabel[-5:])), :]
+                    QCD_hist_2016 = QCD_unwgt_2016['jetmass']['UL16'+self.vfp+'_QCD', self.label_to_int_dict['2t' + str(ilabel[-5:])], :]
+                    # QCD_hist_2016 = QCD_unwgt_2016['jetmass']['UL16'+self.vfp+'_QCD', ConvertLabelToInt(self.label_dict, '2t' + str(ilabel[-5:])), :]
+
+                    
                     
                     # QCD_hist_2017 = QCD_unwgt_2017['jetmass']['UL17'+self.vfp+'_QCD', i, :]
                     # QCD_hist_2018 = QCD_unwgt_2018['jetmass']['UL18'+self.vfp+'_QCD', i, :]
@@ -1517,31 +1532,31 @@ class TTbarResProcessor(processor.ProcessorABC):
                     Weights_prefiringNom = Weights * prefiringNom
 
                     output['ttbarmass_prefiringNom'].fill(dataset = dataset,
-                                     anacat = ConvertLabelToInt(self.label_dict, ilabel),
+                                     anacat = self.label_to_int_dict[ilabel],
                                      ttbarmass = ak.to_numpy(ttbarmass[icat]),
                                      weight = ak.to_numpy(Weights_prefiringNom[icat]),
                                     )
                     output['ttbarmass_prefiringUp'].fill(dataset = dataset,
-                                     anacat = ConvertLabelToInt(self.label_dict, ilabel),
+                                     anacat = self.label_to_int_dict[ilabel],
                                      ttbarmass = ak.to_numpy(ttbarmass[icat]),
                                      weight = ak.to_numpy(Weights_prefiringUp[icat]),
                                     )
                     output['ttbarmass_prefiringDown'].fill(dataset = dataset,
-                                     anacat = ConvertLabelToInt(self.label_dict, ilabel),
+                                     anacat = self.label_to_int_dict[ilabel],
                                      ttbarmass = ak.to_numpy(ttbarmass[icat]),
                                      weight = ak.to_numpy(Weights_prefiringDown[icat]),
                                     )
 
                     output['weights_prefiringNom'].fill(dataset = dataset,
-                                     anacat = ConvertLabelToInt(self.label_dict, ilabel),
+                                     anacat = self.label_to_int_dict[ilabel],
                                      Weights = prefiringNom,
                                     )
                     output['weights_prefiringUp'].fill(dataset = dataset,
-                                     anacat = ConvertLabelToInt(self.label_dict, ilabel),
+                                     anacat = self.label_to_int_dict[ilabel],
                                      Weights = prefiringUp,
                                     )
                     output['weights_prefiringDown'].fill(dataset = dataset,
-                                     anacat = ConvertLabelToInt(self.label_dict, ilabel),
+                                     anacat = self.label_to_int_dict[ilabel],
                                      Weights = prefiringDown,
                                     )
                     
@@ -1564,17 +1579,17 @@ class TTbarResProcessor(processor.ProcessorABC):
                     
                         
                     output['ttbarmass_pdfNom'].fill(dataset = dataset,
-                                     anacat = ConvertLabelToInt(self.label_dict, ilabel),
+                                     anacat = self.label_to_int_dict[ilabel],
                                      ttbarmass = ak.to_numpy(ttbarmass[icat]),
                                      weight = ak.to_numpy(Weights_pdfNom[icat]),
                                     )
                     output['ttbarmass_pdfUp'].fill(dataset = dataset,
-                                     anacat = ConvertLabelToInt(self.label_dict, ilabel),
+                                     anacat = self.label_to_int_dict[ilabel],
                                      ttbarmass = ak.to_numpy(ttbarmass[icat]),
                                      weight = ak.to_numpy(Weights_pdfUp[icat]),
                                     )
                     output['ttbarmass_pdfDown'].fill(dataset = dataset,
-                                     anacat = ConvertLabelToInt(self.label_dict, ilabel),
+                                     anacat = self.label_to_int_dict[ilabel],
                                      ttbarmass = ak.to_numpy(ttbarmass[icat]),
                                      weight = ak.to_numpy(Weights_pdfDown[icat]),
                                     )
@@ -1588,17 +1603,17 @@ class TTbarResProcessor(processor.ProcessorABC):
                     Weights_puNom = Weights * puNom
 
                     output['ttbarmass_puNom'].fill(dataset = dataset,
-                                     anacat = ConvertLabelToInt(self.label_dict, ilabel),
+                                     anacat = self.label_to_int_dict[ilabel],
                                      ttbarmass = ak.to_numpy(ttbarmass[icat]),
                                      weight = ak.to_numpy(Weights_puNom[icat]),
                                     )
                     output['ttbarmass_puUp'].fill(dataset = dataset,
-                                     anacat = ConvertLabelToInt(self.label_dict, ilabel),
+                                     anacat = self.label_to_int_dict[ilabel],
                                      ttbarmass = ak.to_numpy(ttbarmass[icat]),
                                      weight = ak.to_numpy(Weights_puUp[icat]),
                                     )
                     output['ttbarmass_puDown'].fill(dataset = dataset,
-                                     anacat = ConvertLabelToInt(self.label_dict, ilabel),
+                                     anacat = self.label_to_int_dict[ilabel],
                                      ttbarmass = ak.to_numpy(ttbarmass[icat]),
                                      weight = ak.to_numpy(Weights_puDown[icat]),
                                     )
@@ -1618,78 +1633,78 @@ class TTbarResProcessor(processor.ProcessorABC):
             output['cutflow'][ilabel] += np.sum(icat)
                 
             output['ttbarmass'].fill(dataset = dataset,
-                                     anacat = ConvertLabelToInt(self.label_dict, ilabel),
+                                     anacat = self.label_to_int_dict[ilabel],
                                      ttbarmass = ak.to_numpy(ttbarmass[icat]),
                                      weight = ak.to_numpy(Weights[icat]),
                                     )
 
 
-            #badweights = Weights[ (ConvertLabelToInt(self.label_dict, ilabel) == 36) & (ttbarmass > 1100) & (ttbarmass < 1800)]
-            #badttbar = ttbarmass[ (ConvertLabelToInt(self.label_dict, ilabel) == 36) & (ttbarmass > 1100) & (ttbarmass < 1800)]
+            #badweights = Weights[ (self.label_to_int_dict[ilabel] == 36) & (ttbarmass > 1100) & (ttbarmass < 1800)]
+            #badttbar = ttbarmass[ (self.label_to_int_dict[ilabel] == 36) & (ttbarmass > 1100) & (ttbarmass < 1800)]
 
 #            if icat == "2t0bcen": 
 #                print("------")
 #                print("badweights ", ak.max(Weights))
 
             output['ttbarmass_bare'].fill(dataset = dataset,
-                                     anacat = ConvertLabelToInt(self.label_dict, ilabel),
+                                     anacat = self.label_to_int_dict[ilabel],
                                      ttbarmass = ak.to_numpy(ttbarmass[icat])
                                     )
 
             # probe ttbar candidate histograms
             output['probept'].fill(dataset = dataset,
-                                     anacat = ConvertLabelToInt(self.label_dict, ilabel),
+                                     anacat = self.label_to_int_dict[ilabel],
                                      jetpt = ak.to_numpy(pT[icat]),
                                      weight = ak.to_numpy(Weights[icat]),
                                     )
             output['probep'].fill(dataset = dataset,
-                                     anacat = ConvertLabelToInt(self.label_dict, ilabel),
+                                     anacat = self.label_to_int_dict[ilabel],
                                      jetp = ak.to_numpy(p[icat]),
                                      weight = ak.to_numpy(Weights[icat]),
                                     )
 
             # jet histograms 
             output['jetpt'].fill(dataset = dataset,
-                                     anacat = ConvertLabelToInt(self.label_dict, ilabel),
+                                     anacat = self.label_to_int_dict[ilabel],
                                      jetpt = ak.to_numpy(jetpt[icat]),
                                      weight = ak.to_numpy(Weights[icat]),
                                     )
             output['jeteta'].fill(dataset = dataset,
-                                     anacat = ConvertLabelToInt(self.label_dict, ilabel),
+                                     anacat = self.label_to_int_dict[ilabel],
                                      jeteta = ak.to_numpy(jeteta[icat]),
                                      weight = ak.to_numpy(Weights[icat]),
                                     )
             output['jetphi'].fill(dataset = dataset,
-                                     anacat = ConvertLabelToInt(self.label_dict, ilabel),
+                                     anacat = self.label_to_int_dict[ilabel],
                                      jetphi = ak.to_numpy(jetphi[icat]),
                                      weight = ak.to_numpy(Weights[icat]),
                                     )
             output['jety'].fill(dataset = dataset,
-                                     anacat = ConvertLabelToInt(self.label_dict, ilabel),
+                                     anacat = self.label_to_int_dict[ilabel],
                                      jety = ak.to_numpy(jety[icat]),
                                      weight = ak.to_numpy(Weights[icat]),
                                     )
             output['jetdy'].fill(dataset = dataset,
-                                     anacat = ConvertLabelToInt(self.label_dict, ilabel),
+                                     anacat = self.label_to_int_dict[ilabel],
                                      jetdy = ak.to_numpy(jetdy[icat]),
                                      weight = ak.to_numpy(Weights[icat]),
                                     )
             # 'deepTagMD_TvsQCD' : hist.Hist(dataset_axis, cats_axis, jetpt_axis, jetmass_axis, tagger_axis, storage="weight", name="Counts"),
             
             # output['deepTagMD_TvsQCD'].fill(dataset = dataset,
-            #                          anacat = ConvertLabelToInt(self.label_dict, ilabel),
+            #                          anacat = self.label_to_int_dict[ilabel],
             #                          jetpt = ak.to_numpy(jetpt[icat]),
             #                          SDjetmass = ak.to_numpy(SDmass[icat]),
             #                          tagger = ak.to_numpy(ak8tagger[icat]),       
             #                          weight = ak.to_numpy(Weights[icat]),
             #                         )
             output['jetmass'].fill(dataset = dataset,
-                                     anacat = ConvertLabelToInt(self.label_dict, ilabel),
+                                     anacat = self.label_to_int_dict[ilabel],
                                      jetmass = ak.to_numpy(jetmass[icat]),
                                      weight = ak.to_numpy(Weights[icat]),
                                     )
             output['SDmass'].fill(dataset = dataset,
-                                     anacat = ConvertLabelToInt(self.label_dict, ilabel),
+                                     anacat = self.label_to_int_dict[ilabel],
                                      jetmass = ak.to_numpy(SDmass[icat]),
                                      weight = ak.to_numpy(Weights[icat]),
                                     )
@@ -1697,12 +1712,12 @@ class TTbarResProcessor(processor.ProcessorABC):
 
             # mistag rate histograms
             output['numerator'].fill(dataset = dataset,
-                                     anacat = ConvertLabelToInt(self.label_dict, ilabel),
+                                     anacat = self.label_to_int_dict[ilabel],
                                      jetp = ak.to_numpy(numerator[icat]),
                                      weight = ak.to_numpy(Weights[icat]),
                                     )
             output['denominator'].fill(dataset = dataset,
-                                     anacat = ConvertLabelToInt(self.label_dict, ilabel),
+                                     anacat = self.label_to_int_dict[ilabel],
                                      jetp = ak.to_numpy(denominator[icat]),
                                      weight = ak.to_numpy(Weights[icat]),
                                     )
@@ -1710,7 +1725,7 @@ class TTbarResProcessor(processor.ProcessorABC):
 
             # top tagger histograms
             output['tau32'].fill(dataset = dataset,
-                                     anacat = ConvertLabelToInt(self.label_dict, ilabel),
+                                     anacat = self.label_to_int_dict[ilabel],
                                      tau32 = ak.to_numpy(Tau32[icat]),
                                      weight = ak.to_numpy(Weights[icat]),
                                     )

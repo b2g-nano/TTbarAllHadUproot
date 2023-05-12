@@ -173,19 +173,16 @@ def main():
         0.) Make Outputs for Flavor and Trigger Efficiencies
     ./Run.py -C -med -F QCD TTbar DM RSGluon -a no -y 2016 --dask --saveFlav
     ./Run.py -C -med -T -a no -y 2016 --dask --saveTrig\n
-        1.) Create Mistag Rates that will be used to estimate NTMJ background
-    ./Run.py -C -y 2016 --step 1
-    python Run.py -C -med -m -a no -y 2016 --saveMistag\n
-        2.) Make Outputs for the first Uproot Job with no weights applied (outside of MC weights that come with the nanoAOD)
+        1.) Make Outputs for the first Uproot Job with no weights applied (outside of MC weights that come with the nanoAOD)
     ./Run.py -C -y 2016 --step 2
     python Run.py -C -med -d QCD TTbar JetHT DM RSGluon -a no -y 2016 --uproot 1 --save\n
-        3.) Make Outputs for the second Uproot Job with only mistag rate applied to JetHT and TTbar
+        2.) Make Outputs for the second Uproot Job with only mistag rate applied to JetHT and TTbar
     ./Run.py -C -y 2016 --step 3
     python Run.py -C -med -A QCD TTbar JetHT DM RSGluon -a no -y 2016 --save\n
-        4.) Make Outputs for the second Uproot Job with only mistag rate applied to JetHT and TTbar, and mass modification of JetHT and TTbar in pre-tag region
+        3.) Make Outputs for the second Uproot Job with only mistag rate applied to JetHT and TTbar, and mass modification of JetHT and TTbar in pre-tag region
     ./Run.py -C -y 2016 --step 4
     python Run.py -C -med -M QCD TTbar JetHT DM RSGluon -a no -y 2016 --save\n
-        5.) Make Outputs for the second Uproot Job with systematics, on top of mistag rate application and mass modification
+        4.) Make Outputs for the second Uproot Job with systematics, on top of mistag rate application and mass modification
     ./Run.py -C -y 2016 --step 5
     python Run.py -C -med -d QCD TTbar JetHT DM RSGluon -a no -y 2016 --uproot 2 --bTagSyst central --useEff --save\n
       ''')
@@ -212,7 +209,7 @@ def main():
     Parser.add_argument('--mistagcorrect', action='store_true', help='Remove ttbar contamination when making mistag rates')
     Parser.add_argument('-a', '--APV', type=str, choices=['yes', 'no'], help='Do datasets have APV?', default='no')
     Parser.add_argument('-trigs', '--triggers', type=str, nargs='+', help='Triggers to Apply')
-    Parser.add_argument('-y', '--year', type=int, choices=[2016, 2017, 2018, 0], help='Year(s) of data/MC of the datasets you want to run uproot with.  Choose 0 for all years simultaneously (0 option not yet finished; TBA).', default=2016)
+    Parser.add_argument('-y', '--year', type=int, choices=[2016, 2017, 2018], help='Year(s) of data/MC of the datasets you want to run uproot with.', default=2016)
 
     # ---- Other arguments ---- #
     Parser.add_argument('--uproot', type=int, choices=[1, 2], help='1st run or 2nd run of uproot job.  If not specified, both the 1st and 2nd job will be run one after the other.')
@@ -229,7 +226,7 @@ def main():
     Parser.add_argument('--useEff', action='store_true', help='Use MC bTag efficiencies for bTagging systematics')
     Parser.add_argument('--tpt', action='store_true', help='Apply top pT re-weighting for uproot 2')
 
-    Parser.add_argument('--step', type=int, choices=[1, 2, 3, 4, 5], help='Easily run a certain step of the workflow')
+    Parser.add_argument('--step', type=int, choices=[1, 2, 3, 4], help='Easily run a certain step of the workflow')
 
     UncertaintyGroup = Parser.add_mutually_exclusive_group()
     UncertaintyGroup.add_argument('--bTagSyst', type=str, choices=['central', 'up', 'down'], help='Choose Unc.')
@@ -254,6 +251,10 @@ def main():
     defaultTriggers = []
     if args.year == 2016:
         defaultTriggers.append("HLT_PFHT900")
+    elif args.year == 2017:
+        defaultTriggers.append("HLT_PFHT1050")
+    else: # args.year == 2018:
+        defaultTriggers.append("HLT_PFHT1050")
     print(f'\nDefault Triggers: {defaultTriggers}\n', flush=True)
     Trigs_to_run = defaultTriggers
     if args.triggers:
@@ -262,33 +263,27 @@ def main():
                 Trigs_to_run.append(itrig)    
     print(f'All Triggers Chosen: {Trigs_to_run}\n\n', flush=True)
 
-    if args.step == 1:
-        print('\n\nStep 1: Get and Save Mistag Rates\n', flush=True)
-        # args.medium = True
-        args.runmistag = True
-        args.saveMistag = True
-        # args.chunksize = 20000
-    elif args.step == 2: 
-        print('\n\nStep 2: Run and Save the First Uproot Job\n', flush=True)
+    if args.step == 1: 
+        print('\n\nStep 1: Run and Save the First Uproot Job\n', flush=True)
         # args.medium = True
         args.rundataset = ['QCD', 'TTbar', 'JetHT', 'DM', 'RSGluon']
         args.save = True
         # args.chunksize = 20000
         args.uproot = 1
-    elif args.step == 3: 
-        print('\n\nStep 3: Run and Save the Second Uproot Job with Only Mistag Rate Application\n', flush=True)
+    elif args.step == 2: 
+        print('\n\nStep 2: Run and Save the Second Uproot Job with Only Mistag Rate Application\n', flush=True)
         # args.medium = True
         args.runAMO = ['QCD', 'TTbar', 'JetHT', 'DM', 'RSGluon']
         args.save = True
         # args.chunksize = 20000
-    elif args.step == 4: 
-        print('\n\nStep 4: Run and Save the Second Uproot Job with Only Mistag Rate and ModMass Applications\n', flush=True)
+    elif args.step == 3: 
+        print('\n\nStep 3: Run and Save the Second Uproot Job with Only Mistag Rate and ModMass Applications\n', flush=True)
         # args.medium = True
         args.runMMO = ['QCD', 'TTbar', 'JetHT', 'DM', 'RSGluon']
         args.save = True
         # args.chunksize = 20000
-    elif args.step == 5: 
-        print('\n\nStep 5: Run and Save the Second Uproot Job\n', flush=True)
+    elif args.step == 4: 
+        print('\n\nStep 4: Run and Save the Second Uproot Job\n', flush=True)
         # args.medium = True
         args.rundataset = ['QCD', 'TTbar', 'JetHT', 'DM', 'RSGluon']
         args.save = True
@@ -374,19 +369,23 @@ def main():
         'postVFP': 'noAPV'
     }
     #    ---------------------------------------------------------------------------------------------------------------------    # 
-
+    CSVV2 = False
     BDisc = 0.
     OldDisc = '' #Label the datasets that use the old discriminator cut from 2016 AN
     BDiscDirectory = ''
     if args.loose:
         BDisc = 0.1918
         BDiscDirectory = 'LooseBTag/'
+        print(f'\nb-tagger DeepCSV Selected\n', flush=True)
     elif args.medium:
         BDisc = 0.5847
         BDiscDirectory = 'MediumBTag/'
+        print(f'\nb-tagger DeepCSV Selected\n', flush=True)
     else:
         BDisc = 0.8484
         OldDisc = '_oldANdisc'
+        CSVV2 = True
+        print(f'\nb-tagger CSVv2 Selected\n', flush=True)
     #    ---------------------------------------------------------------------------------------------------------------------    # 
 
     Testing = args.runtesting
@@ -573,11 +572,10 @@ def main():
         namingConvention = 'UL'+str(args.year-2000)+VFP # prefix to help name every coffea output according to the selected options
         fileConvention = str(args.year) + '/' + convertLabel[VFP] + '/TTbarRes_0l_' # direct the saved coffea output to the appropriate directory
     SaveLocation={ # Fill this dictionary with each type of dataset; use this dictionary when saving uproot jobs below
-        namingConvention+'_TTbar': 'TT/' + BDiscDirectory + fileConvention,
+        namingConvention+'_TTbar_700_1000': 'TT/' + BDiscDirectory + fileConvention,
+        namingConvention+'_TTbar_1000_Inf': 'TT/' + BDiscDirectory + fileConvention,
         namingConvention+'_QCD': 'QCD/' + BDiscDirectory + fileConvention,
         namingConvention+'_DM': 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention,
-        namingConvention+'_DM2500': 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention,
-        namingConvention+'_DM5000': 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention,
         namingConvention+'_RSGluon': 'RSGluonToTT/' + BDiscDirectory + fileConvention
     }
     if not Testing:
@@ -586,24 +584,14 @@ def main():
         filesets = CollectDatasets(Redirector)
         if args.rundataset:
             for a in args.rundataset: # for any dataset included as user argument...
-                if args.year > 0:
-                    if ('JetHT' in a): 
-                        for L in Letters:
-                            filesets_to_run[namingConvention+'_JetHT'+L+'_Data'] = filesets[namingConvention+'_JetHT'+L+'_Data'] # include JetHT dataset read in from Filesets
-                            SaveLocation[namingConvention+'_JetHT'+L+'_Data'] = 'JetHT/' + BDiscDirectory + fileConvention # file where output will be saved
-                    elif ('SingleMu' in a): 
-                        filesets_to_run['SingleMu'+str(args.year)+'_Data'] = filesets['SingleMu'+str(args.year)+'_Data'] # include JetHT dataset read in from Filesets
-                        SaveLocation['SingleMu'+str(args.year)+'_Data'] = 'SingleMu/' + BDiscDirectory + str(args.year) + '/TTbarRes_0l_' # file where output will be saved
-                else: # All Years
-                    if ('JetHT' in a): 
-                        filesets_to_run[namingConvention+'_JetHT_Data'] = filesets[namingConvention+'JetHT_Data'] # include JetHT dataset read in from Filesets
-                        SaveLocation[namingConvention+'_JetHT_Data'] = 'JetHT/' + BDiscDirectory + '/TTbarRes_0l_' # file where output will be saved
-                    elif ('SingleMu' in a): 
-                        filesets_to_run['SingleMu_Data'] = filesets['SingleMu_Data'] # include JetHT dataset read in from Filesets
-                        SaveLocation['SingleMu_Data'] = 'SingleMu/' + BDiscDirectory + '/TTbarRes_0l_' # file where output will be saved
+                if ('JetHT' in a): 
+                    for L in Letters:
+                        filesets_to_run[namingConvention+'_JetHT'+L+'_Data'] = filesets[namingConvention+'_JetHT'+L+'_Data'] # include JetHT dataset read in from Filesets
+                        SaveLocation[namingConvention+'_JetHT'+L+'_Data'] = 'JetHT/' + BDiscDirectory + fileConvention # file where output will be saved
+                
                 # Signal MC (then TTbar and QCD MC)
                 if 'RSGluon' in a:
-                    if a == 'RSGluon':
+                    if a == 'RSGluon': # Run all resonance masses
                         filesets_to_run[namingConvention+'_'+a+'1000'] = filesets[namingConvention+'_'+a+'1000']
                         filesets_to_run[namingConvention+'_'+a+'1500'] = filesets[namingConvention+'_'+a+'1500']
                         filesets_to_run[namingConvention+'_'+a+'2000'] = filesets[namingConvention+'_'+a+'2000']
@@ -622,10 +610,11 @@ def main():
                         SaveLocation[namingConvention+'_'+a+'4000'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'4500'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
                         SaveLocation[namingConvention+'_'+a+'5000'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
-                    else:
+                    else: # Only run user specified resonance masses
                         filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a]
+                        SaveLocation[namingConvention+'_'+a] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
                 elif 'DM' in a:
-                    if a == 'DM':
+                    if a == 'DM': # Same logic as RSGluon
                         filesets_to_run[namingConvention+'_'+a+'1000'] = filesets[namingConvention+'_'+a+'1000']
                         filesets_to_run[namingConvention+'_'+a+'1500'] = filesets[namingConvention+'_'+a+'1500']
                         filesets_to_run[namingConvention+'_'+a+'2000'] = filesets[namingConvention+'_'+a+'2000']
@@ -646,26 +635,20 @@ def main():
                         SaveLocation[namingConvention+'_'+a+'5000'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
                     else:
                         filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a]
-                elif 'TTbar' in a or 'QCD' in a:
+                        SaveLocation[namingConvention+'_'+a] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
+                elif a == 'TTbar':
+                    filesets_to_run[namingConvention+'_'+a+'_700_1000'] = filesets[namingConvention+'_'+a+'_700_1000'] # include MC dataset read in from Filesets
+                    filesets_to_run[namingConvention+'_'+a+'_1000_Inf'] = filesets[namingConvention+'_'+a+'_1000_Inf'] # include MC dataset read in 
+                elif 'QCD' in a:
                     filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a] # include MC dataset read in from Filesets
 
         elif args.runMMO:
             for a in args.runMMO: # for any dataset included as user argument...
-                if args.year > 0:
-                    if ('JetHT' in a): 
-                        for L in Letters:
-                            filesets_to_run[namingConvention+'_JetHT'+L+'_Data'] = filesets[namingConvention+'_JetHT'+L+'_Data'] # include JetHT dataset read in from Filesets
-                            SaveLocation[namingConvention+'_JetHT'+L+'_Data'] = 'JetHT/' + BDiscDirectory + fileConvention # file where output will be saved
-                    elif ('SingleMu' in a): 
-                        filesets_to_run['SingleMu'+str(args.year)+'_Data'] = filesets['SingleMu'+str(args.year)+'_Data'] # include JetHT dataset read in from Filesets
-                        SaveLocation['SingleMu'+str(args.year)+'_Data'] = 'SingleMu/' + BDiscDirectory + str(args.year) + '/TTbarRes_0l_' # file where output will be saved
-                else: # All Years
-                    if ('JetHT' in a): 
-                        filesets_to_run[namingConvention+'_JetHT_Data'] = filesets[namingConvention+'JetHT_Data'] # include JetHT dataset read in from Filesets
-                        SaveLocation[namingConvention+'_JetHT_Data'] = 'JetHT/' + BDiscDirectory + '/TTbarRes_0l_' # file where output will be saved
-                    elif ('SingleMu' in a): 
-                        filesets_to_run['SingleMu_Data'] = filesets['SingleMu_Data'] # include JetHT dataset read in from Filesets
-                        SaveLocation['SingleMu_Data'] = 'SingleMu/' + BDiscDirectory + '/TTbarRes_0l_' # file where output will be saved
+                if ('JetHT' in a): 
+                    for L in Letters:
+                        filesets_to_run[namingConvention+'_JetHT'+L+'_Data'] = filesets[namingConvention+'_JetHT'+L+'_Data'] # include JetHT dataset read in from Filesets
+                        SaveLocation[namingConvention+'_JetHT'+L+'_Data'] = 'JetHT/' + BDiscDirectory + fileConvention # file where output will be saved
+        
                 # Signal MC (then TTbar and QCD MC)
                 if 'RSGluon' in a:
                     if a == 'RSGluon':
@@ -689,6 +672,7 @@ def main():
                         SaveLocation[namingConvention+'_'+a+'5000'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
                     else:
                         filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a]
+                        SaveLocation[namingConvention+'_'+a] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
                 elif 'DM' in a:
                     if a == 'DM':
                         filesets_to_run[namingConvention+'_'+a+'1000'] = filesets[namingConvention+'_'+a+'1000']
@@ -711,26 +695,20 @@ def main():
                         SaveLocation[namingConvention+'_'+a+'5000'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
                     else:
                         filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a]
-                elif 'TTbar' in a or 'QCD' in a:
+                        SaveLocation[namingConvention+'_'+a] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
+                elif a == 'TTbar':
+                    filesets_to_run[namingConvention+'_'+a+'_700_1000'] = filesets[namingConvention+'_'+a+'_700_1000'] # include MC dataset read in from Filesets
+                    filesets_to_run[namingConvention+'_'+a+'_1000_Inf'] = filesets[namingConvention+'_'+a+'_1000_Inf'] # include MC dataset read in 
+                elif 'QCD' in a:
                     filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a] # include MC dataset read in from Filesets
 
         elif args.runAMO:
             for a in args.runAMO: # for any dataset included as user argument...
-                if args.year > 0:
-                    if ('JetHT' in a): 
-                        for L in Letters:
-                            filesets_to_run[namingConvention+'_JetHT'+L+'_Data'] = filesets[namingConvention+'_JetHT'+L+'_Data'] # include JetHT dataset read in from Filesets
-                            SaveLocation[namingConvention+'_JetHT'+L+'_Data'] = 'JetHT/' + BDiscDirectory + fileConvention # file where output will be saved
-                    elif ('SingleMu' in a): 
-                        filesets_to_run['SingleMu'+str(args.year)+'_Data'] = filesets['SingleMu'+str(args.year)+'_Data'] # include JetHT dataset read in from Filesets
-                        SaveLocation['SingleMu'+str(args.year)+'_Data'] = 'SingleMu/' + BDiscDirectory + str(args.year) + '/TTbarRes_0l_' # file where output will be saved
-                else: # All Years
-                    if ('JetHT' in a): 
-                        filesets_to_run[namingConvention+'_JetHT_Data'] = filesets[namingConvention+'JetHT_Data'] # include JetHT dataset read in from Filesets
-                        SaveLocation[namingConvention+'_JetHT_Data'] = 'JetHT/' + BDiscDirectory + '/TTbarRes_0l_' # file where output will be saved
-                    elif ('SingleMu' in a): 
-                        filesets_to_run['SingleMu_Data'] = filesets['SingleMu_Data'] # include JetHT dataset read in from Filesets
-                        SaveLocation['SingleMu_Data'] = 'SingleMu/' + BDiscDirectory + '/TTbarRes_0l_' # file where output will be saved
+                if ('JetHT' in a): 
+                    for L in Letters:
+                        filesets_to_run[namingConvention+'_JetHT'+L+'_Data'] = filesets[namingConvention+'_JetHT'+L+'_Data'] # include JetHT dataset read in from Filesets
+                        SaveLocation[namingConvention+'_JetHT'+L+'_Data'] = 'JetHT/' + BDiscDirectory + fileConvention # file where output will be saved
+                
                 # Signal MC (then TTbar and QCD MC)
                 if 'RSGluon' in a:
                     if a == 'RSGluon':
@@ -776,7 +754,10 @@ def main():
                         SaveLocation[namingConvention+'_'+a+'5000'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
                     else:
                         filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a]
-                elif 'TTbar' in a or 'QCD' in a:
+                elif a == 'TTbar':
+                    filesets_to_run[namingConvention+'_'+a+'_700_1000'] = filesets[namingConvention+'_'+a+'_700_1000'] # include MC dataset read in from Filesets
+                    filesets_to_run[namingConvention+'_'+a+'_1000_Inf'] = filesets[namingConvention+'_'+a+'_1000_Inf'] # include MC dataset read in 
+                elif 'QCD' in a:
                     filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a] # include MC dataset read in from Filesets
 
         elif args.runflavoreff:
@@ -803,6 +784,7 @@ def main():
                         SaveLocation[namingConvention+'_'+a+'5000'] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
                     else:
                         filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a]
+                        SaveLocation[namingConvention+'_'+a] = 'RSGluonToTT/' + BDiscDirectory + fileConvention
                 elif 'DM' in a:
                     if a == 'DM':
                         filesets_to_run[namingConvention+'_'+a+'1000'] = filesets[namingConvention+'_'+a+'1000']
@@ -825,12 +807,16 @@ def main():
                         SaveLocation[namingConvention+'_'+a+'5000'] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
                     else:
                         filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a]
-                elif 'TTbar' in a or 'QCD' in a:
+                        SaveLocation[namingConvention+'_'+a] = 'ZprimeDMToTTbar/' + BDiscDirectory + fileConvention
+                elif a == 'TTbar':
+                    filesets_to_run[namingConvention+'_'+a+'_700_1000'] = filesets[namingConvention+'_'+a+'_700_1000'] # include MC dataset read in from Filesets
+                    filesets_to_run[namingConvention+'_'+a+'_1000_Inf'] = filesets[namingConvention+'_'+a+'_1000_Inf'] # include MC dataset read in 
+                elif 'QCD' in a:
                     filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a] # include MC dataset read in from Filesets
+                
         elif args.runmistag: # if args.mistag: Only run 1st uproot job for ttbar and data to get mistag rate with tt contamination removed
             if args.mistagcorrect:
                 filesets_to_run[namingConvention+'_TTbar'] = filesets[namingConvention+'_TTbar']
-            if args.year > 0:
                 for L in Letters:
                     filesets_to_run[namingConvention+'_JetHT'+L+'_Data'] = filesets[namingConvention+'_JetHT'+L+'_Data'] # include JetHT dataset read in from Filesets
                     SaveLocation[namingConvention+'_JetHT'+L+'_Data'] = 'JetHT/' + BDiscDirectory + fileConvention # file where output will be saved
@@ -838,12 +824,10 @@ def main():
                 filesets_to_run[namingConvention+'_JetHT_Data'] = filesets[namingConvention+'JetHT_Data'] # include JetHT dataset read in from Filesets
                 SaveLocation[namingConvention+'_JetHT_Data'] = 'JetHT/' + BDiscDirectory + '/TTbarRes_0l_' # file where output will be saved
         elif isTrigEffArg: # just run over data
-            if args.year > 0:
-                filesets_to_run['SingleMu'+str(args.year)+'_Data'] = filesets['SingleMu'+str(args.year)+'_Data']
-                SaveLocation['SingleMu'+str(args.year)+'_Data'] = 'SingleMu/' + BDiscDirectory + str(args.year) + '/TTbarRes_0l_'
-            else:
-                filesets_to_run['SingleMu_Data'] = filesets['SingleMu_Data']
-                SaveLocation['SingleMu_Data'] = 'SingleMu/' + BDiscDirectory + '/TTbarRes_0l_'
+            for L in Letters:
+                filesets_to_run[namingConvention+'_SingleMu'+L+'_Data'] = filesets[namingConvention+'_SingleMu'+L+'_Data'] # include JetHT dataset read in from Filesets
+                SaveLocation[namingConvention+'_SingleMu'+L+'_Data'] = 'SingleMu/' + BDiscDirectory + fileConvention # file where output will be saved
+            
         else: # if somehow, the initial needed arguments are not used
             print("Something is wrong.  Please come and investigate what the problem could be", flush=True)
     else:
@@ -858,7 +842,8 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
         }
         filesets_forweights = filesets_to_run
         
-        
+    # print(f"\nRoot files to run:\n {filesets_to_run}", flush=True)
+    
     #    ---------------------------------------------------------------------------
     #    DDDD       A      SSSSS K     K       SSSSS EEEEEEE TTTTTTT U     U PPPPPP      
     #    D   D     A A    S      K   K        S      E          T    U     U P     P     
@@ -921,7 +906,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
             uploadDir = 'srv/'
 
 
-            cluster = LPCCondorCluster(death_timeout=TimeOut)
+            cluster = LPCCondorCluster()#(death_timeout=TimeOut)
             cluster.adapt(minimum=1, maximum=10)
             client = Client(cluster)
 
@@ -1004,6 +989,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
                                                                                            bdisc=BDisc,
+                                                                                           csvv2=CSVV2,
                                                                                            trigs_to_run=Trigs_to_run,
                                                                                            prng=prng),
                                                       executor=getattr(processor,chosen_exec),
@@ -1023,6 +1009,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
                                                                                            bdisc=BDisc,
+                                                                                           csvv2=CSVV2,
                                                                                            trigs_to_run=Trigs_to_run,
                                                                                            prng=prng),
                                                       executor=getattr(processor,chosen_exec),
@@ -1056,6 +1043,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
                                                                                            bdisc=BDisc,
+                                                                                           csvv2=CSVV2,
                                                                                            trigs_to_run=Trigs_to_run,
                                                                                            prng=prng),
                                                       executor=getattr(processor,chosen_exec),
@@ -1075,6 +1063,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
                                                                                            bdisc=BDisc,
+                                                                                           csvv2=CSVV2,
                                                                                            trigs_to_run=Trigs_to_run,
                                                                                            prng=prng),
                                                       executor=getattr(processor,chosen_exec),
@@ -1146,10 +1135,11 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                       treename='Events',
                                                       processor_instance=TriggerAnalysisProcessor(RandomDebugMode=False,
                                                                                            bdisc = BDisc,
+                                                                                           # csvv2=CSVV2,
                                                                                            year=args.year,
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
-                                                                                           trigs_to_run=Trigs_to_run,
+                                                                                           # trigs_to_run=Trigs_to_run,
                                                                                            prng=prng),
                                                       executor=getattr(processor,chosen_exec),
                                                       executor_args={
@@ -1165,10 +1155,11 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                       treename='Events',
                                                       processor_instance=TriggerAnalysisProcessor(RandomDebugMode=False,
                                                                                            bdisc = BDisc,
+                                                                                           # csvv2=CSVV2,
                                                                                            year=args.year,
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
-                                                                                           trigs_to_run=Trigs_to_run,
+                                                                                           # trigs_to_run=Trigs_to_run,
                                                                                            prng=prng),
                                                       executor=getattr(processor,chosen_exec),
                                                       executor_args={
@@ -1197,10 +1188,11 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                       treename='Events',
                                                       processor_instance=TriggerAnalysisProcessor(RandomDebugMode=False,
                                                                                            bdisc = BDisc,
+                                                                                           # csvv2=CSVV2,
                                                                                            year=args.year,
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
-                                                                                           trigs_to_run=Trigs_to_run,
+                                                                                           # trigs_to_run=Trigs_to_run,
                                                                                            prng=prng),
                                                       executor=getattr(processor,chosen_exec),
                                                       executor_args={
@@ -1216,10 +1208,11 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                       treename='Events',
                                                       processor_instance=TriggerAnalysisProcessor(RandomDebugMode=False,
                                                                                            bdisc = BDisc,
+                                                                                           # csvv2=CSVV2,
                                                                                            year=args.year,
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
-                                                                                           trigs_to_run=Trigs_to_run,
+                                                                                           # trigs_to_run=Trigs_to_run,
                                                                                            prng=prng),
                                                       executor=getattr(processor,chosen_exec),
                                                       executor_args={
@@ -1235,7 +1228,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                 if args.saveTrig:
                     mkdir_p(uploadDir+'CoffeaOutputsForTriggerAnalysis/'
                               + SaveLocation[name])
-                    savefilename =  output, uploadDir+'CoffeaOutputsForTriggerAnalysis/' + SaveLocation[name] + name + '_TriggerAnalysis' + OldDisc + '.coffea'
+                    savefilename =  'TTbarAllHadUproot/CoffeaOutputsForTriggerAnalysis/' + SaveLocation[name] + name + '_TriggerAnalysis' + OldDisc + '.coffea'
                     util.save(output, savefilename)
                     print('saving ' + savefilename, flush=True)
 
@@ -1293,6 +1286,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                                                            ModMass=False, 
                                                                                            RandomDebugMode=False,
                                                                                            bdisc = BDisc,
+                                                                                           csvv2=CSVV2,
                                                                                            year=args.year,
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
@@ -1315,6 +1309,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                                                            ModMass=False, 
                                                                                            RandomDebugMode=False,
                                                                                            bdisc = BDisc,
+                                                                                           csvv2=CSVV2,
                                                                                            year=args.year,
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
@@ -1350,6 +1345,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                                                            ModMass=False, 
                                                                                            RandomDebugMode=False,
                                                                                            bdisc = BDisc,
+                                                                                           csvv2=CSVV2,
                                                                                            year=args.year,
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
@@ -1372,6 +1368,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                                                            ModMass=False, 
                                                                                            RandomDebugMode=False,
                                                                                            bdisc = BDisc,
+                                                                                           csvv2=CSVV2,
                                                                                            year=args.year,
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
@@ -1510,6 +1507,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                                                            ScaleFactorFile=SFfile,
                                                                                            UseEfficiencies=args.useEff,
                                                                                            bdisc = BDisc,
+                                                                                           csvv2=CSVV2,
                                                                                            year=args.year,
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
@@ -1547,6 +1545,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                                                            ScaleFactorFile=SFfile,
                                                                                            UseEfficiencies=args.useEff,
                                                                                            bdisc = BDisc,
+                                                                                           csvv2=CSVV2,
                                                                                            year=args.year,
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
@@ -1598,6 +1597,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                                                            ScaleFactorFile=SFfile,
                                                                                            UseEfficiencies=args.useEff,
                                                                                            bdisc = BDisc,
+                                                                                           csvv2=CSVV2,
                                                                                            year=args.year,
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
@@ -1633,6 +1633,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                                                            ScaleFactorFile=SFfile,
                                                                                            UseEfficiencies=args.useEff,
                                                                                            bdisc = BDisc,
+                                                                                           csvv2=CSVV2,
                                                                                            year=args.year,
                                                                                            apv=convertLabel[VFP],
                                                                                            vfp=VFP,
@@ -1712,6 +1713,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                                                                RandomDebugMode=False,
                                                                                                BDirect = BDiscDirectory,
                                                                                                bdisc = BDisc,
+                                                                                               csvv2=CSVV2,
                                                                                                year=args.year,
                                                                                                apv=convertLabel[VFP],
                                                                                                vfp=VFP,
@@ -1736,6 +1738,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                                                                RandomDebugMode=False,
                                                                                                BDirect = BDiscDirectory,
                                                                                                bdisc = BDisc,
+                                                                                               csvv2=CSVV2,
                                                                                                year=args.year,
                                                                                                apv=convertLabel[VFP],
                                                                                                vfp=VFP,
@@ -1772,6 +1775,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                                                                RandomDebugMode=False,
                                                                                                BDirect = BDiscDirectory,
                                                                                                bdisc = BDisc,
+                                                                                               csvv2=CSVV2,
                                                                                                year=args.year,
                                                                                                apv=convertLabel[VFP],
                                                                                                vfp=VFP,
@@ -1796,6 +1800,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                                                                RandomDebugMode=False,
                                                                                                BDirect = BDiscDirectory,
                                                                                                bdisc = BDisc,
+                                                                                               csvv2=CSVV2,
                                                                                                year=args.year,
                                                                                                apv=convertLabel[VFP],
                                                                                                vfp=VFP,
@@ -1859,6 +1864,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                                                                RandomDebugMode=False,
                                                                                                BDirect = BDiscDirectory,
                                                                                                bdisc = BDisc,
+                                                                                               csvv2=CSVV2,
                                                                                                year=args.year,
                                                                                                apv=convertLabel[VFP],
                                                                                                vfp=VFP,
@@ -1883,6 +1889,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                                                                RandomDebugMode=False,
                                                                                                BDirect = BDiscDirectory,
                                                                                                bdisc = BDisc,
+                                                                                               csvv2=CSVV2,
                                                                                                year=args.year,
                                                                                                apv=convertLabel[VFP],
                                                                                                vfp=VFP,
@@ -1919,6 +1926,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                                                                RandomDebugMode=False,
                                                                                                BDirect = BDiscDirectory,
                                                                                                bdisc = BDisc,
+                                                                                               csvv2=CSVV2,
                                                                                                year=args.year,
                                                                                                apv=convertLabel[VFP],
                                                                                                vfp=VFP,
@@ -1943,6 +1951,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                                                                RandomDebugMode=False,
                                                                                                BDirect = BDiscDirectory,
                                                                                                bdisc = BDisc,
+                                                                                               csvv2=CSVV2,
                                                                                                year=args.year,
                                                                                                apv=convertLabel[VFP],
                                                                                                vfp=VFP,
