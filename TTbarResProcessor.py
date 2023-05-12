@@ -76,7 +76,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                  ApplyHEMCleaning=False, trigs_to_run=[''], csvv2=False, 
                  sysType=None):
 
-        
+        self.lumimasks = getLumiMaskRun2(prepend="TTbarAllHadUproot/")
         self.prng = prng
         self.htCut = htCut
         self.minMSD = minMSD
@@ -1026,9 +1026,9 @@ class TTbarResProcessor(processor.ProcessorABC):
 #         antitag = (~taucut_s0) & (mcut_s0) # The Probe jet will always be ttbarcands.slot1 (at)
 
         # ----------- DeepAK8 Tagger (Discriminator Cut) ----------- #
-        ttag_s0 = ttbarcands.slot0.deepTag_TvsQCD > self.deepAK8Cut
-        ttag_s1 = ttbarcands.slot1.deepTag_TvsQCD > self.deepAK8Cut
-        antitag = ttbarcands.slot0.deepTag_TvsQCD < self.deepAK8Cut # The Probe jet will always be ttbarcands.slot1 (at)
+        ttag_s0 = ttbarcands.slot0.deepTagMD_TvsQCD > self.deepAK8Cut
+        ttag_s1 = ttbarcands.slot1.deepTagMD_TvsQCD > self.deepAK8Cut
+        antitag = ttbarcands.slot0.deepTagMD_TvsQCD < self.deepAK8Cut # The Probe jet will always be ttbarcands.slot1 (at)
         
         # ---- Define "Top Tag" Regions ---- #
         antitag_probe = np.logical_and(antitag, ttag_s1) # Found an antitag and ttagged probe pair for mistag rate (AT&Pt)
