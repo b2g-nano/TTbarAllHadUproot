@@ -78,7 +78,7 @@ class TTbarResProcessor(processor.ProcessorABC):
 
 
 #         self.lumimasks = getLumiMaskRun2(prepend="srv/")
-        self.lumimasks = getLumiMaskRun2(prepend="srv/")
+        self.lumimasks = getLumiMaskRun2(prepend="TTbarAllHadUproot/")
     
     
 
