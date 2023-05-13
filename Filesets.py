@@ -67,7 +67,7 @@ def CollectDatasets(redirector_str):
     
     # uploadDir = 'srv/' for lpcjobqueue shell or TTbarAllHadUproot/ for coffea casa and WinterFell
     
-    if 'xcache' in redirector_str or 'cmsxrootd' in redirector_str:
+    if 'cmsxrootd' in redirector_str:
         uploadDir = 'srv'
     else:
         uploadDir = 'TTbarAllHadUproot'

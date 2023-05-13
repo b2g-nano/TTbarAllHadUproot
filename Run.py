@@ -355,7 +355,7 @@ def main():
     if args.casa:
         Redirector = 'root://xcache/'
         envirDirectory = 'dask-worker-space/'
-        uploadDir = os.getcwd().replace('/','') + '/'
+        uploadDir = maindirectory + '/'
     elif args.lpc:
         Redirector = 'root://cmsxrootd.fnal.gov/'
         uploadDir = 'srv/'
