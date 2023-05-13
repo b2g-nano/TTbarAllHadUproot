@@ -149,7 +149,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         manual_axis = hist.axis.Variable(manual_bins, name="jetp", label=r"Jet Momentum [GeV]")
         tagger_axis = hist.axis.Regular(50, 0, 1, name="tagger", label=r"MD deepAK8")
         subjettagger_axis = hist.axis.Regular(50, 0, 1, name="subjettagger", label=r"DeepCSV")
-        tau32_axis  = hist.axis.Regular(50, 0, 2, name="tau32", label=r"$\tau_3/\tau_2$")
+        # tau32_axis  = hist.axis.Regular(50, 0, 2, name="tau32", label=r"$\tau_3/\tau_2$")
 
         # --- axes for subjets --- #
         subjetmass_axis = hist.axis.Regular(50, 0, 500, name="subjetmass", label=r"SubJet $m$ [GeV]")
@@ -176,7 +176,7 @@ class TTbarResProcessor(processor.ProcessorABC):
 
             'ttbarmass' : hist.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
             'ttbarmass_bare' : hist.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
-
+            
             'ttbarmass_pdfUp'   : hist.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
             'ttbarmass_pdfDown' : hist.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
             'ttbarmass_pdfNom'  : hist.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
@@ -184,11 +184,11 @@ class TTbarResProcessor(processor.ProcessorABC):
             'ttbarmass_puUp'   : hist.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
             'ttbarmass_puDown' : hist.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
             'ttbarmass_puNom'  : hist.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
-
+            
             'ttbarmass_hemUp'   : hist.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
             'ttbarmass_hemDown' : hist.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
             'ttbarmass_hemNom'  : hist.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
-
+            
             'ttbarmass_prefiringUp'   : hist.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
             'ttbarmass_prefiringDown' : hist.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
             'ttbarmass_prefiringNom'  : hist.Hist(dataset_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
@@ -372,7 +372,7 @@ class TTbarResProcessor(processor.ProcessorABC):
             'deepTagMD_TvsQCD' : hist.Hist(dataset_axis, jetpt_axis, SDjetmass_axis, tagger_axis, storage="weight", name="Counts"),
             'deepB_subjet'     : hist.Hist(dataset_axis, subjetpt_axis, subjetmass_axis, subjettagger_axis, storage="weight", name="Counts"),
             'deepB_fatjet'     : hist.Hist(dataset_axis, jetpt_axis, SDjetmass_axis, subjettagger_axis, storage="weight", name="Counts"),
-            'tau32'            : hist.Hist(dataset_axis, cats_axis, tau32_axis, storage="weight", name="Counts"),
+            # 'tau32'            : hist.Hist(dataset_axis, cats_axis, tau32_axis, storage="weight", name="Counts"),
 
         #    ===========================================================================================    
         #    M     M IIIIIII   SSSSS TTTTTTT    A    GGGGGGG     H     H IIIIIII   SSSSS TTTTTTT   SSSSS     
@@ -463,7 +463,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         if isData: 
             lumi_mask = np.array(self.lumimasks[IOV](events.run, events.luminosityBlock), dtype=bool)
             events = events[lumi_mask]
-            # evtweights = evtweights[lumi_mask]
+            evtweights = evtweights[lumi_mask]
         elif isSignal:
             pass # Do nothing to the number of events here...
         else: 
@@ -561,16 +561,6 @@ class TTbarResProcessor(processor.ProcessorABC):
             Jets["genJetIdx"] = events.Jet_genJetIdx
             SubJets['hadronFlavour'] = events.SubJet_hadronFlavour
             FatJets["genJetIdx"] = events.FatJet_genJetAK8Idx
-        
-#         # ---- Get event weights from dataset ---- #
-#         if isData: # If data is used...
-#             # print('if isData command works')
-#             evtweights = np.ones( len(FatJets) ) # set all "data weights" to one
-#         else: # if Monte Carlo dataset is used...
-#             if "LHEWeight_originalXWGTUP" not in events.fields: 
-#                 evtweights = events.Generator_weight
-#             else: 
-#                 evtweights = events.LHEWeight_originalXWGTUP
 
         # ---- Show all events ---- #
         output['cutflow']['all events'] += len(FatJets) #ak.to_awkward0(FatJets).size
@@ -580,7 +570,6 @@ class TTbarResProcessor(processor.ProcessorABC):
         output['cutflow']['sumw'] += np.sum(evtweights)
         output['cutflow']['sumw2'] += np.sum(evtweights**2)        
         
-
         
         # ---- Jet Corrections ---- #
         
@@ -798,7 +787,7 @@ class TTbarResProcessor(processor.ProcessorABC):
             condition = ak.flatten(ak.any(Triggers, axis=0, keepdims=True))
             # print(condition)
                         
-        if isData:
+        #if isData:
             FatJets = FatJets[condition]
             Jets = Jets[condition]
             SubJets = SubJets[condition]
@@ -1293,7 +1282,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         jetmass = ak.flatten(ttbarcands.slot1.mass)
         
         SDmass = ak.flatten(ttbarcands.slot1.msoftdrop)
-        Tau32 = ak.flatten((ttbarcands.slot1.tau3/ttbarcands.slot1.tau2))
+        # Tau32 = ak.flatten((ttbarcands.slot1.tau3/ttbarcands.slot1.tau2))
         ak8tagger = ak.flatten(ttbarcands.slot1.deepTagMD_TvsQCD)
 
         """ Add 4-vectors and get its total mass """
@@ -1732,11 +1721,11 @@ class TTbarResProcessor(processor.ProcessorABC):
 
 
             # top tagger histograms
-            output['tau32'].fill(dataset = dataset,
-                                     anacat = self.label_to_int_dict[ilabel],
-                                     tau32 = ak.to_numpy(Tau32[icat]),
-                                     weight = ak.to_numpy(Weights[icat]),
-                                    )
+            # output['tau32'].fill(dataset = dataset,
+            #                          anacat = self.label_to_int_dict[ilabel],
+            #                          tau32 = ak.to_numpy(Tau32[icat]),
+            #                          weight = ak.to_numpy(Weights[icat]),
+            #                         )
             
         del df
         # MemoryMb()
