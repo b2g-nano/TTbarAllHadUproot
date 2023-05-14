@@ -277,6 +277,43 @@ def ScaledTTbar(Output, Year, HistName, CategoryInt, ScaleFactor):
     TTbar = TTbar1 + TTbar2
     
     return(TTbar)
+
+def ScaledTTbarDisc(Output, Year, HistName, Xaxis, ScaleFactor):
+    '''
+        Output --> Dictionary of Data Outputs
+        Year --> Integer; Year of 
+        HistName --> String; Name of Histogram to be Plotted ('ttbarmass', 'jetpt', etc...)
+        Xaxis --> String; Either 'pt', 'mass', or leave blank, ''.  If blamk, 1D plot will be made with discriminator as x-axis 
+        ScaleFactor --> Dictionary of Scale Factors for TTbar
+    '''
+    
+    if Xaxis == 'pt':
+        
+        TTbar1 = Output['700_1000_preVFP'][HistName][f'UL{str(Year-2000)}preVFP_TTbar_700_1000', :, sum, :]*ScaleFactor['700_1000_preVFP']\
+               + Output['700_1000_postVFP'][HistName][f'UL{str(Year-2000)}postVFP_TTbar_700_1000', :, sum, :]*ScaleFactor['700_1000_postVFP']
+
+        TTbar2 = Output['1000_Inf_preVFP'][HistName][f'UL{str(Year-2000)}preVFP_TTbar_1000_Inf', :, sum, :]*ScaleFactor['1000_Inf_preVFP']\
+               + Output['1000_Inf_postVFP'][HistName][f'UL{str(Year-2000)}postVFP_TTbar_1000_Inf', :, sum, :]*ScaleFactor['1000_Inf_postVFP']
+        
+    elif Xaxis == 'mass':
+        
+        TTbar1 = Output['700_1000_preVFP'][HistName][f'UL{str(Year-2000)}preVFP_TTbar_700_1000', sum, :, :]*ScaleFactor['700_1000_preVFP']\
+               + Output['700_1000_postVFP'][HistName][f'UL{str(Year-2000)}postVFP_TTbar_700_1000', sum, :, :]*ScaleFactor['700_1000_postVFP']
+
+        TTbar2 = Output['1000_Inf_preVFP'][HistName][f'UL{str(Year-2000)}preVFP_TTbar_1000_Inf', sum, :, :]*ScaleFactor['1000_Inf_preVFP']\
+               + Output['1000_Inf_postVFP'][HistName][f'UL{str(Year-2000)}postVFP_TTbar_1000_Inf', sum, :, :]*ScaleFactor['1000_Inf_postVFP']
+        
+    else:
+        
+        TTbar1 = Output['700_1000_preVFP'][HistName][f'UL{str(Year-2000)}preVFP_TTbar_700_1000', sum, sum, :]*ScaleFactor['700_1000_preVFP']\
+               + Output['700_1000_postVFP'][HistName][f'UL{str(Year-2000)}postVFP_TTbar_700_1000', sum, sum, :]*ScaleFactor['700_1000_postVFP']
+
+        TTbar2 = Output['1000_Inf_preVFP'][HistName][f'UL{str(Year-2000)}preVFP_TTbar_1000_Inf', sum, sum, :]*ScaleFactor['1000_Inf_preVFP']\
+               + Output['1000_Inf_postVFP'][HistName][f'UL{str(Year-2000)}postVFP_TTbar_1000_Inf', sum, sum, :]*ScaleFactor['1000_Inf_postVFP']
+
+    TTbar = TTbar1 + TTbar2
+    
+    return(TTbar)
         
 def Cutflow(Output):
     '''

@@ -125,6 +125,66 @@ def AddEraHists(Output, Year, HistName, CategoryInt):
                 
     return HistObject
 
+def AddEraDisc(Output, Year, HistName, Xaxis):
+    '''
+        Output --> Dictionary of Data Outputs
+        Year --> Integer; Year of 
+        HistName --> String; Name of Discriminator Histogram to be Plotted ('deepTagMD_TvsQCD', 'deepB_subjet', etc...)
+        Xaxis --> String; Either 'pt', 'mass', or leave blank, ''.  If blamk, 1D plot will be made with discriminator as x-axis 
+    '''
+    
+    JetHT_str = f'UL{str(Year - 2000)}preVFP_JetHTB_Data'
+        
+    if Xaxis == 'pt':
+
+        HistObject = Output['B_preVFP'][HistName][JetHT_str, :, sum, :]
+
+        # ---- Add all data together ---- #
+        for vfp in ['preVFP', 'postVFP']:
+            #---- Define Histograms from Coffea Outputs ----# 
+            if vfp == 'preVFP':
+                for Era in ['C', 'D', 'E', 'F']: 
+                    JetHT_str = f'UL{str(Year - 2000)}{vfp}_JetHT{Era}_Data'
+                    HistObject += Output[Era+'_'+vfp][HistName][JetHT_str, :, sum, :]
+            else:
+                for Era in ['F', 'G', 'H']: 
+                    JetHT_str = f'UL{str(Year - 2000)}{vfp}_JetHT{Era}_Data'
+                    HistObject += Output[Era+'_'+vfp][HistName][JetHT_str, :, sum, :]
+
+    elif Xaxis == 'mass':
+
+        HistObject = Output['B_preVFP'][HistName][JetHT_str, sum, :, :]
+
+        # ---- Add all data together ---- #
+        for vfp in ['preVFP', 'postVFP']:
+            #---- Define Histograms from Coffea Outputs ----# 
+            if vfp == 'preVFP':
+                for Era in ['C', 'D', 'E', 'F']: 
+                    JetHT_str = f'UL{str(Year - 2000)}{vfp}_JetHT{Era}_Data'
+                    HistObject += Output[Era+'_'+vfp][HistName][JetHT_str, sum, :, :]
+            else:
+                for Era in ['F', 'G', 'H']: 
+                    JetHT_str = f'UL{str(Year - 2000)}{vfp}_JetHT{Era}_Data'
+                    HistObject += Output[Era+'_'+vfp][HistName][JetHT_str, sum, :, :]
+
+    else:
+
+        HistObject = Output['B_preVFP'][HistName][JetHT_str, sum, sum, :]
+
+        # ---- Add all data together ---- #
+        for vfp in ['preVFP', 'postVFP']:
+            #---- Define Histograms from Coffea Outputs ----# 
+            if vfp == 'preVFP':
+                for Era in ['C', 'D', 'E', 'F']: 
+                    JetHT_str = f'UL{str(Year - 2000)}{vfp}_JetHT{Era}_Data'
+                    HistObject += Output[Era+'_'+vfp][HistName][JetHT_str, sum, sum, :]
+            else:
+                for Era in ['F', 'G', 'H']: 
+                    JetHT_str = f'UL{str(Year - 2000)}{vfp}_JetHT{Era}_Data'
+                    HistObject += Output[Era+'_'+vfp][HistName][JetHT_str, sum, sum, :]
+                
+    return HistObject
+
 def AddEraHistsSingleMu(Output, Year, HistName, Xaxis, CategoryInt):
     '''
         Output --> Dictionary of Data Outputs
