@@ -278,13 +278,15 @@ def ScaledTTbar(Output, Year, HistName, CategoryInt, ScaleFactor):
     
     return(TTbar)
 
-def ScaledTTbarDisc(Output, Year, HistName, Xaxis, ScaleFactor):
+def ScaledTTbarDisc(Output, Year, HistName, Xaxis, ScaleFactor, ptbin=sum, massbin=sum):
     '''
         Output --> Dictionary of Data Outputs
         Year --> Integer; Year of 
         HistName --> String; Name of Histogram to be Plotted ('ttbarmass', 'jetpt', etc...)
         Xaxis --> String; Either 'pt', 'mass', or leave blank, ''.  If blamk, 1D plot will be made with discriminator as x-axis 
         ScaleFactor --> Dictionary of Scale Factors for TTbar
+        ptbin --> Integer; pt bin number
+        massbin --> Integer; SD mass bin number
     '''
     
     if Xaxis == 'pt':
@@ -305,11 +307,11 @@ def ScaledTTbarDisc(Output, Year, HistName, Xaxis, ScaleFactor):
         
     else:
         
-        TTbar1 = Output['700_1000_preVFP'][HistName][f'UL{str(Year-2000)}preVFP_TTbar_700_1000', sum, sum, :]*ScaleFactor['700_1000_preVFP']\
-               + Output['700_1000_postVFP'][HistName][f'UL{str(Year-2000)}postVFP_TTbar_700_1000', sum, sum, :]*ScaleFactor['700_1000_postVFP']
+        TTbar1 = Output['700_1000_preVFP'][HistName][f'UL{str(Year-2000)}preVFP_TTbar_700_1000', massbin, ptbin, :]*ScaleFactor['700_1000_preVFP']\
+               + Output['700_1000_postVFP'][HistName][f'UL{str(Year-2000)}postVFP_TTbar_700_1000', massbin, ptbin, :]*ScaleFactor['700_1000_postVFP']
 
-        TTbar2 = Output['1000_Inf_preVFP'][HistName][f'UL{str(Year-2000)}preVFP_TTbar_1000_Inf', sum, sum, :]*ScaleFactor['1000_Inf_preVFP']\
-               + Output['1000_Inf_postVFP'][HistName][f'UL{str(Year-2000)}postVFP_TTbar_1000_Inf', sum, sum, :]*ScaleFactor['1000_Inf_postVFP']
+        TTbar2 = Output['1000_Inf_preVFP'][HistName][f'UL{str(Year-2000)}preVFP_TTbar_1000_Inf', massbin, ptbin, :]*ScaleFactor['1000_Inf_preVFP']\
+               + Output['1000_Inf_postVFP'][HistName][f'UL{str(Year-2000)}postVFP_TTbar_1000_Inf', massbin, ptbin, :]*ScaleFactor['1000_Inf_postVFP']
 
     TTbar = TTbar1 + TTbar2
     
