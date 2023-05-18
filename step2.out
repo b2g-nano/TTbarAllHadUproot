@@ -1,0 +1,220 @@
+nohup: ignoring input
+
+Default Triggers: ['HLT_PFHT1050']
+
+All Triggers Chosen: ['HLT_PFHT1050']
+
+
+Manual Job Being Performed Below:
+
+b-tagger DeepCSV Selected
+
+
+
+UL18postVFP_QCD
+
+-----------------------------------------------------
+Processing UL18postVFP_QCD ...
+  Preprocessing 100% ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 20/20 [ 0:00:08 < 0:00:00 | 2.4   file/s ]
+Merging (local) 100% ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 20/20 [ 0:00:08 < 0:00:00 | ?   merges/s ]
+     Processing 100% ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 202/202 [ 0:07:55 < 0:00:00 | 0.5  chunk/s ]
+Merging (local) 100% ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 202/202 [ 0:07:55 < 0:00:00 | ?   merges/s ]
+/opt/conda/lib/python3.8/site-packages/awkward0/__init__.py:8: DeprecationWarning: distutils Version classes are deprecated. Use packaging.version instead.
+  if distutils.version.LooseVersion(numpy.__version__) < distutils.version.LooseVersion("1.13.1"):
+/opt/conda/lib/python3.8/site-packages/awkward0/__init__.py:8: DeprecationWarning: distutils Version classes are deprecated. Use packaging.version instead.
+  if distutils.version.LooseVersion(numpy.__version__) < distutils.version.LooseVersion("1.13.1"):
+{'ttbarmass': Hist(
+  StrCategory(['UL18postVFP_QCD'], growth=True, name='dataset', label='Primary Dataset'),
+  IntCategory([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47], name='anacat', label='Analysis Category'),
+  Regular(50, 800, 8000, name='ttbarmass', label='$m_{t\\bar{t}}$ [GeV]'),
+  storage=Weight()) # Sum: WeightedSum(value=0.875694, variance=2.47912e-07) (WeightedSum(value=1.04299, variance=2.95289e-07) with flow), 'ttbarmass_bare': Hist(
+  StrCategory(['UL18postVFP_QCD'], growth=True, name='dataset', label='Primary Dataset'),
+  IntCategory([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47], name='anacat', label='Analysis Category'),
+  Regular(50, 800, 8000, name='ttbarmass', label='$m_{t\\bar{t}}$ [GeV]'),
+  storage=Weight()) # Sum: WeightedSum(value=2.36488e+07, variance=2.36488e+07) (WeightedSum(value=2.81731e+07, variance=2.81731e+07) with flow), 'ttbarmass_pdfUp': Hist(
+  StrCategory([], growth=True, name='dataset', label='Primary Dataset'),
+  IntCategory([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47], name='anacat', label='Analysis Category'),
+  Regular(50, 800, 8000, name='ttbarmass', label='$m_{t\\bar{t}}$ [GeV]'),
+  storage=Weight()) # Sum: WeightedSum(value=0, variance=0), 'ttbarmass_pdfDown': Hist(
+  StrCategory([], growth=True, name='dataset', label='Primary Dataset'),
+  IntCategory([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47], name='anacat', label='Analysis Category'),
+  Regular(50, 800, 8000, name='ttbarmass', label='$m_{t\\bar{t}}$ [GeV]'),
+  storage=Weight()) # Sum: WeightedSum(value=0, variance=0), 'ttbarmass_pdfNom': Hist(
+  StrCategory([], growth=True, name='dataset', label='Primary Dataset'),
+  IntCategory([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47], name='anacat', label='Analysis Category'),
+  Regular(50, 800, 8000, name='ttbarmass', label='$m_{t\\bar{t}}$ [GeV]'),
+  storage=Weight()) # Sum: WeightedSum(value=0, variance=0), 'ttbarmass_puUp': Hist(
+  StrCategory([], growth=True, name='dataset', label='Primary Dataset'),
+  IntCategory([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47], name='anacat', label='Analysis Category'),
+  Regular(50, 800, 8000, name='ttbarmass', label='$m_{t\\bar{t}}$ [GeV]'),
+  storage=Weight()) # Sum: WeightedSum(value=0, variance=0), 'ttbarmass_puDown': Hist(
+  StrCategory([], growth=True, name='dataset', label='Primary Dataset'),
+  IntCategory([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47], name='anacat', label='Analysis Category'),
+  Regular(50, 800, 8000, name='ttbarmass', label='$m_{t\\bar{t}}$ [GeV]'),
+  storage=Weight()) # Sum: WeightedSum(value=0, variance=0), 'ttbarmass_puNom': Hist(
+  StrCategory([], growth=True, name='dataset', label='Primary Dataset'),
+  IntCategory([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47], name='anacat', label='Analysis Category'),
+  Regular(50, 800, 8000, name='ttbarmass', label='$m_{t\\bar{t}}$ [GeV]'),
+  storage=Weight()) # Sum: WeightedSum(value=0, variance=0), 'ttbarmass_hemUp': Hist(
+  StrCategory([], growth=True, name='dataset', label='Primary Dataset'),
+  IntCategory([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47], name='anacat', label='Analysis Category'),
+  Regular(50, 800, 8000, name='ttbarmass', label='$m_{t\\bar{t}}$ [GeV]'),
+  storage=Weight()) # Sum: WeightedSum(value=0, variance=0), 'ttbarmass_hemDown': Hist(
+  StrCategory([], growth=True, name='dataset', label='Primary Dataset'),
+  IntCategory([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47], name='anacat', label='Analysis Category'),
+  Regular(50, 800, 8000, name='ttbarmass', label='$m_{t\\bar{t}}$ [GeV]'),
+  storage=Weight()) # Sum: WeightedSum(value=0, variance=0), 'ttbarmass_hemNom': Hist(
+  StrCategory([], growth=True, name='dataset', label='Primary Dataset'),
+  IntCategory([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47], name='anacat', label='Analysis Category'),
+  Regular(50, 800, 8000, name='ttbarmass', label='$m_{t\\bar{t}}$ [GeV]'),
+  storage=Weight()) # Sum: WeightedSum(value=0, variance=0), 'ttbarmass_prefiringUp': Hist(
+  StrCategory([], growth=True, name='dataset', label='Primary Dataset'),
+  IntCategory([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47], name='anacat', label='Analysis Category'),
+  Regular(50, 800, 8000, name='ttbarmass', label='$m_{t\\bar{t}}$ [GeV]'),
+  storage=Weight()) # Sum: WeightedSum(value=0, variance=0), 'ttbarmass_prefiringDown': Hist(
+  StrCategory([], growth=True, name='dataset', label='Primary Dataset'),
+  IntCategory([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47], name='anacat', label='Analysis Category'),
+  Regular(50, 800, 8000, name='ttbarmass', label='$m_{t\\bar{t}}$ [GeV]'),
+  storage=Weight()) # Sum: WeightedSum(value=0, variance=0), 'ttbarmass_prefiringNom': Hist(
+  StrCategory([], growth=True, name='dataset', label='Primary Dataset'),
+  IntCategory([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47], name='anacat', label='Analysis Category'),
+  Regular(50, 800, 8000, name='ttbarmass', label='$m_{t\\bar{t}}$ [GeV]'),
+  storage=Weight()) # Sum: WeightedSum(value=0, variance=0), 'jetmass': Hist(
+  StrCategory(['UL18postVFP_QCD'], growth=True, name='dataset', label='Primary Dataset'),
+  IntCategory([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47], name='anacat', label='Analysis Category'),
+  Regular(50, 0, 500, name='jetmass', label='Jet $m$ [GeV]'),
+  storage=Weight()) # Sum: WeightedSum(value=0.966336, variance=2.73599e-07) (WeightedSum(value=1.04299, variance=2.95289e-07) with flow), 'SDmass': Hist(
+  StrCategory(['UL18postVFP_QCD'], growth=True, name='dataset', label='Primary Dataset'),
+  IntCategory([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47], name='anacat', label='Analysis Category'),
+  Regular(50, 0, 500, name='jetmass', label='Jet $m$ [GeV]'),
+  storage=Weight()) # Sum: WeightedSum(value=0.992906, variance=2.81119e-07) (WeightedSum(value=1.04299, variance=2.95289e-07) with flow), 'jetpt': Hist(
+  StrCategory(['UL18postVFP_QCD'], growth=True, name='dataset', label='Primary Dataset'),
+  IntCategory([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47], name='anacat', label='Analysis Category'),
+  Regular(50, 400, 2000, name='jetpt', label='Jet $p_{T}$ [GeV]'),
+  storage=Weight()) # Sum: WeightedSum(value=0.556864, variance=1.57866e-07) (WeightedSum(value=1.04299, variance=2.95289e-07) with flow), 'jeteta': Hist(
+  StrCategory(['UL18postVFP_QCD'], growth=True, name='dataset', label='Primary Dataset'),
+  IntCategory([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47], name='anacat', label='Analysis Category'),
+  Regular(50, -2.4, 2.4, name='jeteta', label='Jet $\\eta$'),
+  storage=Weight()) # Sum: WeightedSum(value=1.04293, variance=2.95273e-07) (WeightedSum(value=1.04299, variance=2.95289e-07) with flow), 'jetphi': Hist(
+  StrCategory(['UL18postVFP_QCD'], growth=True, name='dataset', label='Primary Dataset'),
+  IntCategory([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47], name='anacat', label='Analysis Category'),
+  Regular(50, -3.14159, 3.14159, name='jetphi', label='Jet $\\phi$'),
+  storage=Weight()) # Sum: WeightedSum(value=1.04295, variance=2.95277e-07) (WeightedSum(value=1.04299, variance=2.95289e-07) with flow), 'probept': Hist(
+  StrCategory(['UL18postVFP_QCD'], growth=True, name='dataset', label='Primary Dataset'),
+  IntCategory([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47], name='anacat', label='Analysis Category'),
+  Regular(50, 400, 2000, name='jetpt', label='Jet $p_{T}$ [GeV]'),
+  storage=Weight()) # Sum: WeightedSum(value=0.556864, variance=1.57866e-07) (WeightedSum(value=1.04299, variance=2.95289e-07) with flow), 'probep': Hist(
+  StrCategory(['UL18postVFP_QCD'], growth=True, name='dataset', label='Primary Dataset'),
+  IntCategory([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47], name='anacat', label='Analysis Category'),
+  Variable([400, 500, 600, 800, 1000, 1500, 2000, 3000, 7000, 10000], name='jetp', label='Jet Momentum [GeV]'),
+  storage=Weight()) # Sum: WeightedSum(value=1.04299, variance=2.95289e-07), 'jety': Hist(
+  StrCategory(['UL18postVFP_QCD'], growth=True, name='dataset', label='Primary Dataset'),
+  IntCategory([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47], name='anacat', label='Analysis Category'),
+  Regular(50, -3, 3, name='jety', label='Jet $y$'),
+  storage=Weight()) # Sum: WeightedSum(value=1.04299, variance=2.95289e-07), 'jetdy': Hist(
+  StrCategory(['UL18postVFP_QCD'], growth=True, name='dataset', label='Primary Dataset'),
+  IntCategory([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47], name='anacat', label='Analysis Category'),
+  Regular(50, 0, 5, name='jetdy', label='Jet $\\Delta y$'),
+  storage=Weight()) # Sum: WeightedSum(value=1.04299, variance=2.95289e-07), 'deepTagMD_TvsQCD': Hist(
+  StrCategory(['UL18postVFP_QCD'], growth=True, name='dataset', label='Primary Dataset'),
+  Regular(50, 400, 2000, name='jetpt', label='Jet $p_{T}$ [GeV]'),
+  Regular(50, 0, 500, name='SDjetmass', label='Jet $m_{SD}$ [GeV]'),
+  Regular(50, 0, 1, name='tagger', label='MD deepAK8'),
+  storage=Weight()) # Sum: WeightedSum(value=0.160775, variance=4.558e-08) (WeightedSum(value=0.28561, variance=8.08714e-08) with flow), 'deepB_subjet': Hist(
+  StrCategory(['UL18postVFP_QCD'], growth=True, name='dataset', label='Primary Dataset'),
+  Regular(50, 400, 2000, name='subjetpt', label='SubJet $p_{T}$ [GeV]'),
+  Regular(50, 0, 500, name='subjetmass', label='SubJet $m$ [GeV]'),
+  Regular(50, 0, 1, name='subjettagger', label='DeepCSV'),
+  storage=Weight()) # Sum: WeightedSum(value=0.15465, variance=4.37855e-08) (WeightedSum(value=0.28561, variance=8.08714e-08) with flow), 'deepB_fatjet': Hist(
+  StrCategory(['UL18postVFP_QCD'], growth=True, name='dataset', label='Primary Dataset'),
+  Regular(50, 400, 2000, name='jetpt', label='Jet $p_{T}$ [GeV]'),
+  Regular(50, 0, 500, name='SDjetmass', label='Jet $m_{SD}$ [GeV]'),
+  Regular(50, 0, 1, name='subjettagger', label='DeepCSV'),
+  storage=Weight()) # Sum: WeightedSum(value=0.133753, variance=3.79221e-08) (WeightedSum(value=0.28561, variance=8.08714e-08) with flow), 'numerator': Hist(
+  StrCategory(['UL18postVFP_QCD'], growth=True, name='dataset', label='Primary Dataset'),
+  IntCategory([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47], name='anacat', label='Analysis Category'),
+  Variable([400, 500, 600, 800, 1000, 1500, 2000, 3000, 7000, 10000], name='jetp', label='Jet Momentum [GeV]'),
+  storage=Weight()) # Sum: WeightedSum(value=0.190432, variance=5.38651e-08) (WeightedSum(value=1.04299, variance=2.95289e-07) with flow), 'denominator': Hist(
+  StrCategory(['UL18postVFP_QCD'], growth=True, name='dataset', label='Primary Dataset'),
+  IntCategory([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47], name='anacat', label='Analysis Category'),
+  Variable([400, 500, 600, 800, 1000, 1500, 2000, 3000, 7000, 10000], name='jetp', label='Jet Momentum [GeV]'),
+  storage=Weight()) # Sum: WeightedSum(value=0.603035, variance=1.70774e-07) (WeightedSum(value=1.04299, variance=2.95289e-07) with flow), 'weights_prefiringUp': Hist(
+  StrCategory([], growth=True, name='dataset', label='Primary Dataset'),
+  IntCategory([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47], name='anacat', label='Analysis Category'),
+  Regular(30, 0, 1.5, name='Weights', label='L1 Prefiring Weight'),
+  storage=Weight()) # Sum: WeightedSum(value=0, variance=0), 'weights_prefiringDown': Hist(
+  StrCategory([], growth=True, name='dataset', label='Primary Dataset'),
+  IntCategory([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47], name='anacat', label='Analysis Category'),
+  Regular(30, 0, 1.5, name='Weights', label='L1 Prefiring Weight'),
+  storage=Weight()) # Sum: WeightedSum(value=0, variance=0), 'weights_prefiringNom': Hist(
+  StrCategory([], growth=True, name='dataset', label='Primary Dataset'),
+  IntCategory([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47], name='anacat', label='Analysis Category'),
+  Regular(30, 0, 1.5, name='Weights', label='L1 Prefiring Weight'),
+  storage=Weight()) # Sum: WeightedSum(value=0, variance=0), 'cutflow': defaultdict_accumulator(<class 'int'>, {'all events': 8175632, 'sumw': 0.3223789631156251, 'sumw2': 9.128215178177967e-08, 'Passed HT Cut': 8154286, 'Passed Loose Jet ID': 8154286, 'Passed pT,y Cut': 8154286, '>= oneTTbar': 8015160, 'Passed dPhi Cut': 8006829, 'Good Subjets': 7713904, 'AT&Pt0bcen': 654054, 'AT&Pt0bfwd': 283273, 'AT&Pt1bcen': 56957, 'AT&Pt1bfwd': 32268, 'AT&Pt2bcen': 1387, 'AT&Pt2bfwd': 774, 'at0bcen': 2772209, 'at0bfwd': 1664907, 'at1bcen': 182465, 'at1bfwd': 114756, 'at2bcen': 3493, 'at2bfwd': 2073, 'pret0bcen': 2353978, 'pret0bfwd': 444630, 'pret1bcen': 125249, 'pret1bfwd': 46068, 'pret2bcen': 2734, 'pret2bfwd': 1342, '0t0bcen': 2118155, '0t0bfwd': 1381634, '0t1bcen': 125508, '0t1bfwd': 82488, '0t2bcen': 2106, '0t2bfwd': 1299, '1t0bcen': 1307298, '1t0bfwd': 565216, '1t1bcen': 114586, '1t1bfwd': 64411, '1t2bcen': 2740, '1t2bfwd': 1549, '>=1t0bcen': 3008032, '>=1t0bfwd': 727903, '>=1t1bcen': 182206, '>=1t1bfwd': 78336, '>=1t2bcen': 4121, '>=1t2bfwd': 2116, '2t0bcen': 1700734, '2t0bfwd': 162687, '2t1bcen': 67620, '2t1bfwd': 13925, '2t2bcen': 1381, '2t2bfwd': 567, '>=0t0bcen': 5126187, '>=0t0bfwd': 2109537, '>=0t1bcen': 307714, '>=0t1bfwd': 160824, '>=0t2bcen': 6227, '>=0t2bfwd': 3415})}
+saving /home/cms-jovyan/TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/QCD/MediumBTag/2018/noAPV/TTbarRes_0l_UL18postVFP_QCD.coffea
+-------Unweighted UL18postVFP_QCD--------
+          all events : 8175632
+                sumw : 0.3223789631156251
+               sumw2 : 9.128215178177967e-08
+       Passed HT Cut : 8154286
+ Passed Loose Jet ID : 8154286
+     Passed pT,y Cut : 8154286
+         >= oneTTbar : 8015160
+     Passed dPhi Cut : 8006829
+        Good Subjets : 7713904
+          AT&Pt0bcen : 654054
+          AT&Pt0bfwd : 283273
+          AT&Pt1bcen : 56957
+          AT&Pt1bfwd : 32268
+          AT&Pt2bcen : 1387
+          AT&Pt2bfwd : 774
+             at0bcen : 2772209
+             at0bfwd : 1664907
+             at1bcen : 182465
+             at1bfwd : 114756
+             at2bcen : 3493
+             at2bfwd : 2073
+           pret0bcen : 2353978
+           pret0bfwd : 444630
+           pret1bcen : 125249
+           pret1bfwd : 46068
+           pret2bcen : 2734
+           pret2bfwd : 1342
+             0t0bcen : 2118155
+             0t0bfwd : 1381634
+             0t1bcen : 125508
+             0t1bfwd : 82488
+             0t2bcen : 2106
+             0t2bfwd : 1299
+             1t0bcen : 1307298
+             1t0bfwd : 565216
+             1t1bcen : 114586
+             1t1bfwd : 64411
+             1t2bcen : 2740
+             1t2bfwd : 1549
+           >=1t0bcen : 3008032
+           >=1t0bfwd : 727903
+           >=1t1bcen : 182206
+           >=1t1bfwd : 78336
+           >=1t2bcen : 4121
+           >=1t2bfwd : 2116
+             2t0bcen : 1700734
+             2t0bfwd : 162687
+             2t1bcen : 67620
+             2t1bfwd : 13925
+             2t2bcen : 1381
+             2t2bfwd : 567
+           >=0t0bcen : 5126187
+           >=0t0bfwd : 2109537
+           >=0t1bcen : 307714
+           >=0t1bfwd : 160824
+           >=0t2bcen : 6227
+           >=0t2bfwd : 3415
+Elapsed time =  484.00257754325867  sec.
+Elapsed time =  8.066709625720978  min.
+Elapsed time =  0.13444516042868296  hrs.
+
+
+We're done here!!
+
+Memory used by Run.py = 321.35168 Mb
