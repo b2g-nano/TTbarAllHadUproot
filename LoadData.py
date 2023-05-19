@@ -67,6 +67,18 @@ def JetHT_Weighted(btag, year, contam, unc, mr):
         
     return(Output)
 
+def JetHT_Total(Input):
+    
+    Output = {}
+    for i,j in Input.items():
+        for k,l in j.items():
+            if k in Output: 
+                Output[k] += l
+            else: 
+                Output[k] = l.copy()
+                
+    return(Output)
+
 def SingleMu_Unweighted(year):
     
     Output = {}
@@ -125,7 +137,7 @@ def AddEraHists(Output, Year, HistName, CategoryInt):
                 
     return HistObject
 
-def AddEraDisc(Output, Year, HistName, Xaxis, ptbin=sum, massbin=sum):
+def AddEraDisc(Output, Year, HistName, Xaxis, ptbin=sum, massbin=sum, rhobin=sum, taggerbin=None):
     '''
         Output --> Dictionary of Data Outputs
         Year --> Integer; Year of 
@@ -138,24 +150,110 @@ def AddEraDisc(Output, Year, HistName, Xaxis, ptbin=sum, massbin=sum):
     JetHT_str = f'UL{str(Year - 2000)}preVFP_JetHTB_Data'
         
     if Xaxis == 'pt':
+        
+        if taggerbin != None:
+        
+            HistObject = Output['B_preVFP'][HistName][JetHT_str, :, sum, sum, taggerbin]
 
-        HistObject = Output['B_preVFP'][HistName][JetHT_str, :, sum, :]
+            # ---- Add all data together ---- #
+            for vfp in ['preVFP', 'postVFP']:
+                #---- Define Histograms from Coffea Outputs ----# 
+                if vfp == 'preVFP':
+                    for Era in ['C', 'D', 'E', 'F']: 
+                        JetHT_str = f'UL{str(Year - 2000)}{vfp}_JetHT{Era}_Data'
+                        HistObject += Output[Era+'_'+vfp][HistName][JetHT_str, :, sum, sum, taggerbin]
+                else:
+                    for Era in ['F', 'G', 'H']: 
+                        JetHT_str = f'UL{str(Year - 2000)}{vfp}_JetHT{Era}_Data'
+                        HistObject += Output[Era+'_'+vfp][HistName][JetHT_str, :, sum, sum, taggerbin]
+                        
+        else:
+            
+            HistObject = Output['B_preVFP'][HistName][JetHT_str, :, sum, sum, :]
 
-        # ---- Add all data together ---- #
-        for vfp in ['preVFP', 'postVFP']:
-            #---- Define Histograms from Coffea Outputs ----# 
-            if vfp == 'preVFP':
-                for Era in ['C', 'D', 'E', 'F']: 
-                    JetHT_str = f'UL{str(Year - 2000)}{vfp}_JetHT{Era}_Data'
-                    HistObject += Output[Era+'_'+vfp][HistName][JetHT_str, :, sum, :]
-            else:
-                for Era in ['F', 'G', 'H']: 
-                    JetHT_str = f'UL{str(Year - 2000)}{vfp}_JetHT{Era}_Data'
-                    HistObject += Output[Era+'_'+vfp][HistName][JetHT_str, :, sum, :]
+            # ---- Add all data together ---- #
+            for vfp in ['preVFP', 'postVFP']:
+                #---- Define Histograms from Coffea Outputs ----# 
+                if vfp == 'preVFP':
+                    for Era in ['C', 'D', 'E', 'F']: 
+                        JetHT_str = f'UL{str(Year - 2000)}{vfp}_JetHT{Era}_Data'
+                        HistObject += Output[Era+'_'+vfp][HistName][JetHT_str, :, sum, sum, :]
+                else:
+                    for Era in ['F', 'G', 'H']: 
+                        JetHT_str = f'UL{str(Year - 2000)}{vfp}_JetHT{Era}_Data'
+                        HistObject += Output[Era+'_'+vfp][HistName][JetHT_str, :, sum, sum, :]
 
     elif Xaxis == 'mass':
+        
+        if taggerbin != None:
+        
+            HistObject = Output['B_preVFP'][HistName][JetHT_str, sum, :, sum, taggerbin]
 
-        HistObject = Output['B_preVFP'][HistName][JetHT_str, sum, :, :]
+            # ---- Add all data together ---- #
+            for vfp in ['preVFP', 'postVFP']:
+                #---- Define Histograms from Coffea Outputs ----# 
+                if vfp == 'preVFP':
+                    for Era in ['C', 'D', 'E', 'F']: 
+                        JetHT_str = f'UL{str(Year - 2000)}{vfp}_JetHT{Era}_Data'
+                        HistObject += Output[Era+'_'+vfp][HistName][JetHT_str, sum, :, sum, taggerbin]
+                else:
+                    for Era in ['F', 'G', 'H']: 
+                        JetHT_str = f'UL{str(Year - 2000)}{vfp}_JetHT{Era}_Data'
+                        HistObject += Output[Era+'_'+vfp][HistName][JetHT_str, sum, :, sum, taggerbin]
+                        
+        else:
+            
+            HistObject = Output['B_preVFP'][HistName][JetHT_str, sum, :, sum, :]
+
+            # ---- Add all data together ---- #
+            for vfp in ['preVFP', 'postVFP']:
+                #---- Define Histograms from Coffea Outputs ----# 
+                if vfp == 'preVFP':
+                    for Era in ['C', 'D', 'E', 'F']: 
+                        JetHT_str = f'UL{str(Year - 2000)}{vfp}_JetHT{Era}_Data'
+                        HistObject += Output[Era+'_'+vfp][HistName][JetHT_str, sum, :, sum, :]
+                else:
+                    for Era in ['F', 'G', 'H']: 
+                        JetHT_str = f'UL{str(Year - 2000)}{vfp}_JetHT{Era}_Data'
+                        HistObject += Output[Era+'_'+vfp][HistName][JetHT_str, sum, :, sum, :]
+                        
+    elif Xaxis == 'rho':
+        
+        if taggerbin != None:
+        
+            HistObject = Output['B_preVFP'][HistName][JetHT_str, sum, sum, :, taggerbin]
+
+            # ---- Add all data together ---- #
+            for vfp in ['preVFP', 'postVFP']:
+                #---- Define Histograms from Coffea Outputs ----# 
+                if vfp == 'preVFP':
+                    for Era in ['C', 'D', 'E', 'F']: 
+                        JetHT_str = f'UL{str(Year - 2000)}{vfp}_JetHT{Era}_Data'
+                        HistObject += Output[Era+'_'+vfp][HistName][JetHT_str, sum, sum, :, taggerbin]
+                else:
+                    for Era in ['F', 'G', 'H']: 
+                        JetHT_str = f'UL{str(Year - 2000)}{vfp}_JetHT{Era}_Data'
+                        HistObject += Output[Era+'_'+vfp][HistName][JetHT_str, sum, sum, :, taggerbin]
+                        
+        else:
+            
+            HistObject = Output['B_preVFP'][HistName][JetHT_str, sum, sum, :, :]
+
+            # ---- Add all data together ---- #
+            for vfp in ['preVFP', 'postVFP']:
+                #---- Define Histograms from Coffea Outputs ----# 
+                if vfp == 'preVFP':
+                    for Era in ['C', 'D', 'E', 'F']: 
+                        JetHT_str = f'UL{str(Year - 2000)}{vfp}_JetHT{Era}_Data'
+                        HistObject += Output[Era+'_'+vfp][HistName][JetHT_str, sum, sum, :, :]
+                else:
+                    for Era in ['F', 'G', 'H']: 
+                        JetHT_str = f'UL{str(Year - 2000)}{vfp}_JetHT{Era}_Data'
+                        HistObject += Output[Era+'_'+vfp][HistName][JetHT_str, sum, sum, :, :]
+
+    else: # Make 1D Plots
+            
+        HistObject = Output['B_preVFP'][HistName][JetHT_str, massbin, ptbin, rhobin, :]
 
         # ---- Add all data together ---- #
         for vfp in ['preVFP', 'postVFP']:
@@ -163,27 +261,11 @@ def AddEraDisc(Output, Year, HistName, Xaxis, ptbin=sum, massbin=sum):
             if vfp == 'preVFP':
                 for Era in ['C', 'D', 'E', 'F']: 
                     JetHT_str = f'UL{str(Year - 2000)}{vfp}_JetHT{Era}_Data'
-                    HistObject += Output[Era+'_'+vfp][HistName][JetHT_str, sum, :, :]
+                    HistObject += Output[Era+'_'+vfp][HistName][JetHT_str, massbin, ptbin, rhobin, :]
             else:
                 for Era in ['F', 'G', 'H']: 
                     JetHT_str = f'UL{str(Year - 2000)}{vfp}_JetHT{Era}_Data'
-                    HistObject += Output[Era+'_'+vfp][HistName][JetHT_str, sum, :, :]
-
-    else:
-
-        HistObject = Output['B_preVFP'][HistName][JetHT_str, massbin, ptbin, :]
-
-        # ---- Add all data together ---- #
-        for vfp in ['preVFP', 'postVFP']:
-            #---- Define Histograms from Coffea Outputs ----# 
-            if vfp == 'preVFP':
-                for Era in ['C', 'D', 'E', 'F']: 
-                    JetHT_str = f'UL{str(Year - 2000)}{vfp}_JetHT{Era}_Data'
-                    HistObject += Output[Era+'_'+vfp][HistName][JetHT_str, massbin, ptbin, :]
-            else:
-                for Era in ['F', 'G', 'H']: 
-                    JetHT_str = f'UL{str(Year - 2000)}{vfp}_JetHT{Era}_Data'
-                    HistObject += Output[Era+'_'+vfp][HistName][JetHT_str, massbin, ptbin, :]
+                    HistObject += Output[Era+'_'+vfp][HistName][JetHT_str, massbin, ptbin, rhobin, :]
                 
     return HistObject
 
