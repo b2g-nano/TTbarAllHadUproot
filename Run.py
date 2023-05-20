@@ -196,7 +196,6 @@ def main():
     # ---- Necessary arguments ---- #
     StartGroup = Parser.add_mutually_exclusive_group()
     StartGroup.add_argument('-t', '--runtesting', action='store_true', help='Only run a select few root files defined in the code.')
-    StartGroup.add_argument('-m', '--runmistag', action='store_true',help='Make data mistag rate where ttbar contamination is removed (as well as ttbar mistag rate)')
     StartGroup.add_argument('-T', '--runtrigeff', action='store_true', help='Create trigger efficiency hist coffea output objects for chosen condition') 
     StartGroup.add_argument('-F', '--runflavoreff', type=str, nargs='+', help='Create flavor efficiency hist coffea output objects for chosen MC datasets')
     StartGroup.add_argument('-M', '--runMMO', type=str, nargs='+', help='Run Mistag-weight and Mass modification Only (no other systematics for uproot 2)')
@@ -213,13 +212,13 @@ def main():
     BDiscriminatorGroup.add_argument('-med', '--medium', action='store_true', help='Apply medium bTag discriminant cut')
     BDiscriminatorGroup.add_argument('-med2016', '--medium2016', action='store_true', help='Apply medium bTag discriminant cut from 2016 AN')
     
-    Parser.add_argument('--mistagcorrect', action='store_true', help='Remove ttbar contamination when making mistag rates')
+    Parser.add_argument('--mistagcorrect', type=bool, help='Remove ttbar contamination when making mistag rates', default='True')
     Parser.add_argument('-a', '--APV', type=str, choices=['yes', 'no'], help='Do datasets have APV?', default='no')
     Parser.add_argument('-trigs', '--triggers', type=str, nargs='+', help='Triggers to Apply')
     Parser.add_argument('-y', '--year', type=int, choices=[2016, 2017, 2018], help='Year(s) of data/MC of the datasets you want to run uproot with.', default=2016)
 
     # ---- Other arguments ---- #
-    Parser.add_argument('--uproot', type=int, choices=[1, 2], help='1st run or 2nd run of uproot job.  If not specified, both the 1st and 2nd job will be run one after the other.')
+    Parser.add_argument('--uproot', type=int, choices=[1, 2], help='1st run or 2nd run of uproot job.')
     Parser.add_argument('--letters', type=str, nargs='+', help='Choose letter(s) of jetHT to run over')
     Parser.add_argument('--chunks', type=int, help='Number of chunks of data to run for given dataset(s)')
     Parser.add_argument('--chunksize', type=int, help='Size of each chunk to run for given dataset(s)')
@@ -301,7 +300,7 @@ def main():
 
     WeightList = np.array([args.pileup, args.prefiring, args.pdf, args.hem], dtype=object)
 
-    StartGroupList = np.array([args.runtesting, args.runmistag, args.runtrigeff, args.runflavoreff, args.runMMO, args.runAMO, args.rundataset], dtype=object)
+    StartGroupList = np.array([args.runtesting, args.runtrigeff, args.runflavoreff, args.runMMO, args.runAMO, args.rundataset], dtype=object)
 
     BDiscriminatorGroupList = np.array([args.loose, args.medium, args.medium2016], dtype=object)
 
@@ -325,9 +324,6 @@ def main():
     TimeOut = 300.
     if args.timeout:
         TimeOut = args.timeout
-    if args.runmistag and args.uproot:
-        Parser.error('When running the --runmistag option do not specify --uproot.')
-        quit()
     isTrigEffArg = args.runtrigeff
     if isTrigEffArg and args.uproot:
         Parser.error('When running --runtrigeff option do not specify --uproot.')
@@ -404,15 +400,12 @@ def main():
     LoadingUnweightedFiles = False 
     OnlyCreateLookupTables = False 
     contam = ''
-    if (args.uproot == 1 or args.runmistag) or (isTrigEffArg or args.runflavoreff):
+    if (args.uproot == 1) or (isTrigEffArg or args.runflavoreff):
         OnlyCreateLookupTables = True # stop the code after LUTs are displayed on the terminal; after 1st uproot job
     elif (args.uproot == 2 or args.runMMO or args.runAMO):
         LoadingUnweightedFiles = True # Load the 1st uproot job's coffea outputs if you only want to run the 2nd uproot job.
         if args.mistagcorrect:
             contam = '_ttbarContamRemoved'
-    else: # Default for running both 1st and 2nd uproot job
-        LoadingUnweightedFiles = False 
-        OnlyCreateLookupTables = False 
     #    ---------------------------------------------------------------------------------------------------------------------    #    
 
     RunAllRootFiles = False 
@@ -823,16 +816,6 @@ def main():
                 elif 'QCD' in a:
                     filesets_to_run[namingConvention+'_'+a] = filesets[namingConvention+'_'+a] # include MC dataset read in from Filesets
                 
-        elif args.runmistag: # if args.mistag: Only run 1st uproot job for ttbar and data to get mistag rate with tt contamination removed
-            if args.mistagcorrect:
-                filesets_to_run[namingConvention+'_TTbar'] = filesets[namingConvention+'_TTbar']
-                for L in Letters:
-                    filesets_to_run[namingConvention+'_JetHT'+L+'_Data'] = filesets[namingConvention+'_JetHT'+L+'_Data'] # include JetHT dataset read in from Filesets
-                    SaveLocation[namingConvention+'_JetHT'+L+'_Data'] = 'JetHT/' + BDiscDirectory + fileConvention # file where output will be saved
-            else:
-                for L in Letters:
-                    filesets_to_run[namingConvention+'_JetHT'+L+'_Data'] = filesets[namingConvention+'_JetHT'+L+'_Data'] # include JetHT dataset read in from Filesets
-                    SaveLocation[namingConvention+'_JetHT'+L+'_Data'] = 'JetHT/' + BDiscDirectory + fileConvention # file where output will be saved
         elif isTrigEffArg: # just run over data
             for L in Letters:
                 filesets_to_run[namingConvention+'_SingleMu'+L+'_Data'] = filesets[namingConvention+'_SingleMu'+L+'_Data'] # include JetHT dataset read in from Filesets
@@ -1437,7 +1420,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
 
     import TTbarResLookUpTables
 
-    from TTbarResLookUpTables import CreateLUTS, LoadDataLUTS #, CreateMCEfficiencyLUTS
+    from TTbarResLookUpTables import LoadDataLUTS
 
     mistag_luts = None
 
@@ -1449,9 +1432,6 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
         print(f'Memory used by Run.py = {memoryMb} Mb', flush=True) # Display MB of memory usage
         del memoryMb, process
         exit()
-    if args.runmistag:
-        CreateLUTS(filesets_to_run, outputs_unweighted, BDiscDirectory, args.year, VFP, args.mistagcorrect, Letters, args.saveMistag)
-        # mistag_luts = LoadDataLUTS(BDiscDirectory, args.year, VFP, args.mistagcorrect, Letters) # Specifically get data mistag rates
     
     if LoadingUnweightedFiles:
         print('Preparing to load unweighted coffea outputs', flush=True)

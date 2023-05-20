@@ -29,7 +29,6 @@ import awkward as ak
 from cms_utils import getLumiMaskRun2
 
 
-
 from python.corrections import ( 
     GetL1PreFiringWeight,
     HEMCleaning,
