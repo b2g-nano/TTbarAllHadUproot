@@ -68,7 +68,7 @@ manual_sdMass_bins = [0, 25, 50, 75, 100, 125, 150, 175, 200, 225, 250]
 """Package to perform the data-driven mistag-rate-based ttbar hadronic analysis. """
 class TTbarResProcessor(processor.ProcessorABC):
     def __init__(self, prng=RandomState(1234567890), htCut=950., minMSD=105., maxMSD=210.,
-                 tau32Cut=0.65, ak8PtMin=400., bdisc=0.5847, deepAK8Cut=0.435, BDirect='',
+                 tau32Cut=0.65, ak8PtMin=400., bdisc=0.5847, deepAK8Cut=0.632, BDirect='',
                  year=None, apv='', vfp='',eras=[], UseLookUpTables=False, lu=None, extraDaskDirectory='',
                  ModMass=False, RandomDebugMode=False, UseEfficiencies=False, xsSystematicWeight=1., lumSystematicWeight=1.,
                  ApplybtagSF=False, ScaleFactorFile='', ApplyttagSF=False, ApplyTopReweight=False, 
@@ -144,6 +144,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         jetphi_axis    = hist.axis.Regular(50, -np.pi, np.pi, name="jetphi", label=r"Jet $\phi$")
         jety_axis      = hist.axis.Regular(50, -3, 3, name="jety", label=r"Jet $y$")
         jetdy_axis     = hist.axis.Regular(50, 0, 5, name="jetdy", label=r"Jet $\Delta y$")
+        m_pT_axis      = hist.axis.Regular(50, 0, 1.5, name="m_pT", label=r"Jet $m/p_T$")
 
         # --- axes for top tagger --- #
         manual_axis = hist.axis.Variable(manual_bins, name="jetp", label=r"Jet Momentum [GeV]")
@@ -156,7 +157,8 @@ class TTbarResProcessor(processor.ProcessorABC):
         subjetpt_axis   = hist.axis.Regular(50, 400, 2000, name="subjetpt", label=r"SubJet $p_{T}$ [GeV]")
         subjeteta_axis  = hist.axis.Regular(50, -2.4, 2.4, name="subjeteta", label=r"SubJet $\eta$")
         subjetphi_axis  = hist.axis.Regular(50, -np.pi, np.pi, name="subjetphi", label=r"SubJet $\phi$")
-        
+        subjetm_pT_axis = hist.axis.Regular(50, 0, 1.5, name="m_pT", label=r"SubJet $m/p_T$")
+
         # --- axes for weights --- #
         # jethem_axis    = hist.axis.Regular(30, 0, 1.5, name=   "JetWeights", label=r"2018 HEM Weights")
         # fatjethem_axis = hist.axis.Regular(30, 0, 1.5, name="FatJetWeights", label=r"2018 HEM Weights")
@@ -369,9 +371,9 @@ class TTbarResProcessor(processor.ProcessorABC):
         #       T    A     A  GGGGG   GGGGG  EEEEEEE R     R     H     H IIIIIII SSSSS      T    SSSSS 
         #    =========================================================================================== 
 
-            'deepTagMD_TvsQCD' : hist.Hist(dataset_axis, jetpt_axis, SDjetmass_axis, tagger_axis, storage="weight", name="Counts"),
-            'deepB_subjet'     : hist.Hist(dataset_axis, subjetpt_axis, subjetmass_axis, subjettagger_axis, storage="weight", name="Counts"),
-            'deepB_fatjet'     : hist.Hist(dataset_axis, jetpt_axis, SDjetmass_axis, subjettagger_axis, storage="weight", name="Counts"),
+            'deepTagMD_TvsQCD' : hist.Hist(dataset_axis, jetpt_axis, SDjetmass_axis, m_pT_axis, tagger_axis, storage="weight", name="Counts"),
+            'deepB_subjet'     : hist.Hist(dataset_axis, subjetpt_axis, subjetmass_axis, subjetm_pT_axis, subjettagger_axis, storage="weight", name="Counts"),
+            'deepB_fatjet'     : hist.Hist(dataset_axis, jetpt_axis, SDjetmass_axis, m_pT_axis, subjettagger_axis, storage="weight", name="Counts"),
             # 'tau32'            : hist.Hist(dataset_axis, cats_axis, tau32_axis, storage="weight", name="Counts"),
 
         #    ===========================================================================================    
@@ -1282,6 +1284,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         jetmass = ak.flatten(ttbarcands.slot1.mass)
         
         SDmass = ak.flatten(ttbarcands.slot1.msoftdrop)
+        m_over_pT = SDmass / jetpt
         # Tau32 = ak.flatten((ttbarcands.slot1.tau3/ttbarcands.slot1.tau2))
         ak8tagger = ak.flatten(ttbarcands.slot1.deepTagMD_TvsQCD)
 
@@ -1346,18 +1349,21 @@ class TTbarResProcessor(processor.ProcessorABC):
         output['deepTagMD_TvsQCD'].fill(dataset = dataset,
                                      jetpt = ak.to_numpy(jetpt),
                                      SDjetmass = ak.to_numpy(SDmass),
+                                     m_pT = ak.to_numpy(m_over_pT),
                                      tagger = ak.to_numpy(ak8tagger),       
                                      weight = ak.to_numpy(weights),
                                     )
         output['deepB_subjet'].fill(dataset = dataset,
                                      subjetpt = ak.to_numpy(ak.flatten(SubJet11.p4.pt)),
                                      subjetmass = ak.to_numpy(ak.flatten(SubJet11.p4.mass)),
+                                     m_pT = ak.to_numpy(ak.flatten(SubJet11.p4.mass) / ak.flatten(SubJet11.p4.mass)),
                                      subjettagger = ak.to_numpy(ak.flatten(SubJet11.btagDeepB)),       
                                      weight = ak.to_numpy(weights),
                                     )
         output['deepB_fatjet'].fill(dataset = dataset,
                                      jetpt = ak.to_numpy(jetpt),
                                      SDjetmass = ak.to_numpy(SDmass),
+                                     m_pT = ak.to_numpy(m_over_pT),
                                      subjettagger = ak.to_numpy(ak.flatten(SubJet11.btagDeepB)),       
                                      weight = ak.to_numpy(weights),
                                     )

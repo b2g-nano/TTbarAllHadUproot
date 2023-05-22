@@ -278,7 +278,7 @@ def ScaledTTbar(Output, Year, HistName, CategoryInt, ScaleFactor):
     
     return(TTbar)
 
-def ScaledTTbarDisc(Output, Year, HistName, Xaxis, ScaleFactor, ptbin=sum, massbin=sum):
+def ScaledTTbarDisc(Output, Year, HistName, Xaxis, ScaleFactor, ptbin=sum, massbin=sum, rhobin=sum, taggerbin=None):
     '''
         Output --> Dictionary of Data Outputs
         Year --> Integer; Year of 
@@ -291,27 +291,65 @@ def ScaledTTbarDisc(Output, Year, HistName, Xaxis, ScaleFactor, ptbin=sum, massb
     
     if Xaxis == 'pt':
         
-        TTbar1 = Output['700_1000_preVFP'][HistName][f'UL{str(Year-2000)}preVFP_TTbar_700_1000', :, sum, :]*ScaleFactor['700_1000_preVFP']\
-               + Output['700_1000_postVFP'][HistName][f'UL{str(Year-2000)}postVFP_TTbar_700_1000', :, sum, :]*ScaleFactor['700_1000_postVFP']
+        if taggerbin != None:
+        
+            TTbar1 = Output['700_1000_preVFP'][HistName][f'UL{str(Year-2000)}preVFP_TTbar_700_1000', :, sum, sum,  taggerbin]*ScaleFactor['700_1000_preVFP']\
+                   + Output['700_1000_postVFP'][HistName][f'UL{str(Year-2000)}postVFP_TTbar_700_1000', :, sum, sum,  taggerbin]*ScaleFactor['700_1000_postVFP']
 
-        TTbar2 = Output['1000_Inf_preVFP'][HistName][f'UL{str(Year-2000)}preVFP_TTbar_1000_Inf', :, sum, :]*ScaleFactor['1000_Inf_preVFP']\
-               + Output['1000_Inf_postVFP'][HistName][f'UL{str(Year-2000)}postVFP_TTbar_1000_Inf', :, sum, :]*ScaleFactor['1000_Inf_postVFP']
+            TTbar2 = Output['1000_Inf_preVFP'][HistName][f'UL{str(Year-2000)}preVFP_TTbar_1000_Inf', :, sum, sum,  taggerbin]*ScaleFactor['1000_Inf_preVFP']\
+                   + Output['1000_Inf_postVFP'][HistName][f'UL{str(Year-2000)}postVFP_TTbar_1000_Inf', :, sum, sum,  taggerbin]*ScaleFactor['1000_Inf_postVFP']
+            
+        else:
+            
+            TTbar1 = Output['700_1000_preVFP'][HistName][f'UL{str(Year-2000)}preVFP_TTbar_700_1000', :, sum, sum,  :]*ScaleFactor['700_1000_preVFP']\
+                   + Output['700_1000_postVFP'][HistName][f'UL{str(Year-2000)}postVFP_TTbar_700_1000', :, sum, sum,   :]*ScaleFactor['700_1000_postVFP']
+
+            TTbar2 = Output['1000_Inf_preVFP'][HistName][f'UL{str(Year-2000)}preVFP_TTbar_1000_Inf', :, sum, sum,   :]*ScaleFactor['1000_Inf_preVFP']\
+                   + Output['1000_Inf_postVFP'][HistName][f'UL{str(Year-2000)}postVFP_TTbar_1000_Inf', :, sum, sum,   :]*ScaleFactor['1000_Inf_postVFP']
         
     elif Xaxis == 'mass':
         
-        TTbar1 = Output['700_1000_preVFP'][HistName][f'UL{str(Year-2000)}preVFP_TTbar_700_1000', sum, :, :]*ScaleFactor['700_1000_preVFP']\
-               + Output['700_1000_postVFP'][HistName][f'UL{str(Year-2000)}postVFP_TTbar_700_1000', sum, :, :]*ScaleFactor['700_1000_postVFP']
+        if taggerbin != None:
+        
+            TTbar1 = Output['700_1000_preVFP'][HistName][f'UL{str(Year-2000)}preVFP_TTbar_700_1000', sum, :, sum,   taggerbin]*ScaleFactor['700_1000_preVFP']\
+                   + Output['700_1000_postVFP'][HistName][f'UL{str(Year-2000)}postVFP_TTbar_700_1000', sum, :, sum,   taggerbin]*ScaleFactor['700_1000_postVFP']
 
-        TTbar2 = Output['1000_Inf_preVFP'][HistName][f'UL{str(Year-2000)}preVFP_TTbar_1000_Inf', sum, :, :]*ScaleFactor['1000_Inf_preVFP']\
-               + Output['1000_Inf_postVFP'][HistName][f'UL{str(Year-2000)}postVFP_TTbar_1000_Inf', sum, :, :]*ScaleFactor['1000_Inf_postVFP']
+            TTbar2 = Output['1000_Inf_preVFP'][HistName][f'UL{str(Year-2000)}preVFP_TTbar_1000_Inf', sum, :, sum,   taggerbin]*ScaleFactor['1000_Inf_preVFP']\
+                   + Output['1000_Inf_postVFP'][HistName][f'UL{str(Year-2000)}postVFP_TTbar_1000_Inf', sum, :, sum,  taggerbin]*ScaleFactor['1000_Inf_postVFP']
+            
+        else:
+            
+            TTbar1 = Output['700_1000_preVFP'][HistName][f'UL{str(Year-2000)}preVFP_TTbar_700_1000', sum, :, sum,   :]*ScaleFactor['700_1000_preVFP']\
+                   + Output['700_1000_postVFP'][HistName][f'UL{str(Year-2000)}postVFP_TTbar_700_1000', sum, :, sum,  :]*ScaleFactor['700_1000_postVFP']
+
+            TTbar2 = Output['1000_Inf_preVFP'][HistName][f'UL{str(Year-2000)}preVFP_TTbar_1000_Inf', sum, :, sum,  :]*ScaleFactor['1000_Inf_preVFP']\
+                   + Output['1000_Inf_postVFP'][HistName][f'UL{str(Year-2000)}postVFP_TTbar_1000_Inf', sum, :, sum,  :]*ScaleFactor['1000_Inf_postVFP']
+            
+    elif Xaxis == 'rho':
+        
+        if taggerbin != None:
+        
+            TTbar1 = Output['700_1000_preVFP'][HistName][f'UL{str(Year-2000)}preVFP_TTbar_700_1000', sum, sum, :,  taggerbin]*ScaleFactor['700_1000_preVFP']\
+                   + Output['700_1000_postVFP'][HistName][f'UL{str(Year-2000)}postVFP_TTbar_700_1000', sum, sum, :,  taggerbin]*ScaleFactor['700_1000_postVFP']
+
+            TTbar2 = Output['1000_Inf_preVFP'][HistName][f'UL{str(Year-2000)}preVFP_TTbar_1000_Inf', sum, sum, :,  taggerbin]*ScaleFactor['1000_Inf_preVFP']\
+                   + Output['1000_Inf_postVFP'][HistName][f'UL{str(Year-2000)}postVFP_TTbar_1000_Inf', sum, sum, :,  taggerbin]*ScaleFactor['1000_Inf_postVFP']
+           
+        else:
+            
+            TTbar1 = Output['700_1000_preVFP'][HistName][f'UL{str(Year-2000)}preVFP_TTbar_700_1000', sum, sum, :,  :]*ScaleFactor['700_1000_preVFP']\
+                   + Output['700_1000_postVFP'][HistName][f'UL{str(Year-2000)}postVFP_TTbar_700_1000', sum, sum, :,   :]*ScaleFactor['700_1000_postVFP']
+
+            TTbar2 = Output['1000_Inf_preVFP'][HistName][f'UL{str(Year-2000)}preVFP_TTbar_1000_Inf', sum, sum, :,   :]*ScaleFactor['1000_Inf_preVFP']\
+                   + Output['1000_Inf_postVFP'][HistName][f'UL{str(Year-2000)}postVFP_TTbar_1000_Inf', sum, sum, :,   :]*ScaleFactor['1000_Inf_postVFP']
         
     else:
         
-        TTbar1 = Output['700_1000_preVFP'][HistName][f'UL{str(Year-2000)}preVFP_TTbar_700_1000', massbin, ptbin, :]*ScaleFactor['700_1000_preVFP']\
-               + Output['700_1000_postVFP'][HistName][f'UL{str(Year-2000)}postVFP_TTbar_700_1000', massbin, ptbin, :]*ScaleFactor['700_1000_postVFP']
+        TTbar1 = Output['700_1000_preVFP'][HistName][f'UL{str(Year-2000)}preVFP_TTbar_700_1000', massbin, ptbin, rhobin,  :]*ScaleFactor['700_1000_preVFP']\
+               + Output['700_1000_postVFP'][HistName][f'UL{str(Year-2000)}postVFP_TTbar_700_1000', massbin, ptbin, rhobin,  :]*ScaleFactor['700_1000_postVFP']
 
-        TTbar2 = Output['1000_Inf_preVFP'][HistName][f'UL{str(Year-2000)}preVFP_TTbar_1000_Inf', massbin, ptbin, :]*ScaleFactor['1000_Inf_preVFP']\
-               + Output['1000_Inf_postVFP'][HistName][f'UL{str(Year-2000)}postVFP_TTbar_1000_Inf', massbin, ptbin, :]*ScaleFactor['1000_Inf_postVFP']
+        TTbar2 = Output['1000_Inf_preVFP'][HistName][f'UL{str(Year-2000)}preVFP_TTbar_1000_Inf', massbin, ptbin, rhobin,  :]*ScaleFactor['1000_Inf_preVFP']\
+               + Output['1000_Inf_postVFP'][HistName][f'UL{str(Year-2000)}postVFP_TTbar_1000_Inf', massbin, ptbin, rhobin,  :]*ScaleFactor['1000_Inf_postVFP']
 
     TTbar = TTbar1 + TTbar2
     
