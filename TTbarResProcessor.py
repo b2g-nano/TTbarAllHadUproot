@@ -29,7 +29,6 @@ import awkward as ak
 from cms_utils import getLumiMaskRun2
 
 
-
 from python.corrections import ( 
     GetL1PreFiringWeight,
     HEMCleaning,
@@ -1234,7 +1233,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                     for subjet,subjet_info in SubjetNumDict.items():
                         flav_tag_list = [FlavorTagsDict[num] for num in np.abs(ak.flatten(subjet_info[0].hadronFlavour))] # List of tags i.e.) ['btag', 'udsgtag', 'ctag',...]
                         for flav_tag in flav_tag_list:
-                            EffFileDict['Eff_File_'+subjet_info[1]].append(self.extraDaskDirectory+'srv/FlavorTagEfficiencies/' 
+                            EffFileDict['Eff_File_'+subjet_info[1]].append(self.extraDaskDirectory+'TTbarAllHadUproot/FlavorTagEfficiencies/' 
                                                                            + self.BDirect + flav_tag 
                                                                            + 'EfficiencyTables/' + dataset + '_' + subjet_info[1] 
                                                                            + '_' + flav_tag + 'eff.csv')
@@ -1450,41 +1449,17 @@ class TTbarResProcessor(processor.ProcessorABC):
                     od = '_oldANdisc'
                 else:
                     od = ''
-                if self.year > 0:
-                    QCD_unweighted = util.load(self.extraDaskDirectory+'srv/CoffeaOutputsForCombine/Coffea_FirstRun/QCD/'
-                                               +self.BDirect+str(self.year)+'/'+self.apv+'/TTbarRes_0l_UL'+str(self.year-2000)+self.vfp+'_QCD'+od+'.coffea') 
+                
+                QCD_unweighted = util.load(self.extraDaskDirectory+'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/QCD/'
+                +self.BDirect+str(self.year)+'/'+self.apv+'/TTbarRes_0l_UL'+str(self.year-2000)+self.vfp+'_QCD'+od+'.coffea') 
                     
-                    # ---- Define Histogram ---- #
-                    loaded_dataset = 'UL'+str(self.year-2000)+self.vfp+'_QCD'
+                # ---- Define Histogram ---- #
+                loaded_dataset = 'UL'+str(self.year-2000)+self.vfp+'_QCD'
                     
-                    
-                    self.label_to_int_dict
-                    
-                    
-                    QCD_hist = QCD_unweighted['jetmass'][loaded_dataset, self.label_to_int_dict['2t' + str(ilabel[-5:])], :]
-                    # QCD_hist = QCD_unweighted['jetmass'][loaded_dataset, ConvertLabelToInt(self.label_dict, '2t' + str(ilabel[-5:])), :]
-
-                    
-                else: # All years !NOTE: Needs to be fixed for all years later!
-                    QCD_unwgt_2016 = util.load(self.extraDaskDirectory+'srv/CoffeaOutputsForCombine/Coffea_FirstRun/QCD/'
-                                               +self.BDirect+'2016/'+self.apv+'/TTbarRes_0l_UL16'+self.vfp+'_QCD.coffea') 
-                    # QCD_unwgt_2017 = util.load(self.extraDaskDirectory+'srv/CoffeaOutputsForCombine/Coffea_FirstRun/QCD/'
-                    #                            +self.BDirect+'2017/'+self.apv+'/TTbarRes_0l_UL17'+self.vfp+'_QCD.coffea') 
-                    # QCD_unwgt_2018 = util.load(self.extraDaskDirectory+'srv/CoffeaOutputsForCombine/Coffea_FirstRun/QCD/'
-                    #                            +self.BDirect+'2018/'+self.apv+'/TTbarRes_0l_UL18'+self.vfp+'_QCD.coffea') 
-                    
-                    # ---- Define Histogram ---- #
-                    QCD_hist_2016 = QCD_unwgt_2016['jetmass']['UL16'+self.vfp+'_QCD', self.label_to_int_dict['2t' + str(ilabel[-5:])], :]
-                    # QCD_hist_2016 = QCD_unwgt_2016['jetmass']['UL16'+self.vfp+'_QCD', ConvertLabelToInt(self.label_dict, '2t' + str(ilabel[-5:])), :]
-
-                    
-                    
-                    # QCD_hist_2017 = QCD_unwgt_2017['jetmass']['UL17'+self.vfp+'_QCD', i, :]
-                    # QCD_hist_2018 = QCD_unwgt_2018['jetmass']['UL18'+self.vfp+'_QCD', i, :]
-                    
-                    QCD_hist = QCD_hist_2016.copy()
-                    # QCD_hist += (QCD_hist_2017)
-                    # QCD_hist += (QCD_hist_2018)
+                self.label_to_int_dict
+                
+                QCD_hist = QCD_unweighted['jetmass'][loaded_dataset, self.label_to_int_dict['2t' + str(ilabel[-5:])], :]
+                # QCD_hist = QCD_unweighted['jetmass'][loaded_dataset, ConvertLabelToInt(self.label_dict, '2t' + str(ilabel[-5:])), :]
                     
                 # ---- Extract event counts from QCD MC hist in signal region ---- #
                 # data = QCD_hist.values() # Dictionary of values
