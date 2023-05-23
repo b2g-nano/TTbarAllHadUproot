@@ -1,0 +1,13 @@
+{
+    "QCD":[
+        "/store/mc/RunIISummer20UL16NanoAODv9/QCD_Pt-15to7000_TuneCP5_Flat2018_13TeV_pythia8/NANOAODSIM/106X_mcRun2_asymptotic_v17-v1/130000/1C569D85-60AE-7D43-B42B-6D6FD1D66CC7.root"
+    ],
+    
+    "TTbar":[
+        "/store/mc/RunIISummer20UL16NanoAODAPVv9/TT_Mtt-1000toInf_TuneCP5_13TeV-powheg-pythia8/NANOAODSIM/106X_mcRun2_asymptotic_preVFP_v11-v1/2520000/0160B783-3100-AB41-AC6A-6A31EF14B5B0.root"
+    ],
+    
+    "JetHT":[
+        "/store/data/Run2016B/JetHT/NANOAOD/ver2_HIPM_UL2016_MiniAODv2_NanoAODv9-v2/50000/A6DC4858-F33C-6F4E-A36D-04B6587716B1.root"
+    ]
+}
