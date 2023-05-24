@@ -17,13 +17,42 @@ bash bootstrap.sh
 ```
 
 
-### Examples
+### Running the background estimation
 
-To run over QCD MC
+1. Run the processor to save unweighted JetHT and TTbar MC files needed for the mistag rate calculation
+
+```
+> python ttbaranalysis.py --dataset JetHT --iov 2016APV
+> python ttbaranalysis.py --dataset TTbar --iov 2016APV
+
+> python ttbaranalysis.py --dataset JetHT --iov 2016
+> python ttbaranalysis.py --dataset TTbar --iov 2016
+```
+
+2. Run the processor to save unweighted QCD MC, needed for the mass modification procedure
 
 ```
 > python ttbaranalysis.py --dataset QCD --iov 2016APV
+> python ttbaranalysis.py --dataset QCD --iov 2016
+
 ```
+
+3. Calculate the mistag rate and save csv files
+
+    Run `mistag/mistagRate.ipynb` notebook
+    </br>
+4. After running over JetHT, TTbar, and QCD as above, run over JetHT with the mistag rate and QCD mass modfication applied
+
+```
+> python ttbaranalysis.py --dataset JetHT --iov 2016APV --bkgest
+> python ttbaranalysis.py --dataset JetHT --iov 2016 --bkgest
+```
+
+
+
+
+### other examples
+
 
 Use `--test` to run over one file
 
