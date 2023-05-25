@@ -57,7 +57,11 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     print('args', args)
-
+    
+    print()
+    for argname, value in vars(args).items():
+        print(argname, '=', value)
+    print()
     
     
 
@@ -115,7 +119,7 @@ if __name__ == "__main__":
             bkgString = ''
 
             if args.test: testString = '_test'
-            for era in args.era: subString = subString + era
+#             for era in args.era: subString = subString + era
             if args.bkgest: bkgString = '_bkgest'
 
             savefilename = f'{savedir}{sample}_{IOV}{subString}{testString}{bkgString}.coffea'  
@@ -132,6 +136,8 @@ if __name__ == "__main__":
                 client.upload_file('corrections/btagCorrections.py')
                 client.upload_file('corrections/functions.py')
                 client.upload_file('corrections/subjet_btagging.json.gz')
+                client.upload_file('mistag/mistag_rate_2016APV.csv')
+                client.upload_file('mistag/mistag_rate_2016.csv')
                 
                 
                 exe_args = {
@@ -169,7 +175,7 @@ if __name__ == "__main__":
                     processor_instance=TTbarResProcessor(iov=IOV,
                                                          bkgEst=args.bkgest,
                                                         ),
-                    executor=processor.iterative_executor,
+                    executor=processor.futures_executor,
                     executor_args=exe_args,
                     chunksize=100000,
                 )

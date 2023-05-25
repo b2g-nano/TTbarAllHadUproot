@@ -63,7 +63,7 @@ manual_sdMass_bins = [0, 25, 50, 75, 100, 125, 150, 175, 200, 225, 250]
 
 """Package to perform the data-driven mistag-rate-based ttbar hadronic analysis. """
 class TTbarResProcessor(processor.ProcessorABC):
-    def __init__(self, htCut=1400., ak8PtMin=400.,
+    def __init__(self, htCut=950., ak8PtMin=400.,
                  minMSD=105., maxMSD=210.,
                  tau32Cut=0.65,
                  bdisc=0.5847,
@@ -134,12 +134,76 @@ class TTbarResProcessor(processor.ProcessorABC):
         
         dataset = events.metadata['dataset']
         filename = events.metadata['filename']
-       
+        
         isData = ('JetHT' in dataset) or ('SingleMu' in dataset)
-                
+            
+        # Remove events with large weights
+        if "QCD_Pt-15to7000" in filename: 
+            events = events[ events.Generator.binvar > 400 ] 
+        
+        # lumi mask #
+        if (isData):
+            lumimasks = getLumiMaskRun2()
+            lumi_mask = np.array(lumimasks[self.iov](events.run, events.luminosityBlock), dtype=bool)
+            events = events[lumi_mask]
+        elif ('TTbar' in dataset) or ('QCD' in dataset) : 
+            if dataset not in self.means_stddevs : 
+                average = np.average( events.genWeight )
+                stddev = np.std( events.genWeight )
+                self.means_stddevs[dataset] = (average, stddev)            
+            average,stddev = self.means_stddevs[dataset]
+            vals = (events.genWeight - average ) / stddev
+            events = events[(np.abs(vals) < 2)]
+        
+        
+        
+        
         # blinding #
         if isData and (('2017' in self.iov) or ('2018' in self.iov)):
             events = events[::10]
+            
+
+        
+        # event selection #
+        selection = PackedSelection()
+        
+
+        # trigger cut #
+#         if isData:
+            
+#             Triggers = { 
+            
+#             "2016APV": ["PFHT900"],
+#             "2016" : ["PFHT900"],
+#             "2017" : ["PFHT1050"],
+#             "2018" : ["PFHT1050"],
+        
+#             }
+                
+            
+# #             print(events.HLT["PFHT900"])
+                
+# #             for f in events.HLT.fields:
+# #                 print(f)
+            
+#             triggers = [events.HLT[trig] for trig in Triggers[self.iov]]
+            
+            
+#             selection.add('trigger', ak.flatten(ak.any(Triggers, axis=0, keepdims=True)))
+#             deltriggers
+            
+            
+#             Triggers = { 
+            
+#             "2016APV": ["HLT_PFHT900"],
+#             "2016" : ["HLT_PFHT900"],
+#             "2017" : ["HLT_PFHT1050"],
+#             "2018" : ["HLT_PFHT1050"],
+        
+#             }
+                
+                        
+        
                 
         
         # objects #
@@ -165,7 +229,6 @@ class TTbarResProcessor(processor.ProcessorABC):
                 evtweights = events.genWeight
             else: 
                 evtweights = events.LHEWeight_originalXWGTUP
-
         
         output['cutflow']['all events'] += len(FatJets)
         output['cutflow']['sumw'] += np.sum(evtweights)
@@ -175,51 +238,43 @@ class TTbarResProcessor(processor.ProcessorABC):
         
         # ---- event selection and object selection ---- #
         
-        selection = PackedSelection()
+
         
         # ht cut #
         selection.add('htCut',
             ak.sum(Jets.pt, axis=1) > self.htCut
         )
 
-        
-        # lumi mask #
-        if (isData):
-            lumimasks = getLumiMaskRun2()
-            lumi_mask = np.array(lumimasks[self.iov](events.run, events.luminosityBlock), dtype=bool)
-        else: 
-            if dataset not in self.means_stddevs : 
-                average = np.average( events.genWeight )
-                stddev = np.std( events.genWeight )
-                self.means_stddevs[dataset] = (average, stddev)            
-            average,stddev = self.means_stddevs[dataset]
-            vals = (events.genWeight - average ) / stddev
-            lumi_mask = (np.abs(vals) < 2)
-            
-        selection.add('lumimask', lumi_mask)
-        del lumi_mask        
-        
         # met filters #
-        selection.add('metfilter', getMETFilter(self.iov, events))
+        if isData:
+            selection.add('metfilter', getMETFilter(self.iov, events))
                 
         # jet id #
         selection.add('jetid', ak.any((FatJets.jetId > 0), axis=1))
         FatJets = FatJets[FatJets.jetId > 0]
                 
         # jet kinematics # 
-        jetkincut = (FatJets.pt > self.ak8PtMin) & (np.abs(calcRapidity(FatJets.p4)) < 2.4)
+#         jetkincut = (FatJets.pt > self.ak8PtMin) & (np.abs(calcRapidity(FatJets.p4)) < 2.4)
+        
+        FatJets_rapidity = .5*np.log( (FatJets.p4.energy + FatJets.p4.pz)/(FatJets.p4.energy - FatJets.p4.pz) )
+        jetkincut = (FatJets.pt > self.ak8PtMin) & (np.abs(FatJets_rapidity) < 2.4)
+        
         selection.add('jetkincut', ak.any(jetkincut, axis=1))
         FatJets = FatJets[jetkincut]
         del jetkincut
         
-        # ak8 jet has 2 subjets # **NEW**
-        hasSubjets = ((FatJets.subJetIdx1 > -1) & (FatJets.subJetIdx2 > -1))
-        FatJets = FatJets[hasSubjets]
-        selection.add('hasSubjets', ak.any(hasSubjets, axis=1))
-
         
         # at least 2 ak8 jets #
         selection.add('twoFatJets', (ak.num(FatJets) >= 2))
+        
+#         # ak8 jet has 2 subjets # **NEW**
+#         hasSubjets = ((FatJets.subJetIdx1 > -1) & (FatJets.subJetIdx2 > -1))
+#         FatJets = FatJets[hasSubjets]
+#         selection.add('hasSubjets', ak.any(hasSubjets, axis=1))
+
+#         print('jetkincut', len(FatJets))
+        
+        
 
         # cutflow #
         cuts = []
@@ -257,20 +312,28 @@ class TTbarResProcessor(processor.ProcessorABC):
         oneTTbar = (ak.num(ttbarcands) >= 1)
         
         # ---- Apply Delta Phi Cut for Back to Back Topology ---- #
-        dPhiCut = ak.flatten(np.abs(ttbarcands.slot0.p4.delta_phi(ttbarcands.slot1.p4)) > 2.1)        
+        dPhiCut = ak.flatten(np.abs(ttbarcands.slot0.p4.delta_phi(ttbarcands.slot1.p4)) > 2.1)  
+        
+        
+        # ttbar candidates have 2 subjets #
+        hasSubjets0 = ((ttbarcands.slot0.subJetIdx1 > -1) & (ttbarcands.slot0.subJetIdx2 > -1))
+        hasSubjets1 = ((ttbarcands.slot1.subJetIdx1 > -1) & (ttbarcands.slot1.subJetIdx2 > -1))
+        GoodSubjets = ak.flatten(((hasSubjets0) & (hasSubjets1)))
         
         # apply ttbar event cuts #
         output['cutflow']['oneTTbar'] += len(FatJets[oneTTbar])
         output['cutflow']['dPhiCut'] += len(FatJets[(oneTTbar & dPhiCut)])
+        output['cutflow']['Good Subjets'] += len(FatJets[(oneTTbar & dPhiCut & GoodSubjets)])
 
-        ttbarcands = ttbarcands[(oneTTbar & dPhiCut)]
-        FatJets = FatJets[(oneTTbar & dPhiCut)]
-        Jets = Jets[(oneTTbar & dPhiCut)]
-        SubJets = SubJets[(oneTTbar & dPhiCut)]
-        events = events[(oneTTbar & dPhiCut)]
-        evtweights = evtweights[(oneTTbar & dPhiCut)]
-        if not isData: GenJets = GenJets[(oneTTbar & dPhiCut)]
-        del oneTTbar, dPhiCut
+        ttbarcandCuts = (oneTTbar & dPhiCut & GoodSubjets)
+        ttbarcands = ttbarcands[ttbarcandCuts]
+        FatJets = FatJets[ttbarcandCuts]
+        Jets = Jets[ttbarcandCuts]
+        SubJets = SubJets[ttbarcandCuts]
+        events = events[ttbarcandCuts]
+        evtweights = evtweights[ttbarcandCuts]
+        if not isData: GenJets = GenJets[ttbarcandCuts]
+        del oneTTbar, dPhiCut, ttbarcandCuts, hasSubjets0, hasSubjets1, GoodSubjets
         
         
         
@@ -288,24 +351,31 @@ class TTbarResProcessor(processor.ProcessorABC):
 
         # top tagger #
         
-        # ----------- CMS Top Tagger Version 2 (SD and Tau32 Cuts) ----------- #
-        tau32_s0 = np.where(ttbarcands.slot0.tau2>0,ttbarcands.slot0.tau3/ttbarcands.slot0.tau2, 0 )
-        tau32_s1 = np.where(ttbarcands.slot1.tau2>0,ttbarcands.slot1.tau3/ttbarcands.slot1.tau2, 0 )
         
-        taucut_s0 = tau32_s0 < self.tau32Cut
-        taucut_s1 = tau32_s1 < self.tau32Cut
         
-        mcut_s0 = (self.minMSD < ttbarcands.slot0.msoftdrop) & (ttbarcands.slot0.msoftdrop < self.maxMSD) 
-        mcut_s1 = (self.minMSD < ttbarcands.slot1.msoftdrop) & (ttbarcands.slot1.msoftdrop < self.maxMSD) 
-
-        ttag_s0 = (taucut_s0) & (mcut_s0)
-        ttag_s1 = (taucut_s1) & (mcut_s1)
-        antitag = (~taucut_s0) & (mcut_s0) # The Probe jet will always be ttbarcands.slot1 (at)
-
         # ----------- DeepAK8 Tagger (Discriminator Cut) ----------- #
-#         ttag_s0 = ttbarcands.slot0.deepTagMD_TvsQCD > self.deepAK8Cut
-#         ttag_s1 = ttbarcands.slot1.deepTagMD_TvsQCD > self.deepAK8Cut
-#         antitag = ttbarcands.slot0.deepTagMD_TvsQCD < self.deepAK8Cut 
+        if self.useDeepAK8:
+            ttag_s0 = ttbarcands.slot0.deepTagMD_TvsQCD > self.deepAK8Cut
+            ttag_s1 = ttbarcands.slot1.deepTagMD_TvsQCD > self.deepAK8Cut
+            antitag = ttbarcands.slot0.deepTagMD_TvsQCD < self.deepAK8Cut 
+
+            
+        # ----------- CMS Top Tagger Version 2 (SD and Tau32 Cuts) ----------- #
+        else:
+            tau32_s0 = np.where(ttbarcands.slot0.tau2>0,ttbarcands.slot0.tau3/ttbarcands.slot0.tau2, 0 )
+            tau32_s1 = np.where(ttbarcands.slot1.tau2>0,ttbarcands.slot1.tau3/ttbarcands.slot1.tau2, 0 )
+
+            taucut_s0 = tau32_s0 < self.tau32Cut
+            taucut_s1 = tau32_s1 < self.tau32Cut
+
+            mcut_s0 = (self.minMSD < ttbarcands.slot0.msoftdrop) & (ttbarcands.slot0.msoftdrop < self.maxMSD) 
+            mcut_s1 = (self.minMSD < ttbarcands.slot1.msoftdrop) & (ttbarcands.slot1.msoftdrop < self.maxMSD) 
+
+            ttag_s0 = (taucut_s0) & (mcut_s0)
+            ttag_s1 = (taucut_s1) & (mcut_s1)
+            antitag = (~taucut_s0) & (mcut_s0) # The Probe jet will always be ttbarcands.slot1 (at)
+
+
         
         # ---- Define "Top Tag" Regions ---- #
         antitag_probe = np.logical_and(antitag, ttag_s1) # Found an antitag and ttagged probe pair for mistag rate (AT&Pt)
@@ -330,12 +400,12 @@ class TTbarResProcessor(processor.ProcessorABC):
         
         
         
-        if (self.bkgEst):
-            btag0, btag1, btag2 = btagCorrections([btag0, btag1, btag2], 
-                                                  [SubJet00, SubJet01, SubJet10, SubJet11], 
-                                                  isData, 
-                                                  self.bdisc,
-                                                  sysType='central')
+#         if (self.bkgEst):
+#             btag0, btag1, btag2 = btagCorrections([btag0, btag1, btag2], 
+#                                                   [SubJet00, SubJet01, SubJet10, SubJet11], 
+#                                                   isData, 
+#                                                   self.bdisc,
+#                                                   sysType='central')
         
         
         
@@ -357,14 +427,16 @@ class TTbarResProcessor(processor.ProcessorABC):
         
         jetmass = ttbarcands.slot1.p4.mass
         jetp = ttbarcands.slot1.p4.p
-                
+                        
         # if running background estimation
         if (self.bkgEst):
             
+            
+            
             # for mistag rate weights
             mistag_rate_df = pd.read_csv(f'mistag/mistag_rate_{self.iov}.csv')
-            pbins = mistag_rate['jetp bins'].values
-            mistag_weights = np.ones_like(evtweights)
+            pbins = mistag_rate_df['jetp bins'].values
+            mistag_weights = np.ones(len(evtweights), dtype=float)
             
             
             # for mass modification
@@ -373,31 +445,35 @@ class TTbarResProcessor(processor.ProcessorABC):
             
             for ilabel,icat in labels_and_categories.items():
                 
-                # ilabel[-5:] = bcat + ycat (0bcen for example) 
                 
+                icat = ak.flatten(icat)
+
+                # ilabel[-5:] = bcat + ycat (0bcen for example) 
+
                 # get mistag rate for antitag region
                 mistag_rate = mistag_rate_df['at' + ilabel[-5:]].values
-                
+
                 # get p bin for probe jet p
-                mistag_pbin = np.digitize(jetp[icat], pbins) - 1
-                
+                mistag_pbin = np.digitize(ak.flatten(jetp[icat]), pbins) - 1
+
+
                 # store mistag weights for events in this category
                 mistag_weights[icat] = mistag_rate[mistag_pbin]
-                
-           
+
+
                 # mass modification procedure
-            
+
                 # get distribution of jet mass in QCD signal ('2t') region
-                qcd_jetmass_counts = qcdfile['jetmass'][{'dataset':sum, 'anacat':label_to_int_dict['2t' + ilabel[-5:]]}].values()
+                qcd_jetmass_counts = qcdfile['jetmass'][{'dataset':sum, 'anacat':self.label_to_int_dict['2t' + ilabel[-5:]]}].values()
                 qcd_jetmass_bins = qcdfile['jetmass'].axes['jetmass'].centers - qcdfile['jetmass'].axes['jetmass'].widths/2
-            
-            
+
+
                 # randomly select jet mass from distribution
-                ModMass_hist_dist = ss.rv_histogram([qcd_jetmass_counts, qcd_jetmass_bins])
+                ModMass_hist_dist = ss.rv_histogram([qcd_jetmass_counts[:-1], qcd_jetmass_bins])
 #                 jet1_modp4 = copy.copy(ttbarcands.slot1.p4)
 #                 jet1_modp4["fMass"] = ModMass_hist_dist.rvs(size=len(jet1_modp4))
-                ttbarcands.slot1.p4[icat]["fMass"] = ModMass_hist_dist.rvs(size=len(jet1_modp4))
-    
+                ttbarcands.slot1.p4[icat]["fMass"] = ModMass_hist_dist.rvs(size=len(ttbarcands.slot1.p4[icat]))
+
     
         jetpt = ttbarcands.slot1.p4.pt
         jeteta = ttbarcands.slot1.p4.eta
@@ -405,16 +481,6 @@ class TTbarResProcessor(processor.ProcessorABC):
         jetmass = ttbarcands.slot1.p4.mass
         jetp = ttbarcands.slot1.p4.p
            
-        
-           
-            
-            
-            # - weight by mistag rate
-            #   - get mistag rate df
-            #   - get mistag rate for this event's pt bin
-            # - qcd mass modification
-        
-        
         
         
         
@@ -429,6 +495,8 @@ class TTbarResProcessor(processor.ProcessorABC):
         # event weights #
         
         weights = evtweights
+        
+        if self.bkgEst: weights = weights * mistag_weights
         
         # pt reweighting #
         if ('TTbar' in dataset):
@@ -468,17 +536,17 @@ class TTbarResProcessor(processor.ProcessorABC):
                                   )
             output['jetpt'].fill(dataset = dataset,
                                    anacat = self.label_to_int_dict[ilabel],
-                                   jetmass = ak.flatten(jetpt[icat]),
+                                   jetpt = ak.flatten(jetpt[icat]),
                                    weight = weights[icat],
                                   )
             output['jeteta'].fill(dataset = dataset,
                                    anacat = self.label_to_int_dict[ilabel],
-                                   jetmass = ak.flatten(jeteta[icat]),
+                                   jeteta = ak.flatten(jeteta[icat]),
                                    weight = weights[icat],
                                   )
             output['jetphi'].fill(dataset = dataset,
                                    anacat = self.label_to_int_dict[ilabel],
-                                   jetmass = ak.flatten(jetphi[icat]),
+                                   jetphi = ak.flatten(jetphi[icat]),
                                    weight = weights[icat],
                                   )
         
