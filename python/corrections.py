@@ -259,11 +259,11 @@ def GetPUSF(self, events):
     return [puNom, puDown, puUp]
 
 
-def getLumiMaskRun2():
+def getLumiMaskRun2(IOV):
 
-    golden_json_path_2016 = "data/goldenJsons/Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt"
-    golden_json_path_2017 = "data/goldenJsons/Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt"
-    golden_json_path_2018 = "data/goldenJsons/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt"
+    golden_json_path_2016 = "data/corrections/goldenJsons/Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt"
+    golden_json_path_2017 = "data/corrections/goldenJsons/Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt"
+    golden_json_path_2018 = "data/corrections/goldenJsons/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt"
     
 
     masks = {"2016APV":LumiMask(golden_json_path_2016),
@@ -272,7 +272,7 @@ def getLumiMaskRun2():
              "2018":LumiMask(golden_json_path_2018)
             }
 
-    return masks
+    return masks[IOV]
 
 
 def getMETFilter(IOV, events):

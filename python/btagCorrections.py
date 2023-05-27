@@ -50,7 +50,7 @@ def btagCorrections(btags, subjets, isData, bdisc, sysType='central'):
         LeadingSubjet_s1 = np.where(SubJet11.btagCSVV2>SubJet12.btagCSVV2, SubJet11, SubJet12)
      
         # ---- Define the BSF for each of the two fatjets ---- #
-        SF_filename = 'corrections/subjet_btagging.json.gz'
+        SF_filename = 'data/corrections/subjet_btagging.json.gz'
         Fitting = "M"
         if bdisc < 0.5:
             Fitting = "L"
@@ -148,7 +148,7 @@ def btagCorrections(btags, subjets, isData, bdisc, sysType='central'):
 
         # -- Scale Factor File -- #
 #         SF_filename = self.ScaleFactorFile  
-#         SF_filename = 'corrections/subjet_btagging.json.gz'
+#         SF_filename = 'data/corrections/subjet_btagging.json.gz'
 #         Fitting = "M"
 #         if bdisc < 0.5:
 #             Fitting = "L"

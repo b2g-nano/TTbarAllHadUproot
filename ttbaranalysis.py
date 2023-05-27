@@ -10,7 +10,6 @@ import json
 import os
 
 from dask.distributed import Client, performance_report
-from lpcjobqueue import LPCCondorCluster
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -32,8 +31,8 @@ if __name__ == "__main__":
     
     
     # datasets to run
-    parser.add_argument('-d', '--dataset', choices=['JetHT', 'QCD', 'TTbar'], default='QCD')
-    parser.add_argument('--iov', choices=['2016APV', '2016', '2017', '2018'], default='2016APV')
+    parser.add_argument('-d', '--dataset', choices=['JetHT', 'QCD', 'TTbar'], action='append', default=['QCD', 'TTbar', 'JetHT'])
+    parser.add_argument('--iov', choices=['2016APV', '2016', '2017', '2018'], default='2016')
     parser.add_argument('--era', choices=['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'], action='append', default=[])
 
     # analysis options
@@ -45,16 +44,23 @@ if __name__ == "__main__":
     parser.add_argument('--test', action='store_true')
 
     args = parser.parse_args()
+    
+    # remove defaults if --dataset given
+    if len(args.dataset) > 3: args.dataset = args.dataset[3:]
+    
+    
     print('\n------args------')
     for argname, value in vars(args).items(): print(argname, '=', value)
     print('----------------\n')
     
     
     # paramters
-    sample = args.dataset
+    samples = args.dataset
     IOV = args.iov
     useDeepAK8 = True
     
+ 
+
 
     # get root files
     
@@ -63,114 +69,136 @@ if __name__ == "__main__":
     else: redirector = 'root://cmsxrootd.fnal.gov/' # default LPC
  
     jsonfiles = {
-        "JetHT": 'data/JetHT.json',
-        "QCD": 'data/QCD.json',
-        "TTbar": 'data/TTbar.json',
+        "JetHT": 'data/nanoAOD/JetHT.json',
+        "QCD": 'data/nanoAOD/QCD.json',
+        "TTbar": 'data/nanoAOD/TTbar.json',
     }
     
-    inputfile = jsonfiles[sample]
-    files = []
-    with open(inputfile) as json_file:
-        
-        data = json.load(json_file)
-        
-        
-        # select files to run over
-        filedict = {}
-        if 'QCD' in sample:
-            filedict[''] = data[IOV]
-        else:
-            if len(args.era) > 0:
-                for era in args.era:
-                    if era in data[IOV].keys():
-                        filedict[era] = data[IOV][era]
+    for sample in samples:
+    
+        inputfile = jsonfiles[sample]
+        files = []
+        with open(inputfile) as json_file:
+
+            data = json.load(json_file)
+
+
+            # select files to run over
+            filedict = {}
+            if 'QCD' in sample:
+                filedict[''] = data[IOV]
+            else:
+                
+                # if eras specified, add individually
+                if len(args.era) > 0:
+                    for era in args.era:
+                        if era in data[IOV].keys():
+                            filedict[era] = data[IOV][era]
+                        else:
+                            print(f'{era} not in {IOV}')
+                            
+                # if eras not specified, get all files in dataset
+                else:
+                    filedict = data[IOV]
+
+
+            # run uproot job
+            for subsection, files in filedict.items():
+
+
+                # add redirector; select file for testing
+                files = [redirector + f for f in files]
+                if args.test: files = [files[0]]
+                fileset = {sample: files}            
+
+                # coffea output file name
+                testString = ''
+                bkgString = ''
+                subString = subsection.replace('700to', '_700to').replace('1000to','_1000to')
+                if args.test: testString = '_test'
+                if args.bkgest: bkgString = '_bkgest'
+
+                savefilename = f'{savedir}{sample}_{IOV}{subString}{bkgString}{testString}.coffea'                   
+                print(f'running {sample}{subString}')
+
+
+                # run using futures executor
+                if not args.dask:
+
+                    hists, metrics = processor.run_uproot_job(
+                        fileset,
+                        treename="Events",
+                        processor_instance=TTbarResProcessor(iov=IOV,
+                                                             bkgEst=args.bkgest,
+                                                             useDeepAK8=useDeepAK8,
+                                                            ),
+                        executor=processor.futures_executor,
+                        executor_args={
+                                "skipbadfiles": True,
+                                "savemetrics": True,
+                                "schema": NanoAODSchema,
+                                "workers":4
+                                },
+                        chunksize=100000,
+                    )
+
+
+                # run using dask
+                else:
+
+                    # files and directories for dask
+                    upload_to_dask = [
+                        'data',
+                        'python',
+                        'ttbarprocessor.py',
+                    ]
+
+                    if args.env == 'lpc' or args.env == 'L':
+
+                        from lpcjobqueue import LPCCondorCluster
+                        cluster = LPCCondorCluster(memory='6GB', transfer_input_files=upload_to_dask)
+                        cluster.adapt(minimum=1, maximum=100)
+
                     else:
-                        print(f'{era} not in {IOV}')
-            else:
-                filedict = data[IOV]
-        
-        
-        # run uproot job
-        for subsection, files in filedict.items():
-    
-    
-            # add redirector; select file for testing
-            files = [redirector + f for f in files]
-            if args.test: files = [files[0]]
-            fileset = {sample: files}            
-
-            # coffea output file name
-            testString = ''
-            bkgString = ''
-            subString = subsection.replace('700to', '_700to').replace('1000to','_1000to')
-            if args.test: testString = '_test'
-            if args.bkgest: bkgString = '_bkgest'
-
-            savefilename = f'{savedir}{sample}_{IOV}{subString}{bkgString}{testString}.coffea'                   
-            print(f'running {sample}{subString}')
-            
-            if args.dask:
-                
-                if args.env != 'lpc' and args.env != 'L':
-                    print('dask currently set up for LPC only')
-                    break
-                
-                uploadfiles_for_dask = [
-                    'ttbarprocessor.py',
-                    'corrections/corrections.py',
-                    'corrections/btagCorrections.py',
-                    'corrections/functions.py',
-                ]
-
-                cluster = LPCCondorCluster(memory='6GB', transfer_input_files=uploadfiles_for_dask)
-                cluster.adapt(minimum=1, maximum=100)
-                client = Client(cluster)
-                client = Client()
-                
-                print("Waiting for at least one worker...")
-                client.wait_for_workers(1)
-                
-                exe_args = {
-                    "client": client,
-                    "skipbadfiles": True,
-                    "savemetrics": True,
-                    "schema": NanoAODSchema,
-                }
-
-                hists, metrics = processor.run_uproot_job(
-                    fileset,
-                    treename="Events",
-                    processor_instance=TTbarResProcessor(iov=IOV,
-                                                         bkgEst=args.bkgest,
-                                                         useDeepAK8=useDeepAK8,),
-                    executor=processor.dask_executor,
-                    executor_args=exe_args,
-                    chunksize=1000000,
-                )
-
-            else:
-
-                exe_args = {
-                    "skipbadfiles": True,
-                    "savemetrics": True,
-                    "schema": NanoAODSchema,
-                    "workers":4
-                }
-
-                hists, metrics = processor.run_uproot_job(
-                    fileset,
-                    treename="Events",
-                    processor_instance=TTbarResProcessor(iov=IOV,
-                                                         bkgEst=args.bkgest,
-                                                         useDeepAK8=useDeepAK8,),
-                    executor=processor.futures_executor,
-                    executor_args=exe_args,
-                    chunksize=100000,
-                )
+                        print('dask currently set up for LPC only')
+                        break
 
 
-            util.save(hists, savefilename)
-            print('saving', savefilename)
+                    with Client(cluster) as client:
+
+                        run_instance = processor.Runner(
+                            metadata_cache={},
+                            executor=processor.DaskExecutor(client=client, retries=12,),
+                            schema=NanoAODSchema,
+                            savemetrics=True,
+                            skipbadfiles=True,
+                            chunksize=1000000,
+                        )
+
+
+                        print("Waiting for at least one worker...")
+                        client.wait_for_workers(1)
+
+                        hists, metrics = run_instance(fileset,
+                                                      treename="Events",
+                                                      processor_instance=TTbarResProcessor(
+                                                          iov=IOV,
+                                                          bkgEst=args.bkgest,
+                                                          useDeepAK8=useDeepAK8,
+                                                          ),
+                                                     )
+
+
+                util.save(hists, savefilename)
+                print('saving', savefilename)
+
+                # save copy for running mass modification
+                if 'QCD' in sample and not args.bkgest:
+                    util.save(hists, savefilename.replace(savedir, 'data/corrections/backgroundEstimate/'))
+                    print('saving copy to', savefilename.replace(savedir, 'data/corrections/backgroundEstimate/'))
+
+
+
 
     elapsed = time.time() - tic
     print(f"\nFinished in {elapsed:.1f}s")

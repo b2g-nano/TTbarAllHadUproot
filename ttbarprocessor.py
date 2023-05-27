@@ -27,7 +27,7 @@ import hist
 import awkward as ak
 
 # for dask, `from corrections.corrections import` does not work
-sys.path.append(os.getcwd()+'/corrections/')
+sys.path.append(os.getcwd()+'/python/')
 
 from corrections import (
     GetFlavorEfficiency,
@@ -145,7 +145,8 @@ class TTbarResProcessor(processor.ProcessorABC):
         # lumi mask #
         if (isData):
             
-            lumi_mask = np.array(getLumiMaskRun2()[self.iov](events.run, events.luminosityBlock), dtype=bool)
+            
+            lumi_mask = np.array(getLumiMaskRun2(self.iov)(events.run, events.luminosityBlock), dtype=bool)
             events = events[lumi_mask]
             del lumi_mask
 
@@ -394,15 +395,15 @@ class TTbarResProcessor(processor.ProcessorABC):
         if (self.bkgEst):
 
             # for mistag rate weights
-            mistag_rate_df = pd.read_csv(f'mistag/mistag_rate_{self.iov}.csv')
+            mistag_rate_df = pd.read_csv(f'data/corrections/backgroundEstimate/mistag_rate_{self.iov}.csv')
             pbins = mistag_rate_df['jetp bins'].values
             mistag_weights = np.ones(len(evtweights), dtype=float)
             
             
             # for mass modification
-            qcdfile = util.load(f'outputs/QCD_{self.iov}_deepak8.coffea')
 
-            
+            qcdfile = util.load(f'data/corrections/backgroundEstimate/QCD_{self.iov}.coffea')
+    
             for ilabel,icat in labels_and_categories.items():
                 
                 icat = ak.flatten(icat)
