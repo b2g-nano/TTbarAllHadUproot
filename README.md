@@ -7,7 +7,8 @@ ssh -L localhost:8xxx:localhost:8xxx  <username>@cmslpc-sl7.fnal.gov
 ```
 
 ```
-git clone ssh://git@gitlab.cern.ch:7999/mmorris/ttbarallhadronic.git
+git clone https://github.com/b2g-nano/TTbarAllHadUproot.git
+git checkout optimize
 cd ttbarallhadronic
 bash bootstrap.sh
 ./shell
@@ -19,7 +20,8 @@ bash bootstrap.sh
 Log in to https://coffea.casa with CERN SSO
 
 ```
-git clone ssh://git@gitlab.cern.ch:7999/mmorris/ttbarallhadronic.git
+git clone https://github.com/b2g-nano/TTbarAllHadUproot.git
+git checkout optimize
 cd ttbarallhadronic
 ```
 
