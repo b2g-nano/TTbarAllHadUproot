@@ -3,6 +3,7 @@
 import numpy as np
 from coffea.lumi_tools import LumiMask
 
+    
 def GetFlavorEfficiency(self, Subjet, Flavor): # Return "Flavor" efficiency numerator and denominator
     '''
     Subjet --> awkward array object after preselection i.e. SubJetXY
@@ -258,18 +259,18 @@ def GetPUSF(self, events):
     return [puNom, puDown, puUp]
 
 
-def getLumiMaskRun2(prepend=""):
+def getLumiMaskRun2():
 
-    golden_json_path_2016 = prepend + "data/goldenJsons/Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt"
-    golden_json_path_2017 = prepend + "data/goldenJsons/Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt"
-    golden_json_path_2018 = prepend + "data/goldenJsons/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt"
+    golden_json_path_2016 = "data/goldenJsons/Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt"
+    golden_json_path_2017 = "data/goldenJsons/Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt"
+    golden_json_path_2018 = "data/goldenJsons/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt"
+    
 
     masks = {"2016APV":LumiMask(golden_json_path_2016),
              "2016":LumiMask(golden_json_path_2016),
              "2017":LumiMask(golden_json_path_2017),
              "2018":LumiMask(golden_json_path_2018)
             }
-    
 
     return masks
 
