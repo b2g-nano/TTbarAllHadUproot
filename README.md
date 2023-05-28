@@ -8,8 +8,8 @@ ssh -L localhost:8xxx:localhost:8xxx  <username>@cmslpc-sl7.fnal.gov
 
 ```
 git clone https://github.com/b2g-nano/TTbarAllHadUproot.git
+cd TTbarAllHadUproot
 git checkout optimize
-cd ttbarallhadronic
 bash bootstrap.sh
 ./shell
 > jupyter notebook --ip 0.0.0.0 --no-browser --port=8xxx
@@ -21,8 +21,8 @@ Log in to https://coffea.casa with CERN SSO
 
 ```
 git clone https://github.com/b2g-nano/TTbarAllHadUproot.git
+cd TTbarAllHadUproot
 git checkout optimize
-cd ttbarallhadronic
 ```
 
 ### Running the background estimation
