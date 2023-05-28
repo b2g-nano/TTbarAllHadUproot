@@ -6,20 +6,31 @@ from coffea import util
 import numpy as np
 import pandas as pd
 import itertools
+import json
 import os
 
 
 # ## analysis categories
 
+IOVs = ['2016'] #['2016APV', '2016']
+label_dict = util.load(f'outputs/QCD_{IOVs[0]}.coffea')['analysisCategories']
+
+for i,l in label_dict.items():
+    print(i,l)
+
+
+
 # analysis categories #
 # ttagcats = ["AT&Pt", "at", "pret", "0t", "1t", ",>=1t", "2t", ">=0t"]
-ttagcats = ["at", "pret", "2t"]
-btagcats = ["0b", "1b", "2b"]
-ycats = ['cen', 'fwd']
+# ttagcats = ["at", "pret", "2t"]
+# btagcats = ["0b", "1b", "2b"]
+# ycats = ['cen', 'fwd']
+# anacats = [ t+b+y for t,b,y in itertools.product( ttagcats, btagcats, ycats) ]
+# anacats = [ t+y for t,y in itertools.product( ttagcats, ycats) ]
+# label_dict = {i: label for i, label in enumerate(anacats)}
 
-anacats = [ t+b+y for t,b,y in itertools.product( ttagcats, btagcats, ycats) ]
-label_dict = {i: label for i, label in enumerate(anacats)}
-label_to_int_dict = {label: i for i, label in enumerate(anacats)}
+
+label_to_int_dict = {label: i for i, label in label_dict.items()}
 
 
 # ## directories for saving files
@@ -90,22 +101,41 @@ toptag_kf = 0.7
 
 # ## calculate mistag rate
 
-IOVs = ['2016'] #['2016APV', '2016']
+
+
+# save qcd jetmass 
+
+for IOV in IOVs:
+    
+    jsonfile = f'data/corrections/backgroundEstimate/QCD_jetmass_{IOV}.json'
+
+    qcdfile = util.load(f'outputs/QCD_{IOV}.coffea')
+    qcd_jetmass_dict = {'bins': [b for b in qcdfile['jetmass'].axes['jetmass'].edges[:-1]]}
+
+    for cat in qcdfile['jetmass'].axes['anacat'].edges[:-1]:
+        i = int(cat) 
+        label = (qcdfile['analysisCategories'][i])
+        jetmass = [v for v in qcdfile['jetmass'][{'anacat':i}].values()]
+        qcd_jetmass_dict[label] = jetmass
+
+    with open(jsonfile, 'w') as f:
+        json.dump(qcd_jetmass_dict, f)
+        
+        
+    print('saving', jsonfile)
 
 
 for IOV in IOVs:
     
     ttbar_700to1000 = util.load(coffeaFiles['TTbar'][IOV]['700to1000'])
     ttbar_1000toInf = util.load(coffeaFiles['TTbar'][IOV]['1000toInf'])
-    print('loading', coffeaFiles['TTbar'][IOV]['700to1000'])
-    print('loading', coffeaFiles['TTbar'][IOV]['1000toInf'])
     
     ttbar_evts = {}
     ttbar_evts["700to1000"] = ttbar_700to1000['cutflow']['sumw']
     ttbar_evts["1000toInf"] = ttbar_1000toInf['cutflow']['sumw']
     
     ttbar_SF = {}
-    ttbar_SF["700to1000"] = luminosity[IOV] * ttbar_xs["700to1000"] * toptag_sf**2 * toptag_kf / ttbar_evts["1000toInf"]
+    ttbar_SF["700to1000"] = luminosity[IOV] * ttbar_xs["700to1000"] * toptag_sf**2 * toptag_kf / ttbar_evts["700to1000"]
     ttbar_SF["1000toInf"] = luminosity[IOV] * ttbar_xs["1000toInf"] * toptag_sf**2 * toptag_kf / ttbar_evts["1000toInf"]
 
     save_csv_filename = f'mistag_rate_{IOV}.csv'
@@ -114,7 +144,6 @@ for IOV in IOVs:
 
     for era, file in coffeaFiles['JetHT'][IOV].items():
         if os.path.isfile(file):
-            print('loading', file)
             jetht_files.append(util.load(file))
             
             
@@ -201,6 +230,8 @@ for IOV in IOVs:
     print('saving copy to', 'data/corrections/backgroundEstimate/' + save_csv_filename)
     
 
+    
+    
         
 
 
