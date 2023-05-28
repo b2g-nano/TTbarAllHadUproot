@@ -22,7 +22,7 @@ import pandas as pd
 from numpy.random import RandomState
 import correctionlib
 import hist
-# from correctionlib.schemav2 import Correction
+import json
 
 import awkward as ak
 
@@ -54,7 +54,7 @@ manual_bins = [400, 500, 600, 800, 1000, 1500, 2000, 3000, 7000, 10000]
 """Package to perform the data-driven mistag-rate-based ttbar hadronic analysis. """
 class TTbarResProcessor(processor.ProcessorABC):
     def __init__(self,
-                 htCut=950.,
+                 htCut=1400.,
                  ak8PtMin=400.,
                  minMSD=105.,
                  maxMSD=210.,
@@ -64,6 +64,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                  useDeepAK8=True,
                  iov='2016APV',
                  bkgEst=False,
+                 anacats = ['2t0bcen']
                 ):
                  
         self.iov = iov
@@ -81,13 +82,18 @@ class TTbarResProcessor(processor.ProcessorABC):
         
         
         # analysis categories #
-#         self.ttagcats = ["AT&Pt", "at", "pret", "0t", "1t", ">=1t", "2t", ">=0t"]
-        self.ttagcats = ["at", "pret", "2t"]
-        self.btagcats = ["0b", "1b", "2b"]
-        self.ycats = ['cen', 'fwd']
-        
-        self.anacats = [ t+b+y for t,b,y in itertools.product( self.ttagcats, self.btagcats, self.ycats) ]
+        self.anacats = anacats
         self.label_dict = {i: label for i, label in enumerate(self.anacats)}
+        self.label_to_int_dict = {label: i for i, label in enumerate(self.anacats)}
+        
+#         self.ttagcats = ["AT&Pt", "at", "pret", "0t", "1t", ">=1t", "2t", ">=0t"]
+#         self.ttagcats = ["at", "pret", "2t"]
+#         self.btagcats = ["0b", "1b", "2b"]
+#         self.ycats = ['cen', 'fwd']
+#         self.anacats = [ t+b+y for t,b,y in itertools.product( self.ttagcats, self.btagcats, self.ycats) ]
+#         self.anacats = [ t+y for t,y in itertools.product( self.ttagcats, self.ycats) ]
+
+        
         self.label_to_int_dict = {label: i for i, label in enumerate(self.anacats)}
         
         
@@ -120,6 +126,7 @@ class TTbarResProcessor(processor.ProcessorABC):
             
         }
         
+      
 
         
     @property
@@ -382,12 +389,41 @@ class TTbarResProcessor(processor.ProcessorABC):
         
         # analysis category mask #
         
-        regs = [cen,fwd]
-        btags = [btag0,btag1,btag2]                 
+#         regs = [cen,fwd]
+#         btags = [btag0,btag1,btag2]   
 #         ttags = [antitag_probe,antitag,pretag,ttag0,ttag1,ttagI,ttag2,Alltags]
-        ttags = [antitag, pretag,ttag2]       
-        cats = [ (t&b&y) for t,b,y in itertools.product(ttags, btags, regs) ]
-        labels_and_categories = dict(zip( self.anacats, cats ))
+
+    
+        regs = {'cen': cen, 'fwd': fwd}
+        btags = {'0b': btag0, '1b':btag1, '2b':btag2}
+        ttags = {"AT&Pt": antitag_probe, 
+                 "at":antitag, 
+                 "pret":pretag, 
+                 "0t":ttag0, 
+                 "1t":ttag1, 
+                 ">=1t":ttagI, 
+                 "2t":ttag2,
+                 ">=0t":Alltags
+                }
+
+#         ttags = [antitag, pretag,ttag2]       
+        
+        
+        # get all analysis category masks
+        categories = { t[0]+b[0]+y[0] : (t[1]&b[1]&y[1])  for t,b,y in itertools.product( ttags.items(), 
+                                                                        btags.items(), 
+                                                                        regs.items())
+            }
+        
+        # use subset of analysis category masks from ttbaranalysis.py
+        labels_and_categories = {label:categories[label] for label in self.anacats}
+    
+ 
+        
+        
+
+        
+        
         jetmass = ttbarcands.slot1.p4.mass
         jetp = ttbarcands.slot1.p4.p
                         
@@ -402,16 +438,27 @@ class TTbarResProcessor(processor.ProcessorABC):
             
             # for mass modification
 
-            qcdfile = util.load(f'data/corrections/backgroundEstimate/QCD_{self.iov}.coffea')
+#             qcdfile = util.load(f'data/corrections/backgroundEstimate/QCD_{self.iov}.coffea')
+            qcd_jetmass_dict = json.load(open(f'data/corrections/backgroundEstimate/QCD_jetmass_{self.iov}.json'))
+            qcd_jetmass_bins = qcd_jetmass_dict['bins']
+
     
             for ilabel,icat in labels_and_categories.items():
+            
+            
+            
                 
                 icat = ak.flatten(icat)
 
-                # ilabel[-5:] = bcat + ycat (0bcen for example) 
 
+                # get antitag region and signal region labels
+                # ilabel[-5:] = bcat + ycat (0bcen for example)
+                label_at = 'at'+ilabel[-5:]
+                label_2t = '2t'+ilabel[-5:]
+
+                
                 # get mistag rate for antitag region
-                mistag_rate = mistag_rate_df['at' + ilabel[-5:]].values
+                mistag_rate = mistag_rate_df[label_at].values
 
                 # get p bin for probe jet p
                 mistag_pbin = np.digitize(ak.flatten(jetp[icat]), pbins) - 1
@@ -420,17 +467,16 @@ class TTbarResProcessor(processor.ProcessorABC):
                 mistag_weights[icat] = mistag_rate[mistag_pbin]
 
 
-                
+
                 # qcd mass modification #
 
                 # get distribution of jet mass in QCD signal ('2t') region
-                qcd_jetmass_counts = qcdfile['jetmass'][{'anacat':self.label_to_int_dict['2t' + ilabel[-5:]]}].values()
-                qcd_jetmass_bins = qcdfile['jetmass'].axes['jetmass'].centers - qcdfile['jetmass'].axes['jetmass'].widths/2
+                qcd_jetmass_counts = qcd_jetmass_dict[label_2t]
 
                 # randomly select jet mass from distribution
                 ModMass_hist_dist = ss.rv_histogram([qcd_jetmass_counts[:-1], qcd_jetmass_bins])
                 ttbarcands.slot1.p4[icat]["fMass"] = ModMass_hist_dist.rvs(size=len(ttbarcands.slot1.p4[icat]))
-    
+
     
 
     

@@ -4,6 +4,7 @@ from coffea import util
 from coffea.nanoevents import NanoAODSchema, BaseSchema
 import coffea.processor as processor
 
+import itertools
 import argparse
 import time
 import json
@@ -59,6 +60,24 @@ if __name__ == "__main__":
     IOV = args.iov
     useDeepAK8 = True
     
+    
+    
+    # analysis categories #
+    
+    # analysis categories #
+    # ttagcats = ["AT&Pt", "at", "pret", "0t", "1t", ">=1t", "2t", ">=0t"]
+    ttagcats = ["at", "pret", "2t"]
+    btagcats = ["0b", "1b", "2b"]
+    ycats = ['cen', 'fwd']
+    anacats = [ t+b+y for t,b,y in itertools.product( ttagcats, btagcats, ycats) ]
+
+
+
+    label_dict = {i: label for i, label in enumerate(anacats)}
+    label_to_int_dict = {label: i for i, label in enumerate(anacats)}
+
+
+    
  
 
 
@@ -74,6 +93,20 @@ if __name__ == "__main__":
         "TTbar": 'data/nanoAOD/TTbar.json',
     }
     
+    
+    upload_to_dask = [
+                        'data',
+                        'python',
+                        'ttbarprocessor.py',
+                    ]
+    
+    if args.dask and (args.env == 'lpc' or args.env == 'L'):
+
+        from lpcjobqueue import LPCCondorCluster
+        cluster = LPCCondorCluster(memory='6GB', transfer_input_files=upload_to_dask)
+        cluster.adapt(minimum=1, maximum=100)
+    
+        
     for sample in samples:
     
         inputfile = jsonfiles[sample]
@@ -108,7 +141,7 @@ if __name__ == "__main__":
 
                 # add redirector; select file for testing
                 files = [redirector + f for f in files]
-                if args.test: files = [files[0]]
+                if args.test: files = [files[int(len(files)/2)]]
                 fileset = {sample: files}            
 
                 # coffea output file name
@@ -125,12 +158,13 @@ if __name__ == "__main__":
                 # run using futures executor
                 if not args.dask:
 
-                    hists, metrics = processor.run_uproot_job(
+                    output, metrics = processor.run_uproot_job(
                         fileset,
                         treename="Events",
                         processor_instance=TTbarResProcessor(iov=IOV,
                                                              bkgEst=args.bkgest,
                                                              useDeepAK8=useDeepAK8,
+                                                             anacats=anacats,
                                                             ),
                         executor=processor.futures_executor,
                         executor_args={
@@ -153,15 +187,9 @@ if __name__ == "__main__":
                         'ttbarprocessor.py',
                     ]
 
-                    if args.env == 'lpc' or args.env == 'L':
+                    
 
-                        from lpcjobqueue import LPCCondorCluster
-                        cluster = LPCCondorCluster(memory='6GB', transfer_input_files=upload_to_dask)
-                        cluster.adapt(minimum=1, maximum=100)
-
-                    else:
-                        print('dask currently set up for LPC only')
-                        break
+                    
 
 
                     with Client(cluster) as client:
@@ -176,26 +204,28 @@ if __name__ == "__main__":
                         )
 
 
-                        print("Waiting for at least one worker...")
-                        client.wait_for_workers(1)
+#                         print("Waiting for at least one worker...")
+#                         client.wait_for_workers(1)
 
-                        hists, metrics = run_instance(fileset,
+                        output, metrics = run_instance(fileset,
                                                       treename="Events",
                                                       processor_instance=TTbarResProcessor(
                                                           iov=IOV,
                                                           bkgEst=args.bkgest,
                                                           useDeepAK8=useDeepAK8,
+                                                          anacats=anacats,
                                                           ),
                                                      )
 
-
-                util.save(hists, savefilename)
+                
+                output['analysisCategories'] = {i:label for i,label in enumerate(anacats)}
+                util.save(output, savefilename)
                 print('saving', savefilename)
 
-                # save copy for running mass modification
-                if 'QCD' in sample and not args.bkgest:
-                    util.save(hists, savefilename.replace(savedir, 'data/corrections/backgroundEstimate/'))
-                    print('saving copy to', savefilename.replace(savedir, 'data/corrections/backgroundEstimate/'))
+#                 # save copy for running mass modification
+#                 if 'QCD' in sample and not args.bkgest:
+#                     util.save(hists, savefilename.replace(savedir, 'data/corrections/backgroundEstimate/'))
+#                     print('saving copy to', savefilename.replace(savedir, 'data/corrections/backgroundEstimate/'))
 
 
 
@@ -203,6 +233,8 @@ if __name__ == "__main__":
     elapsed = time.time() - tic
     print(f"\nFinished in {elapsed:.1f}s")
     print(f"Events/s: {metrics['entries'] / elapsed:.0f}")
+    
+    if args.dask: cluster.close()
 
 
 
