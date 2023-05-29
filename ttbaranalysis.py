@@ -1,3 +1,4 @@
+#!/usr/bin/env
 # ttbaranalysis.py
 
 from coffea import util
