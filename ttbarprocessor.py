@@ -20,6 +20,7 @@ import numpy as np
 import itertools
 import pandas as pd
 from numpy.random import RandomState
+import random
 import correctionlib
 import hist
 import json
@@ -271,7 +272,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         # ---- ttbar candidates ---- #
         
         # index = [[0], [1], [0], ... [0], [1], [1]] type='{# events} * var * int64'
-        index = ak.unflatten( np.random.RandomState(1234567890).randint(2, size=len(FatJets)), np.ones(len(FatJets), dtype='i'))
+        index = ak.unflatten( np.random.RandomState(random.seed()).randint(2, size=len(FatJets)), np.ones(len(FatJets), dtype='i'))
         
         jet0 = FatJets[index]
         jet1 = FatJets[1 - index]        
