@@ -68,14 +68,14 @@ manual_sdMass_bins = [0, 25, 50, 75, 100, 125, 150, 175, 200, 225, 250]
 class TTbarResProcessor(processor.ProcessorABC):
     def __init__(self, prng=RandomState(1234567890), htCut=950., minMSD=105., maxMSD=210.,
                  tau32Cut=0.65, ak8PtMin=400., bdisc=0.5847, deepAK8Cut=0.632, BDirect='',
-                 year=None, apv='', vfp='',eras=[], UseLookUpTables=False, lu=None, extraDaskDirectory='',
+                 year=None, apv='', vfp='',eras=[], UseLookUpTables=False, lu=None,
                  ModMass=False, RandomDebugMode=False, UseEfficiencies=False, xsSystematicWeight=1., lumSystematicWeight=1.,
                  ApplybtagSF=False, ScaleFactorFile='', ApplyttagSF=False, ApplyTopReweight=False, 
                  ApplyJes=False, ApplyJer=False, var="nominal", ApplyPdf=False, ApplyPrefiring=False, ApplyPUweights=False,
                  ApplyHEMCleaning=False, trigs_to_run=[''], csvv2=False, 
                  sysType=None):
 
-        self.lumimasks = getLumiMaskRun2(prepend="TTbarAllHadUproot/")
+        self.lumimasks = getLumiMaskRun2()
         self.prng = prng
         self.htCut = htCut
         self.minMSD = minMSD
@@ -90,7 +90,6 @@ class TTbarResProcessor(processor.ProcessorABC):
         self.vfp = vfp
         self.eras = eras
         self.trigs_to_run = trigs_to_run
-        self.extraDaskDirectory = extraDaskDirectory
         self.UseLookUpTables = UseLookUpTables
         self.ModMass = ModMass
         self.RandomDebugMode = RandomDebugMode
@@ -1233,7 +1232,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                     for subjet,subjet_info in SubjetNumDict.items():
                         flav_tag_list = [FlavorTagsDict[num] for num in np.abs(ak.flatten(subjet_info[0].hadronFlavour))] # List of tags i.e.) ['btag', 'udsgtag', 'ctag',...]
                         for flav_tag in flav_tag_list:
-                            EffFileDict['Eff_File_'+subjet_info[1]].append(self.extraDaskDirectory+'TTbarAllHadUproot/FlavorTagEfficiencies/' 
+                            EffFileDict['Eff_File_'+subjet_info[1]].append('FlavorTagEfficiencies/' 
                                                                            + self.BDirect + flav_tag 
                                                                            + 'EfficiencyTables/' + dataset + '_' + subjet_info[1] 
                                                                            + '_' + flav_tag + 'eff.csv')
@@ -1450,7 +1449,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                 else:
                     od = ''
                 
-                QCD_unweighted = util.load(self.extraDaskDirectory+'TTbarAllHadUproot/CoffeaOutputsForCombine/Coffea_FirstRun/QCD/'
+                QCD_unweighted = util.load('CoffeaOutputsForCombine/Coffea_FirstRun/QCD/'
                 +self.BDirect+str(self.year)+'/'+self.apv+'/TTbarRes_0l_UL'+str(self.year-2000)+self.vfp+'_QCD'+od+'.coffea') 
                     
                 # ---- Define Histogram ---- #
