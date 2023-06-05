@@ -71,8 +71,10 @@ def CollectDatasets(redirector_str):
         uploadDir = 'srv'
     else:
         uploadDir = 'TTbarAllHadUproot'
+        
+    uploadDir = ''
     
-    filedir = uploadDir+'/nanoAODv9Files/'
+    filedir = 'nanoAODv9Files/'
     Years = ['UL16', 'UL17', 'UL18']
     VFP = ['preVFP', 'postVFP'] # preVFP unavailable in Winterfell for the moment
     # VFP = ['postVFP'] # Only for simple test in WinterFell

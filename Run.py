@@ -112,7 +112,9 @@ def FlavEffList(Flavor, Output, Dataset, bdiscDirectory, Save):
 def main():
     
     maindirectory = os.getcwd()
-    os.chdir('../') # Runs the code from within the working directory without manually changing all directory paths!
+    
+    
+#   os.chdir('../') # Runs the code from within the working directory without manually changing all directory paths!
     
     # uploadDir = os.getcwd().replace('/','') + '/'
     # if 'TTbarAllHadUproot' in uploadDir: 
@@ -252,6 +254,11 @@ def main():
 
     args = Parser.parse_args()
     process = psutil.Process(os.getpid()) # Keep track of memory usage
+    
+    
+    print('\n------args------')
+    for argname, value in vars(args).items(): print(argname, '=', value)
+    print('----------------\n')
 
     Trigs_to_run = []
     defaultTriggers = []
@@ -354,8 +361,7 @@ def main():
         uploadDir = maindirectory + '/'
     elif args.lpc:
         Redirector = 'root://cmsxrootd.fnal.gov/'
-        uploadDir = 'srv/'
-        maindirectory  = 'srv/'
+        uploadDir = maindirectory + '/'
     elif args.winterfell:
         Redirector = '/mnt/data/cms'
         uploadDir = maindirectory + '/'
@@ -860,8 +866,9 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
         if __name__ == "__main__":       
 
             cluster = None
-            uploadDir = 'TTbarAllHadUproot'#/CoffeaOutputsForCombine/Coffea_firstRun'
-
+            
+            
+            
             if args.newCluster:
                 cluster = CoffeaCasaCluster(cores=7, memory="5 GiB", death_timeout=TimeOut)
                 cluster.adapt(minimum=1, maximum=14)
@@ -870,14 +877,14 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
 
             client = Client(cluster)
 
-            try:
-                client.register_worker_plugin(UploadDirectory(uploadDir,restart=True,update_path=True),nanny=True)
-            except OSError as ose:
-                print('\n', ose, flush=True)    
-                print('\nFor some reason, Dask did not work as intended\n', flush=True)
-                exit
-                if args.newCluster:
-                    cluster.close()
+            # try:
+            #     client.register_worker_plugin(UploadDirectory(uploadDir,restart=True,update_path=True),nanny=True)
+            # except OSError as ose:
+            #     print('\n', ose, flush=True)    
+            #     print('\nFor some reason, Dask did not work as intended\n', flush=True)
+            #     exit
+            #     if args.newCluster:
+            #         cluster.close()
 
             # print('All Hidden Directories:\n')
             # print(client.run(os.listdir))
@@ -887,6 +894,16 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
             # # print(client.run(os.listdir,"dask-worker-space/purge.lock"))
             # print('Look inside TTbarAllHadUproot:\n')
             # print(client.run(os.listdir,"dask-worker-space/TTbarAllHadUproot"))
+            
+            
+            client.restart()
+            client.upload_file('Filesets.py')
+            client.upload_file('TTbarResProcessor.py')
+            client.upload_file('TTbarResLookUpTables.py')
+            client.upload_file('cms_utils.py')
+            client.upload_file('python/btag_flavor_efficiencies.py')
+            client.upload_file('python/corrections.py')
+            client.upload_file('python/functions.py')  
 
 
     elif UsingDaskExecutor == True and args.lpc:
@@ -895,8 +912,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
         from lpcjobqueue import LPCCondorCluster
 
         if __name__ == "__main__":  
-            
-            uploadDir = 'srv/'
+         
 
 
             cluster = LPCCondorCluster()#(death_timeout=TimeOut)
@@ -910,16 +926,16 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
 #                 print('\n', ose, flush=True)
 
             client.restart()
-            client.upload_file('srv/Filesets.py')
-            client.upload_file('srv/TTbarResProcessor.py')
-            client.upload_file('srv/TTbarResLookUpTables.py')
-            client.upload_file('srv/cms_utils.py')
-#             client.upload_file('srv/python/btag_flavor_efficiencies.py')
-#             client.upload_file('srv/python/corrections.py')
-#             client.upload_file('srv/python/functions.py')                   
+            client.upload_file('Filesets.py')
+            client.upload_file('TTbarResProcessor.py')
+            client.upload_file('TTbarResLookUpTables.py')
+            client.upload_file('cms_utils.py')
+#             client.upload_file('python/btag_flavor_efficiencies.py')
+#             client.upload_file('python/corrections.py')
+#             client.upload_file('python/functions.py')                   
 
-            client.register_worker_plugin(UploadDirectory('srv/CorrectionFiles',restart=True,update_path=True),nanny=True)
-            client.register_worker_plugin(UploadDirectory('srv/python',restart=True,update_path=True),nanny=True)
+            client.register_worker_plugin(UploadDirectory('CorrectionFiles',restart=True,update_path=True),nanny=True)
+            client.register_worker_plugin(UploadDirectory('python',restart=True,update_path=True),nanny=True)
 
 
 
@@ -1221,7 +1237,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                 if args.saveTrig:
                     mkdir_p(uploadDir+'CoffeaOutputsForTriggerAnalysis/'
                               + SaveLocation[name])
-                    savefilename =  'TTbarAllHadUproot/CoffeaOutputsForTriggerAnalysis/' + SaveLocation[name] + name + '_TriggerAnalysis' + OldDisc + '.coffea'
+                    savefilename =  'CoffeaOutputsForTriggerAnalysis/' + SaveLocation[name] + name + '_TriggerAnalysis' + OldDisc + '.coffea'
                     util.save(output, savefilename)
                     print('saving ' + savefilename, flush=True)
 
@@ -1263,7 +1279,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
     prng = RandomState(seed)
     
     # run over only 1 file to test
-    # filesets_to_run = {ds_name: [ds[0]] for ds_name, ds in filesets_to_run.items()}
+    # filesets_to_run = {ds_name: [ds[int(len(ds)/2)]] for ds_name, ds in filesets_to_run.items()}
 
 
     for name,files in filesets_to_run.items(): 
@@ -1517,7 +1533,6 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                       treename='Events',
                                                       processor_instance=TTbarResProcessor(UseLookUpTables=True,
                                                                                            lu=mistag_luts,
-                                                                                           extraDaskDirectory = daskDirectory,
                                                                                            ModMass=True, 
                                                                                            RandomDebugMode=False,
                                                                                            BDirect = BDiscDirectory,
@@ -1607,7 +1622,6 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                       treename='Events',
                                                       processor_instance=TTbarResProcessor(UseLookUpTables=True,
                                                                                            lu=mistag_luts,
-                                                                                           extraDaskDirectory = daskDirectory,
                                                                                            ModMass=True, 
                                                                                            RandomDebugMode=False,
                                                                                            BDirect = BDiscDirectory,
@@ -1723,7 +1737,6 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                           treename='Events',
                                                           processor_instance=TTbarResProcessor(UseLookUpTables=True,
                                                                                                lu=mistag_luts,
-                                                                                               extraDaskDirectory = daskDirectory,
                                                                                                ModMass=True, 
                                                                                                RandomDebugMode=False,
                                                                                                BDirect = BDiscDirectory,
@@ -1785,7 +1798,6 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                           treename='Events',
                                                           processor_instance=TTbarResProcessor(UseLookUpTables=True,
                                                                                                lu=mistag_luts,
-                                                                                               extraDaskDirectory = daskDirectory,
                                                                                                ModMass=True, 
                                                                                                RandomDebugMode=False,
                                                                                                BDirect = BDiscDirectory,
@@ -1874,7 +1886,6 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                           treename='Events',
                                                           processor_instance=TTbarResProcessor(UseLookUpTables=True,
                                                                                                lu=mistag_luts,
-                                                                                               extraDaskDirectory = daskDirectory,
                                                                                                ModMass=False, 
                                                                                                RandomDebugMode=False,
                                                                                                BDirect = BDiscDirectory,
@@ -1936,7 +1947,6 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
                                                           treename='Events',
                                                           processor_instance=TTbarResProcessor(UseLookUpTables=True,
                                                                                                lu=mistag_luts,
-                                                                                               extraDaskDirectory = daskDirectory,
                                                                                                ModMass=False, 
                                                                                                RandomDebugMode=False,
                                                                                                BDirect = BDiscDirectory,
