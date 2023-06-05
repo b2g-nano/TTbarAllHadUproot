@@ -29,7 +29,10 @@ import awkward as ak
 from cms_utils import getLumiMaskRun2
 
 
-from python.corrections import ( 
+# for dask, `from python.corrections import` does not work
+sys.path.append(os.getcwd()+'/python/')
+
+from corrections import ( 
     GetL1PreFiringWeight,
     HEMCleaning,
     GetJECUncertainties,
@@ -37,12 +40,12 @@ from python.corrections import (
     GetPUSF,
 )
 
-from python.btag_flavor_efficiencies import (
+from btag_flavor_efficiencies import (
     BtagUpdater,
     GetFlavorEfficiency,
 )
 
-from python.functions import (
+from functions import (
     MemoryMb,
     ConvertLabelToInt,
     CartesianProduct,

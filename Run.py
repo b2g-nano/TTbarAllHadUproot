@@ -867,6 +867,8 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
 
             cluster = None
             
+            
+            
             if args.newCluster:
                 cluster = CoffeaCasaCluster(cores=7, memory="5 GiB", death_timeout=TimeOut)
                 cluster.adapt(minimum=1, maximum=14)
@@ -875,14 +877,14 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
 
             client = Client(cluster)
 
-            try:
-                client.register_worker_plugin(UploadDirectory(uploadDir,restart=True,update_path=True),nanny=True)
-            except OSError as ose:
-                print('\n', ose, flush=True)    
-                print('\nFor some reason, Dask did not work as intended\n', flush=True)
-                exit
-                if args.newCluster:
-                    cluster.close()
+            # try:
+            #     client.register_worker_plugin(UploadDirectory(uploadDir,restart=True,update_path=True),nanny=True)
+            # except OSError as ose:
+            #     print('\n', ose, flush=True)    
+            #     print('\nFor some reason, Dask did not work as intended\n', flush=True)
+            #     exit
+            #     if args.newCluster:
+            #         cluster.close()
 
             # print('All Hidden Directories:\n')
             # print(client.run(os.listdir))
@@ -892,6 +894,16 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
             # # print(client.run(os.listdir,"dask-worker-space/purge.lock"))
             # print('Look inside TTbarAllHadUproot:\n')
             # print(client.run(os.listdir,"dask-worker-space/TTbarAllHadUproot"))
+            
+            
+            client.restart()
+            client.upload_file('Filesets.py')
+            client.upload_file('TTbarResProcessor.py')
+            client.upload_file('TTbarResLookUpTables.py')
+            client.upload_file('cms_utils.py')
+            client.upload_file('python/btag_flavor_efficiencies.py')
+            client.upload_file('python/corrections.py')
+            client.upload_file('python/functions.py')  
 
 
     elif UsingDaskExecutor == True and args.lpc:
@@ -918,9 +930,9 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
             client.upload_file('TTbarResProcessor.py')
             client.upload_file('TTbarResLookUpTables.py')
             client.upload_file('cms_utils.py')
-#             client.upload_file('srv/python/btag_flavor_efficiencies.py')
-#             client.upload_file('srv/python/corrections.py')
-#             client.upload_file('srv/python/functions.py')                   
+#             client.upload_file('python/btag_flavor_efficiencies.py')
+#             client.upload_file('python/corrections.py')
+#             client.upload_file('python/functions.py')                   
 
             client.register_worker_plugin(UploadDirectory('CorrectionFiles',restart=True,update_path=True),nanny=True)
             client.register_worker_plugin(UploadDirectory('python',restart=True,update_path=True),nanny=True)
@@ -1267,7 +1279,7 @@ Redirector+'/store/mc/RunIISummer20UL16NanoAODv9/TT_Mtt-1000toInf_TuneCP5_13TeV-
     prng = RandomState(seed)
     
     # run over only 1 file to test
-    filesets_to_run = {ds_name: [ds[int(len(ds)/2)]] for ds_name, ds in filesets_to_run.items()}
+    # filesets_to_run = {ds_name: [ds[int(len(ds)/2)]] for ds_name, ds in filesets_to_run.items()}
 
 
     for name,files in filesets_to_run.items(): 
