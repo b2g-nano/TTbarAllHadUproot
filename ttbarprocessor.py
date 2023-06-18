@@ -20,7 +20,6 @@ import numpy as np
 import itertools
 import pandas as pd
 from numpy.random import RandomState
-import random
 import correctionlib
 import hist
 import json
@@ -33,6 +32,7 @@ sys.path.append(os.getcwd()+'/python/')
 from corrections import (
     GetFlavorEfficiency,
     HEMCleaning,
+    GetL1PreFiringWeight,
     GetJECUncertainties,
     GetPDFWeights,
     GetPUSF,
@@ -52,6 +52,7 @@ ak.behavior.update(vector.behavior)
 # --- Define 'Manual bins' to use for mistag plots for aesthetic purposes--- #
 manual_bins = [400, 500, 600, 800, 1000, 1500, 2000, 3000, 7000, 10000]
 
+
 """Package to perform the data-driven mistag-rate-based ttbar hadronic analysis. """
 class TTbarResProcessor(processor.ProcessorABC):
     def __init__(self,
@@ -61,11 +62,13 @@ class TTbarResProcessor(processor.ProcessorABC):
                  maxMSD=210.,
                  tau32Cut=0.65,
                  bdisc=0.5847,
-                 deepAK8Cut=0.632,
+                 deepAK8Cut=0.94,
                  useDeepAK8=True,
                  iov='2016APV',
                  bkgEst=False,
-                 anacats = ['2t0bcen']
+                 syst=False,
+                 systematics = ['nominal', 'pileup'],
+                 anacats = ['2t0bcen'],
                 ):
                  
         self.iov = iov
@@ -79,6 +82,12 @@ class TTbarResProcessor(processor.ProcessorABC):
         self.useDeepAK8 = useDeepAK8
         self.means_stddevs = defaultdict()
         self.bkgEst = bkgEst
+        self.syst = syst
+        self.systematics = systematics
+        
+        
+        self.transfer_function = np.load('plots/save.npy')
+
         
         
         
@@ -86,41 +95,68 @@ class TTbarResProcessor(processor.ProcessorABC):
         self.anacats = anacats
         self.label_dict = {i: label for i, label in enumerate(self.anacats)}
         self.label_to_int_dict = {label: i for i, label in enumerate(self.anacats)}
-        
-#         self.ttagcats = ["AT&Pt", "at", "pret", "0t", "1t", ">=1t", "2t", ">=0t"]
-#         self.ttagcats = ["at", "pret", "2t"]
-#         self.btagcats = ["0b", "1b", "2b"]
-#         self.ycats = ['cen', 'fwd']
-#         self.anacats = [ t+b+y for t,b,y in itertools.product( self.ttagcats, self.btagcats, self.ycats) ]
-#         self.anacats = [ t+y for t,y in itertools.product( self.ttagcats, self.ycats) ]
 
         
-        self.label_to_int_dict = {label: i for i, label in enumerate(self.anacats)}
+        # systematics
+        syst_category_strings = ['nominal'] 
+        for s in self.systematics:
+            if not 'nominal' in s:
+                syst_category_strings.append(s+'Down')
+                syst_category_strings.append(s+'Up')
         
         
         # axes
-        dataset_axis   = hist.axis.StrCategory([], growth=True, name="dataset", label="Primary Dataset")
-        ttbarmass_axis = hist.axis.Regular(50, 800, 8000, name="ttbarmass", label=r"$m_{t\bar{t}}$ [GeV]")
-        jetmass_axis   = hist.axis.Regular(50, 0, 500, name="jetmass", label=r"Jet $m$ [GeV]")
-        jetpt_axis     = hist.axis.Regular(50, 400, 2000, name="jetpt", label=r"Jet $p_{T}$ [GeV]")
-        jeteta_axis    = hist.axis.Regular(50, -2.4, 2.4, name="jeteta", label=r"Jet $\eta$")
-        jetphi_axis    = hist.axis.Regular(50, -np.pi, np.pi, name="jetphi", label=r"Jet $\phi$")
-        cats_axis      = hist.axis.IntCategory(range(len(self.anacats)), name="anacat", label="Analysis Category")
-        manual_axis    = hist.axis.Variable(manual_bins, name="jetp", label=r"Jet Momentum [GeV]")
-        
+        dataset_axis     = hist.axis.StrCategory([], growth=True, name="dataset", label="Primary Dataset")
+        syst_axis        = hist.axis.StrCategory(syst_category_strings, name="systematic")
+        ttbarmass_axis   = hist.axis.Regular(50, 800, 8000, name="ttbarmass", label=r"$m_{t\bar{t}}$ [GeV]")
+        jetmass_axis     = hist.axis.Regular(50, 0, 500, name="jetmass", label=r"Jet $m$ [GeV]")
+        ttbarmass2D_axis = hist.axis.Regular(20, 800, 8000, name="ttbarmass", label=r"$m_{t\bar{t}}$ [GeV]")
+        jetmass2D_axis   = hist.axis.Regular(20, 0, 500, name="jetmass", label=r"Jet $m_{SD}$ [GeV]")
+        jetpt_axis       = hist.axis.Regular(50, 400, 2000, name="jetpt", label=r"Jet $p_{T}$ [GeV]")
+        jetp_axis        = hist.axis.Regular(100, 400, 3600, name="jetp", label=r"Jet $p$ [GeV]")
+        jeteta_axis      = hist.axis.Regular(50, -2.4, 2.4, name="jeteta", label=r"Jet $\eta$")
+        jetphi_axis      = hist.axis.Regular(50, -np.pi, np.pi, name="jetphi", label=r"Jet $\phi$")
+        cats_axis        = hist.axis.IntCategory(range(len(self.anacats)), name="anacat", label="Analysis Category")
+        manual_axis      = hist.axis.Variable(manual_bins, name="jetp", label=r"Jet Momentum [GeV]")
+        btag_axis        = hist.axis.Regular(10, 0, 1, name="bdisc", label=r"DeepCSV")
+        ttag_axis        = hist.axis.Regular(10, 0, 1, name="tdisc", label=r"DeepAK8")
+        nsub_axis        = hist.axis.Regular(10, 0, 1, name="nsub", label=r"$\tau_{3} / \tau_{2}$")
+
         
         # output
         self.histo_dict = {
 
             
             # histograms
-            'ttbarmass'  : hist.Hist(cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
+            'ttbarmass'  : hist.Hist(syst_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
             'numerator'  : hist.Hist(cats_axis, manual_axis, storage="weight", name="Counts"),
             'denominator': hist.Hist(cats_axis, manual_axis, storage="weight", name="Counts"),
             'jetmass' : hist.Hist(cats_axis, jetmass_axis, storage="weight", name="Counts"),
             'jetpt'  : hist.Hist(cats_axis, jetpt_axis, storage="weight", name="Counts"),
             'jeteta'  : hist.Hist(cats_axis, jeteta_axis, storage="weight", name="Counts"),
             'jetphi'  : hist.Hist(cats_axis, jetphi_axis, storage="weight", name="Counts"),
+            'jetp'  : hist.Hist(cats_axis, jetp_axis, storage="weight", name="Counts"),
+            'discriminators'  : hist.Hist(cats_axis,
+                                          jetp_axis,
+                                          btag_axis,
+                                          ttag_axis,
+                                          nsub_axis,
+                                          storage="weight", name="Counts"),
+            'deepak8'  : hist.Hist(cats_axis,
+                                          jetp_axis,
+                                          ttbarmass_axis,
+                                          ttag_axis,
+                                          storage="weight", name="Counts"),
+            
+            
+            'mtt_vs_mt' : hist.Hist(syst_axis, cats_axis, jetmass2D_axis, ttbarmass2D_axis, storage="weight", name="Counts"),
+
+            
+            'deepak8_over_jetp': hist.Hist(cats_axis, ttag_axis, jetp_axis, storage="weight", name="Counts"),
+            'tau32_over_jetp': hist.Hist(cats_axis, nsub_axis, jetp_axis, storage="weight", name="Counts"),
+            'bdisc_over_jetpt': hist.Hist(cats_axis, btag_axis, jetp_axis, storage="weight", name="Counts"),
+
+
                         
             # accumulators
             'cutflow': processor.defaultdict_accumulator(int),
@@ -153,12 +189,11 @@ class TTbarResProcessor(processor.ProcessorABC):
         # lumi mask #
         if (isData):
             
-            
             lumi_mask = np.array(getLumiMaskRun2(self.iov)(events.run, events.luminosityBlock), dtype=bool)
             events = events[lumi_mask]
             del lumi_mask
 
-        elif ('TTbar' in dataset) or ('QCD' in dataset) : 
+        elif 'QCD' in dataset: 
             if dataset not in self.means_stddevs : 
                 average = np.average( events.genWeight )
                 stddev = np.std( events.genWeight )
@@ -172,8 +207,9 @@ class TTbarResProcessor(processor.ProcessorABC):
         # blinding #
         if isData and (('2017' in self.iov) or ('2018' in self.iov)):
             events = events[::10]
-            
-
+         
+        # if blinding results in 0 events
+        if (len(events)) < 1: return output
         
         # event selection #
         selection = PackedSelection()
@@ -209,9 +245,11 @@ class TTbarResProcessor(processor.ProcessorABC):
                     
         
         # ---- Get event weights from dataset ---- #
+
+        
         if isData:
-            evtweights = np.ones( len(FatJets) ) 
-        else: 
+            evtweights = np.ones(len(events))
+        else:
             if "LHEWeight_originalXWGTUP" not in events.fields: 
                 evtweights = events.genWeight
             else: 
@@ -266,13 +304,15 @@ class TTbarResProcessor(processor.ProcessorABC):
         SubJets = SubJets[eventCut]
         Jets    = Jets[eventCut]
         evtweights = evtweights[eventCut]
+        events = events[eventCut]
+
         if not isData: GenJets = GenJets[eventCut]
             
 
         # ---- ttbar candidates ---- #
         
         # index = [[0], [1], [0], ... [0], [1], [1]] type='{# events} * var * int64'
-        index = ak.unflatten( np.random.RandomState(random.seed()).randint(2, size=len(FatJets)), np.ones(len(FatJets), dtype='i'))
+        index = ak.unflatten( np.random.RandomState(1234567890).randint(2, size=len(FatJets)), np.ones(len(FatJets), dtype='i'))
         
         jet0 = FatJets[index]
         jet1 = FatJets[1 - index]        
@@ -307,6 +347,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         SubJets = SubJets[ttbarcandCuts]
         events = events[ttbarcandCuts]
         evtweights = evtweights[ttbarcandCuts]
+        
         if not isData: GenJets = GenJets[ttbarcandCuts]
         del oneTTbar, dPhiCut, ttbarcandCuts, hasSubjets0, hasSubjets1, GoodSubjets
         
@@ -327,9 +368,16 @@ class TTbarResProcessor(processor.ProcessorABC):
         
         # ----------- DeepAK8 Tagger (Discriminator Cut) ----------- #
         if self.useDeepAK8:
-            ttag_s0 = ttbarcands.slot0.deepTagMD_TvsQCD > self.deepAK8Cut
-            ttag_s1 = ttbarcands.slot1.deepTagMD_TvsQCD > self.deepAK8Cut
-            antitag = ttbarcands.slot0.deepTagMD_TvsQCD < self.deepAK8Cut 
+            ttag_s0_disc = ttbarcands.slot0.deepTagMD_TvsQCD > self.deepAK8Cut
+            ttag_s1_disc = ttbarcands.slot1.deepTagMD_TvsQCD > self.deepAK8Cut
+            antitag_disc = (ttbarcands.slot0.deepTagMD_TvsQCD < self.deepAK8Cut) & (ttbarcands.slot0.deepTagMD_TvsQCD > 0.2)
+            
+            mcut_s0 = (self.minMSD < ttbarcands.slot0.msoftdrop) & (ttbarcands.slot0.msoftdrop < self.maxMSD) 
+            mcut_s1 = (self.minMSD < ttbarcands.slot1.msoftdrop) & (ttbarcands.slot1.msoftdrop < self.maxMSD) 
+
+            ttag_s0 = (ttag_s0_disc) #& (mcut_s0)
+            ttag_s1 = (ttag_s1_disc) #& (mcut_s1)
+            antitag = (antitag_disc) #& (mcut_s0) # The Probe jet will always be ttbarcands.slot1 (at)
 
             
         # ----------- CMS Top Tagger Version 2 (SD and Tau32 Cuts) ----------- #
@@ -347,7 +395,13 @@ class TTbarResProcessor(processor.ProcessorABC):
             ttag_s1 = (taucut_s1) & (mcut_s1)
             antitag = (~taucut_s0) & (mcut_s0) # The Probe jet will always be ttbarcands.slot1 (at)
 
+        tau32_s0 = np.where(ttbarcands.slot0.tau2>0,ttbarcands.slot0.tau3/ttbarcands.slot0.tau2, 0 )
+        tau32_s1 = np.where(ttbarcands.slot1.tau2>0,ttbarcands.slot1.tau3/ttbarcands.slot1.tau2, 0 )
 
+        taucut_s0 = tau32_s0 < self.tau32Cut
+        taucut_s1 = tau32_s1 < self.tau32Cut
+        
+        
         
         # ---- Define "Top Tag" Regions ---- #
         antitag_probe = np.logical_and(antitag, ttag_s1) # Found an antitag and ttagged probe pair for mistag rate (AT&Pt)
@@ -362,6 +416,12 @@ class TTbarResProcessor(processor.ProcessorABC):
         
         # b tagger #
         
+        bdisc_s0 = np.maximum(SubJet00.btagDeepB , SubJet01.btagDeepB)
+        bdisc_s1 = np.maximum(SubJet10.btagDeepB , SubJet11.btagDeepB)
+        tdisc_s0 = ttbarcands.slot0.deepTagMD_TvsQCD
+        tdisc_s1 = ttbarcands.slot1.deepTagMD_TvsQCD
+
+        
         btag_s0 = ( np.maximum(SubJet00.btagDeepB , SubJet01.btagDeepB) > self.bdisc )
         btag_s1 = ( np.maximum(SubJet10.btagDeepB , SubJet11.btagDeepB) > self.bdisc )
         
@@ -373,28 +433,9 @@ class TTbarResProcessor(processor.ProcessorABC):
         # rapidity #
         cen = np.abs(getRapidity(ttbarcands.slot0.p4) - getRapidity(ttbarcands.slot1.p4)) < 1.0
         fwd = (~cen)
-        
-        
-        
-#         if (self.bkgEst):
-#             btag0, btag1, btag2 = btagCorrections([btag0, btag1, btag2], 
-#                                                   [SubJet00, SubJet01, SubJet10, SubJet11], 
-#                                                   isData, 
-#                                                   self.bdisc,
-#                                                   sysType='central')
-        
-        
-        
-
-                         
-        
-        # analysis category mask #
-        
-#         regs = [cen,fwd]
-#         btags = [btag0,btag1,btag2]   
-#         ttags = [antitag_probe,antitag,pretag,ttag0,ttag1,ttagI,ttag2,Alltags]
-
     
+    
+        # rapidity, btag and top tag categories
         regs = {'cen': cen, 'fwd': fwd}
         btags = {'0b': btag0, '1b':btag1, '2b':btag2}
         ttags = {"AT&Pt": antitag_probe, 
@@ -406,8 +447,6 @@ class TTbarResProcessor(processor.ProcessorABC):
                  "2t":ttag2,
                  ">=0t":Alltags
                 }
-
-#         ttags = [antitag, pretag,ttag2]       
         
         
         # get all analysis category masks
@@ -419,14 +458,17 @@ class TTbarResProcessor(processor.ProcessorABC):
         # use subset of analysis category masks from ttbaranalysis.py
         labels_and_categories = {label:categories[label] for label in self.anacats}
     
- 
-        
-        
-
-        
         
         jetmass = ttbarcands.slot1.p4.mass
         jetp = ttbarcands.slot1.p4.p
+        jetmsd = ttbarcands.slot0.msoftdrop
+
+        
+        
+        # event weights #
+        
+        weights = Weights(len(evtweights))
+        weights.add('genWeight', evtweights)
                         
         # if running background estimation
         if (self.bkgEst):
@@ -434,7 +476,7 @@ class TTbarResProcessor(processor.ProcessorABC):
             # for mistag rate weights
             mistag_rate_df = pd.read_csv(f'data/corrections/backgroundEstimate/mistag_rate_{self.iov}.csv')
             pbins = mistag_rate_df['jetp bins'].values
-            mistag_weights = np.ones(len(evtweights), dtype=float)
+            mistag_weights = np.ones(len(FatJets), dtype=float)
             
             
             # for mass modification
@@ -442,15 +484,17 @@ class TTbarResProcessor(processor.ProcessorABC):
 #             qcdfile = util.load(f'data/corrections/backgroundEstimate/QCD_{self.iov}.coffea')
             qcd_jetmass_dict = json.load(open(f'data/corrections/backgroundEstimate/QCD_jetmass_{self.iov}.json'))
             qcd_jetmass_bins = qcd_jetmass_dict['bins']
-
+        
+        
+            # for transfer function
+            
+            bins_mt  = np.arange(0,500,10)
+            bins_mtt = np.arange(800,8000,144)
+                     
     
             for ilabel,icat in labels_and_categories.items():
             
-            
-            
-                
                 icat = ak.flatten(icat)
-
 
                 # get antitag region and signal region labels
                 # ilabel[-5:] = bcat + ycat (0bcen for example)
@@ -475,38 +519,110 @@ class TTbarResProcessor(processor.ProcessorABC):
                 qcd_jetmass_counts = qcd_jetmass_dict[label_2t]
 
                 # randomly select jet mass from distribution
-                ModMass_hist_dist = ss.rv_histogram([qcd_jetmass_counts[:-1], qcd_jetmass_bins])
+                ModMass_hist_dist = ss.rv_histogram([qcd_jetmass_counts[10:25][:-1], qcd_jetmass_bins[10:25]])
                 ttbarcands.slot1.p4[icat]["fMass"] = ModMass_hist_dist.rvs(size=len(ttbarcands.slot1.p4[icat]))
-
+                
+                
+            weights.add('mistag', mistag_weights)
     
-
-    
+        del jetmass, jetp, jetmsd
+        
         jetpt = ttbarcands.slot1.p4.pt
         jeteta = ttbarcands.slot1.p4.eta
         jetphi = ttbarcands.slot1.p4.phi
         jetmass = ttbarcands.slot1.p4.mass
         jetp = ttbarcands.slot1.p4.p
+        
+        # plot same jetmass as pre-tagged, anti-tagged jet
+        jetmsd = ttbarcands.slot0.msoftdrop
            
         
         # values for mistag rate calculation #
-        
         numerator = np.where(antitag_probe, ttbarcands.slot1.p4.p, -1)
         denominator = np.where(antitag, ttbarcands.slot1.p4.p, -1)
-        
-
-        # event weights #
-        
-        weights = evtweights
-        if self.bkgEst: weights = weights * mistag_weights
         
         # pt reweighting #
         if ('TTbar' in dataset):
             ttbar_wgt = pTReweighting(ttbarcands.slot0.pt, ttbarcands.slot1.pt)
-            weights = weights * ttbar_wgt
-            
-            
-        
-        
+            weights.add('ptReweighting', ak.flatten(ttbar_wgt))
+                 
+        if self.syst and not isData:
+                    
+            if 'pileup' in self.systematics:
+                
+                puNom, puUp, puDown = GetPUSF(events, self.iov)
+                weights.add("pileup", 
+                    weight=puNom, 
+                    weightUp=puUp, 
+                    weightDown=puDown,
+                           )
+
+            if ('prefiring' in self.systematics) and ("L1PreFiringWeight" in events.fields):
+                if ('2016' in self.iov) or ('2017' in self.iov):
+                
+                    prefiringNom, prefiringUp, prefiringDown = GetL1PreFiringWeight(events)
+                    weights.add("prefiring", 
+                        weight=prefiringNom, 
+                        weightUp=prefiringUp, 
+                        weightDown=prefiringDown,
+                               )
+                    
+            if 'pdf' in self.systematics:
+                
+                pdfUp, pdfDown, pdfNom = GetPDFWeights(events)
+                weights.add("pdf", 
+                    weight=pdfNom, 
+                    weightUp=pdfUp, 
+                    weightDown=pdfDown,
+                           )    
+                
+                
+            if 'btag' in self.systematics:
+                
+                btag_wgts_nom = np.ones(len(events))
+                btag_wgts_up  = np.ones(len(events))
+                btag_wgts_down = np.ones(len(events))
+                
+                btag_wgts_nom_bcats = btagCorrections([btag0, btag1, btag2], 
+                                                      [SubJet00, SubJet01, SubJet10, SubJet11], 
+                                                      isData, 
+                                                      self.bdisc,
+                                                      sysType='central')
+                
+                btag_wgts_up_bcats = btagCorrections([btag0, btag1, btag2], 
+                                                      [SubJet00, SubJet01, SubJet10, SubJet11], 
+                                                      isData, 
+                                                      self.bdisc,
+                                                      sysType='up')
+                
+                btag_wgts_down_bcats = btagCorrections([btag0, btag1, btag2], 
+                                                      [SubJet00, SubJet01, SubJet10, SubJet11], 
+                                                      isData, 
+                                                      self.bdisc,
+                                                      sysType='down')
+                
+                
+                btag_wgts_nom[ak.flatten(btag0)]  = btag_wgts_nom_bcats['0b'][ak.flatten(btag0)]
+                btag_wgts_up[ak.flatten(btag0)]   = btag_wgts_nom_bcats['0b'][ak.flatten(btag0)]
+                btag_wgts_down[ak.flatten(btag0)] = btag_wgts_nom_bcats['0b'][ak.flatten(btag0)]
+                btag_wgts_nom[ak.flatten(btag1)]  = btag_wgts_nom_bcats['1b'][ak.flatten(btag1)]
+                btag_wgts_up[ak.flatten(btag1)]   = btag_wgts_nom_bcats['1b'][ak.flatten(btag1)]
+                btag_wgts_down[ak.flatten(btag1)] = btag_wgts_nom_bcats['1b'][ak.flatten(btag1)]
+                btag_wgts_nom[ak.flatten(btag2)]  = btag_wgts_nom_bcats['2b'][ak.flatten(btag2)]
+                btag_wgts_up[ak.flatten(btag2)]   = btag_wgts_nom_bcats['2b'][ak.flatten(btag2)]
+                btag_wgts_down[ak.flatten(btag2)] = btag_wgts_nom_bcats['2b'][ak.flatten(btag2)]
+                
+                weights.add("btag", 
+                    weight=btag_wgts_nom, 
+                    weightUp=btag_wgts_up, 
+                    weightDown=btag_wgts_down,
+                           )
+                
+                del btag_wgts_nom, btag_wgts_up, btag_wgts_down
+                del btag_wgts_nom_bcats, btag_wgts_up_bcats, btag_wgts_down_bcats
+
+
+
 
         for i, [ilabel,icat] in enumerate(labels_and_categories.items()):
         
@@ -514,36 +630,77 @@ class TTbarResProcessor(processor.ProcessorABC):
         
             output['numerator'].fill(anacat = i,
                                      jetp = ak.flatten(numerator[icat]),
-                                     weight = weights[icat],
+                                     weight = weights.weight()[icat],
                                     )
             
             output['denominator'].fill(anacat = i,
                                        jetp = ak.flatten(denominator[icat]),
-                                       weight = weights[icat],
+                                       weight = weights.weight()[icat],
                                     )
             
-            output['ttbarmass'].fill(anacat = i,
+            output['ttbarmass'].fill(systematic='nominal',
+                                     anacat = i,
                                      ttbarmass = ak.flatten(ttbarmass[icat]),
-                                     weight = weights[icat],
+                                     weight = weights.weight()[icat],
                                     )
             
             output['jetmass'].fill(anacat = i,
                                    jetmass = ak.flatten(jetmass[icat]),
-                                   weight = weights[icat],
+                                   weight = weights.weight()[icat],
                                   )
             output['jetpt'].fill(anacat = i,
                                  jetpt = ak.flatten(jetpt[icat]),
-                                 weight = weights[icat],
+                                 weight = weights.weight()[icat],
                                   )
             
             output['jeteta'].fill(anacat = i,
                                   jeteta = ak.flatten(jeteta[icat]),
-                                  weight = weights[icat],
+                                  weight = weights.weight()[icat],
                                   )
             output['jetphi'].fill(anacat = i,
                                   jetphi = ak.flatten(jetphi[icat]),
-                                  weight = weights[icat],
+                                  weight = weights.weight()[icat],
                                   )
+            
+            output['mtt_vs_mt'].fill(systematic='nominal',
+                                     anacat = i,
+                                     jetmass = ak.flatten(jetmsd[icat]),
+                                     ttbarmass = ak.flatten(ttbarmass[icat]),
+                                     weight = weights.weight()[icat],
+                                    )
+            
+            output['discriminators'].fill(anacat = i,
+                                          jetp = ak.flatten(jetp[icat]),
+                                          bdisc = ak.flatten(bdisc_s1[icat]),
+                                          tdisc = ak.flatten(tdisc_s1[icat]),
+                                          nsub = ak.flatten(tau32_s1)[icat],
+                                          weight = weights.weight()[icat],
+                                         )
+
+            output['deepak8'].fill(anacat = i,
+                                   jetp = ak.flatten(jetp[icat]),
+                                   ttbarmass = ak.flatten(ttbarmass[icat]),
+                                   tdisc = ak.flatten(tdisc_s1[icat]),
+                                   weight = weights.weight()[icat],
+                                  )
+            
+            
+            
+            for syst in weights.variations:
+                
+                output['ttbarmass'].fill(systematic=syst,
+                                     anacat = i,
+                                     ttbarmass = ak.flatten(ttbarmass[icat]),
+                                     weight = weights.weight(syst)[icat],
+                                    )
+                
+                output['mtt_vs_mt'].fill(systematic=syst,
+                                     anacat = i,
+                                     ttbarmass = ak.flatten(ttbarmass[icat]),
+                                     jetmass = ak.flatten(jetmsd[icat]),
+                                     weight = weights.weight(syst)[icat],
+                                    )
+
         
         
 
