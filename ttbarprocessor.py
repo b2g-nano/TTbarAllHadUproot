@@ -20,6 +20,7 @@ import numpy as np
 import itertools
 import pandas as pd
 from numpy.random import RandomState
+import random
 import correctionlib
 import hist
 import json
@@ -312,7 +313,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         # ---- ttbar candidates ---- #
         
         # index = [[0], [1], [0], ... [0], [1], [1]] type='{# events} * var * int64'
-        index = ak.unflatten( np.random.RandomState(1234567890).randint(2, size=len(FatJets)), np.ones(len(FatJets), dtype='i'))
+        index = ak.unflatten( np.random.RandomState(random.seed()).randint(2, size=len(FatJets)), np.ones(len(FatJets), dtype='i'))
         
         jet0 = FatJets[index]
         jet1 = FatJets[1 - index]        
@@ -519,7 +520,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                 qcd_jetmass_counts = qcd_jetmass_dict[label_2t]
 
                 # randomly select jet mass from distribution
-                ModMass_hist_dist = ss.rv_histogram([qcd_jetmass_counts[10:25][:-1], qcd_jetmass_bins[10:25]])
+                ModMass_hist_dist = ss.rv_histogram([qcd_jetmass_counts[:-1], qcd_jetmass_bins])
                 ttbarcands.slot1.p4[icat]["fMass"] = ModMass_hist_dist.rvs(size=len(ttbarcands.slot1.p4[icat]))
                 
                 
