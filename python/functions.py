@@ -44,6 +44,9 @@ def getRapidity(p4):
 def getCoffeaFilenames():
     
     coffea_dir = os.path.abspath('./').replace('/plots', '', ).replace('/python', '').replace('/mistag','') + '/outputs/'
+#     coffea_dir = os.path.abspath('./').replace('/plots', '', ).replace('/python', '').replace('/mistag','') + '/local/history/transferfxn/coffea/'
+    
+    
     
     coffeaFiles = {
         "JetHT":{
@@ -134,6 +137,20 @@ def getCoffeaFilenames():
                 "2017": '',
                 "2018": ''
             }
+        },
+        
+        "ZPrime": {
+            "2016": {
+                "1000": coffea_dir+'ZPrime1000_2016.coffea',
+                "1500": coffea_dir+'ZPrime1500_2016.coffea',
+                "2000": coffea_dir+'ZPrime2000_2016.coffea',
+                "2500": coffea_dir+'ZPrime2500_2016.coffea',
+                "3000": coffea_dir+'ZPrime3000_2016.coffea',
+                "3500": coffea_dir+'ZPrime3500_2016.coffea',
+                "4000": coffea_dir+'ZPrime4000_2016.coffea',
+                "4500": coffea_dir+'ZPrime4500_2016.coffea',
+                "5000": coffea_dir+'ZPrime5000_2016.coffea'
+            }
         }
     }
     
@@ -184,7 +201,7 @@ def getHist(hname, ds, bkgest, year, sum_axes=['anacat'], integrate_axes={}):
    
     cfiles = []
     sf = []
-    bkgest_str = np.where([bkgest], 'weighted', 'unweighted')[0]
+    bkgest_str = 'weighted' if bkgest else 'unweighted'
     
     for key, file in coffeaFiles[ds][bkgest_str][year].items():
         loaded_file = util.load(file)

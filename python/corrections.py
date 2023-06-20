@@ -1,10 +1,13 @@
 # corrections.py
 
 import numpy as np
+import awkward as ak
 from coffea.lumi_tools import LumiMask
+import correctionlib
+
 
     
-def GetFlavorEfficiency(self, Subjet, Flavor): # Return "Flavor" efficiency numerator and denominator
+def GetFlavorEfficiency(Subjet, Flavor, bdisc): # Return "Flavor" efficiency numerator and denominator
     '''
     Subjet --> awkward array object after preselection i.e. SubJetXY
     Flavor --> integer i.e 5, 4, or 0 (b, c, or udsg)
@@ -14,7 +17,7 @@ def GetFlavorEfficiency(self, Subjet, Flavor): # Return "Flavor" efficiency nume
     eta = np.abs(ak.flatten(Subjet.eta)) # eta of 1st subjet in ttbarcand 
     flav = np.abs(ak.flatten(Subjet.hadronFlavour)) # either 'normal' or 'anti' quark
 
-    subjet_btagged = (Subjet.btagCSVV2 > self.bdisc)
+    subjet_btagged = (Subjet.btagCSVV2 > bdisc)
 
     Eff_Num_pT = np.where(subjet_btagged & (flav == Flavor), pT, -1) # if not collecting pT of subjet, then put non exisitent bin, i.e. -1
     Eff_Num_eta = np.where(subjet_btagged & (flav == Flavor), eta, -1) # if not collecting eta of subjet, then put non exisitent bin, i.e. 5
@@ -35,42 +38,38 @@ def GetFlavorEfficiency(self, Subjet, Flavor): # Return "Flavor" efficiency nume
     return EffStuff
 
 
-def GetL1PreFiringWeight(self, events):
+def GetL1PreFiringWeight(events):
     # original code https://gitlab.cern.ch/gagarwal/ttbardileptonic/-/blob/master/TTbarDileptonProcessor.py#L50
     ## Reference: https://twiki.cern.ch/twiki/bin/viewauth/CMS/L1PrefiringWeightRecipe
     ## var = "Nom", "Up", "Dn"
-    L1PrefiringWeights = np.ones(len(events))
-    if ("L1PreFiringWeight_Nom" in events.fields):
-        L1PrefiringWeights = [events.L1PreFiringWeight_Nom, events.L1PreFiringWeight_Dn, events.L1PreFiringWeight_Up]
+    L1PrefiringWeights = [events.L1PreFiringWeight.Nom, events.L1PreFiringWeight.Up, events.L1PreFiringWeight.Dn]
+    
 
     return L1PrefiringWeights
 
 
-def HEMCleaning(self, JetCollection):
+def HEMCleaning(JetCollection):
     # original code https://gitlab.cern.ch/gagarwal/ttbardileptonic/-/blob/master/TTbarDileptonProcessor.py#L58
 
     ## Reference: https://hypernews.cern.ch/HyperNews/CMS/get/JetMET/2000.html
     isHEM = ak.ones_like(JetCollection.pt)
-    if (self.year == 2018):
-        detector_region1 = ((JetCollection.phi < -0.87) & (JetCollection.phi > -1.57) &
-                           (JetCollection.eta < -1.3) & (JetCollection.eta > -2.5))
-        detector_region2 = ((JetCollection.phi < -0.87) & (JetCollection.phi > -1.57) &
-                           (JetCollection.eta < -2.5) & (JetCollection.eta > -3.0))
-        jet_selection    = ((JetCollection.jetId > 1) & (JetCollection.pt > 15))
+    detector_region1 = ((JetCollection.phi < -0.87) & (JetCollection.phi > -1.57) &
+                       (JetCollection.eta < -1.3) & (JetCollection.eta > -2.5))
+    detector_region2 = ((JetCollection.phi < -0.87) & (JetCollection.phi > -1.57) &
+                       (JetCollection.eta < -2.5) & (JetCollection.eta > -3.0))
+    jet_selection    = ((JetCollection.jetId > 1) & (JetCollection.pt > 15))
 
-        isHEM            = ak.where(detector_region1 & jet_selection, 0.80, isHEM)
-        isHEM            = ak.where(detector_region2 & jet_selection, 0.65, isHEM)
+    isHEM            = ak.where(detector_region1 & jet_selection, 0.80, isHEM)
+    isHEM            = ak.where(detector_region2 & jet_selection, 0.65, isHEM)
 
     return isHEM
 
 
 
 
-def GetJECUncertainties(self, FatJets, events, isData=False):
+def GetJECUncertainties(FatJets, events, IOV, isData=False):
 
     # original code https://gitlab.cern.ch/gagarwal/ttbardileptonic/-/blob/master/jmeCorrections.py
-
-    IOV = f'{self.year}{self.apv}'
 
     jer_tag=None
     if (IOV=='2018'):
@@ -123,17 +122,17 @@ def GetJECUncertainties(self, FatJets, events, isData=False):
     if not isData:
     #For MC
         ext.add_weight_sets([
-            '* * TTbarAllHadUproot/CorrectionFiles/JEC/{0}/{0}_L1FastJet_AK8PFchs.jec.txt'.format(jec_tag),
-            '* * TTbarAllHadUproot/CorrectionFiles/JEC/{0}/{0}_L2Relative_AK8PFchs.jec.txt'.format(jec_tag),
-            '* * TTbarAllHadUproot/CorrectionFiles/JEC/{0}/{0}_L3Absolute_AK8PFchs.jec.txt'.format(jec_tag),
-            '* * TTbarAllHadUproot/CorrectionFiles/JEC/{0}/{0}_UncertaintySources_AK8PFchs.junc.txt'.format(jec_tag),
-            '* * TTbarAllHadUproot/CorrectionFiles/JEC/{0}/{0}_Uncertainty_AK8PFchs.junc.txt'.format(jec_tag),
+            '* * data/corrections/JEC/{0}/{0}_L1FastJet_AK8PFchs.jec.txt'.format(jec_tag),
+            '* * data/corrections/JEC/{0}/{0}_L2Relative_AK8PFchs.jec.txt'.format(jec_tag),
+            '* * data/corrections/JEC/{0}/{0}_L3Absolute_AK8PFchs.jec.txt'.format(jec_tag),
+            '* * data/corrections/JEC/{0}/{0}_UncertaintySources_AK8PFchs.junc.txt'.format(jec_tag),
+            '* * data/corrections/JEC/{0}/{0}_Uncertainty_AK8PFchs.junc.txt'.format(jec_tag),
         ])
 
         if jer_tag:
             ext.add_weight_sets([
-            '* * TTbarAllHadUproot/CorrectionFiles/JER/{0}/{0}_PtResolution_AK4PFchs.jr.txt'.format(jer_tag),
-            '* * TTbarAllHadUproot/CorrectionFiles/JER/{0}/{0}_SF_AK4PFchs.jersf.txt'.format(jer_tag)])
+            '* * data/corrections/JER/{0}/{0}_PtResolution_AK4PFchs.jr.txt'.format(jer_tag),
+            '* * data/corrections/JER/{0}/{0}_SF_AK4PFchs.jersf.txt'.format(jer_tag)])
 
 
     else:       
@@ -142,10 +141,10 @@ def GetJECUncertainties(self, FatJets, events, isData=False):
         for run, tag in jec_tag_data.items():
             if not (tag in tags_done):
                 ext.add_weight_sets([
-                '* * TTbarAllHadUproot/CorrectionFiles/JEC/{0}/{0}_L1FastJet_AK8PFchs.jec.txt'.format(tag),
-                '* * TTbarAllHadUproot/CorrectionFiles/JEC/{0}/{0}_L2Relative_AK8PFchs.jec.txt'.format(tag),
-                '* * TTbarAllHadUproot/CorrectionFiles/JEC/{0}/{0}_L3Absolute_AK8PFchs.jec.txt'.format(tag),
-                '* * TTbarAllHadUproot/CorrectionFiles/JEC/{0}/{0}_L2L3Residual_AK8PFchs.jec.txt'.format(tag),
+                '* * data/corrections/JEC/{0}/{0}_L1FastJet_AK8PFchs.jec.txt'.format(tag),
+                '* * data/corrections/JEC/{0}/{0}_L2Relative_AK8PFchs.jec.txt'.format(tag),
+                '* * data/corrections/JEC/{0}/{0}_L3Absolute_AK8PFchs.jec.txt'.format(tag),
+                '* * data/corrections/JEC/{0}/{0}_L2L3Residual_AK8PFchs.jec.txt'.format(tag),
                 ])
                 tags_done += [tag]
 
@@ -220,30 +219,36 @@ def GetJECUncertainties(self, FatJets, events, isData=False):
     return corrected_jets
 
 
-def GetPDFWeights(self, events):
+def GetPDFWeights(events):
+    
+    # hessian pdf weights https://arxiv.org/pdf/1510.03865v1.pdf
+    # https://github.com/nsmith-/boostedhiggs/blob/master/boostedhiggs/corrections.py#L60
+    
     if "LHEPdfWeight" in events.fields:
-            LHEPdfWeight = events.LHEPdfWeight
-            pdf_up   = ak.flatten(LHEPdfWeight[2::2])
-            pdf_down = ak.flatten(LHEPdfWeight[1::2])
-            pdf_nom  = ak.flatten(LHEPdfWeight[0::2])
+                
+        arg = events.LHEPdfWeight[:, 1:-2] - np.ones((len(events), 100))
+        summed = ak.sum(np.square(arg), axis=1)
+        pdf_unc = np.sqrt((1. / 99.) * summed)
+        
+        pdf_nom = np.ones(len(events))
+        pdf_up = pdf_nom + pdf_unc
+        pdf_down = np.ones(len(events))
 
     else:
-
+        
+        pdf_nom = np.ones(len(events))            
         pdf_up = np.ones(len(events))
         pdf_down = np.ones(len(events))
-        pdf_nom = np.ones(len(events))            
 
-    return [pdf_up, pdf_down, pdf_nom]
-
+    return [pdf_nom, pdf_up, pdf_down]
 
 
-def GetPUSF(self, events):
+
+def GetPUSF(events, IOV):
     # original code https://gitlab.cern.ch/gagarwal/ttbardileptonic/-/blob/master/TTbarDileptonProcessor.py#L38
     ## json files from: https://gitlab.cern.ch/cms-nanoAOD/jsonpog-integration/-/tree/master/POG/LUM
-    if (self.year == 2016):
-        fname = "TTbarAllHadUproot/CorrectionFiles/puWeights/{0}{1}_UL/puWeights.json.gz".format(self.year, self.vfp)
-    else:
-        fname = "TTbarAllHadUproot/CorrectionFiles/puWeights/{0}_UL/puWeights.json.gz".format(self.year)
+        
+    fname = "data/corrections/puWeights/{0}_UL/puWeights.json.gz".format(IOV)
     hname = {
         "2016APV": "Collisions16_UltraLegacy_goldenJSON",
         "2016"   : "Collisions16_UltraLegacy_goldenJSON",
@@ -252,11 +257,11 @@ def GetPUSF(self, events):
     }
     evaluator = correctionlib.CorrectionSet.from_file(fname)
 
-    puUp = evaluator[hname[str(self.year)]].evaluate(np.array(events.Pileup_nTrueInt), "up")
-    puDown = evaluator[hname[str(self.year)]].evaluate(np.array(events.Pileup_nTrueInt), "down")
-    puNom = evaluator[hname[str(self.year)]].evaluate(np.array(events.Pileup_nTrueInt), "nominal")
+    puUp = evaluator[hname[str(IOV)]].evaluate(np.array(events.Pileup.nTrueInt), "up")
+    puDown = evaluator[hname[str(IOV)]].evaluate(np.array(events.Pileup.nTrueInt), "down")
+    puNom = evaluator[hname[str(IOV)]].evaluate(np.array(events.Pileup.nTrueInt), "nominal")
 
-    return [puNom, puDown, puUp]
+    return [puNom, puUp, puDown]
 
 
 def getLumiMaskRun2(IOV):
@@ -329,6 +334,6 @@ def getMETFilter(IOV, events):
 def pTReweighting(pt0, pt1):
         topcand0_wgt = np.exp(0.0615 - 0.0005*pt0)
         topcand1_wgt = np.exp(0.0615 - 0.0005*pt1)
-        ttbar_wgt = np.sqrt(topcand0_wgt*topcand1_wgt) # used for re-weighting tttbar MC
+        ttbar_wgt = np.sqrt(topcand0_wgt*topcand1_wgt) # used for re-weighting ttbar MC
         
         return ttbar_wgt
