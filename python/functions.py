@@ -231,7 +231,6 @@ def getHist(hname, ds, bkgest, year, sum_axes=['anacat'], integrate_axes={}):
             histo = histo + hists[i+1]*sf[i+1]
             
             
-    
     return histo
     
             
@@ -265,6 +264,72 @@ def plotBackgroundEstimate(hdata, hntmj, httbar, year, text=''):
     ax1.set_xlim(900, 6000)
     ax2.set_xlim(900, 6000)            
     
+
+    
+def makePlotDirectories():
+    
+        
+    plots_dir = os.path.abspath('./').replace('/plots', '', ).replace('/python', '').replace('/mistag','') + '/plots'
+       
+    directories = [
+       
+        # QCD closure test
+        plots_dir+'/images/png/closureTestQCD/2016all',
+        plots_dir+'/images/png/closureTestQCD/2016APV',
+        plots_dir+'/images/png/closureTestQCD/2016',
+        plots_dir+'/images/png/closureTestQCD/2017',
+        plots_dir+'/images/png/closureTestQCD/2018',
+        plots_dir+'/images/pdf/closureTestQCD/2016all',
+        plots_dir+'/images/pdf/closureTestQCD/2016APV',
+        plots_dir+'/images/pdf/closureTestQCD/2016',
+        plots_dir+'/images/pdf/closureTestQCD/2017',
+        plots_dir+'/images/pdf/closureTestQCD/2018',
+
+        # Closure test
+        plots_dir+'/images/png/closureTest/2016all',
+        plots_dir+'/images/png/closureTest/2016APV',
+        plots_dir+'/images/png/closureTest/2016',
+        plots_dir+'/images/png/closureTest/2017',
+        plots_dir+'/images/png/closureTest/2018',
+        plots_dir+'/images/pdf/closureTest/2016all',
+        plots_dir+'/images/pdf/closureTest/2016APV',
+        plots_dir+'/images/pdf/closureTest/2016',
+        plots_dir+'/images/pdf/closureTest/2017',
+        plots_dir+'/images/pdf/closureTest/2018',
+
+        # systematics
+        plots_dir+'/images/png/systematics/2016all',
+        plots_dir+'/images/png/systematics/2016APV',
+        plots_dir+'/images/png/systematics/2016',
+        plots_dir+'/images/png/systematics/2017',
+        plots_dir+'/images/png/systematics/2018',
+        plots_dir+'/images/pdf/systematics/2016all',
+        plots_dir+'/images/pdf/systematics/2016APV',
+        plots_dir+'/images/pdf/systematics/2016',
+        plots_dir+'/images/pdf/systematics/2017',
+        plots_dir+'/images/pdf/systematics/2018',
+        
+        # ttbarmass
+        plots_dir+'/images/png/ttbarmass/2016all',
+        plots_dir+'/images/png/ttbarmass/2016APV',
+        plots_dir+'/images/png/ttbarmass/2016',
+        plots_dir+'/images/png/ttbarmass/2017',
+        plots_dir+'/images/png/ttbarmass/2018',
+        plots_dir+'/images/pdf/ttbarmass/2016all',
+        plots_dir+'/images/pdf/ttbarmass/2016APV',
+        plots_dir+'/images/pdf/ttbarmass/2016',
+        plots_dir+'/images/pdf/ttbarmass/2017',
+        plots_dir+'/images/pdf/ttbarmass/2018',
+        
+    ]
+
+
+    for path in directories:
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+
+
 
     
 

@@ -26,17 +26,21 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
                     prog='ttbaranalysis.py',
                     description='Run ttbarprocessor',
-                    epilog='help')
+                    epilog='for a test of MC QCD, MC TTbar, JetHT run  "python ttbaranalysis.py --test"')
     
     # datasets to run
     parser.add_argument('-d', '--dataset', choices=['JetHT', 'QCD', 'TTbar', 'ZPrime', 'ZPrimeDM', 'RSGluon'], 
                         action='append', default=['QCD', 'TTbar', 'JetHT'])
     parser.add_argument('--iov', choices=['2016APV', '2016', '2017', '2018'], default='2016')
+    
+    # choose specific eras, pt bins, mass points
     parser.add_argument('--era', choices=['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'], action='append', default=[], help='--era A --era B --era C for multiple eras, runs all eras if not specificed')
+    parser.add_argument('-p', '--pt', choices=['700to1000', '1000toInf'], action='append', default=[], help='pt bins for TTbar datasets')
+    parser.add_argument('-m', '--mass', action='append', default=[], help='mass points for signal')
 
     # analysis options
-    parser.add_argument('--bkgest', action='store_true')
-    parser.add_argument('--syst', action='store_true')
+    parser.add_argument('--bkgest', action='store_true', help='run with background estimate')
+    parser.add_argument('--syst', action='store_true', help='run with systematics')
 
 
     # run options
@@ -54,36 +58,40 @@ if __name__ == "__main__":
         from lpcjobqueue import LPCCondorCluster
     
     
-    # paramters
+    # paramters #
     samples = args.dataset
     IOV = args.iov
     useDeepAK8 = True
     
     
+    # dask parameters #
+   
+    dask_memory = '2GB'
+    # priority decreases for larger memory jobs
+    # if processor uses > 2GB, reduce chunksize
+    chunksize_dask = 100000
+    chunksize_futures = 10000
+    
+    
     # systematics #
-    
-    
     systematics = [
         'nominal',
         'pileup',
         'prefiring',
         'pdf',
         'btag',
+        'jes',
+        'jer',
     ]
     
-    
-    
     # analysis categories #
     
-    # analysis categories #
     # ttagcats = ["AT&Pt", "at", "pret", "0t", "1t", ">=1t", "2t", ">=0t"]
     ttagcats = ["at", "pret", "2t"]
     btagcats = ["0b", "1b", "2b"]
     ycats = ['cen', 'fwd']
+    
     anacats = [ t+b+y for t,b,y in itertools.product( ttagcats, btagcats, ycats) ]
-
-
-
     label_dict = {i: label for i, label in enumerate(anacats)}
     label_to_int_dict = {label: i for i, label in enumerate(anacats)}
         
@@ -95,15 +103,14 @@ if __name__ == "__main__":
         print('----------------\n', file=f)
         print('categories =', label_dict, file=f)
         print('\n', file=f)
-        print('systematics =', systematics, file=f)
+        if args.syst: print('systematics =', systematics, file=f)
      
     # display analysis info
     for argname, value in vars(args).items(): print(argname, '=', value)
-
+    if args.syst: print('\nsystematics =', systematics)
     
 
     # get root files
-    
     if args.env == 'casa' or args.env == 'C': redirector = 'root://xcache/'
     elif args.env == 'winterfell' or args.env == 'W': redirector = '/mnt/data/cms/'
     else: redirector = 'root://cmsxrootd.fnal.gov/' # default LPC
@@ -117,43 +124,46 @@ if __name__ == "__main__":
         "RSGluon": 'data/nanoAOD/RSGluon.json',
     }
     
-    
-    upload_to_dask = [
-                        'data',
-                        'python',
-                        'ttbarprocessor.py',
-                    ]
-    
-    
-    
-    
-        
+    # directories and files for dask
+    upload_to_dask = ['data', 'python', 'ttbarprocessor.py']
+
     for sample in samples:
     
         inputfile = jsonfiles[sample]
         files = []
         with open(inputfile) as json_file:
+            
+            
+            subsections = args.era + args.mass + args.pt
 
             data = json.load(json_file)
 
             # select files to run over
             filedict = {}
-            if 'QCD' in sample:
-                filedict[''] = data[IOV]
-            else:
+            
+            # if IOV split into eras, masses, pt bins
+            try: 
+                data[IOV].keys()
                 
-                # if eras specified, add individually
-                if len(args.era) > 0:
-                    for era in args.era:
-                        if era in data[IOV].keys():
-                            filedict[era] = data[IOV][era]
+                # if eras, pt bins, or mass points specified, add files individually
+                if len(subsections) > 0:
+                    for s in subsections:
+                        if s in data[IOV].keys():
+                            filedict[s] = data[IOV][s]
                         else:
-                            print(f'{era} not in {IOV}')
+                            print(f'{s} not in {sample} {IOV}')
                             
                             
                 # if eras not specified, get all files in dataset
                 else:
                     filedict = data[IOV]
+                
+            # no subsections in IOV    
+            except:
+
+                filedict[''] = data[IOV]
+                
+                
 
 
             # run uproot job
@@ -166,8 +176,6 @@ if __name__ == "__main__":
                 fileset = {sample: files}            
 
                 # coffea output file name
-                testString = ''
-                bkgString = ''
                 subString = subsection.replace('700to', '_700to').replace('1000to','_1000to')
                 if args.bkgest: subString += '_bkgest'
                 if args.test: subString += '_test'
@@ -175,7 +183,7 @@ if __name__ == "__main__":
 
                 
                 savefilename = f'{savedir}{sample}_{IOV}{subString}.coffea'
-                if 'DM' in sample: savefilename = f'{savedir}ZPrime{subString}_{IOV}.coffea'
+                if 'ZPrime' in sample: savefilename = f'{savedir}ZPrime{subString}_{IOV}.coffea'
                 if 'RSGluon' in sample: savefilename = f'{savedir}RSGluon{subString}_{IOV}.coffea'
                 print(f'running {sample} {subsection}')
 
@@ -202,26 +210,24 @@ if __name__ == "__main__":
                                 "schema": NanoAODSchema,
                                 "workers":4
                                 },
-                        chunksize=100000,
+                        chunksize=chunksize_futures,
                     )
 
 
                 # run using dask
                 else:
                     
-                    
-                    
-                    
                     if args.dask and (args.env == 'lpc' or args.env == 'L'):
-                        
                         
                         if args.nocluster:
                             cluster = None
                         else:
-                            cluster = LPCCondorCluster(memory='12GB', transfer_input_files=upload_to_dask)
+                            cluster = LPCCondorCluster(memory=dask_memory, transfer_input_files=upload_to_dask)
                             cluster.adapt(minimum=1, maximum=100)
                             
-                        client=Client(cluster)
+                    else:
+                        
+                        cluster = None
         
 
                     # files and directories for dask
@@ -240,7 +246,7 @@ if __name__ == "__main__":
                             schema=NanoAODSchema,
                             savemetrics=True,
                             skipbadfiles=True,
-                            chunksize=1000000,
+                            chunksize=chunksize_dask,
                         )
 
 

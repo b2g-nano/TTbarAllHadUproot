@@ -27,7 +27,7 @@ import json
 
 import awkward as ak
 
-# for dask, `from corrections.corrections import` does not work
+# for dask, `from python.corrections import` does not work
 sys.path.append(os.getcwd()+'/python/')
 
 from corrections import (
@@ -52,6 +52,15 @@ ak.behavior.update(vector.behavior)
 
 # --- Define 'Manual bins' to use for mistag plots for aesthetic purposes--- #
 manual_bins = [400, 500, 600, 800, 1000, 1500, 2000, 3000, 7000, 10000]
+
+
+def update(events, collections):
+    # https://github.com/nsmith-/boostedhiggs/blob/master/boostedhiggs/hbbprocessor.py
+    """Return a shallow copy of events array with some collections swapped out"""
+    out = events
+    for name, value in collections.items():
+        out = ak.with_field(out, value, name)
+    return out
 
 
 """Package to perform the data-driven mistag-rate-based ttbar hadronic analysis. """
@@ -170,10 +179,79 @@ class TTbarResProcessor(processor.ProcessorABC):
     @property
     def accumulator(self):
         return self._accumulator
-
+    
+    
+    
     def process(self, events):
         
+        # reference for return processor.accumulate
+        # https://github.com/nsmith-/boostedhiggs/blob/master/boostedhiggs/hbbprocessor.py
         
+        
+        # Remove events with large weights
+        if "QCD" in events.metadata['dataset']: 
+            events = events[ events.Generator.binvar > 400 ] 
+        
+            if events.metadata['dataset'] not in self.means_stddevs : 
+                average = np.average( events.genWeight )
+                stddev = np.std( events.genWeight )
+                self.means_stddevs[events.metadata['dataset']] = (average, stddev)            
+            average,stddev = self.means_stddevs[events.metadata['dataset']]
+            vals = (events.genWeight - average ) / stddev
+            events = events[(np.abs(vals) < 2)]
+
+        
+        isData = ('JetHT' in events.metadata['dataset']) or ('SingleMu' in events.metadata['dataset'])
+        
+        noCorrections = (not 'jes' in self.systematics and not 'jer' in self.systematics)
+
+        if isData or noCorrections:
+            return self.process_analysis(events, 'nominal')
+        
+        
+        FatJets = events.FatJet
+        GenJets = events.GenJet
+        Jets = events.Jet
+        
+        
+        FatJets["p4"] = ak.with_name(FatJets[["pt", "eta", "phi", "mass"]],"PtEtaPhiMLorentzVector")
+        GenJets["p4"] = ak.with_name(GenJets[["pt", "eta", "phi", "mass"]],"PtEtaPhiMLorentzVector")
+        Jets["p4"]    = ak.with_name(Jets[["pt", "eta", "phi", "mass"]],"PtEtaPhiMLorentzVector")
+
+        
+        FatJets["p4"] = ak.with_name(FatJets[["pt", "eta", "phi", "mass"]],"PtEtaPhiMLorentzVector")
+        GenJets["p4"] = ak.with_name(GenJets[["pt", "eta", "phi", "mass"]],"PtEtaPhiMLorentzVector")
+        Jets["p4"]    = ak.with_name(Jets[["pt", "eta", "phi", "mass"]],"PtEtaPhiMLorentzVector")
+
+        FatJets["matched_gen_0p2"] = FatJets.p4.nearest(GenJets.p4, threshold=0.2)
+        FatJets["pt_gen"] = ak.values_astype(ak.fill_none(FatJets.matched_gen_0p2.pt, 0), np.float32)
+
+        Jets["matched_gen_0p2"] = Jets.p4.nearest(GenJets.p4, threshold=0.2)
+        Jets["pt_gen"] = ak.values_astype(ak.fill_none(Jets.matched_gen_0p2.pt, 0), np.float32)
+
+
+        corrected_fatjets = GetJECUncertainties(FatJets, events, self.iov)
+        corrected_jets = GetJECUncertainties(Jets, events, self.iov)
+        
+        
+        del FatJets, GenJets, Jets
+        
+        if 'jes' in self.systematics:
+            corrections = [
+                ({"Jet": corrected_jets, "FatJet": corrected_fatjets}, 'nominal'),
+                ({"Jet": corrected_jets.JES_jes.up, "FatJet": corrected_fatjets.JES_jes.up}, "jesUp"),
+                ({"Jet": corrected_jets.JES_jes.down, "FatJet": corrected_fatjets.JES_jes.down}, "jesDown"),
+            ]
+        if 'jer' in self.systematics:
+            corrections.extend([
+                ({"Jet": corrected_jets.JER.up, "FatJet": corrected_fatjets.JER.up}, "jerUp"),
+                ({"Jet": corrected_jets.JER.down, "FatJet": corrected_fatjets.JER.down}, "jerDown"),
+            ])
+            
+        return processor.accumulate(self.process_analysis(update(events, collections), name) for collections, name in corrections)
+
+
+    def process_analysis(self, events, correction):
         
                 
         output = self.histo_dict        
@@ -184,7 +262,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         isData = ('JetHT' in dataset) or ('SingleMu' in dataset)
             
         # Remove events with large weights
-        if "QCD_Pt-15to7000" in filename: 
+        if "QCD" in dataset: 
             events = events[ events.Generator.binvar > 400 ] 
         
         # lumi mask #
@@ -210,7 +288,7 @@ class TTbarResProcessor(processor.ProcessorABC):
             events = events[::10]
          
         # if blinding results in 0 events
-        if (len(events)) < 1: return output
+        if (len(events) < 1): return output
         
         # event selection #
         selection = PackedSelection()
@@ -352,14 +430,11 @@ class TTbarResProcessor(processor.ProcessorABC):
         if not isData: GenJets = GenJets[ttbarcandCuts]
         del oneTTbar, dPhiCut, ttbarcandCuts, hasSubjets0, hasSubjets1, GoodSubjets
         
-        
-        
+
         # ttbarmass
-        
         ttbarmass = (ttbarcands.slot0.p4 + ttbarcands.slot1.p4).mass
         
         # subjets
-           
         SubJet00 = SubJets[ttbarcands.slot0.subJetIdx1]
         SubJet01 = SubJets[ttbarcands.slot0.subJetIdx2]
         SubJet10 = SubJets[ttbarcands.slot1.subJetIdx1]
@@ -395,7 +470,9 @@ class TTbarResProcessor(processor.ProcessorABC):
             ttag_s0 = (taucut_s0) & (mcut_s0)
             ttag_s1 = (taucut_s1) & (mcut_s1)
             antitag = (~taucut_s0) & (mcut_s0) # The Probe jet will always be ttbarcands.slot1 (at)
-
+        
+        
+        # tau32 cuts for plotting
         tau32_s0 = np.where(ttbarcands.slot0.tau2>0,ttbarcands.slot0.tau3/ttbarcands.slot0.tau2, 0 )
         tau32_s1 = np.where(ttbarcands.slot1.tau2>0,ttbarcands.slot1.tau3/ttbarcands.slot1.tau2, 0 )
 
@@ -624,11 +701,12 @@ class TTbarResProcessor(processor.ProcessorABC):
 
 
 
-
         for i, [ilabel,icat] in enumerate(labels_and_categories.items()):
         
             icat = ak.flatten(icat)
-        
+                
+                
+                                
             output['numerator'].fill(anacat = i,
                                      jetp = ak.flatten(numerator[icat]),
                                      weight = weights.weight()[icat],
@@ -639,7 +717,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                                        weight = weights.weight()[icat],
                                     )
             
-            output['ttbarmass'].fill(systematic='nominal',
+            output['ttbarmass'].fill(systematic=correction,
                                      anacat = i,
                                      ttbarmass = ak.flatten(ttbarmass[icat]),
                                      weight = weights.weight()[icat],
@@ -663,7 +741,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                                   weight = weights.weight()[icat],
                                   )
             
-            output['mtt_vs_mt'].fill(systematic='nominal',
+            output['mtt_vs_mt'].fill(systematic=correction,
                                      anacat = i,
                                      jetmass = ak.flatten(jetmsd[icat]),
                                      ttbarmass = ak.flatten(ttbarmass[icat]),
@@ -686,21 +764,25 @@ class TTbarResProcessor(processor.ProcessorABC):
                                   )
             
             
+
+
+                
+            if not 'jes' in correction and not 'jer' in correction:    
             
-            for syst in weights.variations:
-                
-                output['ttbarmass'].fill(systematic=syst,
-                                     anacat = i,
-                                     ttbarmass = ak.flatten(ttbarmass[icat]),
-                                     weight = weights.weight(syst)[icat],
-                                    )
-                
-                output['mtt_vs_mt'].fill(systematic=syst,
-                                     anacat = i,
-                                     ttbarmass = ak.flatten(ttbarmass[icat]),
-                                     jetmass = ak.flatten(jetmsd[icat]),
-                                     weight = weights.weight(syst)[icat],
-                                    )
+                for syst in weights.variations:
+
+                    output['ttbarmass'].fill(systematic=syst,
+                                         anacat = i,
+                                         ttbarmass = ak.flatten(ttbarmass[icat]),
+                                         weight = weights.weight(syst)[icat],
+                                        )
+
+                    output['mtt_vs_mt'].fill(systematic=syst,
+                                         anacat = i,
+                                         ttbarmass = ak.flatten(ttbarmass[icat]),
+                                         jetmass = ak.flatten(jetmsd[icat]),
+                                         weight = weights.weight(syst)[icat],
+                                        )
 
         
         
