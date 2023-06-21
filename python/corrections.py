@@ -4,7 +4,10 @@ import numpy as np
 import awkward as ak
 from coffea.lumi_tools import LumiMask
 import correctionlib
-
+from coffea.jetmet_tools import JetResolutionScaleFactor
+from coffea.jetmet_tools import FactorizedJetCorrector, JetCorrectionUncertainty
+from coffea.jetmet_tools import JECStack, CorrectedJetsFactory
+from coffea.lookup_tools import extractor
 
     
 def GetFlavorEfficiency(Subjet, Flavor, bdisc): # Return "Flavor" efficiency numerator and denominator
@@ -91,7 +94,7 @@ def GetJECUncertainties(FatJets, events, IOV, isData=False):
             "RunF": "Summer19UL17_RunF_V5_DATA",
         }
         jer_tag = "Summer19UL17_JRV2_MC"
-    elif (IOV=='2016noAPV'):
+    elif (IOV=='2016'):
         jec_tag="Summer19UL16_V7_MC"
         jec_tag_data={
             "RunF": "Summer19UL16_RunFGH_V7_DATA",
