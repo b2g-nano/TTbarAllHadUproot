@@ -70,7 +70,7 @@ def HEMCleaning(JetCollection):
 
 
 
-def GetJECUncertainties(FatJets, events, IOV, isData=False):
+def GetJECUncertainties(FatJets, events, IOV, R='AK8', isData=False):
 
     # original code https://gitlab.cern.ch/gagarwal/ttbardileptonic/-/blob/master/jmeCorrections.py
 
@@ -125,17 +125,17 @@ def GetJECUncertainties(FatJets, events, IOV, isData=False):
     if not isData:
     #For MC
         ext.add_weight_sets([
-            '* * data/corrections/JEC/{0}/{0}_L1FastJet_AK8PFchs.jec.txt'.format(jec_tag),
-            '* * data/corrections/JEC/{0}/{0}_L2Relative_AK8PFchs.jec.txt'.format(jec_tag),
-            '* * data/corrections/JEC/{0}/{0}_L3Absolute_AK8PFchs.jec.txt'.format(jec_tag),
-            '* * data/corrections/JEC/{0}/{0}_UncertaintySources_AK8PFchs.junc.txt'.format(jec_tag),
-            '* * data/corrections/JEC/{0}/{0}_Uncertainty_AK8PFchs.junc.txt'.format(jec_tag),
+            '* * data/corrections/JEC/{0}/{0}_L1FastJet_{1}PFchs.jec.txt'.format(jec_tag, R),
+            '* * data/corrections/JEC/{0}/{0}_L2Relative_{1}PFchs.jec.txt'.format(jec_tag, R),
+            '* * data/corrections/JEC/{0}/{0}_L3Absolute_{1}PFchs.jec.txt'.format(jec_tag, R),
+            '* * data/corrections/JEC/{0}/{0}_UncertaintySources_{1}PFchs.junc.txt'.format(jec_tag, R),
+            '* * data/corrections/JEC/{0}/{0}_Uncertainty_{1}PFchs.junc.txt'.format(jec_tag, R),
         ])
 
         if jer_tag:
             ext.add_weight_sets([
-            '* * data/corrections/JER/{0}/{0}_PtResolution_AK4PFchs.jr.txt'.format(jer_tag),
-            '* * data/corrections/JER/{0}/{0}_SF_AK4PFchs.jersf.txt'.format(jer_tag)])
+            '* * data/corrections/JER/{0}/{0}_PtResolution_{1}PFchs.jr.txt'.format(jer_tag, R),
+            '* * data/corrections/JER/{0}/{0}_SF_{1}PFchs.jersf.txt'.format(jer_tag, R)])
 
 
     else:       
@@ -144,44 +144,35 @@ def GetJECUncertainties(FatJets, events, IOV, isData=False):
         for run, tag in jec_tag_data.items():
             if not (tag in tags_done):
                 ext.add_weight_sets([
-                '* * data/corrections/JEC/{0}/{0}_L1FastJet_AK8PFchs.jec.txt'.format(tag),
-                '* * data/corrections/JEC/{0}/{0}_L2Relative_AK8PFchs.jec.txt'.format(tag),
-                '* * data/corrections/JEC/{0}/{0}_L3Absolute_AK8PFchs.jec.txt'.format(tag),
-                '* * data/corrections/JEC/{0}/{0}_L2L3Residual_AK8PFchs.jec.txt'.format(tag),
+                '* * data/corrections/JEC/{0}/{0}_L1FastJet_{1}PFchs.jec.txt'.format(tag, R),
+                '* * data/corrections/JEC/{0}/{0}_L2Relative_{1}PFchs.jec.txt'.format(tag, R),
+                '* * data/corrections/JEC/{0}/{0}_L3Absolute_{1}PFchs.jec.txt'.format(tag, R),
+                '* * data/corrections/JEC/{0}/{0}_L2L3Residual_{1}PFchs.jec.txt'.format(tag, R),
                 ])
                 tags_done += [tag]
 
     ext.finalize()
-
-
-
-
-
     evaluator = ext.make_evaluator()
-
-
 
     if (not isData):
         jec_names = [
-            '{0}_L1FastJet_AK8PFchs'.format(jec_tag),
-            '{0}_L2Relative_AK8PFchs'.format(jec_tag),
-            '{0}_L3Absolute_AK8PFchs'.format(jec_tag),
-            '{0}_Uncertainty_AK8PFchs'.format(jec_tag)]
+            '{0}_L1FastJet_{1}PFchs'.format(jec_tag, R),
+            '{0}_L2Relative_{1}PFchs'.format(jec_tag, R),
+            '{0}_L3Absolute_{1}PFchs'.format(jec_tag, R),
+            '{0}_Uncertainty_{1}PFchs'.format(jec_tag, R)]
 
         if jer_tag: 
-            jec_names.extend(['{0}_PtResolution_AK4PFchs'.format(jer_tag),
-                              '{0}_SF_AK4PFchs'.format(jer_tag)])
+            jec_names.extend(['{0}_PtResolution_{1}PFchs'.format(jer_tag, R),
+                              '{0}_SF_{1}PFchs'.format(jer_tag, R)])
 
     else:
         jec_names={}
         for run, tag in jec_tag_data.items():
             jec_names[run] = [
-                '{0}_L1FastJet_AK8PFchs'.format(tag),
-                '{0}_L3Absolute_AK8PFchs'.format(tag),
-                '{0}_L2Relative_AK8PFchs'.format(tag),
-                '{0}_L2L3Residual_AK8PFchs'.format(tag),]
-
-
+                '{0}_L1FastJet_{1}PFchs'.format(tag, R),
+                '{0}_L3Absolute_{1}PFchs'.format(tag, R),
+                '{0}_L2Relative_{1}PFchs'.format(tag, R),
+                '{0}_L2L3Residual_{1}PFchs'.format(tag, R),]
 
     if not isData:
         jec_inputs = {name: evaluator[name] for name in jec_names}
@@ -192,11 +183,7 @@ def GetJECUncertainties(FatJets, events, IOV, isData=False):
 
         jec_inputs = {name: evaluator[name] for name in jec_names_data}
 
-
-
-
     jec_stack = JECStack(jec_inputs)
-
 
     FatJets['pt_raw'] = (1 - FatJets['rawFactor']) * FatJets['pt']
     FatJets['mass_raw'] = (1 - FatJets['rawFactor']) * FatJets['mass']
@@ -227,21 +214,30 @@ def GetPDFWeights(events):
     # hessian pdf weights https://arxiv.org/pdf/1510.03865v1.pdf
     # https://github.com/nsmith-/boostedhiggs/blob/master/boostedhiggs/corrections.py#L60
     
+    pdf_nom = np.ones(len(events))
+
     if "LHEPdfWeight" in events.fields:
-                
-        arg = events.LHEPdfWeight[:, 1:-2] - np.ones((len(events), 100))
-        summed = ak.sum(np.square(arg), axis=1)
-        pdf_unc = np.sqrt((1. / 99.) * summed)
         
-        pdf_nom = np.ones(len(events))
-        pdf_up = pdf_nom + pdf_unc
-        pdf_down = np.ones(len(events))
+        pdfUnc = ak.std(events.LHEPdfWeight,axis=1)/ak.mean(events.LHEPdfWeight,axis=1)
+        pdfUnc = ak.fill_none(pdfUnc, 0.00)
+        
+        pdfUp = pdf_nom + pdfUnc
+        pdfDown = pdf_nom - pdfUnc
+        
+        
+#         arg = events.LHEPdfWeight[:, 1:-2] - np.ones((len(events), 100))
+#         summed = ak.sum(np.square(arg), axis=1)
+#         pdf_unc = np.sqrt((1. / 99.) * summed)
+        
+#         pdf_nom = np.ones(len(events))
+#         pdf_up = pdf_nom + pdf_unc
+#         pdf_down = np.ones(len(events))
 
     else:
         
-        pdf_nom = np.ones(len(events))            
         pdf_up = np.ones(len(events))
         pdf_down = np.ones(len(events))
+        
 
     return [pdf_nom, pdf_up, pdf_down]
 
@@ -340,3 +336,23 @@ def pTReweighting(pt0, pt1):
         ttbar_wgt = np.sqrt(topcand0_wgt*topcand1_wgt) # used for re-weighting ttbar MC
         
         return ttbar_wgt
+    
+    
+def GetQ2weights(events):
+# https://gitlab.cern.ch/gagarwal/ttbardileptonic/-/blob/master/corrections.py
+
+    q2Nom = np.ones(len(events))
+    q2Up = np.ones(len(events))
+    q2Down = np.ones(len(events))
+    if ("LHEScaleWeight" in events.fields):
+        if ak.all(ak.num(events.LHEScaleWeight, axis=1)==9):
+            nom = events.LHEScaleWeight[:,4]
+            scales = events.LHEScaleWeight[:,[0,1,3,5,7,8]]
+            q2Up = ak.max(scales,axis=1)/nom
+            q2Down = ak.min(scales,axis=1)/nom 
+        elif ak.all(ak.num(events.LHEScaleWeight, axis=1)==8):
+            scales = events.LHEScaleWeight[:,[0,1,3,4,6,7]]
+            q2Up = ak.max(scales,axis=1)
+            q2Down = ak.min(scales,axis=1)
+     
+    return q2Nom, q2Up, q2Down

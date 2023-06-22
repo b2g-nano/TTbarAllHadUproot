@@ -37,6 +37,7 @@ from corrections import (
     GetJECUncertainties,
     GetPDFWeights,
     GetPUSF,
+    GetQ2weights,
     getLumiMaskRun2,
     getMETFilter,
     pTReweighting,
@@ -230,8 +231,8 @@ class TTbarResProcessor(processor.ProcessorABC):
         Jets["pt_gen"] = ak.values_astype(ak.fill_none(Jets.matched_gen_0p2.pt, 0), np.float32)
 
 
-        corrected_fatjets = GetJECUncertainties(FatJets, events, self.iov)
-        corrected_jets = GetJECUncertainties(Jets, events, self.iov)
+        corrected_fatjets = GetJECUncertainties(FatJets, events, self.iov, R='AK8')
+        corrected_jets = GetJECUncertainties(Jets, events, self.iov, R='AK4')
         
         
         del FatJets, GenJets, Jets
@@ -620,9 +621,9 @@ class TTbarResProcessor(processor.ProcessorABC):
         denominator = np.where(antitag, ttbarcands.slot1.p4.p, -1)
         
         # pt reweighting #
-        if ('TTbar' in dataset):
-            ttbar_wgt = pTReweighting(ttbarcands.slot0.pt, ttbarcands.slot1.pt)
-            weights.add('ptReweighting', ak.flatten(ttbar_wgt))
+#         if ('TTbar' in dataset):
+#             ttbar_wgt = pTReweighting(ttbarcands.slot0.pt, ttbarcands.slot1.pt)
+#             weights.add('ptReweighting', ak.flatten(ttbar_wgt))
                  
         if self.syst and not isData:
                     
@@ -653,7 +654,16 @@ class TTbarResProcessor(processor.ProcessorABC):
                     weightUp=pdfUp, 
                     weightDown=pdfDown,
                            )    
+            
+            if 'q2' in self.systematics:
                 
+                q2Nom, q2Up, q2Down = GetQ2weights(events)
+                
+                weights.add("q2", 
+                    weight=q2Nom, 
+                    weightUp=q2Up, 
+                    weightDown=q2Down,
+                           )   
                 
             if 'btag' in self.systematics:
                 
