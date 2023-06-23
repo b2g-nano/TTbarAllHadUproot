@@ -221,8 +221,8 @@ def GetPDFWeights(events):
         pdfUnc = ak.std(events.LHEPdfWeight,axis=1)/ak.mean(events.LHEPdfWeight,axis=1)
         pdfUnc = ak.fill_none(pdfUnc, 0.00)
         
-        pdfUp = pdf_nom + pdfUnc
-        pdfDown = pdf_nom - pdfUnc
+        pdf_up = pdf_nom + pdfUnc
+        pdf_down = pdf_nom - pdfUnc
         
         
 #         arg = events.LHEPdfWeight[:, 1:-2] - np.ones((len(events), 100))

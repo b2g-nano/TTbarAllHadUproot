@@ -23,6 +23,43 @@ toptag_sf = 0.9
 toptag_kf = 1.0 #0.7
 qcd_xs = 13700000.0 #pb From https://cms-gen-dev.cern.ch/xsdb
 
+ttbar_xs = {'700to1000': 831.76 * (0.09210), #pb For ttbar mass from 700 to 1000
+            '1000toInf': 831.76 * (0.02474) #pb For ttbar mass from 1000 to Inf
+           }
+
+zprime_xs = {
+    '1000': 2.222,
+    '1500': 0.387,
+    '2000': 0.09428,
+    '2500': 0.0279,
+    '3000': 0.009327,
+    '3500': 0.003507,
+    '4000': 0.001484,
+    '4500': 0.0007087,
+    '5000': 0.0003801,
+}
+
+rsgluon_xs = {
+    '1000': 21.03,
+    '1500': 3.656,
+    '2000': 0.9417,
+    '2500': 0.3039,
+    '3000': 0.1163,
+    '3500': 0.05138,
+    '4000': 0.02556,
+    '4500': 0.01422,
+    '5000': 0.008631,
+}
+
+xs = {
+    'QCD': qcd_xs,
+    'TTbar': ttbar_xs,
+    'RSGluon': rsgluon_xs,
+    'ZPrime': zprime_xs,
+}
+
+
+
 
     
 
@@ -41,123 +78,7 @@ def getRapidity(p4):
     return 0.5 * np.log(( p4.energy + p4.pz ) / ( p4.energy - p4.pz ))
 
 
-def getCoffeaFilenames():
-    
-    coffea_dir = os.path.abspath('./').replace('/plots', '', ).replace('/python', '').replace('/mistag','') + '/outputs/'
-#     coffea_dir = os.path.abspath('./').replace('/plots', '', ).replace('/python', '').replace('/mistag','') + '/local/history/transferfxn/coffea/'
-    
-    
-    
-    coffeaFiles = {
-        "JetHT":{
-            "unweighted": {
-                "2016APV": {
-                    "B": coffea_dir+'JetHT_2016APVB.coffea',
-                    "C": coffea_dir+'JetHT_2016APVC.coffea',
-                    "D": coffea_dir+'JetHT_2016APVD.coffea',
-                    "E": coffea_dir+'JetHT_2016APVE.coffea',
-                },
-                "2016": {
-                    "F": coffea_dir+'JetHT_2016F.coffea',
-                    "G": coffea_dir+'JetHT_2016G.coffea',
-                    "H": coffea_dir+'JetHT_2016H.coffea',
 
-                },
-                "2017": '',
-                "2018": ''
-            },
-            "weighted": {
-                "2016APV": {
-                    "B": coffea_dir+'JetHT_2016APVB_bkgest.coffea',
-                    "C": coffea_dir+'JetHT_2016APVC_bkgest.coffea',
-                    "D": coffea_dir+'JetHT_2016APVD_bkgest.coffea',
-                    "E": coffea_dir+'JetHT_2016APVE_bkgest.coffea',
-                },
-                "2016": {
-                    "F": coffea_dir+'JetHT_2016F_bkgest.coffea',
-                    "G": coffea_dir+'JetHT_2016G_bkgest.coffea',
-                    "H": coffea_dir+'JetHT_2016H_bkgest.coffea',
-
-                },
-                "2017": '',
-                "2018": ''
-            }
-        },
-
-        "TTbar": {
-            "unweighted": {
-                "2016APV": {
-                    "700to1000": coffea_dir+'TTbar_2016APV_700to1000.coffea',
-                    "1000toInf": coffea_dir+'TTbar_2016APV_1000toInf.coffea',
-                },
-                "2016": {
-                    "700to1000": coffea_dir+'TTbar_2016_700to1000.coffea',
-                    "1000toInf": coffea_dir+'TTbar_2016_1000toInf.coffea',
-                },
-                "2017": {
-                    "700to1000": '',
-                    "1000toInf": '',
-                },
-                "2018": {
-                    "700to1000": '',
-                    "1000toInf": '',
-                }
-            },
-            "weighted": {
-                "2016APV": {
-                    "700to1000": coffea_dir+'TTbar_2016APV_700to1000_bkgest.coffea',
-                    "1000toInf": coffea_dir+'TTbar_2016APV_1000toInf_bkgest.coffea',
-                },
-                "2016": {
-                    "700to1000": coffea_dir+'TTbar_2016_700to1000_bkgest.coffea',
-                    "1000toInf": coffea_dir+'TTbar_2016_1000toInf_bkgest.coffea',
-                },
-                "2017": {
-                    "700to1000": '',
-                    "1000toInf": '',
-                },
-                "2018": {
-                    "700to1000": '',
-                    "1000toInf": '',
-                }
-                
-            },
-        },
-        
-        "QCD": {
-            "unweighted": {
-                "2016APV": coffea_dir+'QCD_2016APV.coffea',
-                "2016": coffea_dir+'QCD_2016.coffea',
-                "2017": '',
-                "2018": ''
-            },
-            "weighted": {
-                "2016APV": coffea_dir+'QCD_2016APV_bkgest.coffea',
-                "2016": coffea_dir+'QCD_2016_bkgest.coffea',
-                "2017": '',
-                "2018": ''
-            }
-        },
-        
-        "ZPrime": {
-            "2016": {
-                "1000": coffea_dir+'ZPrime1000_2016.coffea',
-                "1500": coffea_dir+'ZPrime1500_2016.coffea',
-                "2000": coffea_dir+'ZPrime2000_2016.coffea',
-                "2500": coffea_dir+'ZPrime2500_2016.coffea',
-                "3000": coffea_dir+'ZPrime3000_2016.coffea',
-                "3500": coffea_dir+'ZPrime3500_2016.coffea',
-                "4000": coffea_dir+'ZPrime4000_2016.coffea',
-                "4500": coffea_dir+'ZPrime4500_2016.coffea',
-                "5000": coffea_dir+'ZPrime5000_2016.coffea'
-            }
-        }
-    }
-    
-    
-        
-    return coffeaFiles
-    
     
     
 def loadCoffeaFile(dataset='QCD', year='2016', tag='', bkgest=False):
@@ -266,12 +187,18 @@ def plotBackgroundEstimate(hdata, hntmj, httbar, year, text=''):
     
 
     
-def makePlotDirectories():
+def makeSaveDirectories():
     
         
     plots_dir = os.path.abspath('./').replace('/plots', '', ).replace('/python', '').replace('/mistag','') + '/plots'
-       
+    coffea_dir = os.path.abspath('./').replace('/plots', '', ).replace('/python', '').replace('/mistag','') + '/outputs'
+   
+        
     directories = [
+        
+        # output coffea and root files
+        coffea_dir+'/scale',
+        coffea_dir+'/twodalphabet',
        
         # QCD closure test
         plots_dir+'/images/png/closureTestQCD/2016all',
@@ -330,7 +257,152 @@ def makePlotDirectories():
 
 
 
+def getCoffeaFilenames():
+    
+    coffea_dir = os.path.abspath('./').replace('/plots', '', ).replace('/python', '').replace('/mistag','') + '/outputs/'
+#     coffea_dir = os.path.abspath('./').replace('/plots', '', ).replace('/python', '').replace('/mistag','') + '/local/history/transferfxn/coffea/'
+    
+    
+    
+    coffeaFiles = {
+        "JetHT":{
+            "unweighted": {
+                "2016APV": {
+                    "B": coffea_dir+'JetHT_2016APVB.coffea',
+                    "C": coffea_dir+'JetHT_2016APVC.coffea',
+                    "D": coffea_dir+'JetHT_2016APVD.coffea',
+                    "E": coffea_dir+'JetHT_2016APVE.coffea',
+                },
+                "2016": {
+                    "F": coffea_dir+'JetHT_2016F.coffea',
+                    "G": coffea_dir+'JetHT_2016G.coffea',
+                    "H": coffea_dir+'JetHT_2016H.coffea',
 
+                },
+                "2017": '',
+                "2018": ''
+            },
+            "weighted": {
+                "2016APV": {
+                    "B": coffea_dir+'JetHT_2016APVB_bkgest.coffea',
+                    "C": coffea_dir+'JetHT_2016APVC_bkgest.coffea',
+                    "D": coffea_dir+'JetHT_2016APVD_bkgest.coffea',
+                    "E": coffea_dir+'JetHT_2016APVE_bkgest.coffea',
+                },
+                "2016": {
+                    "F": coffea_dir+'JetHT_2016F_bkgest.coffea',
+                    "G": coffea_dir+'JetHT_2016G_bkgest.coffea',
+                    "H": coffea_dir+'JetHT_2016H_bkgest.coffea',
+
+                },
+                "2017": '',
+                "2018": ''
+            }
+        },
+
+        "TTbar": {
+            "unweighted": {
+                "2016APV": {
+                    "700to1000": coffea_dir+'TTbar_2016APV_700to1000.coffea',
+                    "1000toInf": coffea_dir+'TTbar_2016APV_1000toInf.coffea',
+                },
+                "2016": {
+                    "700to1000": coffea_dir+'TTbar_2016_700to1000.coffea',
+                    "1000toInf": coffea_dir+'TTbar_2016_1000toInf.coffea',
+                },
+                "2017": {
+                    "700to1000": '',
+                    "1000toInf": '',
+                },
+                "2018": {
+                    "700to1000": '',
+                    "1000toInf": '',
+                }
+            },
+            "weighted": {
+                "2016APV": {
+                    "700to1000": coffea_dir+'TTbar_2016APV_700to1000_bkgest.coffea',
+                    "1000toInf": coffea_dir+'TTbar_2016APV_1000toInf_bkgest.coffea',
+                },
+                "2016": {
+                    "700to1000": coffea_dir+'TTbar_2016_700to1000_bkgest.coffea',
+                    "1000toInf": coffea_dir+'TTbar_2016_1000toInf_bkgest.coffea',
+                },
+                "2017": {
+                    "700to1000": '',
+                    "1000toInf": '',
+                },
+                "2018": {
+                    "700to1000": '',
+                    "1000toInf": '',
+                }
+                
+            },
+        },
+        
+        "QCD": {
+            "unweighted": {
+                "2016APV": coffea_dir+'QCD_2016APV.coffea',
+                "2016": coffea_dir+'QCD_2016.coffea',
+                "2017": '',
+                "2018": ''
+            },
+            "weighted": {
+                "2016APV": coffea_dir+'QCD_2016APV_bkgest.coffea',
+                "2016": coffea_dir+'QCD_2016_bkgest.coffea',
+                "2017": '',
+                "2018": ''
+            }
+        },
+        
+        "ZPrime": {
+            "unweighted": {
+                "2016": {
+                    "1000": coffea_dir+'ZPrime1000_2016.coffea',
+                    "1500": coffea_dir+'ZPrime1500_2016.coffea',
+                    "2000": coffea_dir+'ZPrime2000_2016.coffea',
+                    "2500": coffea_dir+'ZPrime2500_2016.coffea',
+                    "3000": coffea_dir+'ZPrime3000_2016.coffea',
+                    "3500": coffea_dir+'ZPrime3500_2016.coffea',
+                    "4000": coffea_dir+'ZPrime4000_2016.coffea',
+                    "4500": coffea_dir+'ZPrime4500_2016.coffea',
+                    "5000": coffea_dir+'ZPrime5000_2016.coffea'
+                },
+            }
+        },
+        
+        "RSGluon": {
+            "unweighted": {
+                "2016": {
+                    "1000": coffea_dir+'RSGluon1000_2016.coffea',
+                    "1500": coffea_dir+'RSGluon1500_2016.coffea',
+                    "2000": coffea_dir+'RSGluon2000_2016.coffea',
+                    "2500": coffea_dir+'RSGluon2500_2016.coffea',
+                    "3000": coffea_dir+'RSGluon3000_2016.coffea',
+                    "3500": coffea_dir+'RSGluon3500_2016.coffea',
+                    "4000": coffea_dir+'RSGluon4000_2016.coffea',
+                    "4500": coffea_dir+'RSGluon4500_2016.coffea',
+                    "5000": coffea_dir+'RSGluon5000_2016.coffea'
+                },
+                "2016APV": {
+                    "1000": coffea_dir+'RSGluon1000_2016APV.coffea',
+                    "1500": coffea_dir+'RSGluon1500_2016APV.coffea',
+                    "2000": coffea_dir+'RSGluon2000_2016APV.coffea',
+                    "2500": coffea_dir+'RSGluon2500_2016APV.coffea',
+                    "3000": coffea_dir+'RSGluon3000_2016APV.coffea',
+                    "3500": coffea_dir+'RSGluon3500_2016APV.coffea',
+                    "4000": coffea_dir+'RSGluon4000_2016APV.coffea',
+                    "4500": coffea_dir+'RSGluon4500_2016APV.coffea',
+                    "5000": coffea_dir+'RSGluon5000_2016APV.coffea'
+                }
+            }
+        }
+    }
+    
+    
+        
+    return coffeaFiles
+    
     
 
     
