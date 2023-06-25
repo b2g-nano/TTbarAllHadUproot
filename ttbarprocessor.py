@@ -73,13 +73,14 @@ class TTbarResProcessor(processor.ProcessorABC):
                  maxMSD=210.,
                  tau32Cut=0.65,
                  bdisc=0.5847,
-                 deepAK8Cut=0.94,
+                 deepAK8Cut=0.435,
                  useDeepAK8=True,
                  iov='2016APV',
                  bkgEst=False,
-                 syst=False,
+                 noSyst=False,
                  systematics = ['nominal', 'pileup'],
                  anacats = ['2t0bcen'],
+                 rpf_params = {'params':1.0, 'errors':1.0},
                 ):
                  
         self.iov = iov
@@ -93,9 +94,9 @@ class TTbarResProcessor(processor.ProcessorABC):
         self.useDeepAK8 = useDeepAK8
         self.means_stddevs = defaultdict()
         self.bkgEst = bkgEst
-        self.syst = syst
+        self.noSyst = noSyst
         self.systematics = systematics
-        
+        self.rpf_params = rpf_params        
         
         self.transfer_function = np.load('plots/save.npy')
 
@@ -551,58 +552,115 @@ class TTbarResProcessor(processor.ProcessorABC):
                         
         # if running background estimation
         if (self.bkgEst):
+            
+            p = self.rpf_params['param']
+            pUp = [p + err for p, err in zip(self.rpf_params['param'], self.rpf_params['error'])]
+            pDn = [p - err for p, err in zip(self.rpf_params['param'], self.rpf_params['error'])]
+
+            
+            
+            if '0x1' in self.rpf_params['function']:
+                
+                 # @0 + @1*y
+
+                rpfNom  = p[0] + p[1] * ttbarmass
+                rpfUp   = pUp[0] + pUp[1] * ttbarmass
+                rpfDown = pDn[0] + pDn[1] * ttbarmass
+                
+            elif '1x0' in self.rpf_params['function']:
+                
+                # @0 + @1*x
+                
+                rpfNom  = p[1] * jetmsd + p[0]
+                rpfUp   = pUp[1] * jetmsd + pUp[0]
+                rpfDown = pDn[1] * jetmsd + pDn[0]
+                   
+            else:
+                
+                rpfNom = np.ones(len(events))   
+                rpfUp = np.ones(len(events))   
+                rpfDown = np.ones(len(events))  
+                
+                
+                            
+            weights.add("transferFunction", 
+                    weight=ak.flatten(rpfNom), 
+                    weightUp=ak.flatten(rpfUp), 
+                    weightDown=ak.flatten(rpfDown),
+                           )    
 
             # for mistag rate weights
-            mistag_rate_df = pd.read_csv(f'data/corrections/backgroundEstimate/mistag_rate_{self.iov}.csv')
-            pbins = mistag_rate_df['jetp bins'].values
-            mistag_weights = np.ones(len(FatJets), dtype=float)
+#             mistag_rate_df = pd.read_csv(f'data/corrections/backgroundEstimate/mistag_rate_{self.iov}.csv')
+#             pbins = mistag_rate_df['jetp bins'].values
+#             mistag_weights = np.ones(len(FatJets), dtype=float)
             
             
             # for mass modification
 
-#             qcdfile = util.load(f'data/corrections/backgroundEstimate/QCD_{self.iov}.coffea')
-            qcd_jetmass_dict = json.load(open(f'data/corrections/backgroundEstimate/QCD_jetmass_{self.iov}.json'))
-            qcd_jetmass_bins = qcd_jetmass_dict['bins']
+# #             qcdfile = util.load(f'data/corrections/backgroundEstimate/QCD_{self.iov}.coffea')
+#             qcd_jetmass_dict = json.load(open(f'data/corrections/backgroundEstimate/QCD_jetmass_{self.iov}.json'))
+#             qcd_jetmass_bins = qcd_jetmass_dict['bins']
         
         
-            # for transfer function
+#             # for transfer function
             
-            bins_mt  = np.arange(0,500,10)
-            bins_mtt = np.arange(800,8000,144)
+#             bins_mt  = np.arange(0,500,10)
+#             bins_mtt = np.arange(800,8000,360)
                      
     
-            for ilabel,icat in labels_and_categories.items():
+#             for ilabel,icat in labels_and_categories.items():
             
-                icat = ak.flatten(icat)
+#                 icat = ak.flatten(icat)
 
-                # get antitag region and signal region labels
-                # ilabel[-5:] = bcat + ycat (0bcen for example)
-                label_at = 'at'+ilabel[-5:]
-                label_2t = '2t'+ilabel[-5:]
+#                 # get antitag region and signal region labels
+#                 # ilabel[-5:] = bcat + ycat (0bcen for example)
+#                 label_at = 'at'+ilabel[-5:]
+#                 label_2t = '2t'+ilabel[-5:]
+                
+                
+                
+#                 mt_bin = np.digitize(ak.flatten(jetmass[icat]), bins_mt) - 1
+#                 mtt_bin = np.digitize(ak.flatten(ttbarmass[icat]), bins_mtt) - 1
+                
+                
+#                 # rpf function = p0 + p1*mtt
+                
+#                 p0 = params['param'][0]
+#                 p1 = params['param'][1]
+                
+#                 p0_up = p0 + params['error'][0]
+#                 p1_up = p1 + params['error'][1]
+                
+#                 p0_down = p0 - params['error'][0]
+#                 p1_down = p1 - params['error'][1]
+                
+#                 rpf_nom  = p0 + p1*mtt
+#                 rpf_up   = p0_up + p1_up*mtt
+#                 rpf_down = p0_down + p1_down*mtt
 
                 
-                # get mistag rate for antitag region
-                mistag_rate = mistag_rate_df[label_at].values
+#                 # get mistag rate for antitag region
+#                 mistag_rate = mistag_rate_df[label_at].values
 
-                # get p bin for probe jet p
-                mistag_pbin = np.digitize(ak.flatten(jetp[icat]), pbins) - 1
+#                 # get p bin for probe jet p
+#                 mistag_pbin = np.digitize(ak.flatten(jetp[icat]), pbins) - 1
 
-                # store mistag weights for events in this category
-                mistag_weights[icat] = mistag_rate[mistag_pbin]
+#                 # store mistag weights for events in this category
+#                 mistag_weights[icat] = mistag_rate[mistag_pbin]
 
 
 
                 # qcd mass modification #
 
                 # get distribution of jet mass in QCD signal ('2t') region
-                qcd_jetmass_counts = qcd_jetmass_dict[label_2t]
+#                 qcd_jetmass_counts = qcd_jetmass_dict[label_2t]
 
                 # randomly select jet mass from distribution
-                ModMass_hist_dist = ss.rv_histogram([qcd_jetmass_counts[:-1], qcd_jetmass_bins])
-                ttbarcands.slot1.p4[icat]["fMass"] = ModMass_hist_dist.rvs(size=len(ttbarcands.slot1.p4[icat]))
+#                 ModMass_hist_dist = ss.rv_histogram([qcd_jetmass_counts[:-1], qcd_jetmass_bins])
+#                 ttbarcands.slot1.p4[icat]["fMass"] = ModMass_hist_dist.rvs(size=len(ttbarcands.slot1.p4[icat]))
                 
                 
-            weights.add('mistag', mistag_weights)
+#             weights.add('mistag', mistag_weights)
     
         del jetmass, jetp, jetmsd
         
@@ -625,7 +683,7 @@ class TTbarResProcessor(processor.ProcessorABC):
 #             ttbar_wgt = pTReweighting(ttbarcands.slot0.pt, ttbarcands.slot1.pt)
 #             weights.add('ptReweighting', ak.flatten(ttbar_wgt))
                  
-        if self.syst and not isData:
+        if not self.noSyst and not isData:
                     
             if 'pileup' in self.systematics:
                 
