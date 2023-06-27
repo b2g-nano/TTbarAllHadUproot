@@ -153,8 +153,38 @@ def getHist(hname, ds, bkgest, year, sum_axes=['anacat'], integrate_axes={}):
             
             
     return histo
+
+
+
+
+def getHist2(hname, ds, year, sum_axes=['anacat'], integrate_axes={}, tag=''):
     
+    ######################################################################################
+    # hname = histogram name (example: 'ttbarmass')                                      #
+    # ds = dataset name (example: 'JetHT')                                               #
+    # year = '2016APV', '2016', '2017', '2018', '2016all', 'all'                         #
+    # sum_axes = names of axes to sum over for scikit-hep/hist histogram                 #
+    # integrate_axes = range to integrate over axis (example: {'anacat': [0,1,2,3,4,5]}) #
+    # tag = string on end of file (ie _bkgest or _test)                                  #
+    ######################################################################################    
+    
+    coffea_dir = os.path.abspath('./').replace('/plots', '', ).replace('/python', '').replace('/mistag','') + '/outputs/scale/'
+    
+    # examples: outputs/scale/TTbar_2016.coffea, outputs/scale/QCD_2016all.coffea
+    filename = coffea_dir + ds + '_' + year + tag + '.coffea'
+    
+    output = util.load(filename)
+    
+    
+    # integrate and sum over axes
+    sum_axes_dict = {ax:sum for ax in sum_axes}
+
+    # get histogram
+    histo = output[hname][integrate_axes][sum_axes_dict]
             
+            
+    return histo
+    
             
 def plotBackgroundEstimate(hdata, hntmj, httbar, year, text=''):
     

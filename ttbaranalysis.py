@@ -40,7 +40,7 @@ if __name__ == "__main__":
 
     # analysis options
     parser.add_argument('--bkgest', action='store_true', help='run with background estimate')
-    parser.add_argument('--syst', action='store_true', help='run with systematics')
+    parser.add_argument('--noSyst', action='store_true', help='run without systematics')
 
 
     # run options
@@ -63,13 +63,22 @@ if __name__ == "__main__":
     samples = args.dataset
     IOV = args.iov
     useDeepAK8 = True
-    dask_memory = '2GB'
-      # priority decreases for larger memory jobs
-      # if processor uses > 2GB, reduce chunksize
+    dask_memory = '3GB' # priority decreases for >2GB memory
     chunksize_dask = 100000
     chunksize_futures = 10000
     maxchunks = 10 if args.test else None
     
+    
+    
+    # transfer function parameters
+    f = open('data/corrections/rpf_params_QCD_rpf_fits_1x0.txt').read().split('\n')
+    params = {
+        'param': [float(param.split('+/-')[0]) for param in [line.split(':')[1] for line in f]],
+        'error': [float(param.split('+/-')[1]) for param in [line.split(':')[1] for line in f]],
+        'function': '1x0',
+    }
+    del f
+
         
     
     ##### systematics and analysis categories #####
@@ -122,12 +131,12 @@ if __name__ == "__main__":
         print('----------------\n', file=f)
         print('categories =', label_map, file=f)
         print('\n', file=f)
-        if args.syst: print('systematics =', systematics, file=f)
+        if not args.noSyst: print('systematics =', systematics, file=f)
      
     # display analysis info
     print('\n------args------')
     for argname, value in vars(args).items(): print(argname, '=', value)
-    if args.syst: print('systematics =', systematics)
+    if not args.noSyst: print('systematics =', systematics)
     print('----------------\n')
 
     
@@ -218,10 +227,11 @@ if __name__ == "__main__":
                         processor_instance=TTbarResProcessor(
                                                              iov=IOV,
                                                              bkgEst=args.bkgest,
-                                                             syst=args.syst,
+                                                             noSyst=args.noSyst,
                                                              useDeepAK8=useDeepAK8,
                                                              anacats=anacats,
                                                              systematics=systematics,
+                                                             rpf_params = params,
 
                                                             ),
                         executor=processor.futures_executor,
@@ -290,10 +300,11 @@ if __name__ == "__main__":
                                                       processor_instance=TTbarResProcessor(
                                                           iov=IOV,
                                                           bkgEst=args.bkgest,
-                                                          syst=args.syst,
+                                                          noSyst=args.noSyst,
                                                           useDeepAK8=useDeepAK8,
                                                           anacats=anacats,
                                                           systematics=systematics,
+                                                          rpf_params = params,
                                                           ),
                                                      )
                         
