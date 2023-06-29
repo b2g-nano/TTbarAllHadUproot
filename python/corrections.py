@@ -73,6 +73,9 @@ def HEMCleaning(JetCollection):
 def GetJECUncertainties(FatJets, events, IOV, R='AK8', isData=False):
 
     # original code https://gitlab.cern.ch/gagarwal/ttbardileptonic/-/blob/master/jmeCorrections.py
+    
+    chspuppi = 'Puppi' if 'AK8' in R else 'chs'
+    
 
     jer_tag=None
     if (IOV=='2018'):
@@ -93,7 +96,7 @@ def GetJECUncertainties(FatJets, events, IOV, R='AK8', isData=False):
             "RunE": "Summer19UL17_RunE_V5_DATA",
             "RunF": "Summer19UL17_RunF_V5_DATA",
         }
-        jer_tag = "Summer19UL17_JRV2_MC"
+        jer_tag = "Summer19UL17_JRV3_MC"
     elif (IOV=='2016'):
         jec_tag="Summer19UL16_V7_MC"
         jec_tag_data={
@@ -124,18 +127,19 @@ def GetJECUncertainties(FatJets, events, IOV, R='AK8', isData=False):
     ext = extractor()
     if not isData:
     #For MC
+    
         ext.add_weight_sets([
-            '* * data/corrections/JEC/{0}/{0}_L1FastJet_{1}PFchs.jec.txt'.format(jec_tag, R),
-            '* * data/corrections/JEC/{0}/{0}_L2Relative_{1}PFchs.jec.txt'.format(jec_tag, R),
-            '* * data/corrections/JEC/{0}/{0}_L3Absolute_{1}PFchs.jec.txt'.format(jec_tag, R),
-            '* * data/corrections/JEC/{0}/{0}_UncertaintySources_{1}PFchs.junc.txt'.format(jec_tag, R),
-            '* * data/corrections/JEC/{0}/{0}_Uncertainty_{1}PFchs.junc.txt'.format(jec_tag, R),
+            '* * data/corrections/JEC/{0}/{0}_L1FastJet_{1}PF{2}.jec.txt'.format(jec_tag, R, chspuppi),
+            '* * data/corrections/JEC/{0}/{0}_L2Relative_{1}PF{2}.jec.txt'.format(jec_tag, R, chspuppi),
+            '* * data/corrections/JEC/{0}/{0}_L3Absolute_{1}PF{2}.jec.txt'.format(jec_tag, R, chspuppi),
+            '* * data/corrections/JEC/{0}/{0}_UncertaintySources_{1}PF{2}.junc.txt'.format(jec_tag, R, chspuppi),
+            '* * data/corrections/JEC/{0}/{0}_Uncertainty_{1}PF{2}.junc.txt'.format(jec_tag, R, chspuppi),
         ])
 
         if jer_tag:
             ext.add_weight_sets([
-            '* * data/corrections/JER/{0}/{0}_PtResolution_{1}PFchs.jr.txt'.format(jer_tag, R),
-            '* * data/corrections/JER/{0}/{0}_SF_{1}PFchs.jersf.txt'.format(jer_tag, R)])
+            '* * data/corrections/JER/{0}/{0}_PtResolution_{1}PF{2}.jr.txt'.format(jer_tag, R, chspuppi),
+            '* * data/corrections/JER/{0}/{0}_SF_{1}PF{2}.jersf.txt'.format(jer_tag, R, chspuppi)])
 
 
     else:       
@@ -144,10 +148,10 @@ def GetJECUncertainties(FatJets, events, IOV, R='AK8', isData=False):
         for run, tag in jec_tag_data.items():
             if not (tag in tags_done):
                 ext.add_weight_sets([
-                '* * data/corrections/JEC/{0}/{0}_L1FastJet_{1}PFchs.jec.txt'.format(tag, R),
-                '* * data/corrections/JEC/{0}/{0}_L2Relative_{1}PFchs.jec.txt'.format(tag, R),
-                '* * data/corrections/JEC/{0}/{0}_L3Absolute_{1}PFchs.jec.txt'.format(tag, R),
-                '* * data/corrections/JEC/{0}/{0}_L2L3Residual_{1}PFchs.jec.txt'.format(tag, R),
+                '* * data/corrections/JEC/{0}/{0}_L1FastJet_{1}PF{2}.jec.txt'.format(tag, R, chspuppi),
+                '* * data/corrections/JEC/{0}/{0}_L2Relative_{1}PF{2}.jec.txt'.format(tag, R, chspuppi),
+                '* * data/corrections/JEC/{0}/{0}_L3Absolute_{1}PF{2}.jec.txt'.format(tag, R, chspuppi),
+                '* * data/corrections/JEC/{0}/{0}_L2L3Residual_{1}PF{2}.jec.txt'.format(tag, R, chspuppi),
                 ])
                 tags_done += [tag]
 
@@ -156,26 +160,28 @@ def GetJECUncertainties(FatJets, events, IOV, R='AK8', isData=False):
 
     if (not isData):
         jec_names = [
-            '{0}_L1FastJet_{1}PFchs'.format(jec_tag, R),
-            '{0}_L2Relative_{1}PFchs'.format(jec_tag, R),
-            '{0}_L3Absolute_{1}PFchs'.format(jec_tag, R),
-            '{0}_Uncertainty_{1}PFchs'.format(jec_tag, R)]
+            '{0}_L1FastJet_{1}PF{2}'.format(jec_tag, R, chspuppi),
+            '{0}_L2Relative_{1}PF{2}'.format(jec_tag, R, chspuppi),
+            '{0}_L3Absolute_{1}PF{2}'.format(jec_tag, R, chspuppi),
+            '{0}_Uncertainty_{1}PF{2}'.format(jec_tag, R, chspuppi)]
 
         if jer_tag: 
-            jec_names.extend(['{0}_PtResolution_{1}PFchs'.format(jer_tag, R),
-                              '{0}_SF_{1}PFchs'.format(jer_tag, R)])
+            jec_names.extend(['{0}_PtResolution_{1}PF{2}'.format(jer_tag, R, chspuppi),
+                              '{0}_SF_{1}PF{2}'.format(jer_tag, R, chspuppi)])
 
     else:
         jec_names={}
         for run, tag in jec_tag_data.items():
             jec_names[run] = [
-                '{0}_L1FastJet_{1}PFchs'.format(tag, R),
-                '{0}_L3Absolute_{1}PFchs'.format(tag, R),
-                '{0}_L2Relative_{1}PFchs'.format(tag, R),
-                '{0}_L2L3Residual_{1}PFchs'.format(tag, R),]
+                '{0}_L1FastJet_{1}PF{2}'.format(tag, R, chspuppi),
+                '{0}_L3Absolute_{1}PF{2}'.format(tag, R, chspuppi),
+                '{0}_L2Relative_{1}PF{2}'.format(tag, R, chspuppi),
+                '{0}_L2L3Residual_{1}PF{2}'.format(tag, R, chspuppi),]
 
     if not isData:
         jec_inputs = {name: evaluator[name] for name in jec_names}
+        
+        
     else:
         jec_names_data = []
         for era in self.eras:

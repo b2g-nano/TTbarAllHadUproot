@@ -73,14 +73,14 @@ class TTbarResProcessor(processor.ProcessorABC):
                  maxMSD=210.,
                  tau32Cut=0.65,
                  bdisc=0.5847,
-                 deepAK8Cut=0.435,
+                 deepAK8Cut='tight',
                  useDeepAK8=True,
-                 iov='2016APV',
+                 iov='2016',
                  bkgEst=False,
                  noSyst=False,
                  systematics = ['nominal', 'pileup'],
                  anacats = ['2t0bcen'],
-                 rpf_params = {'params':1.0, 'errors':1.0},
+                 rpf_params = {'params':[1.0], 'errors':[0.0]},
                 ):
                  
         self.iov = iov
@@ -90,7 +90,6 @@ class TTbarResProcessor(processor.ProcessorABC):
         self.tau32Cut = tau32Cut
         self.ak8PtMin = ak8PtMin
         self.bdisc = bdisc
-        self.deepAK8Cut = deepAK8Cut
         self.useDeepAK8 = useDeepAK8
         self.means_stddevs = defaultdict()
         self.bkgEst = bkgEst
@@ -98,8 +97,34 @@ class TTbarResProcessor(processor.ProcessorABC):
         self.systematics = systematics
         self.rpf_params = rpf_params        
         
-        self.transfer_function = np.load('plots/save.npy')
+#         self.transfer_function = np.load('plots/save.npy')
 
+        deepak8cuts = {
+            'loose':{ # 1%
+                '2016APV': 0.486, 
+                '2016': 0.475,
+                '2017': 0.487,
+                '2018': 0.477,
+            },
+            'medium':{ # 0.5%
+                '2016APV': 0.677, 
+                '2016': 0.666,
+                '2017': 0.673,
+                '2018': 0.669,
+            },
+            'tight': { # 0.1%
+                '2016APV': 0.902, 
+                '2016': 0.897,
+                '2017': 0.898,
+                '2018': 0.900,
+            } 
+        }
+        
+        
+        self.deepAK8Cut = deepak8cuts['tight'][self.iov]
+
+        
+        
         
         
         
@@ -172,6 +197,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                         
             # accumulators
             'cutflow': processor.defaultdict_accumulator(int),
+            'weights': processor.defaultdict_accumulator(float),
             
         }
         
@@ -191,8 +217,8 @@ class TTbarResProcessor(processor.ProcessorABC):
         
         
         # Remove events with large weights
-        if "QCD" in events.metadata['dataset']: 
-            events = events[ events.Generator.binvar > 400 ] 
+        if "QCD" in events.metadata['dataset'] and ('2017' not in self.iov): 
+            events = events[ events.Generator.binvar > 400 ]
         
             if events.metadata['dataset'] not in self.means_stddevs : 
                 average = np.average( events.genWeight )
@@ -215,6 +241,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         GenJets = events.GenJet
         Jets = events.Jet
         
+                
         
         FatJets["p4"] = ak.with_name(FatJets[["pt", "eta", "phi", "mass"]],"PtEtaPhiMLorentzVector")
         GenJets["p4"] = ak.with_name(GenJets[["pt", "eta", "phi", "mass"]],"PtEtaPhiMLorentzVector")
@@ -232,8 +259,8 @@ class TTbarResProcessor(processor.ProcessorABC):
         Jets["pt_gen"] = ak.values_astype(ak.fill_none(Jets.matched_gen_0p2.pt, 0), np.float32)
 
 
-        corrected_fatjets = GetJECUncertainties(FatJets, events, self.iov, R='AK8')
-        corrected_jets = GetJECUncertainties(Jets, events, self.iov, R='AK4')
+        corrected_fatjets = GetJECUncertainties(FatJets, events, self.iov, R='AK8', isData=isData)
+        corrected_jets = GetJECUncertainties(Jets, events, self.iov, R='AK4', isData=isData)
         
         
         del FatJets, GenJets, Jets
@@ -250,6 +277,10 @@ class TTbarResProcessor(processor.ProcessorABC):
                 ({"Jet": corrected_jets.JER.down, "FatJet": corrected_fatjets.JER.down}, "jerDown"),
             ])
             
+            
+#         print('corrected jets')
+#         print('corr jets', corrected_jets.pt)
+            
         return processor.accumulate(self.process_analysis(update(events, collections), name) for collections, name in corrections)
 
 
@@ -264,7 +295,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         isData = ('JetHT' in dataset) or ('SingleMu' in dataset)
             
         # Remove events with large weights
-        if "QCD" in dataset: 
+        if "QCD" in events.metadata['dataset'] and ('2017' not in self.iov): 
             events = events[ events.Generator.binvar > 400 ] 
         
         # lumi mask #
@@ -286,11 +317,15 @@ class TTbarResProcessor(processor.ProcessorABC):
         
         
         # blinding #
-        if isData and (('2017' in self.iov) or ('2018' in self.iov)):
+        if isData: #and (('2017' in self.iov) or ('2018' in self.iov)):
             events = events[::10]
+            
+#         print()
+#         print(len(events))
+#         print(events)
+        
          
-        # if blinding results in 0 events
-        if (len(events) < 1): return output
+        
         
         # event selection #
         selection = PackedSelection()
@@ -327,6 +362,10 @@ class TTbarResProcessor(processor.ProcessorABC):
         
         # ---- Get event weights from dataset ---- #
 
+        # if blinding + trigger results in few events
+        if (len(events) < 10): return output
+        
+        
         
         if isData:
             evtweights = np.ones(len(events))
@@ -547,12 +586,31 @@ class TTbarResProcessor(processor.ProcessorABC):
         
         # event weights #
         
+        # if few events
+        if (len(evtweights) < 10): return output
+        
         weights = Weights(len(evtweights))
         weights.add('genWeight', evtweights)
                         
         # if running background estimation
         if (self.bkgEst):
             
+            
+            # for transfer function
+            
+            # transfer functions multiplies by bin count
+            # parameters need to be divided by bin size
+            xbinsize = 25
+            ybinsize = 360
+            
+            # get bins of mt and mtt and x and y values
+            bins_mt  = np.arange(0,500,xbinsize) # 20 bins in mt
+            bins_mtt = np.arange(800,8000,ybinsize) # 20 bins in mtt
+            x = bins_mt[(np.digitize(ak.flatten(jetmass), bins_mt) - 1)]
+            y = bins_mtt[(np.digitize(ak.flatten(ttbarmass), bins_mtt) - 1)]
+            
+   
+            # get parameters of transfer function with uncertainties
             p = self.rpf_params['param']
             pUp = [p + err for p, err in zip(self.rpf_params['param'], self.rpf_params['error'])]
             pDn = [p - err for p, err in zip(self.rpf_params['param'], self.rpf_params['error'])]
@@ -571,9 +629,9 @@ class TTbarResProcessor(processor.ProcessorABC):
                 
                 # @0 + @1*x
                 
-                rpfNom  = p[1] * jetmsd + p[0]
-                rpfUp   = pUp[1] * jetmsd + pUp[0]
-                rpfDown = pDn[1] * jetmsd + pDn[0]
+                rpfNom  = (p[1] * jetmsd + p[0])
+                rpfUp   = (pUp[1] * jetmsd + pUp[0])
+                rpfDown = (pDn[1] * jetmsd + pDn[0])
                    
             else:
                 
@@ -832,12 +890,22 @@ class TTbarResProcessor(processor.ProcessorABC):
                                   )
             
             
+            
+            
+            # save weights
+            
+            output['weights'][correction] += np.sum(weights.weight())
 
 
                 
             if not 'jes' in correction and not 'jer' in correction:    
+                
+
             
                 for syst in weights.variations:
+                    
+                    
+                    output['weights'][syst] += np.sum(weights.weight(syst))
 
                     output['ttbarmass'].fill(systematic=syst,
                                          anacat = i,
