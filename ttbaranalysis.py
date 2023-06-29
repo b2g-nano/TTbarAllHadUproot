@@ -30,7 +30,7 @@ if __name__ == "__main__":
     
     # datasets to run
     parser.add_argument('-d', '--dataset', choices=['JetHT', 'QCD', 'TTbar', 'ZPrime', 'ZPrimeDM', 'RSGluon'], 
-                        action='append', default=['QCD', 'TTbar', 'JetHT'])
+                        action='append', default=['QCD', 'TTbar', 'JetHT', 'RSGluon'])
     parser.add_argument('--iov', choices=['2016APV', '2016', '2017', '2018'], default='2016')
     
     # choose specific eras, pt bins, mass points
@@ -52,7 +52,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     # remove defaults if --dataset given
-    if len(args.dataset) > 3: args.dataset = args.dataset[3:]
+    if len(args.dataset) > 4: args.dataset = args.dataset[4:]
     
     if args.dask and (args.env == 'lpc' or args.env == 'L'):
         from lpcjobqueue import LPCCondorCluster
@@ -83,22 +83,22 @@ if __name__ == "__main__":
     
     ##### systematics and analysis categories #####
     
-    #############################################################################################
-    #                                                                                           #   
-    # systematics options: nominal, jes, jer, pileup, pdf, q2, btag, prefiring, hem             # 
-    #                                                                                           #   
-    # top tag category options:                                                                 #                     
-    #                                                                                           #
-    # at        antitag - jet0 is antitagged                                                    #            
-    # pret      pretag  - jet0 is top tagged, jet1 top tag is unknown                           #                 
-    # 0t        jet0 and jet1 are not top tagged                                                #                
-    # 1t        jet0 is top tagged and jet1 is not top tagged                                   #                    
-    # 2t        jet0 and jet1 are top tagged                                                    #            
-    # AT&P      antitag and probe - jet0 is antitagged and jet1 is top tagged                   #               
-    # >=1t      at least 1 top tag in event                                                     #           
-    # >=2t      at least 2 top tags in event                                                    #            
-    #                                                                                           #             
-    #############################################################################################
+    ########################################################################################################
+    #                                                                                                      #   
+    # systematics options: nominal, jes, jer, pileup, pdf, q2, btag, prefiring, hem, transferFunction      # 
+    #                                                                                                      #   
+    # top tag category options:                                                                            #                     
+    #                                                                                                      #
+    # at        antitag - jet0 is antitagged                                                               #            
+    # pret      pretag  - jet0 is top tagged, jet1 top tag is unknown                                      #                 
+    # 0t        jet0 and jet1 are not top tagged                                                           #                
+    # 1t        jet0 is top tagged and jet1 is not top tagged                                              #                    
+    # 2t        jet0 and jet1 are top tagged                                                               #            
+    # AT&P      antitag and probe - jet0 is antitagged and jet1 is top tagged                              #               
+    # >=1t      at least 1 top tag in event                                                                #           
+    # >=2t      at least 2 top tags in event                                                               #            
+    #                                                                                                      #             
+    ########################################################################################################
     
     systematics = [
         'nominal',
@@ -111,7 +111,8 @@ if __name__ == "__main__":
     ]
     
     if ('2016' in IOV) or ('2017' in IOV): systematics.append('prefiring')
-    elif '2018' in IOV: systematics.append('hem')
+    if '2018' in IOV: systematics.append('hem')
+    if args.bkgest: systematics.append('transferFunction')
 
      
     # make analysis categories 

@@ -229,18 +229,6 @@ def makeSaveDirectories():
         # output coffea and root files
         coffea_dir+'/scale',
         coffea_dir+'/twodalphabet',
-       
-        # QCD closure test
-        plots_dir+'/images/png/closureTestQCD/2016all',
-        plots_dir+'/images/png/closureTestQCD/2016APV',
-        plots_dir+'/images/png/closureTestQCD/2016',
-        plots_dir+'/images/png/closureTestQCD/2017',
-        plots_dir+'/images/png/closureTestQCD/2018',
-        plots_dir+'/images/pdf/closureTestQCD/2016all',
-        plots_dir+'/images/pdf/closureTestQCD/2016APV',
-        plots_dir+'/images/pdf/closureTestQCD/2016',
-        plots_dir+'/images/pdf/closureTestQCD/2017',
-        plots_dir+'/images/pdf/closureTestQCD/2018',
 
         # Closure test
         plots_dir+'/images/png/closureTest/2016all',
@@ -278,6 +266,18 @@ def makeSaveDirectories():
         plots_dir+'/images/pdf/ttbarmass/2017',
         plots_dir+'/images/pdf/ttbarmass/2018',
         
+        # kinematics plots
+        plots_dir+'/images/png/kinematics/2016all',
+        plots_dir+'/images/png/kinematics/2016APV',
+        plots_dir+'/images/png/kinematics/2016',
+        plots_dir+'/images/png/kinematics/2017',
+        plots_dir+'/images/png/kinematics/2018',
+        plots_dir+'/images/pdf/kinematics/2016all',
+        plots_dir+'/images/pdf/kinematics/2016APV',
+        plots_dir+'/images/pdf/kinematics/2016',
+        plots_dir+'/images/pdf/kinematics/2017',
+        plots_dir+'/images/pdf/kinematics/2018',
+        
     ]
 
 
@@ -301,32 +301,52 @@ def getCoffeaFilenames():
                     "B": coffea_dir+'JetHT_2016APVB.coffea',
                     "C": coffea_dir+'JetHT_2016APVC.coffea',
                     "D": coffea_dir+'JetHT_2016APVD.coffea',
-                    "E": coffea_dir+'JetHT_2016APVE.coffea',
+                    "E": coffea_dir+'JetHT_2016APVE.coffea'
                 },
                 "2016": {
                     "F": coffea_dir+'JetHT_2016F.coffea',
                     "G": coffea_dir+'JetHT_2016G.coffea',
-                    "H": coffea_dir+'JetHT_2016H.coffea',
+                    "H": coffea_dir+'JetHT_2016H.coffea'
 
                 },
-                "2017": '',
-                "2018": ''
+               "2017": {
+                    "C": coffea_dir+'JetHT_2017C.coffea',
+                    "D": coffea_dir+'JetHT_2017D.coffea',
+                    "E": coffea_dir+'JetHT_2017E.coffea',
+                    "F": coffea_dir+'JetHT_2017F.coffea'
+                },
+                "2018": {
+                    "A": coffea_dir+'JetHT_2018A.coffea',
+                    "B": coffea_dir+'JetHT_2018B.coffea',
+                    "C": coffea_dir+'JetHT_2018C.coffea',
+                    "D": coffea_dir+'JetHT_2018D.coffea'
+                }
             },
             "weighted": {
                 "2016APV": {
                     "B": coffea_dir+'JetHT_2016APVB_bkgest.coffea',
                     "C": coffea_dir+'JetHT_2016APVC_bkgest.coffea',
                     "D": coffea_dir+'JetHT_2016APVD_bkgest.coffea',
-                    "E": coffea_dir+'JetHT_2016APVE_bkgest.coffea',
+                    "E": coffea_dir+'JetHT_2016APVE_bkgest.coffea'
                 },
                 "2016": {
                     "F": coffea_dir+'JetHT_2016F_bkgest.coffea',
                     "G": coffea_dir+'JetHT_2016G_bkgest.coffea',
-                    "H": coffea_dir+'JetHT_2016H_bkgest.coffea',
+                    "H": coffea_dir+'JetHT_2016H_bkgest.coffea'
 
                 },
-                "2017": '',
-                "2018": ''
+                "2017": {
+                    "C": coffea_dir+'JetHT_2017C_bkgest.coffea',
+                    "D": coffea_dir+'JetHT_2017D_bkgest.coffea',
+                    "E": coffea_dir+'JetHT_2017E_bkgest.coffea',
+                    "F": coffea_dir+'JetHT_2017F_bkgest.coffea'
+                },
+                "2018": {
+                    "A": coffea_dir+'JetHT_2018A_bkgest.coffea',
+                    "B": coffea_dir+'JetHT_2018B_bkgest.coffea',
+                    "C": coffea_dir+'JetHT_2018C_bkgest.coffea',
+                    "D": coffea_dir+'JetHT_2018D_bkgest.coffea'
+                }
             }
         },
 
@@ -334,54 +354,53 @@ def getCoffeaFilenames():
             "unweighted": {
                 "2016APV": {
                     "700to1000": coffea_dir+'TTbar_2016APV_700to1000.coffea',
-                    "1000toInf": coffea_dir+'TTbar_2016APV_1000toInf.coffea',
+                    "1000toInf": coffea_dir+'TTbar_2016APV_1000toInf.coffea'
                 },
                 "2016": {
                     "700to1000": coffea_dir+'TTbar_2016_700to1000.coffea',
-                    "1000toInf": coffea_dir+'TTbar_2016_1000toInf.coffea',
+                    "1000toInf": coffea_dir+'TTbar_2016_1000toInf.coffea'
                 },
                 "2017": {
-                    "700to1000": '',
-                    "1000toInf": '',
+                    "700to1000": coffea_dir+'TTbar_2017_700to1000.coffea',
+                    "1000toInf": coffea_dir+'TTbar_2017_1000toInf.coffea'
                 },
                 "2018": {
-                    "700to1000": '',
-                    "1000toInf": '',
+                    "700to1000": coffea_dir+'TTbar_2018_700to1000.coffea',
+                    "1000toInf": coffea_dir+'TTbar_2018_1000toInf.coffea'
                 }
             },
             "weighted": {
                 "2016APV": {
                     "700to1000": coffea_dir+'TTbar_2016APV_700to1000_bkgest.coffea',
-                    "1000toInf": coffea_dir+'TTbar_2016APV_1000toInf_bkgest.coffea',
+                    "1000toInf": coffea_dir+'TTbar_2016APV_1000toInf_bkgest.coffea'
                 },
                 "2016": {
                     "700to1000": coffea_dir+'TTbar_2016_700to1000_bkgest.coffea',
-                    "1000toInf": coffea_dir+'TTbar_2016_1000toInf_bkgest.coffea',
+                    "1000toInf": coffea_dir+'TTbar_2016_1000toInf_bkgest.coffea'
                 },
                 "2017": {
-                    "700to1000": '',
-                    "1000toInf": '',
+                    "700to1000": coffea_dir+'TTbar_2017_700to1000_bkgest.coffea',
+                    "1000toInf": coffea_dir+'TTbar_2017_1000toInf_bkgest.coffea'
                 },
                 "2018": {
-                    "700to1000": '',
-                    "1000toInf": '',
+                    "700to1000": coffea_dir+'TTbar_2018_700to1000_bkgest.coffea',
+                    "1000toInf": coffea_dir+'TTbar_2018_1000toInf_bkgest.coffea'
                 }
-                
-            },
+            }
         },
         
         "QCD": {
             "unweighted": {
                 "2016APV": coffea_dir+'QCD_2016APV.coffea',
                 "2016": coffea_dir+'QCD_2016.coffea',
-                "2017": '',
-                "2018": ''
+                "2017": coffea_dir+'QCD_2017.coffea',
+                "2018": coffea_dir+'QCD_2018.coffea'
             },
             "weighted": {
                 "2016APV": coffea_dir+'QCD_2016APV_bkgest.coffea',
                 "2016": coffea_dir+'QCD_2016_bkgest.coffea',
-                "2017": '',
-                "2018": ''
+                "2017": coffea_dir+'QCD_2017_bkgest.coffea',
+                "2018": coffea_dir+'QCD_2018_bkgest.coffea'
             }
         },
         
@@ -397,7 +416,7 @@ def getCoffeaFilenames():
                     "4000": coffea_dir+'ZPrime4000_2016.coffea',
                     "4500": coffea_dir+'ZPrime4500_2016.coffea',
                     "5000": coffea_dir+'ZPrime5000_2016.coffea'
-                },
+                }
             }
         },
         
@@ -424,6 +443,28 @@ def getCoffeaFilenames():
                     "4000": coffea_dir+'RSGluon4000_2016APV.coffea',
                     "4500": coffea_dir+'RSGluon4500_2016APV.coffea',
                     "5000": coffea_dir+'RSGluon5000_2016APV.coffea'
+                },
+                "2017": {
+                    "1000": coffea_dir+'RSGluon1000_2017.coffea',
+                    "1500": coffea_dir+'RSGluon1500_2017.coffea',
+                    "2000": coffea_dir+'RSGluon2000_2017.coffea',
+                    "2500": coffea_dir+'RSGluon2500_2017.coffea',
+                    "3000": coffea_dir+'RSGluon3000_2017.coffea',
+                    "3500": coffea_dir+'RSGluon3500_2017.coffea',
+                    "4000": coffea_dir+'RSGluon4000_2017.coffea',
+                    "4500": coffea_dir+'RSGluon4500_2017.coffea',
+                    "5000": coffea_dir+'RSGluon5000_2017.coffea'
+                },
+                "2018": {
+                    "1000": coffea_dir+'RSGluon1000_2018.coffea',
+                    "1500": coffea_dir+'RSGluon1500_2018.coffea',
+                    "2000": coffea_dir+'RSGluon2000_2018.coffea',
+                    "2500": coffea_dir+'RSGluon2500_2018.coffea',
+                    "3000": coffea_dir+'RSGluon3000_2018.coffea',
+                    "3500": coffea_dir+'RSGluon3500_2018.coffea',
+                    "4000": coffea_dir+'RSGluon4000_2018.coffea',
+                    "4500": coffea_dir+'RSGluon4500_2018.coffea',
+                    "5000": coffea_dir+'RSGluon5000_2018.coffea'
                 }
             }
         }
