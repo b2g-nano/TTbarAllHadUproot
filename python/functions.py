@@ -27,7 +27,7 @@ ttbar_xs = {'700to1000': 831.76 * (0.09210), #pb For ttbar mass from 700 to 1000
             '1000toInf': 831.76 * (0.02474) #pb For ttbar mass from 1000 to Inf
            }
 
-zprime_xs = {
+zprimeDM_xs = {
     '1000': 2.222,
     '1500': 0.387,
     '2000': 0.09428,
@@ -37,6 +37,20 @@ zprime_xs = {
     '4000': 0.001484,
     '4500': 0.0007087,
     '5000': 0.0003801,
+}
+
+zprime10_xs = {
+    '1000': 0.3622,
+    '2000': 0.01895,
+    '3000': 0.002112,
+    '4000': 0.0003889,
+}
+
+zprime30_xs = {
+    '1000': 0.1081,
+    '2000': 0.006689,
+    '3000': 0.0009523,
+    '4000': 0.0002273,
 }
 
 rsgluon_xs = {
@@ -55,7 +69,10 @@ xs = {
     'QCD': qcd_xs,
     'TTbar': ttbar_xs,
     'RSGluon': rsgluon_xs,
-    'ZPrime': zprime_xs,
+    'ZPrime10': zprime10_xs,
+    'ZPrime30': zprime30_xs,
+    'ZPrimeDM': zprimeDM_xs,
+
 }
 
 
@@ -124,10 +141,29 @@ def getHist(hname, ds, bkgest, year, sum_axes=['anacat'], integrate_axes={}):
     sf = []
     bkgest_str = 'weighted' if bkgest else 'unweighted'
     
-    for key, file in coffeaFiles[ds][bkgest_str][year].items():
+    try:
+        
+        coffeaFiles[ds][bkgest_str][year].items()
+    
+        for key, file in coffeaFiles[ds][bkgest_str][year].items():
+            loaded_file = util.load(file)
+            cfiles.append(loaded_file)
+
+            if 'TTbar' in ds and '700to1000' in key:
+                sf.append(lumi[year] * ttbar_xs1 * toptag_sf**2 / loaded_file['cutflow']['sumw'])
+            elif 'TTbar' in ds and '1000toInf' in key:
+                sf.append(lumi[year] * ttbar_xs2 * toptag_sf**2 / loaded_file['cutflow']['sumw'])     
+            elif 'QCD' in ds:
+                sf.append(lumi[IOV] * qcd_xs / loaded_file['cutflow']['sumw'])  
+            else:
+                sf.append(1.)
+    
+    except:
+        
+        file = coffeaFiles[ds][bkgest_str][year]
         loaded_file = util.load(file)
         cfiles.append(loaded_file)
-        
+
         if 'TTbar' in ds and '700to1000' in key:
             sf.append(lumi[year] * ttbar_xs1 * toptag_sf**2 / loaded_file['cutflow']['sumw'])
         elif 'TTbar' in ds and '1000toInf' in key:
@@ -136,6 +172,9 @@ def getHist(hname, ds, bkgest, year, sum_axes=['anacat'], integrate_axes={}):
             sf.append(lumi[IOV] * qcd_xs / loaded_file['cutflow']['sumw'])  
         else:
             sf.append(1.)
+        
+        
+    
     
     # sum or integrate axes for all hists from dataset eras or pt bins
     sum_axes_dict = {ax:sum for ax in sum_axes}
@@ -404,18 +443,109 @@ def getCoffeaFilenames():
             }
         },
         
-        "ZPrime": {
+        "ZPrimeDM": {
             "unweighted": {
+                "2016APV": {
+                    "1000": coffea_dir+'ZPrime1000_DM_2016APV.coffea',
+                    "1500": coffea_dir+'ZPrime1500_DM_2016APV.coffea',
+                    "2000": coffea_dir+'ZPrime2000_DM_2016APV.coffea',
+                    "2500": coffea_dir+'ZPrime2500_DM_2016APV.coffea',
+                    "3000": coffea_dir+'ZPrime3000_DM_2016APV.coffea',
+                    "3500": coffea_dir+'ZPrime3500_DM_2016APV.coffea',
+                    "4000": coffea_dir+'ZPrime4000_DM_2016APV.coffea',
+                    "4500": coffea_dir+'ZPrime4500_DM_2016APV.coffea',
+                    "5000": coffea_dir+'ZPrime5000_DM_2016APV.coffea'
+                },
                 "2016": {
-                    "1000": coffea_dir+'ZPrime1000_2016.coffea',
-                    "1500": coffea_dir+'ZPrime1500_2016.coffea',
-                    "2000": coffea_dir+'ZPrime2000_2016.coffea',
-                    "2500": coffea_dir+'ZPrime2500_2016.coffea',
-                    "3000": coffea_dir+'ZPrime3000_2016.coffea',
-                    "3500": coffea_dir+'ZPrime3500_2016.coffea',
-                    "4000": coffea_dir+'ZPrime4000_2016.coffea',
-                    "4500": coffea_dir+'ZPrime4500_2016.coffea',
-                    "5000": coffea_dir+'ZPrime5000_2016.coffea'
+                    "1000": coffea_dir+'ZPrime1000_DM_2016.coffea',
+                    "1500": coffea_dir+'ZPrime1500_DM_2016.coffea',
+                    "2000": coffea_dir+'ZPrime2000_DM_2016.coffea',
+                    "2500": coffea_dir+'ZPrime2500_DM_2016.coffea',
+                    "3000": coffea_dir+'ZPrime3000_DM_2016.coffea',
+                    "3500": coffea_dir+'ZPrime3500_DM_2016.coffea',
+                    "4000": coffea_dir+'ZPrime4000_DM_2016.coffea',
+                    "4500": coffea_dir+'ZPrime4500_DM_2016.coffea',
+                    "5000": coffea_dir+'ZPrime5000_DM_2016.coffea'
+                },
+                "2017": {
+                    "1000": coffea_dir+'ZPrime1000_DM_2017.coffea',
+                    "1500": coffea_dir+'ZPrime1500_DM_2017.coffea',
+                    "2000": coffea_dir+'ZPrime2000_DM_2017.coffea',
+                    "2500": coffea_dir+'ZPrime2500_DM_2017.coffea',
+                    "3000": coffea_dir+'ZPrime3000_DM_2017.coffea',
+                    "3500": coffea_dir+'ZPrime3500_DM_2017.coffea',
+                    "4000": coffea_dir+'ZPrime4000_DM_2017.coffea',
+                    "4500": coffea_dir+'ZPrime4500_DM_2017.coffea',
+                    "5000": coffea_dir+'ZPrime5000_DM_2017.coffea'
+                },
+                "2018": {
+                    "1000": coffea_dir+'ZPrime1000_DM_2018.coffea',
+                    "1500": coffea_dir+'ZPrime1500_DM_2018.coffea',
+                    "2000": coffea_dir+'ZPrime2000_DM_2018.coffea',
+                    "2500": coffea_dir+'ZPrime2500_DM_2018.coffea',
+                    "3000": coffea_dir+'ZPrime3000_DM_2018.coffea',
+                    "3500": coffea_dir+'ZPrime3500_DM_2018.coffea',
+                    "4000": coffea_dir+'ZPrime4000_DM_2018.coffea',
+                    "4500": coffea_dir+'ZPrime4500_DM_2018.coffea',
+                    "5000": coffea_dir+'ZPrime5000_DM_2018.coffea'
+                }
+            }
+        },
+        
+        "ZPrime10": {
+            "unweighted": {
+                "2016APV": {
+                    "1000": coffea_dir+'ZPrime1000_10_2016APV.coffea',
+                    "2000": coffea_dir+'ZPrime2000_10_2016APV.coffea',
+                    "3000": coffea_dir+'ZPrime3000_10_2016APV.coffea',
+                    "4000": coffea_dir+'ZPrime4000_10_2016APV.coffea'
+                },
+                "2016": {
+                    "1000": coffea_dir+'ZPrime1000_10_2016.coffea',
+                    "2000": coffea_dir+'ZPrime2000_10_2016.coffea',
+                    "3000": coffea_dir+'ZPrime3000_10_2016.coffea',
+                    "4000": coffea_dir+'ZPrime4000_10_2016.coffea'
+                },
+                "2017": {
+                    "1000": coffea_dir+'ZPrime1000_10_2017.coffea',
+                    "2000": coffea_dir+'ZPrime2000_10_2017.coffea',
+                    "3000": coffea_dir+'ZPrime3000_10_2017.coffea',
+                    "4000": coffea_dir+'ZPrime4000_10_2017.coffea'
+                },
+                "2018": {
+                    "1000": coffea_dir+'ZPrime1000_10_2018.coffea',
+                    "2000": coffea_dir+'ZPrime2000_10_2018.coffea',
+                    "3000": coffea_dir+'ZPrime3000_10_2018.coffea',
+                    "4000": coffea_dir+'ZPrime4000_10_2018.coffea'
+                }
+            }
+        },
+            
+        "ZPrime30": {
+            "unweighted": {
+                "2016APV": {
+                    "1000": coffea_dir+'ZPrime1000_30_2016APV.coffea',
+                    "2000": coffea_dir+'ZPrime2000_30_2016APV.coffea',
+                    "3000": coffea_dir+'ZPrime3000_30_2016APV.coffea',
+                    "4000": coffea_dir+'ZPrime4000_30_2016APV.coffea'
+                },
+                "2016": {
+                    "1000": coffea_dir+'ZPrime1000_30_2016.coffea',
+                    "2000": coffea_dir+'ZPrime2000_30_2016.coffea',
+                    "3000": coffea_dir+'ZPrime3000_30_2016.coffea',
+                    "4000": coffea_dir+'ZPrime4000_30_2016.coffea'
+                },
+                "2017": {
+                    "1000": coffea_dir+'ZPrime1000_30_2017.coffea',
+                    "2000": coffea_dir+'ZPrime2000_30_2017.coffea',
+                    "3000": coffea_dir+'ZPrime3000_30_2017.coffea',
+                    "4000": coffea_dir+'ZPrime4000_30_2017.coffea'
+                },
+                "2018": {
+                    "1000": coffea_dir+'ZPrime1000_30_2018.coffea',
+                    "2000": coffea_dir+'ZPrime2000_30_2018.coffea',
+                    "3000": coffea_dir+'ZPrime3000_30_2018.coffea',
+                    "4000": coffea_dir+'ZPrime4000_30_2018.coffea'
                 }
             }
         },
