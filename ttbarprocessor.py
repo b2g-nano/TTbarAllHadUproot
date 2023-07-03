@@ -119,11 +119,25 @@ class TTbarResProcessor(processor.ProcessorABC):
                 '2018': 0.900,
             } 
         }
-        
+    
+        btagcuts = {
+            'loose':{
+                '2016APV': 0.2027, 
+                '2016':    0.1918,
+                '2017':    0.1355,
+                '2018':    0.1208,
+            },
+            'medium':{
+                '2016APV': 0.6001, 
+                '2016':    0.5847,
+                '2017':    0.4506,
+                '2018':    0.4506,
+            } 
+        }
+    
         
         self.deepAK8Cut = deepak8cuts['tight'][self.iov]
-
-        
+        self.bdisc = btagcuts['medium'][self.iov]
         
         
         
@@ -165,10 +179,10 @@ class TTbarResProcessor(processor.ProcessorABC):
 
             
             # histograms
-            'ttbarmass'  : hist.Hist(syst_axis, cats_axis, ttbarmass_axis, storage="weight", name="Counts"),
+            'ttbarmass'  : hist.Hist(syst_axis, cats_axis, ttbarmass2D_axis, storage="weight", name="Counts"),
             'numerator'  : hist.Hist(cats_axis, manual_axis, storage="weight", name="Counts"),
             'denominator': hist.Hist(cats_axis, manual_axis, storage="weight", name="Counts"),
-            'jetmass' : hist.Hist(cats_axis, jetmass_axis, storage="weight", name="Counts"),
+            'jetmass' : hist.Hist(cats_axis, jetmass2D_axis, storage="weight", name="Counts"),
             'jetpt'  : hist.Hist(cats_axis, jetpt_axis, storage="weight", name="Counts"),
             'jeteta'  : hist.Hist(cats_axis, jeteta_axis, storage="weight", name="Counts"),
             'jetphi'  : hist.Hist(cats_axis, jetphi_axis, storage="weight", name="Counts"),
@@ -215,9 +229,10 @@ class TTbarResProcessor(processor.ProcessorABC):
         # reference for return processor.accumulate
         # https://github.com/nsmith-/boostedhiggs/blob/master/boostedhiggs/hbbprocessor.py
         
+
         
         # Remove events with large weights
-        if "QCD" in events.metadata['dataset'] and ('2017' not in self.iov): 
+        if "QCD" in events.metadata['dataset']: # and ('2017' not in self.iov): 
             events = events[ events.Generator.binvar > 400 ]
         
             if events.metadata['dataset'] not in self.means_stddevs : 
@@ -263,7 +278,6 @@ class TTbarResProcessor(processor.ProcessorABC):
         corrected_jets = GetJECUncertainties(Jets, events, self.iov, R='AK4', isData=isData)
         
         
-        del FatJets, GenJets, Jets
         
         if 'jes' in self.systematics:
             corrections = [
@@ -277,6 +291,18 @@ class TTbarResProcessor(processor.ProcessorABC):
                 ({"Jet": corrected_jets.JER.down, "FatJet": corrected_fatjets.JER.down}, "jerDown"),
             ])
             
+            
+        if ('hem' in self.systematics) and ('2018' in self.iov):
+                
+            corrected_jets    = HEMCleaning(Jets)
+            corrected_fatjets = HEMCleaning(FatJets)
+
+            corrections.extend([
+            ({"Jet": corrected_jets, "FatJet": corrected_fatjets}, "hem"),
+            ])
+                
+        del FatJets, GenJets, Jets
+                        
             
 #         print('corrected jets')
 #         print('corr jets', corrected_jets.pt)
@@ -294,9 +320,9 @@ class TTbarResProcessor(processor.ProcessorABC):
         
         isData = ('JetHT' in dataset) or ('SingleMu' in dataset)
             
-        # Remove events with large weights
-        if "QCD" in events.metadata['dataset'] and ('2017' not in self.iov): 
-            events = events[ events.Generator.binvar > 400 ] 
+#         # Remove events with large weights
+#         if "QCD" in events.metadata['dataset'] and ('2017' not in self.iov): 
+#             events = events[ events.Generator.binvar > 400 ] 
         
         # lumi mask #
         if (isData):
@@ -305,14 +331,14 @@ class TTbarResProcessor(processor.ProcessorABC):
             events = events[lumi_mask]
             del lumi_mask
 
-        elif 'QCD' in dataset: 
-            if dataset not in self.means_stddevs : 
-                average = np.average( events.genWeight )
-                stddev = np.std( events.genWeight )
-                self.means_stddevs[dataset] = (average, stddev)            
-            average,stddev = self.means_stddevs[dataset]
-            vals = (events.genWeight - average ) / stddev
-            events = events[(np.abs(vals) < 2)]
+#         elif 'QCD' in dataset: 
+#             if dataset not in self.means_stddevs : 
+#                 average = np.average( events.genWeight )
+#                 stddev = np.std( events.genWeight )
+#                 self.means_stddevs[dataset] = (average, stddev)            
+#             average,stddev = self.means_stddevs[dataset]
+#             vals = (events.genWeight - average ) / stddev
+#             events = events[(np.abs(vals) < 2)]
         
         
         
@@ -320,12 +346,6 @@ class TTbarResProcessor(processor.ProcessorABC):
         if isData: #and (('2017' in self.iov) or ('2018' in self.iov)):
             events = events[::10]
             
-#         print()
-#         print(len(events))
-#         print(events)
-        
-         
-        
         
         # event selection #
         selection = PackedSelection()
@@ -606,9 +626,8 @@ class TTbarResProcessor(processor.ProcessorABC):
             # get bins of mt and mtt and x and y values
             bins_mt  = np.arange(0,500,xbinsize) # 20 bins in mt
             bins_mtt = np.arange(800,8000,ybinsize) # 20 bins in mtt
-            x = bins_mt[(np.digitize(ak.flatten(jetmass), bins_mt) - 1)]
-            y = bins_mtt[(np.digitize(ak.flatten(ttbarmass), bins_mtt) - 1)]
-            
+            x = (1/xbinsize) * bins_mt[(np.digitize(ak.flatten(jetmass), bins_mt) - 1)]
+            y = (1/ybinsize) * bins_mtt[(np.digitize(ak.flatten(ttbarmass), bins_mtt) - 1)]
    
             # get parameters of transfer function with uncertainties
             p = self.rpf_params['param']
@@ -621,18 +640,26 @@ class TTbarResProcessor(processor.ProcessorABC):
                 
                  # @0 + @1*y
 
-                rpfNom  = p[0] + p[1] * ttbarmass
-                rpfUp   = pUp[0] + pUp[1] * ttbarmass
-                rpfDown = pDn[0] + pDn[1] * ttbarmass
+                rpfNom  = p[0] + p[1] * y
+                rpfUp   = pUp[0] + pUp[1] * y
+                rpfDown = pDn[0] + pDn[1] * y
                 
             elif '1x0' in self.rpf_params['function']:
                 
                 # @0 + @1*x
                 
-                rpfNom  = (p[1] * jetmsd + p[0])
-                rpfUp   = (pUp[1] * jetmsd + pUp[0])
-                rpfDown = (pDn[1] * jetmsd + pDn[0])
-                   
+                rpfNom  = (p[1] * x + p[0])
+                rpfUp   = (pUp[1] * x + pUp[0])
+                rpfDown = (pDn[1] * x + pDn[0])
+                
+            elif '3x1' in self.rpf_params['function']:
+                
+                # (@0+@1*x+@2*x*x+@3*x*x*x)*(1+@4*y)
+                
+                rpfNom   = ( p[0] + p[1]*x + p[2]*x*x + p[3]*x*x*x ) * ( 1 + p[4]*y ) / (xbinsize * ybinsize)
+                rpfUp    = ( pUp[0] + pUp[1]*x + pUp[2]*x*x + pUp[3]*x*x*x ) * ( 1 + pUp[4]*y ) / (xbinsize * ybinsize)
+                rpfDown  = ( pDn[0] + pDn[1]*x + pDn[2]*x*x + pDn[3]*x*x*x ) * ( 1 + pDn[4]*y ) / (xbinsize * ybinsize)
+                                   
             else:
                 
                 rpfNom = np.ones(len(events))   
@@ -640,12 +667,11 @@ class TTbarResProcessor(processor.ProcessorABC):
                 rpfDown = np.ones(len(events))  
                 
                 
-                            
             weights.add("transferFunction", 
-                    weight=ak.flatten(rpfNom), 
-                    weightUp=ak.flatten(rpfUp), 
-                    weightDown=ak.flatten(rpfDown),
-                           )    
+                    weight=rpfNom, 
+                    weightUp=rpfUp, 
+                    weightDown=rpfDown,
+                           ) 
 
             # for mistag rate weights
 #             mistag_rate_df = pd.read_csv(f'data/corrections/backgroundEstimate/mistag_rate_{self.iov}.csv')
@@ -824,6 +850,11 @@ class TTbarResProcessor(processor.ProcessorABC):
                 
                 del btag_wgts_nom, btag_wgts_up, btag_wgts_down
                 del btag_wgts_nom_bcats, btag_wgts_up_bcats, btag_wgts_down_bcats
+                
+                
+            
+                            
+                
 
 
 
@@ -901,7 +932,6 @@ class TTbarResProcessor(processor.ProcessorABC):
             if not 'jes' in correction and not 'jer' in correction:    
                 
 
-            
                 for syst in weights.variations:
                     
                     

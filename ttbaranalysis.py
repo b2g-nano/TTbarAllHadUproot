@@ -29,8 +29,11 @@ if __name__ == "__main__":
                     epilog='for a test of MC QCD, MC TTbar, JetHT run  "python ttbaranalysis.py --test"')
     
     # datasets to run
-    parser.add_argument('-d', '--dataset', choices=['JetHT', 'QCD', 'TTbar', 'ZPrime', 'ZPrimeDM', 'RSGluon'], 
-                        action='append', default=['QCD', 'TTbar', 'JetHT', 'RSGluon'])
+    parser.add_argument('-d', '--dataset',
+                        choices=['JetHT', 'QCD', 'TTbar', 'ZPrime10', 'ZPrime30', 'ZPrimeDM', 'RSGluon'], 
+                        default=['QCD', 'TTbar', 'JetHT'],
+                        action='append'
+                       )
     parser.add_argument('--iov', choices=['2016APV', '2016', '2017', '2018'], default='2016')
     
     # choose specific eras, pt bins, mass points
@@ -42,7 +45,6 @@ if __name__ == "__main__":
     parser.add_argument('--bkgest', action='store_true', help='run with background estimate')
     parser.add_argument('--noSyst', action='store_true', help='run without systematics')
 
-
     # run options
     parser.add_argument('--dask', action='store_true')
     parser.add_argument('--env', choices=['casa', 'lpc', 'winterfell', 'C', 'L', 'W'], default='lpc')
@@ -52,7 +54,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     # remove defaults if --dataset given
-    if len(args.dataset) > 4: args.dataset = args.dataset[4:]
+    if len(args.dataset) > 3: args.dataset = args.dataset[3:]
+    
     
     if args.dask and (args.env == 'lpc' or args.env == 'L'):
         from lpcjobqueue import LPCCondorCluster
@@ -71,11 +74,11 @@ if __name__ == "__main__":
     
     
     # transfer function parameters
-    f = open('data/corrections/rpf_params_QCD_rpf_fits_1x0.txt').read().split('\n')
+    f = open(f'data/corrections/rpf_params_QCD_rpf_fitb_3x1_{IOV}.txt').read().split('\n')
     params = {
         'param': [float(param.split('+/-')[0]) for param in [line.split(':')[1] for line in f]],
         'error': [float(param.split('+/-')[1]) for param in [line.split(':')[1] for line in f]],
-        'function': '1x0',
+        'function': '3x1',
     }
     del f
 
@@ -151,7 +154,8 @@ if __name__ == "__main__":
         "JetHT": 'data/nanoAOD/JetHT.json',
         "QCD": 'data/nanoAOD/QCD.json',
         "TTbar": 'data/nanoAOD/TTbar.json',
-        "ZPrime": 'data/nanoAOD/ZPrime.json',
+        "ZPrime10": 'data/nanoAOD/ZPrime10.json',
+        "ZPrime30": 'data/nanoAOD/ZPrime30.json',
         "ZPrimeDM": 'data/nanoAOD/ZPrimeDM.json',
         "RSGluon": 'data/nanoAOD/RSGluon.json',
     }
@@ -213,9 +217,12 @@ if __name__ == "__main__":
                 if args.test: subString += '_test'
                                 
                 savefilename = f'{savedir}{sample}_{IOV}{subString}.coffea'
-                if 'ZPrime' in sample or 'RSGluon' in sample:
+                if 'RSGluon' in sample:
                     subString = subString.replace(subsection, '')
                     savefilename = f'{savedir}{sample}{subsection}_{IOV}{subString}.coffea'
+                elif 'ZPrime' in sample:
+                    subString = subString.replace(subsection, '')
+                    savefilename = f'{savedir}ZPrime{subsection}_{sample.replace("ZPrime","")}_{IOV}{subString}.coffea'
                 print(f'running {sample} {subsection}')
 
 

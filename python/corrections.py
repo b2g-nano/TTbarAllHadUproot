@@ -8,7 +8,7 @@ from coffea.jetmet_tools import JetResolutionScaleFactor
 from coffea.jetmet_tools import FactorizedJetCorrector, JetCorrectionUncertainty
 from coffea.jetmet_tools import JECStack, CorrectedJetsFactory
 from coffea.lookup_tools import extractor
-
+import copy
     
 def GetFlavorEfficiency(Subjet, Flavor, bdisc): # Return "Flavor" efficiency numerator and denominator
     '''
@@ -64,8 +64,16 @@ def HEMCleaning(JetCollection):
 
     isHEM            = ak.where(detector_region1 & jet_selection, 0.80, isHEM)
     isHEM            = ak.where(detector_region2 & jet_selection, 0.65, isHEM)
+    
+    
+    corrected_jets = copy.deepcopy(JetCollection)
+    corrected_jets["pt"]   = JetCollection.pt * isHEM
+    corrected_jets["mass"] = JetCollection.mass * isHEM
+                   
+                   
+    del JetCollection
 
-    return isHEM
+    return corrected_jets
 
 
 
