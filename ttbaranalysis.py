@@ -65,7 +65,7 @@ if __name__ == "__main__":
 
     samples = args.dataset
     IOV = args.iov
-    useDeepAK8 = True
+    useDeepAK8 = False
     dask_memory = '3GB' # priority decreases for >2GB memory
     chunksize_dask = 100000
     chunksize_futures = 10000
@@ -74,13 +74,13 @@ if __name__ == "__main__":
     
     
     # transfer function parameters
-    f = open(f'data/corrections/rpf_params_QCD_rpf_fitb_3x1_{IOV}.txt').read().split('\n')
-    params = {
-        'param': [float(param.split('+/-')[0]) for param in [line.split(':')[1] for line in f]],
-        'error': [float(param.split('+/-')[1]) for param in [line.split(':')[1] for line in f]],
-        'function': '3x1',
-    }
-    del f
+    # f = open(f'data/corrections/rpf_params_QCD_rpf_fitb_3x1_{IOV}.txt').read().split('\n')
+    # params = {
+    #     'param': [float(param.split('+/-')[0]) for param in [line.split(':')[1] for line in f]],
+    #     'error': [float(param.split('+/-')[1]) for param in [line.split(':')[1] for line in f]],
+    #     'function': '3x1',
+    # }
+    # del f
 
         
     
@@ -115,7 +115,7 @@ if __name__ == "__main__":
     
     if ('2016' in IOV) or ('2017' in IOV): systematics.append('prefiring')
     if '2018' in IOV: systematics.append('hem')
-    if args.bkgest: systematics.append('transferFunction')
+    # if args.bkgest: systematics.append('transferFunction')
 
      
     # make analysis categories 
@@ -239,7 +239,7 @@ if __name__ == "__main__":
                                                              useDeepAK8=useDeepAK8,
                                                              anacats=anacats,
                                                              systematics=systematics,
-                                                             rpf_params = params,
+                                                             #rpf_params = params,
 
                                                             ),
                         executor=processor.futures_executor,
@@ -312,7 +312,7 @@ if __name__ == "__main__":
                                                           useDeepAK8=useDeepAK8,
                                                           anacats=anacats,
                                                           systematics=systematics,
-                                                          rpf_params = params,
+                                                          #rpf_params = params,
                                                           ),
                                                      )
                         

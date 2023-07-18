@@ -74,13 +74,13 @@ class TTbarResProcessor(processor.ProcessorABC):
                  tau32Cut=0.65,
                  bdisc=0.5847,
                  deepAK8Cut='tight',
-                 useDeepAK8=True,
+                 useDeepAK8=False,
                  iov='2016',
                  bkgEst=False,
                  noSyst=False,
                  systematics = ['nominal', 'pileup'],
                  anacats = ['2t0bcen'],
-                 rpf_params = {'params':[1.0], 'errors':[0.0]},
+                 #rpf_params = {'params':[1.0], 'errors':[0.0]},
                 ):
                  
         self.iov = iov
@@ -95,7 +95,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         self.bkgEst = bkgEst
         self.noSyst = noSyst
         self.systematics = systematics
-        self.rpf_params = rpf_params        
+        #self.rpf_params = rpf_params        
         
 #         self.transfer_function = np.load('plots/save.npy')
 
@@ -200,7 +200,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                                           storage="weight", name="Counts"),
             
             
-            'mtt_vs_mt' : hist.Hist(syst_axis, cats_axis, jetmass2D_axis, ttbarmass2D_axis, storage="weight", name="Counts"),
+            #'mtt_vs_mt' : hist.Hist(syst_axis, cats_axis, jetmass2D_axis, ttbarmass2D_axis, storage="weight", name="Counts"),
 
             
             'deepak8_over_jetp': hist.Hist(cats_axis, ttag_axis, jetp_axis, storage="weight", name="Counts"),
@@ -620,70 +620,70 @@ class TTbarResProcessor(processor.ProcessorABC):
             
             # transfer functions multiplies by bin count
             # parameters need to be divided by bin size
-            xbinsize = 25
-            ybinsize = 360
+            # xbinsize = 25
+            # ybinsize = 360
             
             # get bins of mt and mtt and x and y values
-            bins_mt  = np.arange(0,500,xbinsize) # 20 bins in mt
-            bins_mtt = np.arange(800,8000,ybinsize) # 20 bins in mtt
-            x = (1/xbinsize) * bins_mt[(np.digitize(ak.flatten(jetmass), bins_mt) - 1)]
-            y = (1/ybinsize) * bins_mtt[(np.digitize(ak.flatten(ttbarmass), bins_mtt) - 1)]
+            # bins_mt  = np.arange(0,500,xbinsize) # 20 bins in mt
+            # bins_mtt = np.arange(800,8000,ybinsize) # 20 bins in mtt
+            # x = (1/xbinsize) * bins_mt[(np.digitize(ak.flatten(jetmass), bins_mt) - 1)]
+            # y = (1/ybinsize) * bins_mtt[(np.digitize(ak.flatten(ttbarmass), bins_mtt) - 1)]
    
             # get parameters of transfer function with uncertainties
-            p = self.rpf_params['param']
-            pUp = [p + err for p, err in zip(self.rpf_params['param'], self.rpf_params['error'])]
-            pDn = [p - err for p, err in zip(self.rpf_params['param'], self.rpf_params['error'])]
+            # p = self.rpf_params['param']
+            # pUp = [p + err for p, err in zip(self.rpf_params['param'], self.rpf_params['error'])]
+            # pDn = [p - err for p, err in zip(self.rpf_params['param'], self.rpf_params['error'])]
 
             
             
-            if '0x1' in self.rpf_params['function']:
+            # if '0x1' in self.rpf_params['function']:
                 
-                 # @0 + @1*y
+            #      # @0 + @1*y
 
-                rpfNom  = p[0] + p[1] * y
-                rpfUp   = pUp[0] + pUp[1] * y
-                rpfDown = pDn[0] + pDn[1] * y
+            #     rpfNom  = p[0] + p[1] * y
+            #     rpfUp   = pUp[0] + pUp[1] * y
+            #     rpfDown = pDn[0] + pDn[1] * y
                 
-            elif '1x0' in self.rpf_params['function']:
+            # elif '1x0' in self.rpf_params['function']:
                 
-                # @0 + @1*x
+            #     # @0 + @1*x
                 
-                rpfNom  = (p[1] * x + p[0])
-                rpfUp   = (pUp[1] * x + pUp[0])
-                rpfDown = (pDn[1] * x + pDn[0])
+            #     rpfNom  = (p[1] * x + p[0])
+            #     rpfUp   = (pUp[1] * x + pUp[0])
+            #     rpfDown = (pDn[1] * x + pDn[0])
                 
-            elif '3x1' in self.rpf_params['function']:
+            # elif '3x1' in self.rpf_params['function']:
                 
-                # (@0+@1*x+@2*x*x+@3*x*x*x)*(1+@4*y)
+            #     # (@0+@1*x+@2*x*x+@3*x*x*x)*(1+@4*y)
                 
-                rpfNom   = ( p[0] + p[1]*x + p[2]*x*x + p[3]*x*x*x ) * ( 1 + p[4]*y ) / (xbinsize * ybinsize)
-                rpfUp    = ( pUp[0] + pUp[1]*x + pUp[2]*x*x + pUp[3]*x*x*x ) * ( 1 + pUp[4]*y ) / (xbinsize * ybinsize)
-                rpfDown  = ( pDn[0] + pDn[1]*x + pDn[2]*x*x + pDn[3]*x*x*x ) * ( 1 + pDn[4]*y ) / (xbinsize * ybinsize)
+            #     rpfNom   = ( p[0] + p[1]*x + p[2]*x*x + p[3]*x*x*x ) * ( 1 + p[4]*y ) / (xbinsize * ybinsize)
+            #     rpfUp    = ( pUp[0] + pUp[1]*x + pUp[2]*x*x + pUp[3]*x*x*x ) * ( 1 + pUp[4]*y ) / (xbinsize * ybinsize)
+            #     rpfDown  = ( pDn[0] + pDn[1]*x + pDn[2]*x*x + pDn[3]*x*x*x ) * ( 1 + pDn[4]*y ) / (xbinsize * ybinsize)
                                    
-            else:
+            # else:
                 
-                rpfNom = np.ones(len(events))   
-                rpfUp = np.ones(len(events))   
-                rpfDown = np.ones(len(events))  
+            #     rpfNom = np.ones(len(events))   
+            #     rpfUp = np.ones(len(events))   
+            #     rpfDown = np.ones(len(events))  
                 
                 
-            weights.add("transferFunction", 
-                    weight=rpfNom, 
-                    weightUp=rpfUp, 
-                    weightDown=rpfDown,
-                           ) 
+            # weights.add("transferFunction", 
+            #         weight=rpfNom, 
+            #         weightUp=rpfUp, 
+            #         weightDown=rpfDown,
+            #                ) 
 
             # for mistag rate weights
-#             mistag_rate_df = pd.read_csv(f'data/corrections/backgroundEstimate/mistag_rate_{self.iov}.csv')
-#             pbins = mistag_rate_df['jetp bins'].values
-#             mistag_weights = np.ones(len(FatJets), dtype=float)
+            mistag_rate_df = pd.read_csv(f'data/corrections/backgroundEstimate/mistag_rate_{self.iov}.csv')
+            pbins = mistag_rate_df['jetp bins'].values
+            mistag_weights = np.ones(len(FatJets), dtype=float)
             
             
             # for mass modification
 
-# #             qcdfile = util.load(f'data/corrections/backgroundEstimate/QCD_{self.iov}.coffea')
-#             qcd_jetmass_dict = json.load(open(f'data/corrections/backgroundEstimate/QCD_jetmass_{self.iov}.json'))
-#             qcd_jetmass_bins = qcd_jetmass_dict['bins']
+#             qcdfile = util.load(f'data/corrections/backgroundEstimate/QCD_{self.iov}.coffea')
+            qcd_jetmass_dict = json.load(open(f'data/corrections/backgroundEstimate/QCD_jetmass_{self.iov}.json'))
+            qcd_jetmass_bins = qcd_jetmass_dict['bins']
         
         
 #             # for transfer function
@@ -744,7 +744,7 @@ class TTbarResProcessor(processor.ProcessorABC):
 #                 ttbarcands.slot1.p4[icat]["fMass"] = ModMass_hist_dist.rvs(size=len(ttbarcands.slot1.p4[icat]))
                 
                 
-#             weights.add('mistag', mistag_weights)
+            weights.add('mistag', mistag_weights)
     
         del jetmass, jetp, jetmsd
         
@@ -898,12 +898,12 @@ class TTbarResProcessor(processor.ProcessorABC):
                                   weight = weights.weight()[icat],
                                   )
             
-            output['mtt_vs_mt'].fill(systematic=correction,
-                                     anacat = i,
-                                     jetmass = ak.flatten(jetmsd[icat]),
-                                     ttbarmass = ak.flatten(ttbarmass[icat]),
-                                     weight = weights.weight()[icat],
-                                    )
+            # output['mtt_vs_mt'].fill(systematic=correction,
+            #                          anacat = i,
+            #                          jetmass = ak.flatten(jetmsd[icat]),
+            #                          ttbarmass = ak.flatten(ttbarmass[icat]),
+            #                          weight = weights.weight()[icat],
+            #                         )
             
             output['discriminators'].fill(anacat = i,
                                           jetp = ak.flatten(jetp[icat]),
@@ -943,12 +943,12 @@ class TTbarResProcessor(processor.ProcessorABC):
                                          weight = weights.weight(syst)[icat],
                                         )
 
-                    output['mtt_vs_mt'].fill(systematic=syst,
-                                         anacat = i,
-                                         ttbarmass = ak.flatten(ttbarmass[icat]),
-                                         jetmass = ak.flatten(jetmsd[icat]),
-                                         weight = weights.weight(syst)[icat],
-                                        )
+                    # output['mtt_vs_mt'].fill(systematic=syst,
+                    #                      anacat = i,
+                    #                      ttbarmass = ak.flatten(ttbarmass[icat]),
+                    #                      jetmass = ak.flatten(jetmsd[icat]),
+                    #                      weight = weights.weight(syst)[icat],
+                    #                     )
 
         
         
