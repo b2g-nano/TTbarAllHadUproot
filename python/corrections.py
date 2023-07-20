@@ -51,10 +51,13 @@ def GetL1PreFiringWeight(events):
     return L1PrefiringWeights
 
 
-def HEMCleaning(JetCollection):
+def HEMCleaning(JetCollection, runs):
     # original code https://gitlab.cern.ch/gagarwal/ttbardileptonic/-/blob/master/TTbarDileptonProcessor.py#L58
 
     ## Reference: https://hypernews.cern.ch/HyperNews/CMS/get/JetMET/2000.html
+    
+    run = (runs >= 319077)
+
     isHEM = ak.ones_like(JetCollection.pt)
     detector_region1 = ((JetCollection.phi < -0.87) & (JetCollection.phi > -1.57) &
                        (JetCollection.eta < -1.3) & (JetCollection.eta > -2.5))
@@ -62,22 +65,45 @@ def HEMCleaning(JetCollection):
                        (JetCollection.eta < -2.5) & (JetCollection.eta > -3.0))
     jet_selection    = ((JetCollection.jetId > 1) & (JetCollection.pt > 15))
 
-    isHEM            = ak.where(detector_region1 & jet_selection, 0.80, isHEM)
-    isHEM            = ak.where(detector_region2 & jet_selection, 0.65, isHEM)
-    
+    isHEM            = ak.where(detector_region1 & jet_selection & run, 0.80, isHEM)
+    isHEM            = ak.where(detector_region2 & jet_selection & run, 0.65, isHEM)
     
     corrected_jets = copy.deepcopy(JetCollection)
     corrected_jets["pt"]   = JetCollection.pt * isHEM
     corrected_jets["mass"] = JetCollection.mass * isHEM
-                   
-                   
-    del JetCollection
 
     return corrected_jets
+    
+    
+def HEMVeto(Jets, FatJets, runs):
+
+    ## Reference: https://hypernews.cern.ch/HyperNews/CMS/get/JetMET/2000.html
+    
+    run = (runs >= 319077)
+    
+    detector_region1 = ((Jets.phi < -0.87) & (Jets.phi > -1.57) &
+                       (Jets.eta < -1.3) & (Jets.eta > -2.5))
+    detector_region2 = ((Jets.phi < -0.87) & (Jets.phi > -1.57) &
+                       (Jets.eta < -2.5) & (Jets.eta > -3.0))
+    jet_selection    = ((Jets.jetId > 1) & (Jets.pt > 15))
 
 
+    vetoHEMJets = ak.any((detector_region1 & jet_selection) & (detector_region2 & jet_selection), axis=1)
+    
+    detector_region1 = ((FatJets.phi < -0.87) & (FatJets.phi > -1.57) &
+                       (FatJets.eta < -1.3) & (FatJets.eta > -2.5))
+    detector_region2 = ((FatJets.phi < -0.87) & (FatJets.phi > -1.57) &
+                       (FatJets.eta < -2.5) & (FatJets.eta > -3.0))
+    jet_selection    = ((FatJets.jetId > 1) & (FatJets.pt > 15))
+    
+    vetoHEMFatJets = ak.any((detector_region1 & jet_selection) & (detector_region2 & jet_selection), axis=1)
 
+    vetoHEM = (~vetoHEMFatJets & ~vetoHEMJets & ~run)
+    
+    return vetoHEM
+    
 
+    
 def GetJECUncertainties(FatJets, events, IOV, R='AK8', isData=False):
 
     # original code https://gitlab.cern.ch/gagarwal/ttbardileptonic/-/blob/master/jmeCorrections.py

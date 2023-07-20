@@ -23,8 +23,8 @@ toptag_sf = 0.9
 toptag_kf = 1.0 #0.7
 qcd_xs = 13700000.0 #pb From https://cms-gen-dev.cern.ch/xsdb
 
-ttbar_xs = {'700to1000': 831.76 * (0.09210), #pb For ttbar mass from 700 to 1000
-            '1000toInf': 831.76 * (0.02474) #pb For ttbar mass from 1000 to Inf
+ttbar_xs = {'700to1000': 831.76 * (0.09210), #pb For ttbar mass from 700 to 1000 # 65.49 in xsdb
+            '1000toInf': 831.76 * (0.02474) #pb For ttbar mass from 1000 to Inf # 16.36 in xsdb
            }
 
 zprimeDM_xs = {
@@ -292,6 +292,18 @@ def makeSaveDirectories():
         plots_dir+'/images/pdf/systematics/2016',
         plots_dir+'/images/pdf/systematics/2017',
         plots_dir+'/images/pdf/systematics/2018',
+        
+        # systematics checks
+        plots_dir+'/images/png/systematics_checks/2016all',
+        plots_dir+'/images/png/systematics_checks/2016APV',
+        plots_dir+'/images/png/systematics_checks/2016',
+        plots_dir+'/images/png/systematics_checks/2017',
+        plots_dir+'/images/png/systematics_checks/2018',
+        plots_dir+'/images/pdf/systematics_checks/2016all',
+        plots_dir+'/images/pdf/systematics_checks/2016APV',
+        plots_dir+'/images/pdf/systematics_checks/2016',
+        plots_dir+'/images/pdf/systematics_checks/2017',
+        plots_dir+'/images/pdf/systematics_checks/2018',
         
         # ttbarmass
         plots_dir+'/images/png/ttbarmass/2016all',
@@ -605,5 +617,11 @@ def getCoffeaFilenames():
     return coffeaFiles
     
     
-
+    
+    
+def printTime(delta, definition='Elapsed Time'):
+    
+    time_string = '{0:0.0f} h {1:0.0f} min {2:0.0f} sec'.format(delta // 3600, delta % 3600 // 60, delta % 3600 % 60)
+    full_string = definition + ': ' + time_string
+    print(full_string)
     
