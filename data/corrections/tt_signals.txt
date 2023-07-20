@@ -1,0 +1,19 @@
+ttbarfits/ttbar-RSG2000_area,	ttbarfits/ttbar-RSG2000_area,
+2000			2000,
+0.9417
+0.06072
+
+
+	   // "HELP": "since the data file is not called TTbarAllHaddata_obs.root, we make an alias to the real name - shown below",
+	   // "ALIAS": "16_Data",t 
+
+
+
+
+Hi Amitav,
+
+I am running 2DAlphabet using a fork from Fabio Iemmi for our ttbar analysis. Everything is working very well, thank you so much for the organized code and clear instructions. I have a few questions about the output - the plots_fit_s look good, but the plots_fit_b have huge uncertainties for the QCD background, which seems to be almost zero. What is the difference between the plots_fit_s and plots_fit_b?
+
+One other thing I would like to do is include separate histograms for our analysis categories separated by btag and rapidity cuts. Is there a way to define the histogram in the json file, for example MttvsMt$region$systup can be MttvsMt$analysisCategory$region$systup.
+
+Thank you so much for your help!
