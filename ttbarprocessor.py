@@ -106,7 +106,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                  noSyst=False,
                  systematics = ['nominal', 'pileup'],
                  anacats = ['2t0bcen'],
-                 rpf_params = {'params':[1.0], 'errors':[0.0]},
+                 #rpf_params = {'params':[1.0], 'errors':[0.0]},
                 ):
                  
         self.iov = iov
@@ -122,7 +122,7 @@ class TTbarResProcessor(processor.ProcessorABC):
         self.bkgEst = bkgEst
         self.noSyst = noSyst
         self.systematics = systematics
-        self.rpf_params = rpf_params        
+        #self.rpf_params = rpf_params        
         
 #         self.transfer_function = np.load('plots/save.npy')
 
@@ -240,7 +240,7 @@ class TTbarResProcessor(processor.ProcessorABC):
                                           storage="weight", name="Counts"),
             
             
-            'mtt_vs_mt' : hist.Hist(syst_axis, cats_axis, jetmass2D_axis, ttbarmass2D_axis, storage="weight", name="Counts"),
+            #'mtt_vs_mt' : hist.Hist(syst_axis, cats_axis, jetmass2D_axis, ttbarmass2D_axis, storage="weight", name="Counts"),
 
             
             'deepak8_over_jetp': hist.Hist(cats_axis, ttag_axis, jetp_axis, storage="weight", name="Counts"),

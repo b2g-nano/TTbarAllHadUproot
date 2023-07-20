@@ -92,6 +92,7 @@ if __name__ == "__main__":
     # transfer function parameters
     params = json.load(open(f'data/corrections/params_{IOV}.json'))
 
+
         
     
     ##### systematics and analysis categories #####
@@ -128,6 +129,7 @@ if __name__ == "__main__":
         systematics.append('hem')
         systematics.append('hemVeto')
     if args.bkgest == '2dalphabet': systematics.append('transferFunction')
+
 
      
     # make analysis categories 
@@ -263,7 +265,7 @@ if __name__ == "__main__":
                                                              useDeepCSV=useDeepCSV,
                                                              anacats=anacats,
                                                              systematics=systematics,
-                                                             rpf_params = params,
+                                                             #rpf_params = params,
 
                                                             ),
                         executor=processor.futures_executor,
@@ -337,7 +339,7 @@ if __name__ == "__main__":
                                                           useDeepCSV=useDeepCSV,
                                                           anacats=anacats,
                                                           systematics=systematics,
-                                                          rpf_params = params,
+                                                          #rpf_params = params,
                                                           ),
                                                      )
                         
