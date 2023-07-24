@@ -32,10 +32,13 @@ else:
     
     IOV = '2016'
 
+    
+print(IOV, type(IOV))
 
 # scale factors and luminosity
 
 lumi = functions.lumi
+print(lumi)
 rsgluon_xs = functions.rsgluon_xs
 
 
@@ -45,7 +48,7 @@ rsgluon_xs = functions.rsgluon_xs
 functions.makeSaveDirectories()
 
 
-blind = True
+blind = False
 lumifactor = 0.1 if blind else 1.0
 
 label_map = functions.getLabelMap()
@@ -80,40 +83,7 @@ lines = list(lines_dict.values())
 cats = ['0bcen', '0bfwd', '1bcen', '1bfwd', '2bcen', '2bfwd']
 cat_labels = ['cen0b', 'fwd0b', 'cen1b', 'fwd1b', 'cen2b', 'fwd2b']
 
-systematics = ['nominal', 'jes', 'jer', 'pileup', 'pdf', 'q2', 'btag', 'prefiring']
-syst_labels = ['nominal']
-for s in systematics:
-    if not 'nominal' in s:
-        syst_labels.append(s+'Down')
-        syst_labels.append(s+'Up')
 
-        
-
-# RS Gluon files
-
-RSGluon1000file = util.load('../outputs/RSGluon1000_2016.coffea')
-RSGluon1500file = util.load('../outputs/RSGluon1500_2016.coffea')
-RSGluon2000file = util.load('../outputs/RSGluon2000_2016.coffea')
-RSGluon2500file = util.load('../outputs/RSGluon2500_2016.coffea')
-RSGluon3000file = util.load('../outputs/RSGluon3000_2016.coffea')
-RSGluon3500file = util.load('../outputs/RSGluon3500_2016.coffea')
-RSGluon4000file = util.load('../outputs/RSGluon4000_2016.coffea')
-RSGluon4500file = util.load('../outputs/RSGluon4500_2016.coffea')
-RSGluon5000file = util.load('../outputs/RSGluon5000_2016.coffea')
-
-
-RSGluonFiles = {
-    "1000": RSGluon1000file,
-    "1500": RSGluon1500file,
-    "2000": RSGluon2000file,
-    "2500": RSGluon2500file,
-    "3000": RSGluon3000file,
-    "3500": RSGluon3500file,
-    "4000": RSGluon4000file,
-    "4500": RSGluon4500file,
-    "5000": RSGluon5000file,
-    
-}
 
 
 
@@ -141,78 +111,130 @@ def getUncertainy(hbkg, hUnc):
         
 # systematics plots #
 
-def plotSystematics():
+def plotSystematics(IOV, dataset='TTbar'):
 
     print('\nPlotting systematics\n')
+    
+    print(IOV)
+    
+    
 
+#     for cat, catname in zip(['']+cats, ['inclusive']+cat_labels):
 
-    for cat, catname in zip(cats, cat_labels):
-
-        signal_cat = label_to_int['2t'+cat]
-
-        for syst in systematics[1:]:
-
-            fig, (ax1, ax2) = plt.subplots(nrows=2, height_ratios=[3, 1])
-
-            text = r'MC TTbar'+'\n'+syst+' systematic variations'
-
-            dytext = ''
-            if 'cen' in cat:
-                dytext = r'$\Delta y$ < 1.0'
-            elif 'fwd' in cat:
-                dytext = r'$\Delta y$ > 1.0'
-
-            btext = ''
-            if '0b' in cat:
-                btext = '0 b-tags'
-            elif '1b' in cat:
-                btext = '1 b-tag'
-            elif '2b' in cat:
-                btext = '2 b-tags'
-
-            text = f'MC TTbar\n{syst} systematic variations\n{btext}, {dytext}'
-
-
-            hep.cms.label('Preliminary', data=True, lumi='{0:0.1f}'.format(lumi[IOV]*lumifactor/1000.), year=IOV.replace('all',''), loc=1, fontsize=20, ax=ax1)
-            hep.cms.text(text, loc=2, fontsize=20, ax=ax1)
-
-
-
-            httbar = functions.getHist('ttbarmass', 'TTbar', False, IOV, sum_axes=['anacat'], integrate_axes={'anacat':signal_cats,'systematic':'nominal'})    
-            httbarUp = functions.getHist('ttbarmass', 'TTbar', False, IOV, sum_axes=['anacat'], integrate_axes={'anacat':signal_cats,'systematic':syst+'Up'})
-            httbarDn = functions.getHist('ttbarmass', 'TTbar', False, IOV, sum_axes=['anacat'], integrate_axes={'anacat':signal_cats,'systematic':syst+'Down'})
-
-            hep.histplot(httbar, histtype='step', color='k', ax=ax1, label='Nominal')
-            hep.histplot(httbarUp, histtype='step', color='green', ax=ax1, label='Up')
-            hep.histplot(httbarDn, histtype='step', color='red', ax=ax1, label='Down')
-
-
-            ratioUp = httbarUp / httbar.values()
-            ratioDn = httbarDn / httbar.values()
-
-            hep.histplot(ratioUp, histtype='step', color='green', ax=ax2)
-            hep.histplot(ratioDn, histtype='step', color='red', ax=ax2)
-            ax2.axhline(1, color='black', ls='--')
+        
+        
+#         if catname == 'inclusive':
             
-            ymax = np.max(httbar.values()) * 1.5
+#             signal_cat = signal_cats
+            
+#         else:
+#             signal_cat = label_to_int['2t'+cat]
+            
+        
+        
+#         systsUpDn = list(functions.getHist2('ttbarmass', dataset, IOV, sum_axes=['anacat']).axes['systematic'])
+        
+#         systematics = [syst.replace('Up', '') for syst in systsUpDn if 'Down' not in syst]        
+        
 
-            ax2.set_ylabel('Syst/Nom')
-            ax2.set_xlabel(ax1.get_xlabel())
-            ax1.set_xlabel('')
-            ax1.set_ylim(1e-1,ymax)
-            ax2.set_ylim(0.5,1.5)
+#         for syst in systematics[1:]:
+
+#             fig, (ax1, ax2) = plt.subplots(nrows=2, height_ratios=[3, 1])
+
+#             text = r'MC TTbar'+'\n'+syst+' systematic variations'
+
+#             dytext = ''
+#             if 'cen' in cat:
+#                 dytext = r'$\Delta y$ < 1.0'
+#             elif 'fwd' in cat:
+#                 dytext = r'$\Delta y$ > 1.0'
+
+#             btext = ''
+#             if '0b' in cat:
+#                 btext = '0 b-tags'
+#             elif '1b' in cat:
+#                 btext = '1 b-tag'
+#             elif '2b' in cat:
+#                 btext = '2 b-tags'
+
+                
+#             if catname == 'inclusive':
+#                 text = f'MC {dataset}\n{syst} systematic variations\n' + r'b-tag, $\Delta y$ inclusive'
+#             else:
+#                 text = f'MC {dataset}\n{syst} systematic variations\n{btext}, {dytext}'
 
 
-            ax1.legend()
+#             hep.cms.label('Preliminary', data=True, lumi='{0:0.1f}'.format(lumi[IOV]*lumifactor/1000.), year=IOV.replace('all',''), loc=1, fontsize=20, ax=ax1)
+#             hep.cms.text(text, loc=2, fontsize=20, ax=ax1)
 
-            imagefile = f'images/png/systematics/{IOV}/TTbar_{catname}_{syst}.png'
 
-            plt.savefig(imagefile)
-            plt.savefig(imagefile.replace('png','pdf'))
-            print('saving ', imagefile)
-            print('saving ', imagefile.replace('png','pdf'))
+            
+#             if 'hem' in syst:
+                
+#                 httbar = functions.getHist2('ttbarmass', dataset, IOV,
+#                      sum_axes=['anacat'],
+#                      integrate_axes={'systematic':'nominal', 'anacat':signal_cats},
+#                     )
+#                 httbarDn = functions.getHist2('ttbarmass', dataset, IOV,
+#                      sum_axes=['anacat'],
+#                      integrate_axes={'systematic':syst, 'anacat':signal_cats},
+#                     )
 
-            ax1.plot()
+
+#                 hep.histplot(httbar, histtype='step', color='k', ax=ax1, label='Nominal')
+#                 hep.histplot(httbarDn, histtype='step', color='red', ax=ax1, label=syst)
+
+
+#                 ratioDn = httbarDn / httbar.values()
+
+#                 hep.histplot(ratioDn, histtype='step', color='red', ax=ax2, label=syst)
+                
+                
+#             else:
+#                 httbar = functions.getHist2('ttbarmass', dataset, IOV,
+#                      sum_axes=['anacat'],
+#                      integrate_axes={'systematic':'nominal', 'anacat':signal_cats},
+#                     )
+#                 httbarUp = functions.getHist2('ttbarmass', dataset, IOV,
+#                      sum_axes=['anacat'],
+#                      integrate_axes={'systematic':syst+'Up', 'anacat':signal_cats},
+#                     )
+#                 httbarDn = functions.getHist2('ttbarmass', dataset, IOV,
+#                      sum_axes=['anacat'],
+#                      integrate_axes={'systematic':syst+'Down', 'anacat':signal_cats},
+#                     )
+
+#                 hep.histplot(httbar, histtype='step', color='k', ax=ax1, label='Nominal')
+#                 hep.histplot(httbarUp, histtype='step', color='green', ax=ax1, label='Up')
+#                 hep.histplot(httbarDn, histtype='step', color='red', ax=ax1, label='Down')
+
+
+#                 ratioUp = httbarUp / httbar.values()
+#                 ratioDn = httbarDn / httbar.values()
+
+#                 hep.histplot(ratioUp, histtype='step', color='green', ax=ax2)
+#                 hep.histplot(ratioDn, histtype='step', color='red', ax=ax2)
+#             ax2.axhline(1, color='black', ls='--')
+            
+#             ymax = np.max(httbar.values()) * 1.5
+
+#             ax2.set_ylabel('Syst/Nom')
+#             ax2.set_xlabel(ax1.get_xlabel())
+#             ax1.set_xlabel('')
+#             ax1.set_ylim(1e-1,ymax)
+#             ax2.set_ylim(0.5,1.5)
+
+
+#             ax1.legend()
+
+#             imagefile = f'images/png/systematics/{IOV}/{dataset}_{catname}_{syst}.png'
+
+#             plt.savefig(imagefile)
+#             plt.savefig(imagefile.replace('png','pdf'))
+#             print('saving ', imagefile)
+#             print('saving ', imagefile.replace('png','pdf'))
+
+#             ax1.plot()
 
 
 
@@ -221,15 +243,46 @@ def plotSystematics():
     masses = ['1000', '5000']
 
     for mass in masses:
+        
+        if dataset=='QCD': continue
 
-        for cat, catname in zip(cats, cat_labels):
+        for cat, catname in zip(['']+cats, ['inclusive']+cat_labels):
 
-            signal_cat = label_to_int['2t'+cat]
-
-            for syst in systematics[1:]:
-
+            if catname == 'inclusive':
+                signal_cat = signal_cats
+            else:
+                signal_cat = label_to_int['2t'+cat]
+            
+            systsUpDn = list(functions.getHist2('ttbarmass', f'RSGluon{mass}', IOV, sum_axes=['anacat']).axes['systematic'])
+            systs = [syst.replace('Up', '') for syst in systsUpDn if 'Down' not in syst]        
+            for syst in systs[1:]:
+                
                 fig, (ax1, ax2) = plt.subplots(nrows=2, height_ratios=[3, 1])
+                
+                if 'hem' in syst:
+                    
 
+                    hRSGluon = functions.getHist2('ttbarmass', f'RSGluon{mass}', IOV,
+                         sum_axes=['anacat'],
+                         integrate_axes={'systematic':'nominal', 'anacat':signal_cats},
+                        )
+                    hRSGluonDn = functions.getHist2('ttbarmass', f'RSGluon{mass}', IOV,
+                         sum_axes=['anacat'],
+                         integrate_axes={'systematic':syst, 'anacat':signal_cats},
+                        )
+
+
+                    hep.histplot(hRSGluon, histtype='step', color='k', ax=ax1, label='Nominal')
+                    hep.histplot(hRSGluonDn, histtype='step', color='red', ax=ax1, label=syst)
+
+
+                    ratioDn = hRSGluonDn / hRSGluon.values()
+
+                    hep.histplot(ratioDn, histtype='step', color='red', ax=ax2, label=syst)
+
+                    fig, (ax1, ax2) = plt.subplots(nrows=2, height_ratios=[3, 1])
+
+                
                 dytext = ''
                 if 'cen' in cat:
                     dytext = r'$\Delta y$ < 1.0'
@@ -243,17 +296,33 @@ def plotSystematics():
                     btext = '1 b-tag'
                 elif '2b' in cat:
                     btext = '2 b-tags'
+                
+                if catname == 'inclusive':
+                    text = f'RSGluon {int(mass)/1000} TeV\n{syst} systematic variations\n' + r'b-tag, $\Delta y$ inclusive'
+                
+                else:
+                    text = f'RSGluon {int(mass)/1000} TeV\n{syst} systematic variations\n{btext}, {dytext}'
 
-                text = f'RSGluon {int(mass)/1000} TeV\n{syst} systematic variations\n{btext}, {dytext}'
+
 
 
                 hep.cms.label('Preliminary', data=True, lumi='{0:0.1f}'.format(lumi[IOV]*lumifactor/1000.), year=IOV.replace('all',''), loc=1, fontsize=20, ax=ax1)
                 hep.cms.text(text, loc=2, fontsize=20, ax=ax1)
 
-                hRSGluon   = RSGluonFiles[mass]['mtt_vs_mt'][{'anacat':signal_cats}][{'anacat':sum,'systematic':'nominal'}][{'jetmass':sum}] * lumi[IOV]*lumifactor * rsgluon_xs[mass] / RSGluon1000file['cutflow']['sumw']
-                hRSGluonUp = RSGluonFiles[mass]['mtt_vs_mt'][{'anacat':signal_cats}][{'anacat':sum,'systematic':syst+'Up'}][{'jetmass':sum}] * lumi[IOV]*lumifactor * rsgluon_xs[mass] / RSGluon1000file['cutflow']['sumw']
-                hRSGluonDn = RSGluonFiles[mass]['mtt_vs_mt'][{'anacat':signal_cats}][{'anacat':sum,'systematic':syst+'Down'}][{'jetmass':sum}] * lumi[IOV]*lumifactor * rsgluon_xs[mass] / RSGluon1000file['cutflow']['sumw']
-
+                hRSGluon   = functions.getHist2('ttbarmass', f'RSGluon{mass}', IOV,
+                     sum_axes=['anacat'],
+                     integrate_axes={'systematic':'nominal', 'anacat':signal_cats},
+                    )
+                
+                hRSGluonUp = functions.getHist2('ttbarmass', f'RSGluon{mass}', IOV,
+                     sum_axes=['anacat'],
+                     integrate_axes={'systematic':syst+'Up', 'anacat':signal_cats},
+                    )
+                
+                hRSGluonDn = functions.getHist2('ttbarmass', f'RSGluon{mass}', IOV,
+                     sum_axes=['anacat'],
+                     integrate_axes={'systematic':syst+'Down', 'anacat':signal_cats},
+                    )
 
                 hep.histplot(hRSGluon, histtype='step', color='k', ax=ax1, label='Nominal')
                 hep.histplot(hRSGluonUp, histtype='step', color='green', ax=ax1, label='Up')
@@ -958,8 +1027,10 @@ def plotMtt():
     
     
 
-# plotSystematics()
-plotClosureTest()
+plotSystematics(IOV, dataset='TTbar')
+# plotSystematics(IOV, dataset='QCD')
+
+# plotClosureTest()
 # plotClosureTestQCD()
 # plotMtt()
 

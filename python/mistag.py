@@ -7,12 +7,23 @@ import numpy as np
 import pandas as pd
 import itertools
 import json
-import os
+import os, sys
+import functions
 
 
 # ## analysis categories
 
-IOVs = ['2016'] #['2016APV', '2016']
+
+if (len(sys.argv) > 1) and (sys.argv[1] in ['2016', '2016APV', '2016all', '2017', '2018', 'all']):
+    
+    IOV = sys.argv[1]
+
+else:
+    
+    IOV = '2016'
+    
+IOVs = [IOV]
+
 label_dict = util.load(f'outputs/QCD_{IOVs[0]}.coffea')['analysisCategories']
 
 for i,l in label_dict.items():
@@ -40,43 +51,7 @@ save_csv_filename = 'mistag_rate.csv'
 # ## load coffea files
 
 coffea_dir = 'outputs/'
-coffeaFiles = {
-    "JetHT":{
-        "2016APV": {
-            "B": coffea_dir+'JetHT_2016APVB.coffea',
-            "C": coffea_dir+'JetHT_2016APVC.coffea',
-            "D": coffea_dir+'JetHT_2016APVD.coffea',
-            "E": coffea_dir+'JetHT_2016APVE.coffea',
-        },
-        "2016": {
-            "F": coffea_dir+'JetHT_2016F.coffea',
-            "G": coffea_dir+'JetHT_2016G.coffea',
-            "H": coffea_dir+'JetHT_2016H.coffea',
-        },
-        "2017": '',
-        "2018": ''
-    },
-    
-    "TTbar": {
-        "2016APV": {
-            "700to1000": coffea_dir+'TTbar_2016APV_700to1000.coffea',
-            "1000toInf": coffea_dir+'TTbar_2016APV_1000toInf.coffea',
-        },
-        "2016": {
-            "700to1000": coffea_dir+'TTbar_2016_700to1000.coffea',
-            "1000toInf": coffea_dir+'TTbar_2016_1000toInf.coffea',
-        },
-        "2017": {
-            "700to1000": '',
-            "1000toInf": '',
-        },
-        "2018": {
-            "700to1000": '',
-            "1000toInf": '',
-        }
-    }
-}
-
+coffeaFiles = functions.getCoffeaFilenames()
 
 # ## manual jet $p$ bins
 pbins = np.array([ 400.,  500.,  600.,  800., 1000., 1500., 2000., 3000., 7000.])
@@ -109,13 +84,13 @@ for IOV in IOVs:
     
     jsonfile = f'data/corrections/backgroundEstimate/QCD_jetmass_{IOV}.json'
 
-    qcdfile = util.load(f'outputs/QCD_{IOV}.coffea')
+    qcdfile = util.load(f'outputs/AC/QCD_{IOV}.coffea')
     qcd_jetmass_dict = {'bins': [b for b in qcdfile['jetmass'].axes['jetmass'].edges[:-1]]}
 
     for cat in qcdfile['jetmass'].axes['anacat'].edges[:-1]:
         i = int(cat) 
         label = (qcdfile['analysisCategories'][i])
-        jetmass = [v for v in qcdfile['jetmass'][{'anacat':i}].values()]
+        jetmass = [v for v in qcdfile['jetmass'][{'anacat':i, 'systematic':'nominal'}].values()]
         qcd_jetmass_dict[label] = jetmass
 
     with open(jsonfile, 'w') as f:
@@ -127,24 +102,24 @@ for IOV in IOVs:
 
 for IOV in IOVs:
     
-    ttbar_700to1000 = util.load(coffeaFiles['TTbar'][IOV]['700to1000'])
-    ttbar_1000toInf = util.load(coffeaFiles['TTbar'][IOV]['1000toInf'])
+    ttbar_700to1000 = util.load(coffeaFiles['TTbar']['unweighted'][IOV]['700to1000'].replace('outputs/','outputs/AC/'))
+    ttbar_1000toInf = util.load(coffeaFiles['TTbar']['unweighted'][IOV]['1000toInf'].replace('outputs/','outputs/AC/'))
     
     ttbar_evts = {}
     ttbar_evts["700to1000"] = ttbar_700to1000['cutflow']['sumw']
     ttbar_evts["1000toInf"] = ttbar_1000toInf['cutflow']['sumw']
     
     ttbar_SF = {}
-    ttbar_SF["700to1000"] = luminosity[IOV] * ttbar_xs["700to1000"] * toptag_sf**2 * toptag_kf / ttbar_evts["700to1000"]
-    ttbar_SF["1000toInf"] = luminosity[IOV] * ttbar_xs["1000toInf"] * toptag_sf**2 * toptag_kf / ttbar_evts["1000toInf"]
+    ttbar_SF["700to1000"] = luminosity[IOV] * ttbar_xs["700to1000"] / ttbar_evts["700to1000"]
+    ttbar_SF["1000toInf"] = luminosity[IOV] * ttbar_xs["1000toInf"] / ttbar_evts["1000toInf"]
 
     save_csv_filename = f'mistag_rate_{IOV}.csv'
 
     jetht_files = []
 
-    for era, file in coffeaFiles['JetHT'][IOV].items():
+    for era, file in coffeaFiles['JetHT']['unweighted'][IOV].items():
         if os.path.isfile(file):
-            jetht_files.append(util.load(file))
+            jetht_files.append(util.load(file.replace('outputs/','outputs/AC/')))
             
             
     
