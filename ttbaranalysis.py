@@ -234,8 +234,6 @@ if __name__ == "__main__":
                 if args.bkgest: subString += '_bkgest'
                     
                     
-                    
-                if (args.toptagger == 'cmsv2') and (args.btagger == 'csvv2'): savedir = 'outputs/AC/'
                 savefilename = f'{savedir}{sample}_{IOV}{subString}.coffea'
                 if 'RSGluon' in sample:
                     subString = subString.replace(subsection, '')
