@@ -21,48 +21,86 @@ ttbar_xs1 = 831.76 * (0.09210) #pb For ttbar mass from 700 to 1000
 ttbar_xs2 = 831.76 * (0.02474) #pb For ttbar mass from 1000 to Inf
 toptag_sf = 0.9
 toptag_kf = 1.0 #0.7
-qcd_xs = 13700000.0 #pb From https://cms-gen-dev.cern.ch/xsdb
+qcd_xs = 1370.0 #pb From https://cms-gen-dev.cern.ch/xsdb
 
 ttbar_xs = {'700to1000': 831.76 * (0.09210), #pb For ttbar mass from 700 to 1000 # 65.49 in xsdb
             '1000toInf': 831.76 * (0.02474) #pb For ttbar mass from 1000 to Inf # 16.36 in xsdb
            }
 
+# zprimeDM_xs = {
+#     '1000': 2.222,
+#     '1500': 0.387,
+#     '2000': 0.09428,
+#     '2500': 0.0279,
+#     '3000': 0.009327,
+#     '3500': 0.003507,
+#     '4000': 0.001484,
+#     '4500': 0.0007087,
+#     '5000': 0.0003801,
+# }
+
+# zprime10_xs = {
+#     '1000': 0.3622,
+#     '2000': 0.01895,
+#     '3000': 0.002112,
+#     '4000': 0.0003889,
+# }
+
+# zprime30_xs = {
+#     '1000': 0.1081,
+#     '2000': 0.006689,
+#     '3000': 0.0009523,
+#     '4000': 0.0002273,
+# }
+
+# rsgluon_xs = {
+#     '1000': 21.03,
+#     '1500': 3.656,
+#     '2000': 0.9417,
+#     '2500': 0.3039,
+#     '3000': 0.1163,
+#     '3500': 0.05138,
+#     '4000': 0.02556,
+#     '4500': 0.01422,
+#     '5000': 0.008631,
+# }
+
 zprimeDM_xs = {
-    '1000': 2.222,
-    '1500': 0.387,
-    '2000': 0.09428,
-    '2500': 0.0279,
-    '3000': 0.009327,
-    '3500': 0.003507,
-    '4000': 0.001484,
-    '4500': 0.0007087,
-    '5000': 0.0003801,
+    '1000': 1.0,
+    '1500': 1.0,
+    '2000': 1.0,
+    '2500': 1.0,
+    '3000': 1.0,
+    '3500': 1.0,
+    '4000': 1.0,
+    '4500': 1.0,
+    '5000': 1.0
 }
 
 zprime10_xs = {
-    '1000': 0.3622,
-    '2000': 0.01895,
-    '3000': 0.002112,
-    '4000': 0.0003889,
+    '1000': 1.0,
+    '2000': 1.0,
+    '3000': 1.0,
+    '4000': 1.0
 }
 
 zprime30_xs = {
-    '1000': 0.1081,
-    '2000': 0.006689,
-    '3000': 0.0009523,
-    '4000': 0.0002273,
+    '1000': 1.0,
+    '2000': 1.0,
+    '3000': 1.0,
+    '4000': 1.0
 }
 
 rsgluon_xs = {
-    '1000': 21.03,
-    '1500': 3.656,
-    '2000': 0.9417,
-    '2500': 0.3039,
-    '3000': 0.1163,
-    '3500': 0.05138,
-    '4000': 0.02556,
-    '4500': 0.01422,
-    '5000': 0.008631,
+    '1000': 1.0,
+    '1500': 1.0,
+    '2000': 1.0,
+    '2500': 1.0,
+    '3000': 1.0,
+    '3500': 1.0,
+    '4000': 1.0,
+    '4500': 1.0,
+    '5000': 1.0,
 }
 
 xs = {
@@ -275,11 +313,13 @@ def makeSaveDirectories():
         plots_dir+'/images/png/closureTest/2016',
         plots_dir+'/images/png/closureTest/2017',
         plots_dir+'/images/png/closureTest/2018',
+        plots_dir+'/images/png/closureTest/all',
         plots_dir+'/images/pdf/closureTest/2016all',
         plots_dir+'/images/pdf/closureTest/2016APV',
         plots_dir+'/images/pdf/closureTest/2016',
         plots_dir+'/images/pdf/closureTest/2017',
         plots_dir+'/images/pdf/closureTest/2018',
+        plots_dir+'/images/pdf/closureTest/all',
 
         # systematics
         plots_dir+'/images/png/systematics/2016all',
@@ -287,11 +327,13 @@ def makeSaveDirectories():
         plots_dir+'/images/png/systematics/2016',
         plots_dir+'/images/png/systematics/2017',
         plots_dir+'/images/png/systematics/2018',
+        plots_dir+'/images/png/systematics/all',
         plots_dir+'/images/pdf/systematics/2016all',
         plots_dir+'/images/pdf/systematics/2016APV',
         plots_dir+'/images/pdf/systematics/2016',
         plots_dir+'/images/pdf/systematics/2017',
         plots_dir+'/images/pdf/systematics/2018',
+        plots_dir+'/images/pdf/systematics/all',
         
         # systematics checks
         plots_dir+'/images/png/systematics_checks/2016all',
@@ -299,11 +341,13 @@ def makeSaveDirectories():
         plots_dir+'/images/png/systematics_checks/2016',
         plots_dir+'/images/png/systematics_checks/2017',
         plots_dir+'/images/png/systematics_checks/2018',
+        plots_dir+'/images/png/systematics_checks/all',
         plots_dir+'/images/pdf/systematics_checks/2016all',
         plots_dir+'/images/pdf/systematics_checks/2016APV',
         plots_dir+'/images/pdf/systematics_checks/2016',
         plots_dir+'/images/pdf/systematics_checks/2017',
         plots_dir+'/images/pdf/systematics_checks/2018',
+        plots_dir+'/images/pdf/systematics_checks/all',
         
         # ttbarmass
         plots_dir+'/images/png/ttbarmass/2016all',
@@ -311,11 +355,13 @@ def makeSaveDirectories():
         plots_dir+'/images/png/ttbarmass/2016',
         plots_dir+'/images/png/ttbarmass/2017',
         plots_dir+'/images/png/ttbarmass/2018',
+        plots_dir+'/images/png/ttbarmass/all',
         plots_dir+'/images/pdf/ttbarmass/2016all',
         plots_dir+'/images/pdf/ttbarmass/2016APV',
         plots_dir+'/images/pdf/ttbarmass/2016',
         plots_dir+'/images/pdf/ttbarmass/2017',
         plots_dir+'/images/pdf/ttbarmass/2018',
+        plots_dir+'/images/pdf/ttbarmass/all',
         
         # kinematics plots
         plots_dir+'/images/png/kinematics/2016all',
@@ -323,11 +369,13 @@ def makeSaveDirectories():
         plots_dir+'/images/png/kinematics/2016',
         plots_dir+'/images/png/kinematics/2017',
         plots_dir+'/images/png/kinematics/2018',
+        plots_dir+'/images/png/kinematics/all',
         plots_dir+'/images/pdf/kinematics/2016all',
         plots_dir+'/images/pdf/kinematics/2016APV',
         plots_dir+'/images/pdf/kinematics/2016',
         plots_dir+'/images/pdf/kinematics/2017',
         plots_dir+'/images/pdf/kinematics/2018',
+        plots_dir+'/images/pdf/kinematics/all',
         
     ]
 
@@ -352,7 +400,8 @@ def getCoffeaFilenames():
                     "B": coffea_dir+'JetHT_2016APVB.coffea',
                     "C": coffea_dir+'JetHT_2016APVC.coffea',
                     "D": coffea_dir+'JetHT_2016APVD.coffea',
-                    "E": coffea_dir+'JetHT_2016APVE.coffea'
+                    "E": coffea_dir+'JetHT_2016APVE.coffea',
+                    "E": coffea_dir+'JetHT_2016APVF.coffea'
                 },
                 "2016": {
                     "F": coffea_dir+'JetHT_2016F.coffea',
@@ -361,6 +410,7 @@ def getCoffeaFilenames():
 
                 },
                "2017": {
+                    "B": coffea_dir+'JetHT_2017C.coffea',
                     "C": coffea_dir+'JetHT_2017C.coffea',
                     "D": coffea_dir+'JetHT_2017D.coffea',
                     "E": coffea_dir+'JetHT_2017E.coffea',
@@ -378,7 +428,8 @@ def getCoffeaFilenames():
                     "B": coffea_dir+'JetHT_2016APVB_bkgest.coffea',
                     "C": coffea_dir+'JetHT_2016APVC_bkgest.coffea',
                     "D": coffea_dir+'JetHT_2016APVD_bkgest.coffea',
-                    "E": coffea_dir+'JetHT_2016APVE_bkgest.coffea'
+                    "E": coffea_dir+'JetHT_2016APVE_bkgest.coffea',
+                    "E": coffea_dir+'JetHT_2016APVF_bkgest.coffea'
                 },
                 "2016": {
                     "F": coffea_dir+'JetHT_2016F_bkgest.coffea',
@@ -387,6 +438,7 @@ def getCoffeaFilenames():
 
                 },
                 "2017": {
+                    "B": coffea_dir+'JetHT_2017C_bkgest.coffea',
                     "C": coffea_dir+'JetHT_2017C_bkgest.coffea',
                     "D": coffea_dir+'JetHT_2017D_bkgest.coffea',
                     "E": coffea_dir+'JetHT_2017E_bkgest.coffea',

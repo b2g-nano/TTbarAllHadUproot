@@ -16,8 +16,8 @@ import warnings
 warnings.filterwarnings("ignore")
 
 savedir = 'outputs/'
-default_datastets = ['JetHT', 'QCD', 'TTbar', 'ZPrime10', 'ZPrime30', 'ZPrimeDM', 'RSGluon']
-default_signals = ['ZPrime10', 'ZPrime30', 'ZPrimeDM', 'RSGluon']
+default_datastets = ['JetHT', 'QCD', 'TTbar'] #, 'ZPrime10', 'ZPrime30', 'ZPrimeDM', 'RSGluon']
+default_signals = ['RSGluon', 'ZPrime10', 'ZPrime30', 'ZPrimeDM']
 
 from ttbarprocessor import TTbarResProcessor
 from python.functions import printTime
@@ -50,11 +50,10 @@ if __name__ == "__main__":
     parser.add_argument('-m', '--mass', action='append', default=[], help='mass points for signal')
 
     # analysis options
+    parser.add_argument('--blind', action='store_true', help='process 1/10th of the data')
     parser.add_argument('--bkgest', choices=['2dalphabet', 'mistag'], default=None)
     parser.add_argument('--toptagger', choices=['deepak8', 'cmsv2'], default='deepak8')
     parser.add_argument('--btagger', choices=['deepcsv', 'csvv2'], default='deepcsv')
-
-#     parser.add_argument('--bkgest', action='store_true', help='run with background estimate')
     parser.add_argument('--noSyst', action='store_true', help='run without systematics')
 
     # run options
@@ -125,12 +124,12 @@ if __name__ == "__main__":
     ]
     
     if ('2016' in IOV) or ('2017' in IOV): systematics.append('prefiring')
-    if '2018' in IOV: 
-        systematics.append('hem')
-        systematics.append('hemVeto')
+#     if '2018' in IOV: 
+#         systematics.append('hem')
+#         systematics.append('hemVeto')
     if args.bkgest == '2dalphabet': systematics.append('transferFunction')
 
-
+#     systematics = ['test1', 'test2', 'test3', 'test4']
      
     # make analysis categories 
     ttagcats = ["at", "pret", "2t"]
@@ -233,7 +232,8 @@ if __name__ == "__main__":
                 # coffea output file name
                 subString = subsection.replace('700to', '_700to').replace('1000to','_1000to')
                 if args.bkgest: subString += '_bkgest'
-                                
+                    
+                    
                 savefilename = f'{savedir}{sample}_{IOV}{subString}.coffea'
                 if 'RSGluon' in sample:
                     subString = subString.replace(subsection, '')
@@ -244,12 +244,10 @@ if __name__ == "__main__":
                 print(f'running {IOV} {sample} {subsection}')
 
 
-#                 savefilename = savefilename.replace('.coffea', '_cmstop_deepcsv.coffea')
-#                 savefilename = savefilename.replace('.coffea', '_cmstop_csvv2.coffea')
-
-#                 savefilename = savefilename.replace('.coffea', '_HT950.coffea')
-#                 if not args.noSyst: savefilename = savefilename.replace('.coffea', '_syst.coffea')
+                
+                if args.blind: savefilename = savefilename.replace('.coffea', '_blind.coffea')
                 if args.test: savefilename = savefilename.replace('.coffea', '_test.coffea')
+                    
                 
                 # run using futures executor
                 if not args.dask:
