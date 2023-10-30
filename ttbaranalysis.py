@@ -16,11 +16,14 @@ import warnings
 warnings.filterwarnings("ignore")
 
 savedir = 'outputs/'
-default_datastets = ['JetHT', 'QCD', 'TTbar'] #, 'ZPrime10', 'ZPrime30', 'ZPrimeDM', 'RSGluon']
-default_signals = ['RSGluon', 'ZPrime10', 'ZPrime30', 'ZPrimeDM']
+default_datastets = ['JetHT', 'QCD', 'TTbar']
+default_signals = ['RSGluon', 'ZPrime1', 'ZPrime10', 'ZPrime30', 'ZPrimeDM']
 
 from ttbarprocessor import TTbarResProcessor
-from python.functions import printTime
+from python.functions import printTime, makeSaveDirectories
+
+
+makeSaveDirectories()
 
 if __name__ == "__main__":
     
@@ -33,7 +36,7 @@ if __name__ == "__main__":
     
     # datasets to run
     parser.add_argument('-d', '--dataset',
-                        choices=['JetHT', 'QCD', 'TTbar', 'ZPrime10', 'ZPrime30', 'ZPrimeDM', 'RSGluon'], 
+                        choices=['JetHT', 'QCD', 'TTbar', 'ZPrime1', 'ZPrime10', 'ZPrime30', 'ZPrimeDM', 'RSGluon'], 
                         default=default_datastets,
                         action='append'
                        )
@@ -53,7 +56,9 @@ if __name__ == "__main__":
     parser.add_argument('--blind', action='store_true', help='process 1/10th of the data')
     parser.add_argument('--bkgest', choices=['2dalphabet', 'mistag'], default=None)
     parser.add_argument('--toptagger', choices=['deepak8', 'cmsv2'], default='deepak8')
+    parser.add_argument('--ttagWP', choices=['loose', 'medium', 'tight'], default='medium')
     parser.add_argument('--btagger', choices=['deepcsv', 'csvv2'], default='deepcsv')
+    parser.add_argument('--ht', choices=['1400', '950'], default='1400')
     parser.add_argument('--noSyst', action='store_true', help='run without systematics')
 
     # run options
@@ -81,6 +86,7 @@ if __name__ == "__main__":
     IOV = args.iov
     useDeepAK8 = True if (args.toptagger == 'deepak8') else False
     useDeepCSV = True if (args.toptagger == 'deepcsv') else False
+    htCut = 1400.0 if (args.ht == '1400') else 950.0
     dask_memory = '3GB' # priority decreases for >2GB memory
     chunksize_dask = 100000
     chunksize_futures = 1000
@@ -124,12 +130,9 @@ if __name__ == "__main__":
     ]
     
     if ('2016' in IOV) or ('2017' in IOV): systematics.append('prefiring')
-#     if '2018' in IOV: 
-#         systematics.append('hem')
-#         systematics.append('hemVeto')
+
     if args.bkgest == '2dalphabet': systematics.append('transferFunction')
 
-#     systematics = ['test1', 'test2', 'test3', 'test4']
      
     # make analysis categories 
     ttagcats = ["at", "pret", "2t"]
@@ -167,6 +170,7 @@ if __name__ == "__main__":
         "JetHT": 'data/nanoAOD/JetHT.json',
         "QCD": 'data/nanoAOD/QCD.json',
         "TTbar": 'data/nanoAOD/TTbar.json',
+        "ZPrime1": 'data/nanoAOD/ZPrime1.json',
         "ZPrime10": 'data/nanoAOD/ZPrime10.json',
         "ZPrime30": 'data/nanoAOD/ZPrime30.json',
         "ZPrimeDM": 'data/nanoAOD/ZPrimeDM.json',
@@ -224,7 +228,7 @@ if __name__ == "__main__":
 
                 # add redirector; select file for testing
                 files = [redirector + f for f in files]
-                if args.test: files = [files[int(len(files)/2)-2]]
+                if args.test: files = [files[int(len(files)/2)]]
                 fileset = {sample: files}  
                                                  
                 print(files[0])                  
@@ -234,7 +238,7 @@ if __name__ == "__main__":
                 if args.bkgest: subString += '_bkgest'
                     
                     
-                    
+                savedir = f'outputs/{args.ttagWP}/'    
                 if (args.toptagger == 'cmsv2') and (args.btagger == 'csvv2'): savedir = 'outputs/AC/'
                 savefilename = f'{savedir}{sample}_{IOV}{subString}.coffea'
                 if 'RSGluon' in sample:
@@ -245,6 +249,12 @@ if __name__ == "__main__":
                     savefilename = f'{savedir}ZPrime{subsection}_{sample.replace("ZPrime","")}_{IOV}{subString}.coffea'
                 print(f'running {IOV} {sample} {subsection}')
 
+                if args.toptagger == 'cmsv2':
+                    savefilename = savefilename.replace('.coffea', '_cmsv2.coffea')
+                if args.btagger == 'csvv2':
+                    savefilename = savefilename.replace('.coffea', '_csvv2.coffea')
+                if args.ht == '950':
+                    savefilename = savefilename.replace('.coffea', '_ht950.coffea')
 
                 
                 if args.blind: savefilename = savefilename.replace('.coffea', '_blind.coffea')
@@ -261,10 +271,13 @@ if __name__ == "__main__":
                                                              iov=IOV,
                                                              bkgEst=args.bkgest,
                                                              noSyst=args.noSyst,
+                                                             deepAK8Cut=args.ttagWP,
                                                              useDeepAK8=useDeepAK8,
                                                              useDeepCSV=useDeepCSV,
+                                                             htCut=htCut,
                                                              anacats=anacats,
                                                              systematics=systematics,
+                                                             blinding=args.blind,
                                                              #rpf_params = params,
 
                                                             ),
@@ -335,10 +348,13 @@ if __name__ == "__main__":
                                                           iov=IOV,
                                                           bkgEst=args.bkgest,
                                                           noSyst=args.noSyst,
+                                                          deepAK8Cut=args.ttagWP,
                                                           useDeepAK8=useDeepAK8,
                                                           useDeepCSV=useDeepCSV,
+                                                          htCut=htCut,
                                                           anacats=anacats,
                                                           systematics=systematics,
+                                                          blinding=args.blind,
                                                           #rpf_params = params,
                                                           ),
                                                      )
