@@ -11,6 +11,19 @@
         "/TT_Mtt-700to1000_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL18NanoAODv9-106X_upgrade2018_realistic_v16_L1v1-v1/NANOAODSIM",
         "/TT_Mtt-1000toInf_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL18NanoAODv9-106X_upgrade2018_realistic_v16_L1v1-v1/NANOAODSIM"
     ],
+    
+    "events":[
+        23727154,
+        23208356,
+        33502717,
+        23673116,
+        
+        35862238,
+        22724532,
+        
+        30653714,
+        23624506  
+    ],
 
     "2016APV" : {
         "700to1000": [

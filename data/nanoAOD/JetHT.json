@@ -5,10 +5,13 @@
         "/JetHT/Run2016C-HIPM_UL2016_MiniAODv2_NanoAODv9-v2/NANOAOD",
         "/JetHT/Run2016D-HIPM_UL2016_MiniAODv2_NanoAODv9-v2/NANOAOD",
         "/JetHT/Run2016E-HIPM_UL2016_MiniAODv2_NanoAODv9-v2/NANOAOD",
+        "/JetHT/Run2016F-HIPM_UL2016_MiniAODv2_NanoAODv9-v2/NANOAOD",
+        
         "/JetHT/Run2016F-UL2016_MiniAODv2_NanoAODv9-v1/NANOAOD",
         "/JetHT/Run2016G-UL2016_MiniAODv2_NanoAODv9-v1/NANOAOD",
         "/JetHT/Run2016H-UL2016_MiniAODv2_NanoAODv9-v1/NANOAOD",
-                
+        
+        "/JetHT/Run2017B-UL2017_MiniAODv2_NanoAODv9-v1/NANOAOD",
         "/JetHT/Run2017C-UL2017_MiniAODv2_NanoAODv9-v1/NANOAOD",
         "/JetHT/Run2017D-UL2017_MiniAODv2_NanoAODv9-v1/NANOAOD",
         "/JetHT/Run2017E-UL2017_MiniAODv2_NanoAODv9-v1/NANOAOD",
@@ -20,6 +23,31 @@
         "/JetHT/Run2018D-UL2018_MiniAODv2_NanoAODv9-v2/NANOAOD"
 
     ],
+    "events": [
+        
+          9726665,
+        133752091,
+         46495988,
+         73330042,
+         69219288,
+         41564915,
+        
+          6613811,
+        120688407,
+        124050331,
+        
+         63043590,
+         96264601,
+         46145204,
+         89630771,
+        115429972,
+        
+        171484635,
+         78255208,
+         70027804,
+        356976276
+    ],
+    
     "2016APV":{
         "B":[
         "/store/data/Run2016B/JetHT/NANOAOD/ver1_HIPM_UL2016_MiniAODv2_NanoAODv9-v2/2430000/341EF3A8-3C77-8C4F-A0F6-A71CCB9FAF37.root",
@@ -517,7 +545,7 @@
         "/store/data/Run2017B/JetHT/NANOAOD/UL2017_MiniAODv2_NanoAODv9-v1/280000/4F6F5B20-83CA-B64F-B323-780534ADDEF3.root",
         "/store/data/Run2017B/JetHT/NANOAOD/UL2017_MiniAODv2_NanoAODv9-v1/280000/7132F460-95E7-2A45-B5AB-92F5C589BC7D.root",
         "/store/data/Run2017B/JetHT/NANOAOD/UL2017_MiniAODv2_NanoAODv9-v1/280000/83F96FF2-B28C-0D42-8F92-8B49ADFF5E70.root",
-        "/store/data/Run2017B/JetHT/NANOAOD/UL2017_MiniAODv2_NanoAODv9-v1/280000/9496D821-5BE9-3945-A1A3-41DF684D6476.root"tm
+        "/store/data/Run2017B/JetHT/NANOAOD/UL2017_MiniAODv2_NanoAODv9-v1/280000/9496D821-5BE9-3945-A1A3-41DF684D6476.root"
         ],
         "C":[
         "/store/data/Run2017C/JetHT/NANOAOD/UL2017_MiniAODv2_NanoAODv9-v1/130000/E7FDF0DC-5BC8-FA43-AA00-CB5E36D1C035.root",
