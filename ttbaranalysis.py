@@ -240,6 +240,7 @@ if __name__ == "__main__":
                     
                 savedir = f'outputs/{args.ttagWP}/'    
                 if (args.toptagger == 'cmsv2') and (args.btagger == 'csvv2'): savedir = 'outputs/AC/'
+
                 savefilename = f'{savedir}{sample}_{IOV}{subString}.coffea'
                 if 'RSGluon' in sample:
                     subString = subString.replace(subsection, '')
