@@ -28,6 +28,15 @@ cd TTbarAllHadUproot
 git checkout optimize
 ```
 
+To run a test on QCD, TTbar, and JetHT for each year:
+
+```
+python ttbaranalysis.py --iov 2016APV --test --env casa
+python ttbaranalysis.py --iov 2016 --test --env casa
+python ttbaranalysis.py --iov 2017 --test --env casa
+python ttbaranalysis.py --iov 2018 --test --env casa
+```
+
 
 ### Running the transfer function background estimation
 
